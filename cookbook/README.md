@@ -19,8 +19,8 @@ jar per directory into a Maven-layout repository, with a POM for each jar and a 
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/ralph/`:
 everything a reader needs without the source checkout.
 
-A recipe is addressed as `group:artifact:version[:recipe]`. The recipe named like its directory is the
-default: `io.github.lmarqs:ralph:0.1.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.1.0:prd-story` cooks `prd-story`.
+A recipe is addressed as `group:artifact:version[#recipe]`. The recipe named like its directory is the
+default: `io.github.lmarqs:ralph:0.1.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.1.0#prd-story` cooks `prd-story`.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources, the same whether a tag or a jar supplied them.
 
@@ -50,11 +50,11 @@ teammate's link. Given the coordinates:
 
 ```sh
 ./cook help io.github.lmarqs:agents:0.1.0                # the artifact's front page
-./cook help io.github.lmarqs:agents:0.1.0:instructions   # the recipe's help, params and ingredients
-./cook io.github.lmarqs:agents:0.1.0:permissions --harness=claude io.github.lmarqs:agents:0.1.0:instructions --harness=claude
+./cook help io.github.lmarqs:agents:0.1.0#instructions   # the recipe's help, params and ingredients
+./cook io.github.lmarqs:agents:0.1.0#permissions --harness=claude io.github.lmarqs:agents:0.1.0#instructions --harness=claude
 ```
 
-`help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version:recipe` it prints
+`help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version#recipe` it prints
 that recipe's help. Recipes named in one invocation compose left to right by file content. Each recipe is evaluated
 in its own classloader. A recipe never composes another recipe.
 
@@ -215,7 +215,7 @@ Ralph TUI configuration and runners for recipe-driven development loops.
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ```text
-$ ./cook help io.github.lmarqs:ralph:0.1.0:ralph
+$ ./cook help io.github.lmarqs:ralph:0.1.0#ralph
 ralph
 
 Sets up Ralph TUI as the repository's loop runner: its configuration, a runner and the tracker it takes stories
@@ -305,7 +305,7 @@ repositories = [
 ```
 
 ```sh
-./cook <group>:<artifact>:<version>:<recipe>
+./cook <group>:<artifact>:<version>#<recipe>
 ```
 
 Coordinates take exact release versions. Publishing a changed cookbook under the same version is cooked as it is

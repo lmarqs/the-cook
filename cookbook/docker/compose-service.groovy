@@ -10,8 +10,8 @@ with Compose must be available to run the validation task.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:docker:0.1.0:compose-service --service=redis --from=setup/redis.yaml
-./cook io.github.lmarqs:docker:0.1.0:compose-service --service=redis --from=setup/redis.yaml --file=compose.dev.yaml
+./cook io.github.lmarqs:docker:0.1.0#compose-service --service=redis --from=setup/redis.yaml
+./cook io.github.lmarqs:docker:0.1.0#compose-service --service=redis --from=setup/redis.yaml --file=compose.dev.yaml
 ```
 
 ## Writes
@@ -27,7 +27,7 @@ The task runs `docker compose config`; it does not start the services.
 
 Distinct service keys compose in the same file; the last recipe writing a service key supplies its whole
 definition. Each application declares `tasks."stack:validate"`, so the last one in an invocation selects
-the Compose file that task checks. `io.github.lmarqs:docker:0.1.0:base-image` declares a separate verification task.
+the Compose file that task checks. `io.github.lmarqs:docker:0.1.0#base-image` declares a separate verification task.
 ''')
 @yield('''
 Run `mise run stack:validate` to check the Compose configuration.

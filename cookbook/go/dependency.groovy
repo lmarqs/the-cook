@@ -10,8 +10,8 @@ must be available to run the task.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:go:0.1.0:dependency --module=github.com/google/uuid --version=v1.6.0
-./cook io.github.lmarqs:go:0.1.0:dependency --module=github.com/google/uuid --version=v1.6.0 --dir=services/api
+./cook io.github.lmarqs:go:0.1.0#dependency --module=github.com/google/uuid --version=v1.6.0
+./cook io.github.lmarqs:go:0.1.0#dependency --module=github.com/google/uuid --version=v1.6.0 --dir=services/api
 ```
 
 ## Writes

@@ -4,8 +4,8 @@ Seeds `AGENTS.md` with a section template for an agent to fill in, and connects 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:agents:0.1.0:instructions
-./cook io.github.lmarqs:agents:0.1.0:instructions --harness=claude
+./cook io.github.lmarqs:agents:0.1.0#instructions
+./cook io.github.lmarqs:agents:0.1.0#instructions --harness=claude
 ```
 
 ## Writes
@@ -24,7 +24,7 @@ selecting `codex` adds no target.
 
 ## With other recipes
 
-Cook `io.github.lmarqs:agents:0.1.0:permissions` with the same harness selection to render the shared policy.
+Cook `io.github.lmarqs:agents:0.1.0#permissions` with the same harness selection to render the shared policy.
 The recipes write separate targets and work in either order.
 ''')
 @yield('''

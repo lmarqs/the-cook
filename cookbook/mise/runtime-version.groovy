@@ -9,8 +9,8 @@ Choose the runtime and its version explicitly. This recipe does not read the ver
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:mise:0.1.0:runtime-version --runtime=node --version=22.12.0
-./cook io.github.lmarqs:mise:0.1.0:runtime-version --runtime=python --version=3.13.2
+./cook io.github.lmarqs:mise:0.1.0#runtime-version --runtime=node --version=22.12.0
+./cook io.github.lmarqs:mise:0.1.0#runtime-version --runtime=python --version=3.13.2
 ```
 
 ## Writes

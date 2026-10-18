@@ -32,7 +32,7 @@ Read the `agents` artifact's front page and one of its recipes, without running 
 
 ```sh
 ./cook help io.github.lmarqs:agents:0.1.0
-./cook help io.github.lmarqs:agents:0.1.0:instructions
+./cook help io.github.lmarqs:agents:0.1.0#instructions
 ```
 
 Make a scratch kitchen whose `cook.toml` resolves from this checkout's repository, then cook two recipes in it:
@@ -40,7 +40,7 @@ Make a scratch kitchen whose `cook.toml` resolves from this checkout's repositor
 ```sh
 kitchen=$(mktemp -d)
 printf 'repositories = ["%s/cookbook/build/repository"]\n' "$PWD" > "$kitchen/cook.toml"
-./cook -C "$kitchen" io.github.lmarqs:agents:0.1.0:permissions --harness=claude io.github.lmarqs:agents:0.1.0:instructions --harness=claude
+./cook -C "$kitchen" io.github.lmarqs:agents:0.1.0#permissions --harness=claude io.github.lmarqs:agents:0.1.0#instructions --harness=claude
 ```
 
 Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
@@ -54,7 +54,7 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
 ### What runs
 
 `./cook` cooks recipes left to right in one invocation, each named by coordinates,
-`group:artifact:version[:recipe]`, or by a `.groovy` path inside the kitchen:
+`group:artifact:version[#recipe]`, or by a `.groovy` path inside the kitchen:
 
 - One review before any write: a `Changed source` notice for a release whose sources differ from what `cook.lock`
   recorded under the same version, each recipe's `@confirm` text, a unified diff and one question; `--batch-approve` to
@@ -153,7 +153,7 @@ Its help output also begins with `Usage:`. The image includes the CLI and a Java
 from the repository you want to cook, or name it with `-C`:
 
 ```sh
-/path/to/the-cook/bin/the-cook -C /path/to/repository io.github.lmarqs:agents:0.1.0:instructions --harness=claude
+/path/to/the-cook/bin/the-cook -C /path/to/repository io.github.lmarqs:agents:0.1.0#instructions --harness=claude
 ```
 
 The paths above are for Linux. The build defines `the-cook.app/Contents/MacOS/the-cook` on macOS and

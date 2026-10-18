@@ -34,13 +34,13 @@ The [architecture](../architecture.md#cooking-and-discard) defines these operati
 ./cook ./recipe.groovy
 
 # Remove what two recipes own
-./cook discard io.github.lmarqs:agents:0.1.0:instructions ./recipe.groovy
+./cook discard io.github.lmarqs:agents:0.1.0#instructions ./recipe.groovy
 ```
 
 ## Recipe operands
 
 A recipe operand is a path inside the destination repository or a recipe's coordinates,
-`group:artifact:version[:recipe]`. A word is a recipe operand when it contains `/` or `:` or ends with `.groovy`, so an
+`group:artifact:version[#recipe]`. A word is a recipe operand when it contains `/` or `:` or ends with `.groovy`, so an
 ordinary relative path such as `recipe.groovy` is one; a recipe file with none of these marks is given as `./notes`.
 Cook refuses an operand outside the repository, and a URL with a message that points to `cook.toml`: a recipe shared
 beyond one repository is published in a cookbook and cooked by its coordinates. Coordinates resolve from the repositories that the destination's
@@ -49,7 +49,7 @@ beyond one repository is published in a cookbook and cooked by its coordinates. 
 ```sh
 ./cook recipe.groovy
 ./cook ./recipes/project.groovy
-./cook io.github.lmarqs:agents:0.1.0:instructions --harness=claude
+./cook io.github.lmarqs:agents:0.1.0#instructions --harness=claude
 ```
 
 `help` prints a recipe's `@help`, `@confirm` and `@yield` texts with its `@param` and `@ingredient` annotations, read
@@ -110,7 +110,7 @@ The first invocation evaluates only `a.groovy` and gives it `source` with the va
 | The same recipe twice, with any arguments or versions | Refused: `cook.lock` keeps one entry per recipe |
 
 When a recipe fails to evaluate, nothing is written, and the error names the recipe by its position and operand, such
-as `recipe 2 (io.github.lmarqs:agents:0.1.0:instructions)`.
+as `recipe 2 (io.github.lmarqs:agents:0.1.0#instructions)`.
 
 Before writing, Cook shows each recipe's `@confirm` text under the heading `Confirm <address>`, then a unified diff of
 every changed path, `cook.lock` included, and asks `Write these changes? [y/N]`. Any answer other than `y` or `yes`
@@ -135,11 +135,11 @@ With `--dry-run`, Cook shows the texts and the diff without asking, the lines re
 ## Existing files
 
 Some recipes write a file from a template the first time they are cooked, such as `AGENTS.md` in
-`io.github.lmarqs:agents:0.1.0:instructions`. When that file already exists, cooking the recipe the first time fails,
+`io.github.lmarqs:agents:0.1.0#instructions`. When that file already exists, cooking the recipe the first time fails,
 writes nothing and names the file and the recipe:
 
 ```text
-AGENTS.md already exists; io.github.lmarqs:agents:instructions writes it from a template the first time it is cooked. Run with --force to replace it, or --skip to keep it.
+AGENTS.md already exists; io.github.lmarqs:agents#instructions writes it from a template the first time it is cooked. Run with --force to replace it, or --skip to keep it.
 ```
 
 When several recipes of one command meet such files, one refusal lists every file with its recipe, so `--force` never
@@ -155,8 +155,8 @@ The options act only the first time a recipe is cooked, take recipe coordinates 
 leave the file to whoever edits it.
 
 ```sh
-./cook --force io.github.lmarqs:agents:0.1.0:instructions --harness=claude
-./cook --skip io.github.lmarqs:agents:0.1.0:instructions --harness=claude
+./cook --force io.github.lmarqs:agents:0.1.0#instructions --harness=claude
+./cook --skip io.github.lmarqs:agents:0.1.0#instructions --harness=claude
 ```
 
 ## Batch options and approval

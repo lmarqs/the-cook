@@ -69,7 +69,7 @@ the-cook: target ../shared/settings.toml is outside the destination
 ```
 
 ```text
-the-cook: discard: cook.lock lists no recipe io.github.lmarqs:agents:instructions; nothing was written
+the-cook: discard: cook.lock lists no recipe io.github.lmarqs:agents#instructions; nothing was written
   discard removes only what cook.lock records for a recipe
   check the recipe's name in cook.lock
 ```
@@ -194,7 +194,7 @@ A directory README is the artifact's front page. The shape is defined in [cookbo
 - Use Cook or `the-cook` for the engine and `./cook` for the repository entry point. Show the equivalent global entry
   point when useful ([entry points](cli-standards.md#entry-points)). Use one term per engine concept.
 - Use generic organizations such as `acme` in made-up examples. Recipe operands must still be exact supported paths or
-  coordinates, such as `acme:setup:1.0.0:project`; do not invent a cookbook-name lookup scheme.
+  coordinates, such as `acme:setup:1.0.0#project`; do not invent a cookbook-name lookup scheme.
 - Explain program-specific files and settings when they clarify native configuration. Attribute those choices to
   cookbook ingredients and recipes rather than promising engine contracts for every program. Name the program rather
   than inventing a generic role in its place.

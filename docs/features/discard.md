@@ -34,7 +34,7 @@ Omitting a recipe from a later invocation leaves its output in place; see [cooki
 ./cook discard [batch-options] <recipe>...
 ```
 
-Each recipe is written as for cooking: coordinates `group:artifact:version[:recipe]` or a `.groovy` path in the kitchen.
+Each recipe is written as for cooking: coordinates `group:artifact:version[#recipe]` or a `.groovy` path in the kitchen.
 Discard matches the recipe's short name in `cook.lock`, so the version in coordinates does not need to be the cooked
 one, and a path's file does not need to exist any more. Discard takes no recipe arguments. Batch options precede the
 first recipe; the [CLI reference](cli.md) defines them.
@@ -61,25 +61,25 @@ diff shows that removal. A recipe that `cook.lock` does not list is refused, and
 
 ### Discard example
 
-`CLAUDE.md` holds a hand-written line and a section that `io.github.lmarqs:agents:instructions` owns:
+`CLAUDE.md` holds a hand-written line and a section that `io.github.lmarqs:agents#instructions` owns:
 
 ```markdown
 Hand-written notes stay.
-<!-- cook:begin io.github.lmarqs:agents:instructions#instructions -->
+<!-- cook:begin io.github.lmarqs:agents#instructions#instructions -->
 @AGENTS.md
-<!-- cook:end io.github.lmarqs:agents:instructions#instructions -->
+<!-- cook:end io.github.lmarqs:agents#instructions#instructions -->
 ```
 
-`./cook discard io.github.lmarqs:agents:0.1.0:instructions` proposes:
+`./cook discard io.github.lmarqs:agents:0.1.0#instructions` proposes:
 
 ```diff
 --- a/CLAUDE.md
 +++ b/CLAUDE.md
 @@ -1,4 +1,1 @@
  Hand-written notes stay.
--<!-- cook:begin io.github.lmarqs:agents:instructions#instructions -->
+-<!-- cook:begin io.github.lmarqs:agents#instructions#instructions -->
 -@AGENTS.md
--<!-- cook:end io.github.lmarqs:agents:instructions#instructions -->
+-<!-- cook:end io.github.lmarqs:agents#instructions#instructions -->
 ```
 
 together with the removal of the recipe's entry from `cook.lock`.

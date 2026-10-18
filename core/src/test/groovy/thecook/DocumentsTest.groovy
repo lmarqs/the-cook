@@ -2,11 +2,26 @@ package thecook
 
 import groovy.json.JsonSlurper
 import org.junit.Test
+import thecook.formats.BlockDocument
 import thecook.formats.Document
 import thecook.formats.Documents
+import thecook.rendering.BlockLocation
 import thecook.rendering.KeyLocation
 
 class DocumentsTest {
+  @Test void markdownReadsBackABlockWhoseIdContainsHashes() {
+    def id = 'acme:notes#more#notes'
+    def written = new BlockDocument('# Notes\n', '<!-- ', ' -->')
+    written.write(id, new BlockLocation(), written.render('more'))
+    assert written.text ==
+    '# Notes\n<!-- cook:begin acme:notes#more#notes -->\nmore\n<!-- cook:end acme:notes#more#notes -->\n'
+
+    def reopened = new BlockDocument(written.text, '<!-- ', ' -->')
+    assert reopened.read(id, new BlockLocation()) == 'more\n'
+    reopened.remove(id, new BlockLocation())
+    assert reopened.text == '# Notes\n'
+  }
+
   @Test void jsonChangesOneNestedValueAndKeepsEveryOtherByte() {
     def original = '{\n "name" : "fixture", "devDependencies" : { "@types/node": "^20.0.0", "other" : "keep" }\n}\n'
     def document = open('json', original)

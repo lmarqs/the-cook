@@ -10,8 +10,8 @@ image must be a literal reference. mise and Docker must be available to run the 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:docker:0.1.0:base-image --stage=build --expected=eclipse-temurin:17 --image=eclipse-temurin:21
-./cook io.github.lmarqs:docker:0.1.0:base-image --dockerfile=Dockerfile.dev --stage=build --expected=eclipse-temurin:17 --image=eclipse-temurin:21
+./cook io.github.lmarqs:docker:0.1.0#base-image --stage=build --expected=eclipse-temurin:17 --image=eclipse-temurin:21
+./cook io.github.lmarqs:docker:0.1.0#base-image --dockerfile=Dockerfile.dev --stage=build --expected=eclipse-temurin:17 --image=eclipse-temurin:21
 ```
 
 ## Writes
@@ -27,7 +27,7 @@ A stage already using the requested image keeps its `FROM` line.
 
 Distinct stage lines compose. To change the same stage again in one invocation, set the later recipe's
 expected image to the image the preceding recipe supplies. Each application declares `tasks."docker:verify"`,
-so the last one selects its Dockerfile and stage. `io.github.lmarqs:docker:0.1.0:compose-service` declares a
+so the last one selects its Dockerfile and stage. `io.github.lmarqs:docker:0.1.0#compose-service` declares a
 separate validation task.
 ''')
 @yield('''

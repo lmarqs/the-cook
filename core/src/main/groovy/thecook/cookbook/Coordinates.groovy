@@ -5,13 +5,13 @@ import groovy.transform.EqualsAndHashCode
 import java.util.regex.Matcher
 
 /**
- * An address, `group:artifact:version[:recipe]`: one artifact of a cookbook release, or one recipe in it. Only exact
+ * An address, `group:artifact:version[#recipe]`: one artifact of a cookbook release, or one recipe in it. Only exact
  * release versions are accepted, so an address names the same jar wherever it resolves.
  */
 @EqualsAndHashCode
 final class Coordinates {
   private static final String PATTERN =
-  /([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*):([a-z][a-z0-9-]*):([0-9]+\.[0-9]+\.[0-9]+)(?::([a-z][a-z0-9-]*))?/
+  /([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*):([a-z][a-z0-9-]*):([0-9]+\.[0-9]+\.[0-9]+)(?:#([a-z][a-z0-9-]*))?/
 
   final String group
   final String artifact
@@ -31,14 +31,14 @@ final class Coordinates {
     operand.contains(':') && !operand.contains('://') && !operand.endsWith('.groovy')
   }
 
-  /** Parses `text`, rejecting anything but `group:artifact:version[:recipe]` with an exact release version. */
+  /** Parses `text`, rejecting anything but `group:artifact:version[#recipe]` with an exact release version. */
   static Coordinates parse(String text) {
     Matcher match = text =~ "^${PATTERN}\$"
 
     if (!match.matches()) {
       throw new IllegalArgumentException(
-      "Invalid recipe coordinates: ${text}; expected group:artifact:version[:recipe] with an exact release " +
-      'version, such as io.github.lmarqs:agents:0.1.0:instructions')
+      "Invalid recipe coordinates: ${text}; expected group:artifact:version[#recipe] with an exact release " +
+      'version, such as io.github.lmarqs:agents:0.1.0#instructions')
     }
 
     new Coordinates(match.group(1), match.group(2), match.group(3), match.group(4))
@@ -50,16 +50,16 @@ final class Coordinates {
   }
 
   /**
-   * The short name of the recipe this address names, or of the artifact's own recipe: the address without its
-   * version.
+   * The short name of the recipe this address names, or of the artifact's own recipe: `group:artifact#recipe`, the
+   * address without its version.
    */
   String getRecipeName() {
-    "${group}:${artifact}:${recipe ?: artifact}"
+    "${group}:${artifact}#${recipe ?: artifact}"
   }
 
   /** The address of `name`, a recipe in this artifact. */
   String recipeAddress(String name) {
-    "${artifactAddress}:${name}"
+    "${artifactAddress}#${name}"
   }
 
   /** The jar's path inside a Maven-layout repository. */
