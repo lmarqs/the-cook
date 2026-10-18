@@ -84,13 +84,11 @@ tasks.register('centralBundleTest') {
     def v = releaseVersion
     def agents = "io/github/lmarqs/agents/${v}/agents-${v}"
     def plugin = "io/github/lmarqs/the-cook-plugin/${v}/the-cook-plugin-${v}"
-    def marker = 'io.github.lmarqs.cookbook.gradle.plugin'
-    def expected = ['', '-sources', '-javadoc'].collectMany { ["${agents}${it}.jar", "${plugin}${it}.jar"] } + [
-      "${agents}.pom",
-      "${plugin}.pom",
-      "${plugin}.module",
-      "io/github/lmarqs/cookbook/${marker}/${v}/${marker}-${v}.pom",
-    ]
+    def marker = "io/github/lmarqs/cookbook/io.github.lmarqs.cookbook.gradle.plugin/${v}/" +
+        "io.github.lmarqs.cookbook.gradle.plugin-${v}"
+    def expected = ['', '-sources', '-javadoc'].collectMany {
+      ["${agents}${it}.jar", "${plugin}${it}.jar", "${marker}${it}.jar"]
+    } + ["${agents}.pom", "${plugin}.pom", "${plugin}.module", "${marker}.pom"]
     def files = entries.findAll { !it.endsWith('/') && !(it ==~ /.*\.(md5|sha1|sha256|sha512|asc)/) }
     def missing = files.findAll { !(entries.contains(it + '.md5') && entries.contains(it + '.sha1')) }
 

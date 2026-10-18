@@ -31,6 +31,21 @@ gradlePlugin {
 
 apply from: '../gradle/central.gradle'
 
+// Every artifact the release publishes to Maven Central carries a jar, a sources jar and a javadoc jar; the plugin
+// marker has no code, so its jars are empty.
+def markerJars = ['', 'sources', 'javadoc'].collect { classifier ->
+  tasks.register("cookbookMarker${classifier.capitalize()}Jar", Jar) {
+    archiveBaseName = 'io.github.lmarqs.cookbook.gradle.plugin'
+    archiveClassifier = classifier
+    destinationDirectory = layout.buildDirectory.dir('marker')
+  }
+}
+publishing.publications.withType(MavenPublication).configureEach { publication ->
+  if (publication.name == 'cookbookPluginMarkerMaven') {
+    markerJars.each { publication.artifact(it) }
+  }
+}
+
 // A Maven-local layout inside the build, so the tests resolve the published plugin without touching ~/.m2.
 def testMavenLocal = layout.buildDirectory.dir('maven-local')
 
