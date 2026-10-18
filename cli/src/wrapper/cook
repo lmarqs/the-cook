@@ -34,13 +34,16 @@ if [ ! -x "$launcher" ]; then
     fail 'downloading the-cook needs curl or wget'
   fi
 
+  # Hashing standard input keeps the output free of the escaping sha256sum applies to some file names.
   if command -v sha256sum > /dev/null 2>&1; then
-    sha256() { sha256sum "$1" | cut -d ' ' -f 1; }
+    sha256() { sha256sum < "$1" | cut -d ' ' -f 1; }
   elif command -v shasum > /dev/null 2>&1; then
-    sha256() { shasum -a 256 "$1" | cut -d ' ' -f 1; }
+    sha256() { shasum -a 256 < "$1" | cut -d ' ' -f 1; }
   else
     fail 'verifying the-cook needs sha256sum or shasum'
   fi
+
+  command -v tar > /dev/null 2>&1 || fail 'unpacking the-cook needs tar'
 
   # The package unpacks beside the cache and moves in with one rename, so the cache never holds a partial package.
   mkdir -p "$versions"
@@ -58,8 +61,13 @@ if [ ! -x "$launcher" ]; then
 
   mkdir "$work/package"
   tar -xzf "$work/$package" -C "$work/package"
-  rm -rf "$cache"
-  mv "$work/package" "$cache"
+
+  # Another run may have cached the package meanwhile and be running it, so a complete cache is kept as it is.
+  if [ ! -x "$launcher" ]; then
+    rm -rf "$cache"
+    mv "$work/package" "$cache"
+  fi
+
   rm -rf "$work"
   trap - EXIT
 fi

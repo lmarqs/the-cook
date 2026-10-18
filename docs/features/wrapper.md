@@ -39,7 +39,8 @@ recipe ownership.
 4. Refuse a download whose sha256 differs from the one in the wrapper: print the file and both hashes, exit with
    status 1, and cache nothing.
 5. Unpack the verified package beside the cache and move it in with one rename, so the cache never holds a partial
-   package, then launch it with the supplied CLI arguments.
+   package, then launch it with the supplied CLI arguments. A package another run cached meanwhile stays in place and
+   is the one launched.
 
 First use of an uncached version needs access to the release, `tar`, one of `curl` and `wget`, and one of `sha256sum`
 and `shasum`; without them the wrapper names the tool it needs and exits with status 1. Later use of the cached

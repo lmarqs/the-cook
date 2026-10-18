@@ -2,6 +2,7 @@ package thecook.cli
 
 import com.sun.net.httpserver.HttpServer
 import org.junit.Assume
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -14,6 +15,11 @@ class WrapperTest {
   private static final List<String> TOOLS = ['uname', 'mkdir', 'mktemp', 'rm', 'rmdir', 'mv', 'tar', 'gzip', 'cut']
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
+
+  // The wrapper runs only the Linux x64 and arm64 packages, so it has nothing to download anywhere else.
+  @Before void runsOnLinuxX64OrArm64() {
+    Assume.assumeTrue(System.getProperty('os.name') == 'Linux' && ARCH != null)
+  }
 
   @Test void downloadsVerifiesCachesAndRunsThePinnedPackageInTheCurrentDirectory() {
     def content = fakePackage()
@@ -56,6 +62,26 @@ class WrapperTest {
     }
   }
 
+  @Test void keepsAndRunsThePackageAnotherRunCachedDuringTheDownload() {
+    def content = fakePackage()
+    def cached = new File(folder.root, "cache/the-cook/1.2.3/linux-${ARCH}/the-cook/bin/the-cook")
+    def cacheMeanwhile = {
+      cached.parentFile.mkdirs()
+      cached.text = '#!/bin/sh\necho cached meanwhile\n'
+      cached.setExecutable(true)
+    }
+
+    serve(content, { String url, List<String> requests ->
+      def result = run(wrapper(url, sha256(content)), folder.root, System.getenv('PATH'), 'help')
+
+      assert result.status == 0 : result.err
+      assert result.out == 'cached meanwhile\n'
+      assert requests == [PACKAGE]
+      assert new File(folder.root, 'cache/the-cook/1.2.3').list() as List == ["linux-${ARCH}"]
+      assert new File(folder.root, "cache/the-cook/1.2.3/linux-${ARCH}").list() as List == ['the-cook']
+    }, cacheMeanwhile)
+  }
+
   @Test void downloadsWithWgetAndVerifiesWithShasumWhenCurlAndSha256sumAreAbsent() {
     Assume.assumeTrue(installed('wget') && installed('shasum'))
     def content = fakePackage()
@@ -80,6 +106,7 @@ class WrapperTest {
     [
       [tools(TOOLS + ['sha256sum']), 'cook: downloading the-cook needs curl or wget\n'],
       [tools(TOOLS + ['curl']), 'cook: verifying the-cook needs sha256sum or shasum\n'],
+      [tools(TOOLS - ['tar'] + ['curl', 'sha256sum']), 'cook: unpacking the-cook needs tar\n'],
       [
         "${uname.parent}:${tools(TOOLS)}".toString(),
         'cook: the-cook has no package for Darwin arm64; it runs on Linux x64 and arm64\n'
@@ -114,11 +141,13 @@ class WrapperTest {
     cook
   }
 
-  private static void serve(byte[] content, Closure body) {
+  // `onRequest` runs as each request arrives, before the response.
+  private static void serve(byte[] content, Closure body, Closure onRequest = { }) {
     List<String> requests = [].asSynchronized()
     def server = HttpServer.create(new InetSocketAddress(InetAddress.loopbackAddress, 0), 0)
     server.createContext('/') { exchange ->
       requests << exchange.requestURI.path
+      onRequest()
       def found = exchange.requestURI.path == PACKAGE
       exchange.sendResponseHeaders(found ? 200 : 404, found ? content.length : -1)
       exchange.responseBody.withCloseable { it.write(found ? content : new byte[0]) }
