@@ -16,11 +16,11 @@ The core reaches no network and runs no external command. It declares `CookbookR
 `Proposal.commit`.
 
 1. `RecipeLoader` resolves each operand. Coordinates read the artifact from the first of the given repositories that
-   holds it (`CookbookRepositories`). A path must resolve inside the kitchen, symbolic links included; its model imports
-   resolve from the releases its `@cookbook('group:version')` annotations name. Each artifact is read, and its models
-   compiled, once per invocation.
-2. `CookbookCompiler` compiles an artifact's models in a class loader of their own, then the recipe in its own class
-   loader over them. Every unit imports the author's annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and
+   holds it (`CookbookRepositories`). A path must resolve inside the kitchen, symbolic links included, and its models
+   are the upper-case `.groovy` files in its directory. Each artifact and directory is read, and its models compiled,
+   once per invocation.
+2. `CookbookCompiler` compiles an artifact's or a directory's models in a class loader of their own, then the recipe in
+   its own class loader over them. Every unit imports the author's annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and
    `java.nio.file` by default. A recipe's `@param` and `@ingredient` lines become fields.
 3. `RecipeRun` binds each `@param` from the recipe's arguments, injects each `@ingredient` as a new model instance at
    its directory, and runs the recipe's body. A model reads its own artifact's packaged files and the draft's current

@@ -1,14 +1,8 @@
 package thecook.cli
 
 class Fixtures {
-  /**
-   * Writes into `kitchen` a Maven-layout repository holding `acme:notes:1.2.3`, with `extra` files beside its own, and
-   * a `cook.toml` listing it.
-   */
-  static void notesCookbook(File kitchen, Map<String, String> extra = [:]) {
-    def jar = new File(kitchen, 'repository/acme/notes/1.2.3/notes-1.2.3.jar'); jar.parentFile.mkdirs()
-    new java.util.jar.JarOutputStream(jar.newOutputStream()).withCloseable { out ->
-      (['acme/notes/Notes.groovy': """package acme.notes
+  /** The `acme.notes.Notes` model, which adds lines to a section of `NOTES.md`. */
+  static final String NOTES_MODEL = """package acme.notes
 
 @Ingredient
 class Notes {
@@ -17,7 +11,16 @@ class Notes {
   @Section(path = 'NOTES.md', id = 'notes')
   List<String> section() { lines ?: null }
 }
-""", 'acme/notes/notes.groovy': """@help('Adds a line to `NOTES.md`.')
+"""
+
+  /**
+   * Writes into `kitchen` a Maven-layout repository holding `acme:notes:1.2.3`, with `extra` files beside its own, and
+   * a `cook.toml` listing it.
+   */
+  static void notesCookbook(File kitchen, Map<String, String> extra = [:]) {
+    def jar = new File(kitchen, 'repository/acme/notes/1.2.3/notes-1.2.3.jar'); jar.parentFile.mkdirs()
+    new java.util.jar.JarOutputStream(jar.newOutputStream()).withCloseable { out ->
+      (['acme/notes/Notes.groovy': NOTES_MODEL, 'acme/notes/notes.groovy': """@help('Adds a line to `NOTES.md`.')
 @confirm('Everyone reads `NOTES.md`.')
 @yield('Read `NOTES.md`.')
 import acme.notes.Notes

@@ -88,23 +88,20 @@ coordinates ([a cookbook outside this repository](cookbook/README.md#a-cookbook-
 
 A `.groovy` path inside the kitchen is a recipe like any other. Its short name, in section markers and `cook.lock`, is
 its path in the kitchen without `.groovy`, so moving the file renames the recipe; the lock records its path and the
-file's sha256. It imports models from the cookbook releases it names with `@cookbook('group:version')` on one of its
-imports, resolved through the same repositories as coordinates:
+sha256 of the recipe, the models beside it and its `@resource` files. It compiles against the models in its own
+directory, the upper-case `.groovy` files there, as a recipe in an artifact compiles against that artifact's models.
+Beside `recipes/Notes.groovy`, which declares the model `acme.notes.Notes`, `recipes/notes.groovy` reads:
 
 ```groovy
-@help('Shares the solid skill with Claude, through AGENTS.md and CLAUDE.md.')
-@cookbook('io.github.lmarqs:0.1.0')
-import io.github.lmarqs.agents.Agents
-import io.github.lmarqs.agents.Claude
+@help('Adds a line to NOTES.md.')
+import acme.notes.Notes
 
-@ingredient(Agents) def agents
-@ingredient(Claude) def claude
+@ingredient(Notes) def notes
 
-agents.skills('solid')
-agents.connect([claude])
+notes.add('Run the tests before committing.')
 ```
 
-A path outside the kitchen, through a symbolic link too, is refused, as are two releases of one cookbook.
+A path outside the kitchen, through a symbolic link too, is refused.
 
 Of the [cookbook](cookbook/README.md), the `agents` artifact runs; the other directories are a design sketch that has
 not been compiled. `./gradlew :cookbook:publish` packages the cookbook with the `io.github.lmarqs.cookbook` Gradle

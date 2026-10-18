@@ -11,8 +11,8 @@ class JpackageTest {
     try {
       assert run(root, '--help').contains('Usage:')
       Fixtures.notesCookbook(root)
+      new File(root, 'Notes.groovy').text = Fixtures.NOTES_MODEL
       new File(root, 'local.groovy').text = """@help('Adds a local line.')
-@cookbook('acme:1.2.3')
 import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.add('local')

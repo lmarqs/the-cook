@@ -1,20 +1,19 @@
 package thecook.cookbook
 
-import groovy.transform.CompileStatic
-
 import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Resolves recipe operands for one invocation: coordinates from the kitchen's repositories, and a path inside the
- * kitchen with models from the cookbook releases its `@cookbook` annotations name. Each artifact is read and its models
- * compiled once.
+ * Resolves recipe operands for one invocation: coordinates from the kitchen's repositories, compiled against their
+ * artifact's models, and a path inside the kitchen, compiled against the models in its directory. Each artifact and
+ * directory has its models compiled once.
  */
 final class RecipeLoader {
   private final Path kitchen
   private final CookbookRepositories repositories
   private final Map<String, CookbookArtifact> artifacts = [:]
   private final Map<String, ClassLoader> models = [:]
+  private final Map<Path, ClassLoader> directoryModels = [:]
   private final Map<ClassLoader, CookbookArtifact> modelArtifacts = [:]
 
   RecipeLoader(File kitchen, CookbookRepositories repositories) {
@@ -93,9 +92,24 @@ final class RecipeLoader {
       sources[kitchen.relativize(resource).join('/')] = content
       [(declared): new String(content, 'UTF-8')]
     }
-    def loaders = RecipeSource.cookbookArtifacts(source, file).collect { models(it) }
+    def siblings = modelFiles(path.parent)
+    sources.putAll(siblings)
     new LoadedRecipe(name(kitchen, operand), place, CookbookArtifact.sourcesSha256(sources), source,
-        file.replaceAll(/\.groovy$/, ''), loaders.size() == 1 ? loaders.first() : new ModelLoaders(loaders), resources)
+        file.replaceAll(/\.groovy$/, ''), models(path.parent, siblings), resources)
+  }
+
+  /** The upper-case `.groovy` files in `directory`, the models of the recipes there, keyed by their kitchen path. */
+  private Map<String, byte[]> modelFiles(Path directory) {
+    List<Path> files = Files.list(directory).withCloseable { paths ->
+      paths.filter { Files.isRegularFile(it) && it.fileName.toString() ==~ /[A-Z].*\.groovy/ }.toList()
+    }
+    files.collectEntries { model ->
+      if (!model.toRealPath().startsWith(kitchen)) {
+        throw new IllegalArgumentException('the model is outside the kitchen; move it into the kitchen')
+      }
+
+      [(kitchen.relativize(model).join('/')): Files.readAllBytes(model)]
+    }
   }
 
   // A resource resolves from the recipe's directory and, like the recipe, stays inside the kitchen.
@@ -147,27 +161,10 @@ final class RecipeLoader {
     }
   }
 
-  /** Loads a class from the first of several artifacts' model loaders that defines it. */
-  @CompileStatic
-  private static final class ModelLoaders extends ClassLoader {
-    private final List<ClassLoader> loaders
-
-    ModelLoaders(List<ClassLoader> loaders) {
-      super(CookbookCompiler.classLoader)
-      this.loaders = loaders
-    }
-
-    @Override
-    protected Class<?> findClass(String name) {
-      for (ClassLoader loader : loaders) {
-        try {
-          return loader.loadClass(name)
-        } catch (ClassNotFoundException ignored) {
-          continue
-        }
-      }
-
-      throw new ClassNotFoundException(name)
+  private ClassLoader models(Path directory, Map<String, byte[]> files) {
+    directoryModels.computeIfAbsent(directory) {
+      Map<String, byte[]> byName = files.collectEntries { place, bytes -> [(place.tokenize('/').last()): bytes] }
+      CookbookCompiler.models(new CookbookArtifact(null, byName))
     }
   }
 }

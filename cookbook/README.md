@@ -24,9 +24,8 @@ default: `io.github.lmarqs:ralph:0.1.0` cooks `ralph`, while `io.github.lmarqs:r
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources, the same whether a tag or a jar supplied them.
 
-A loose recipe declares `@cookbook('io.github.lmarqs:0.1.0')` once per cookbook it uses. The declaration selects the
-cookbook at that release so its model imports resolve to its artifacts. Two versions of one artifact
-inside one recipe's dependency tree are an error.
+A loose recipe compiles against the models in its own directory, the upper-case `.groovy` files beside it, as a
+recipe in an artifact compiles against that artifact's models.
 
 A committed `cook.toml` at the destination lists the repositories to resolve from, in order, as `repositories`: a git
 repository as `{ git = "<url>", dir = "<dir>" }`, with `dir` naming the cookbook's directory when it is not at the
@@ -125,7 +124,6 @@ Rules:
 
 | Annotation | On | Declares |
 | --- | --- | --- |
-| `@cookbook('group:version')` | loose recipe | The cookbook release used by its imports, once per cookbook it uses; for example, `@cookbook('io.github.lmarqs:0.1.0')`. |
 | `@help('''...''')` | first import | The recipe's description, in Markdown. Required. |
 | `@confirm('''...''')` | first import | A consequence the diff cannot show, displayed above the diff when asking for approval. Optional. |
 | `@yield('''...''')` | first import | What to do next, printed after the writes succeed. Optional. |

@@ -80,15 +80,6 @@ import java.lang.annotation.Target
   String path()
 }
 
-/**
- * The cookbook release, `group:version`, whose artifacts a recipe path imports models from; once per cookbook, on one
- * of its imports.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@interface cookbook {
-  String value()
-}
-
 /** The recipe's description, in Markdown, on its first import. */
 @Retention(RetentionPolicy.RUNTIME)
 @interface help {

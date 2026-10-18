@@ -39,8 +39,8 @@ class CookCommandTest {
   @Test void kitchenOptionCooksAsIfStartedThereAndGoesBeforeTheRecipe() {
     workspace { root, repo ->
       Fixtures.notesCookbook(repo)
-      new File(repo, 'notes.groovy').text = """@cookbook('acme:1.2.3')
-import acme.notes.Notes
+      new File(repo, 'Notes.groovy').text = Fixtures.NOTES_MODEL
+      new File(repo, 'notes.groovy').text = """import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.add('notes')
 """
@@ -261,8 +261,8 @@ more
       def loudSeparate = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3', '--line', 'second', '--loud']
       assert cli.execute(loudSeparate as String[]) == 0
       assert stdout.toString('UTF-8').contains('\n-second\n+SECOND\n')
-      new File(repo, 'local.groovy').text = """@cookbook('acme:1.2.3')
-import acme.notes.Notes
+      new File(repo, 'Notes.groovy').text = Fixtures.NOTES_MODEL
+      new File(repo, 'local.groovy').text = """import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.add('local')
 """

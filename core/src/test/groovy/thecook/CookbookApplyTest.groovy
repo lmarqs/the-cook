@@ -23,6 +23,15 @@ import java.util.jar.JarOutputStream
 
 class CookbookApplyTest {
   private static final File COOKBOOK = new File(System.getProperty('cook.cookbook'))
+  private static final String TEXT_MODEL = '''package acme.text
+
+@Ingredient
+class Text {
+  String text
+  @File(path = 'OUT.md')
+  String file() { text }
+}
+'''
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
@@ -269,40 +278,41 @@ agents.connect([claude])
     assert new File(kitchen, 'CLAUDE.md').isFile()
   }
 
-  @Test void appliesARecipePathWithModelsFromTheCookbookItDeclares() {
+  @Test void appliesARecipePathWithTheModelBesideItAndHashesTheModelWithTheRecipe() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    recipe(kitchen, 'recipes/skills.groovy', """@help('Links one skill.')
-@cookbook('io.github.lmarqs:0.1.0')
-import io.github.lmarqs.agents.Agents
-import io.github.lmarqs.agents.Claude
-@ingredient(Agents) def agents
-@ingredient(Claude) def claude
-agents.skills('solid')
-agents.connect([claude])
+    def model = recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', """@help('Writes a file.')
+import acme.text.Text
+@ingredient(Text) def text
+text.text = 'first\\n'
 """)
 
-    apply(kitchen, 'recipes/skills.groovy', [:]).commit()
+    apply(kitchen, 'recipes/setup.groovy', [:]).commit()
 
-    assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
-    new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
-    assert new File(kitchen, 'cook.lock').text.contains("""  - name: "recipes/skills"
-    source: "recipes/skills.groovy"
-    sha256: "${sourcesSha256(kitchen, ['recipes/skills.groovy'])}"
+    assert new File(kitchen, 'OUT.md').text == 'first\n'
+    def recorded = sourcesSha256(kitchen, ['recipes/Text.groovy', 'recipes/setup.groovy'])
+    assert new File(kitchen, 'cook.lock').text.contains("""  - name: "recipes/setup"
+    source: "recipes/setup.groovy"
+    sha256: "${recorded}"
 """)
-    assert apply(kitchen, './recipes/skills.groovy', [:]).changes.empty
+    assert apply(kitchen, './recipes/setup.groovy', [:]).changes.empty
+
+    model.text += '// edited\n'
+    def again = apply(kitchen, 'recipes/setup.groovy', [:])
+    assert again.changes == ['cook.lock']
+    assert !again.after('cook.lock').contains(recorded)
   }
 
   @Test void reportsAChangedSourceUnderARecordedVersionButNotAnEditedPath() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def path = recipe(kitchen, 'recipes/skills.groovy', """@help('Links one skill.')
-@cookbook('io.github.lmarqs:0.1.0')
-import io.github.lmarqs.agents.Agents
-@ingredient(Agents) def agents
-agents.skills('solid')
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    def path = recipe(kitchen, 'recipes/setup.groovy', """@help('Writes a file.')
+import acme.text.Text
+@ingredient(Text) def text
+text.text = 'first\\n'
 """)
-    def requests = [request('io.github.lmarqs:agents:0.1.0#instructions', [:]), request('recipes/skills.groovy', [:])]
+    def requests = [request('io.github.lmarqs:agents:0.1.0#instructions', [:]), request('recipes/setup.groovy', [:])]
     def first = new CookbookApply(kitchen, repositories(kitchen)).propose(requests)
     assert first.changedSources.empty
     first.commit()
@@ -320,9 +330,8 @@ agents.skills('solid')
 
   @Test void aRecipePathReadsAResourceBesideItAndHashesItWithTheRecipe() {
     def kitchen = kitchen()
-    publishText(kitchen)
-    recipe(kitchen, 'recipes/setup.groovy', """@cookbook('acme:1.0.0')
-import acme.text.Text
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
 @resource('setup.md') String template
 @ingredient(Text) def text
 text.text = template
@@ -332,7 +341,7 @@ text.text = template
     apply(kitchen, 'recipes/setup.groovy', [:]).commit()
 
     assert new File(kitchen, 'OUT.md').text == 'first\n'
-    def recorded = sourcesSha256(kitchen, ['recipes/setup.groovy', 'recipes/setup.md'])
+    def recorded = sourcesSha256(kitchen, ['recipes/Text.groovy', 'recipes/setup.groovy', 'recipes/setup.md'])
     assert new File(kitchen, 'cook.lock').text.contains("sha256: \"${recorded}\"")
 
     template.text = 'second\n'
@@ -345,7 +354,7 @@ text.text = template
 
   @Test void refusesAResourceOutsideTheKitchenMissingOrMistyped() {
     def kitchen = kitchen()
-    publishText(kitchen)
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
     def outside = 'the resource is outside the kitchen; move it into the kitchen'
     new File(kitchen.parentFile, 'outside.md').text = 'outside\n'
     recipe(kitchen, 'recipes/outside.md', 'outside\n')
@@ -358,8 +367,7 @@ text.text = template
       ["@resource('outside' + '.md') String template", '@resource takes a constant path'],
       ["@resource('outside.md') List template", 'template has the type List, which a resource cannot have'],
     ].each { declaration, message ->
-      recipe(kitchen, 'recipes/setup.groovy', """@cookbook('acme:1.0.0')
-import acme.text.Text
+      recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
 ${declaration}
 @ingredient(Text) def text
 text.text = template.toString()
@@ -399,7 +407,7 @@ text.text = template
   @Test void composesARecipePathWithCoordinatesUnderItsShortName() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    publish(kitchen, 'acme:notes:1.0.0', ['Notes.groovy': '''package acme.notes
+    recipe(kitchen, 'Notes.groovy', '''package acme.notes
 
 @Ingredient
 class Notes {
@@ -408,9 +416,8 @@ class Notes {
   @Section(path = 'NOTES.md', id = 'notes')
   List<String> section() { lines ?: null }
 }
-'''])
-    recipe(kitchen, 'notes.groovy', """@cookbook('acme:1.0.0')
-import acme.notes.Notes
+''')
+    recipe(kitchen, 'notes.groovy', """import acme.notes.Notes
 @param(value = ['line'], doc = 'The line') String line
 @ingredient(Notes) def notes
 notes.add(line)
@@ -430,24 +437,21 @@ notes.add(line)
     assert lock.contains('- name: "notes"\n    source: "notes.groovy"')
   }
 
-  @Test void refusesARecipePathOutsideTheKitchenOrWithTwoReleasesOfACookbook() {
+  @Test void refusesARecipePathOrAModelOutsideTheKitchen() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     def outside = new File(kitchen.parentFile, 'outside.groovy')
     outside.text = "@help('Outside.')\nimport java.util.List\n"
     Files.createSymbolicLink(new File(kitchen, 'linked.groovy').toPath(), outside.toPath())
-    recipe(kitchen, 'twice.groovy', """@cookbook('io.github.lmarqs:0.1.0')
-import io.github.lmarqs.agents.Agents
-@cookbook('io.github.lmarqs:0.2.0')
-import io.github.lmarqs.agents.Claude
-""")
+    recipe(kitchen, 'models/inside.groovy', "@help('Inside.')\nimport java.util.List\n")
+    Files.createSymbolicLink(new File(kitchen, 'models/Linked.groovy').toPath(), outside.toPath())
     [
       '../outside.groovy': '../outside.groovy: the recipe is outside the kitchen; move it into the kitchen',
       'linked.groovy': 'linked.groovy: the recipe is outside the kitchen; move it into the kitchen',
       'missing.groovy': 'missing.groovy: Recipe file not found: missing.groovy',
       'https://example.com/notes.groovy': 'https://example.com/notes.groovy: a URL is not a recipe; list its ' +
       'repository in cook.toml and cook the recipe by its coordinates',
-      'twice.groovy': 'twice.groovy: @cookbook names io.github.lmarqs at 0.1.0 and 0.2.0; use one release per cookbook',
+      'models/inside.groovy': 'models/inside.groovy: the model is outside the kitchen; move it into the kitchen',
     ].each { operand, message ->
       def error = shouldFail(IllegalArgumentException) { apply(kitchen, operand, [:]) }
       assert error.message == message
@@ -588,8 +592,7 @@ config.migrated = migrated
 
   @Test void discardRemovesOwnedKeysWithoutRestoringEarlierValues() {
     def kitchen = kitchen()
-    publish(kitchen, 'acme:notes:1.0.0', [
-      'Notes.groovy': '''package acme.notes
+    def model = '''package acme.notes
 
 @Ingredient
 class Notes {
@@ -598,7 +601,9 @@ class Notes {
   @Keys(path = 'settings.json')
   Map keys() { values ?: null }
 }
-''',
+'''
+    publish(kitchen, 'acme:notes:1.0.0', [
+      'Notes.groovy': model,
       'notes.groovy': '''@help('Sets test.')
 import acme.notes.Notes
 @ingredient(Notes) def notes
@@ -608,8 +613,8 @@ notes.set(test: 'new', other: 'mine')
     def settings = new File(kitchen, 'settings.json')
     settings.text = '{"test": "old", "kept": true}\n'
     apply(kitchen, 'acme:notes:1.0.0', [:]).commit()
-    recipe(kitchen, 'local.groovy', '''@cookbook('acme:1.0.0')
-import acme.notes.Notes
+    recipe(kitchen, 'Notes.groovy', model)
+    recipe(kitchen, 'local.groovy', '''import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.set(test: 'new', other: 'mine')
 ''')
@@ -625,7 +630,7 @@ notes.set(test: 'new', other: 'mine')
 
   @Test void movingARecipeRenamesItAndDiscardingTheOldNameRemovesOnlyWhatTheLockStillListsForIt() {
     def kitchen = kitchen()
-    publish(kitchen, 'acme:notes:1.0.0', ['Notes.groovy': '''package acme.notes
+    recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes
 
 @Ingredient
 class Notes {
@@ -636,9 +641,8 @@ class Notes {
   @Keys(path = 'settings.json')
   Map keys() { line ? [test: line] : null }
 }
-'''])
-    def source = """@cookbook('acme:1.0.0')
-import acme.notes.Notes
+''')
+    def source = """import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.set('kept')
 """
@@ -815,15 +819,7 @@ config.migrated = migrated
   }
 
   private static File publishText(File kitchen, Map<String, Object> extra = [:]) {
-    publish(kitchen, 'acme:text:1.0.0', ['Text.groovy': '''package acme.text
-
-@Ingredient
-class Text {
-  String text
-  @File(path = 'OUT.md')
-  String file() { text }
-}
-'''] + extra)
+    publish(kitchen, 'acme:text:1.0.0', ['Text.groovy': TEXT_MODEL] + extra)
   }
 
   private static File publish(File kitchen, String address, Map<String, Object> files) {
