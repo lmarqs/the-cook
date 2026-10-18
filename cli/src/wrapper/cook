@@ -1,0 +1,67 @@
+#!/bin/sh
+# Runs the-cook @VERSION@. On first use it downloads the Linux package for this machine, refuses it unless its sha256
+# matches the one below, and caches it. Upgrade by replacing this file with the wrapper of another release.
+set -eu
+
+version='@VERSION@'
+base_url='@BASE_URL@'
+sha256_linux_x64='@SHA256_LINUX_X64@'
+sha256_linux_arm64='@SHA256_LINUX_ARM64@'
+
+fail() {
+  printf 'cook: %s\n' "$1" >&2
+  exit 1
+}
+
+platform="$(uname -s) $(uname -m)"
+
+case "$platform" in
+  'Linux x86_64' | 'Linux amd64') arch=x64 expected=$sha256_linux_x64 ;;
+  'Linux aarch64' | 'Linux arm64') arch=arm64 expected=$sha256_linux_arm64 ;;
+  *) fail "the-cook has no package for $platform; it runs on Linux x64 and arm64" ;;
+esac
+
+versions="${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/$version"
+cache="$versions/linux-$arch"
+launcher="$cache/the-cook/bin/the-cook"
+
+if [ ! -x "$launcher" ]; then
+  if command -v curl > /dev/null 2>&1; then
+    download() { curl -fsSL -o "$2" "$1"; }
+  elif command -v wget > /dev/null 2>&1; then
+    download() { wget -q -O "$2" "$1"; }
+  else
+    fail 'downloading the-cook needs curl or wget'
+  fi
+
+  if command -v sha256sum > /dev/null 2>&1; then
+    sha256() { sha256sum "$1" | cut -d ' ' -f 1; }
+  elif command -v shasum > /dev/null 2>&1; then
+    sha256() { shasum -a 256 "$1" | cut -d ' ' -f 1; }
+  else
+    fail 'verifying the-cook needs sha256sum or shasum'
+  fi
+
+  # The package unpacks beside the cache and moves in with one rename, so the cache never holds a partial package.
+  mkdir -p "$versions"
+  work=$(mktemp -d "$versions/.download.XXXXXX")
+  trap 'rm -rf "$work"; rmdir "$versions" 2> /dev/null || :' EXIT
+  trap 'exit 1' INT TERM
+  package="the-cook-$version-linux-$arch.tar.gz"
+  printf 'cook: downloading %s\n' "$package" >&2
+  download "$base_url/$package" "$work/$package" || fail "cannot download $base_url/$package"
+  actual=$(sha256 "$work/$package")
+
+  if [ "$actual" != "$expected" ]; then
+    fail "$package has sha256 $actual, not the $expected this wrapper pins; refusing to run it"
+  fi
+
+  mkdir "$work/package"
+  tar -xzf "$work/$package" -C "$work/package"
+  rm -rf "$cache"
+  mv "$work/package" "$cache"
+  rm -rf "$work"
+  trap - EXIT
+fi
+
+exec "$launcher" "$@"

@@ -22,6 +22,8 @@ application {
 }
 tasks.named('test') {
   exclude '**/JpackageTest*'
+  inputs.file('src/wrapper/cook')
+  systemProperty 'cook.wrapper', file('src/wrapper/cook').absolutePath
   useJUnit(); testLogging {
     events 'failed'
   }
