@@ -34,7 +34,11 @@ define ordered file changes, review, recorded ownership and discard.
 4. A recipe's source stays where its user keeps it; Cook keeps no copy of it ([0014](0014-directory-layout.md)).
 5. A recipe reads a file through a `@resource('<path>')` line, which gives it the file's text: beside a recipe path,
    inside the repository, or in the recipe's artifact. The file counts toward the recipe's sha256.
-6. A recipe describes file operations; it does not launch agents or verify their results. Batch approval and rollback
+6. A recipe compiles against the models of its own artifact: a recipe by coordinates against its artifact's models,
+   and a recipe path against the upper-case `.groovy` files in its directory, which count toward its sha256.
+   Coordinates name a recipe as `group:artifact:version#recipe`; without `#recipe` they name the recipe called like
+   the artifact.
+7. A recipe describes file operations; it does not launch agents or verify their results. Batch approval and rollback
    cover declared file operations, not arbitrary effects of trusted code.
 
 ## Reasons
@@ -57,7 +61,11 @@ define ordered file changes, review, recorded ownership and discard.
   that reads the same from a path and from an artifact. Declaring the file on a recipe line, as `@param` and
   `@ingredient` declare inputs, lets the engine read it, refuse a path outside the repository and hash it before the
   body runs. The trade is that a recipe reads only files it names with a constant path.
-- **6.** FR-3 and FR-4 distinguish configuration writes from running programs; a contract to verify results and resume
+- **6.** A recipe and the models it was written against travel together, as an artifact or as a directory, so a recipe
+  declares nothing about where its models come from, and its sha256 covers the models it compiles against. `#` keeps
+  the recipe apart from `group:artifact:version`, the Maven coordinates its artifact resolves by. The trade is that a
+  recipe path uses another cookbook's models only by copying them beside it.
+- **7.** FR-3 and FR-4 distinguish configuration writes from running programs; a contract to verify results and resume
   interrupted runs would make Cook run programs, outside its scope. The trade is that checks, delivery and session
   control belong to the programs or callers responsible for them.
 
@@ -81,6 +89,12 @@ At its best, moving a recipe file keeps its ownership without a discard: a new s
 entry in the lock takes over that entry. It loses because a file moved and edited in one change has a new sha256, so
 the detection fails exactly when a reviewer most needs to see what moved, and two recipes with one source would be
 indistinguishable.
+
+### A recipe path names the cookbook releases of its models
+
+At its best, a loose recipe uses published models without copying them, through an annotation naming each release. It
+loses because the recipe then compiles against content its sha256 does not cover, every recipe repeats where its
+models come from, and two releases of one cookbook in one recipe need a rule of their own.
 
 ### A resource as a `File`, a stream or a `resource()` call
 

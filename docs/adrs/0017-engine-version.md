@@ -23,22 +23,25 @@ version through the repository's entry point without installing Java or Gradle s
   evaluates recipes and reviews and writes their declared file operations.
 - Recipe ownership lives in the committed `cook.lock`, the only file of Cook's own in a destination
   ([0014](0014-directory-layout.md)); cooking does not need it.
-- The current [`cook` script](../../cook) launches a locally built JVM distribution, and the existing
-  [jpackage build](../../cli/gradle/jpackage.gradle) produces an application image with bundled Java
-  ([install](../../README.md#install)).
+- The [jpackage build](../../cli/gradle/jpackage.gradle) produces an application image with bundled Java for the
+  machine that builds it. The release workflow builds it on Linux x64 and arm64 and publishes each image as
+  `the-cook-<version>-linux-<arch>.tar.gz` with its sha256 on the GitHub release ([install](../../README.md#install)).
+- This source repository's own [`cook` script](../../cook) launches a locally built JVM distribution for development.
 
 ## Decision
 
 1. The repository commits an executable `./cook` wrapper with an exact engine version and matching checksums for the
-   platform packages the repository uses. The committed pin is separate from the recipe ownership in
-   `cook.lock`.
+   platform packages. Each release publishes its wrapper as an asset, with the version, the release's download
+   location and the checksums of its Linux x64 and arm64 packages written in it; a repository commits that file. The
+   committed pin is separate from the recipe ownership in `cook.lock`.
 2. The engine ships as a complete platform-specific `jpackage` package containing Java. The wrapper caches and
    launches that complete package; copying only its launcher does not supply the runtime or other package contents.
 3. On first use of an uncached pin, the wrapper downloads the selected platform package and verifies it against the
    committed checksum before execution. A mismatch prevents execution and acceptance into the cache. Later invocations
-   reuse the cached pinned package without downloading again. The cache distinguishes versions and platforms; its
-   location and the pin's representation belong to the implementation.
-4. An upgrade explicitly changes the committed version and corresponding package checksums together for review.
+   reuse the cached pinned package without downloading again. The package is cached in
+   `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/linux-<arch>/`, apart for each version and platform.
+4. An upgrade replaces the committed wrapper with another release's, changing the version and corresponding package
+   checksums together for review.
    Ordinary invocations do not move the pin. A pin change does not automatically rewrite project files, migrate
    configuration, update cookbooks, or choose a recipe version.
 5. The wrapper passes CLI arguments to the engine. The invocation's current working directory remains the destination
@@ -53,8 +56,10 @@ version through the repository's entry point without installing Java or Gradle s
   than whichever version happens to be installed globally. Version and checksum changes are visible together in review;
   a checksum comparison prevents a different download from silently running under that pin. Local caching pays the
   download cost on first use and permits later use offline. A machine without the pinned package must obtain it
-  before running recipes; the wrapper cannot make an uncached offline first invocation work. Leaving the cache location
-  to the implementation avoids a storage decision the architecture does not require.
+  before running recipes; the wrapper cannot make an uncached offline first invocation work. The release writes the
+  version and checksums into the wrapper from the build that produced the packages, so nobody copies a checksum by
+  hand. The user's cache directory holds disposable per-user data, and a directory per version and platform lets
+  repositories that pin different versions share one machine.
 - **2.** Bundling Java retains the JVM implementation without requiring each user to maintain a separate runtime.
   The launcher depends on its package contents, so downloading and caching only an executable would break that promise.
 - **4.** Explicit upgrades make a dependency change a repository decision. Separating that change from cooking

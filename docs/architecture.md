@@ -254,7 +254,8 @@ recipe operand; a recipe shared beyond one repository is published in a cookbook
 A recipe reads a file, such as a template, through a `@resource('<path>')` line, which gives it the file's text. For a
 recipe path, the path resolves from the recipe's directory, and a file outside the repository, directly or through a
 symbolic link, is refused, as is a recipe operand outside it; move the file into the repository. For coordinates, the
-path names a file in the recipe's artifact (FR-22).
+path names a file in the recipe's artifact (FR-22). A recipe compiles against the models of its own artifact: for
+coordinates, the artifact's models; for a recipe path, the upper-case `.groovy` files in its directory.
 
 For example, run this invocation from `/work/project`:
 
@@ -282,23 +283,31 @@ syntax, recipe operands, argument scope, and batch options (FR-17 through FR-20)
 Cook uses JVM-based distribution with `jpackage`. Each platform-specific package contains the engine and a
 bundled Java runtime. Distribute the complete package, including its runtime (FR-26).
 
-A repository commits an executable `./cook` wrapper that pins an engine version and the checksum of each platform
-package it uses; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
+A release is cut when the maintainer starts the `release` workflow; its version comes from the Conventional Commits
+since the last `v*` tag. Nothing is published unless the Linux x64 and arm64 builds and their tests pass. A release
+publishes:
+
+- on GitHub, `the-cook-<version>-linux-<arch>.tar.gz` for `x64` and `arm64`, each a complete package with its
+  `.sha256`, and the `cook` wrapper with its `.sha256`;
+- on Maven Central, the `io.github.lmarqs:agents` cookbook artifact and the cookbook Gradle plugin with its marker.
+
+A repository commits the release's executable `./cook` wrapper, which pins the engine version and the checksum of
+each Linux package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
 caching, and explicit upgrades.
 
 Engine releases supply the packaged runtime. Cookbook repositories hold and ship ingredients and recipes, with
 builds that can be independent of the engine build. Users supply the recipe version they intend to cook;
 `cook.lock` records which version produced the current ownership.
 
-The root README's [install section](../README.md#install) describes the current local packaging entry path.
+The root README's [install section](../README.md#install) describes installing a release.
 
 ## Cookbook distribution
 
 A cookbook releases as one jar per artifact, holding its sources, resources and README, in a Maven-layout
-repository. The destination's committed `cook.toml` lists the Maven-layout repositories coordinates resolve from, in
-order; without a `cook.toml`, Maven Central. A path entry starting with `~/` is relative to the user's home, so a
-developer lists `~/.m2/repository`, last, to cook their own cookbooks published to Maven local. Coordinates name exact
-releases only.
+repository; the build that publishes a release sets its version. The destination's committed `cook.toml` lists the
+Maven-layout repositories coordinates resolve from, in order; without a `cook.toml`, Maven Central. A path entry
+starting with `~/` is relative to the user's home, so a developer lists `~/.m2/repository`, last, to cook their own
+cookbooks published to Maven local. Coordinates name exact releases only.
 
 `cook.lock` records a hash of the artifact's sources, so two builds of one release have one hash, and a different
 hash under a recorded version shows as a changed source before the diff. The
@@ -377,16 +386,18 @@ Other documents cite these requirements by number.
 - **FR-21:** The current working directory is the destination, regardless of the executable location. Declared writes
   and deletions stay within that directory, including paths resolved through symlinks.
 - **FR-22:** A recipe reads a file through `@resource`, resolved from a recipe path's directory inside the repository
-  or from the recipe's artifact. A local operand or resource outside the repository is refused.
+  or from the recipe's artifact. A local operand or resource outside the repository is refused. A recipe compiles
+  against the models of its own artifact, or for a recipe path, the models in its directory.
 - **FR-25:** Cooking does not require `cook.lock`. Every invocation evaluates the supplied recipes against current
   content; nothing marks a recipe as already cooked. Without a lock entry, cooking removes nothing on a recipe's
   behalf.
 
 ### Distribution and documentation authority
 
-- **FR-26:** Cook uses JVM-based distribution with jpackage, one platform-specific package containing Java. A committed
-  `./cook` wrapper pins a version and checksum, fetches the package on first use, and caches it locally. Upgrades are
-  explicit.
+- **FR-26:** Cook uses JVM-based distribution with jpackage, one platform-specific package containing Java, released for
+  Linux x64 and arm64. A committed `./cook` wrapper, published with each release, pins a version and the checksum of
+  each package, fetches the package on first use, refuses it unless its checksum matches, and caches it locally.
+  Upgrades are explicit: a repository commits another release's wrapper.
 - **FR-27:** This document states the intended architecture. Supporting documents follow it. Documents that cover the
   implementation describe its actual behavior.
 

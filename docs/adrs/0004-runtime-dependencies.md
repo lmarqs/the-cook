@@ -16,8 +16,8 @@ want to change.
   [architecture](../architecture.md#engine-distribution) specifies jpackage packages containing Java and a committed
   wrapper that downloads, verifies and caches a pinned platform package on first use.
 - A launcher is one part of that complete package; distributing only the launcher omits the runtime and application
-  files it needs. The root README's [install section](../../README.md#install) describes current local packaging, and
-  the [wrapper](../features/wrapper.md) page describes the intended delivery design.
+  files it needs. The root README's [install section](../../README.md#install) describes installing a release, and the
+  [wrapper](../features/wrapper.md) page describes how the wrapper delivers it.
 - [Recipes](../features/glossary.md) are trusted executable code and can call network services or local tools of
   their own.
 
