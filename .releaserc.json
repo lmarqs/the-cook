@@ -1,0 +1,21 @@
+{
+  "branches": ["main"],
+  "tagFormat": "v${version}",
+  "plugins": [
+    ["@semantic-release/commit-analyzer", { "preset": "conventionalcommits" }],
+    ["@semantic-release/release-notes-generator", { "preset": "conventionalcommits" }],
+    [
+      "@semantic-release/exec",
+      { "verifyReleaseCmd": "test -z \"$GITHUB_OUTPUT\" || echo version=${nextRelease.version} >> \"$GITHUB_OUTPUT\"" }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [{ "path": "dist/*" }],
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
+      }
+    ]
+  ]
+}
