@@ -163,3 +163,7 @@ directory. The Windows path in the build configuration does not establish verifi
 `./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help, cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C` and a usage error. This distribution check runs separately from `./gradlew check`.
 
 For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry point; that distribution requires Java 17 on the user's machine.
+
+## License
+
+the-cook is licensed under the [Apache License 2.0](LICENSE).

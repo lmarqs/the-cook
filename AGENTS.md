@@ -8,3 +8,15 @@ existing modules.
 Run the focused module check while developing. Before delivery, run
 `./gradlew check cliBuild jpackageTest` and `git diff --check`.
 Review generated configuration and ownership records after changing recipes.
+
+Write commit subjects as `<type>(<area>): <sentence>`, where `<area>` is the module or
+topic, such as `core`, `cli` or `docs`. The type decides the next release:
+
+| Type | Release |
+| --- | --- |
+| `feat` | minor |
+| `fix` | patch |
+| `docs`, `refactor`, `test`, `build`, `ci`, `chore` | none |
+
+A `!` after the area, as in `feat(core)!:`, releases a major version. Lint-only changes
+use `chore(lint)`.
