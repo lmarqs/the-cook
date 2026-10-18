@@ -1,4 +1,4 @@
-package dev.thecook.agents
+package io.github.lmarqs.agents
 
 /**
  * Models the project settings, instructions and skill links Claude Code reads in a repository.
@@ -17,8 +17,8 @@ package dev.thecook.agents
  * ## Use
  *
  * ```groovy
- * import dev.thecook.agents.Agents
- * import dev.thecook.agents.Claude
+ * import io.github.lmarqs.agents.Agents
+ * import io.github.lmarqs.agents.Claude
  *
  * @ingredient(Agents) def agents
  * @ingredient(Claude) def claude
@@ -30,10 +30,10 @@ package dev.thecook.agents
  *
  * ## With other models
  *
- * `dev.thecook.agents.Agents` drives this harness through `permit`, `readInstructions` and `readSkills`.
+ * `io.github.lmarqs.agents.Agents` drives this harness through `permit`, `readInstructions` and `readSkills`.
  * It supplies the shared policy and paths; Claude translates them into its native files. The same command
  * prefixes do not mean identical enforcement across harnesses; review the generated permissions against
- * Claude's permission model. `localFiles` supplies ignore patterns for `dev.thecook.git.Git`.
+ * Claude's permission model. `localFiles` supplies ignore patterns for `io.github.lmarqs.git.Git`.
  */
 @Ingredient
 class Claude implements Harness {

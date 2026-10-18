@@ -9,8 +9,8 @@ Choose the runtime and its version explicitly. This recipe does not read the ver
 ## Cook
 
 ```sh
-./cook dev.thecook:mise:0.1.0:runtime-version --runtime=node --version=22.12.0
-./cook dev.thecook:mise:0.1.0:runtime-version --runtime=python --version=3.13.2
+./cook io.github.lmarqs:mise:0.1.0:runtime-version --runtime=node --version=22.12.0
+./cook io.github.lmarqs:mise:0.1.0:runtime-version --runtime=python --version=3.13.2
 ```
 
 ## Writes
@@ -31,9 +31,9 @@ selected runtime shares its `tools.<runtime>` target; cook this recipe last for 
 @yield('''
 Run `mise install` to install the pinned runtime.
 ''')
-import dev.thecook.mise.Mise
-import dev.thecook.node.Node
-import dev.thecook.python.Python
+import io.github.lmarqs.mise.Mise
+import io.github.lmarqs.node.Node
+import io.github.lmarqs.python.Python
 
 @param(value = ['runtime'], choices = ['node', 'python'], doc = 'The runtime whose version moves to mise') String runtime
 @param(value = ['version'], doc = 'The version mise pins') String version

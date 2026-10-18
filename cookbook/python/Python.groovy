@@ -1,4 +1,4 @@
-package dev.thecook.python
+package io.github.lmarqs.python
 
 import java.util.regex.Pattern
 
@@ -19,9 +19,9 @@ import java.util.regex.Pattern
  * ## Use
  *
  * ```groovy
- * import dev.thecook.python.Python
- * import dev.thecook.mise.Mise
- * import dev.thecook.git.Git
+ * import io.github.lmarqs.python.Python
+ * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.git.Git
  *
  * @ingredient(Python) def python
  * @ingredient(Mise) def mise

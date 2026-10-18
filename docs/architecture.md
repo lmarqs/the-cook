@@ -31,8 +31,8 @@ A recipe is trusted executable Groovy code that describes requested file operati
 recipes produces the batch that Cook reviews and writes. The models describe program configuration; the engine
 handles the resulting file operations. Each recipe has a short name that markers and the lock use to identify it. A
 recipe cooked from a path is named by its place in the repository without `.groovy`, such as `recipes/setup`. A recipe
-cooked by its coordinates is named by its address without the version, such as `dev.thecook:agents:instructions`, so
-cooking a new version keeps the same owner. Moving a recipe file renames it: cooking the new name and discarding the
+cooked by its coordinates is named by its address without the version, such as `io.github.lmarqs:agents:instructions`,
+so cooking a new version keeps the same owner. Moving a recipe file renames it: cooking the new name and discarding the
 old one moves the ownership ([discard](features/discard.md)).
 
 A cookbook repository holds and distributes ingredients and recipes. Cookbook distribution is separate from engine
@@ -178,8 +178,8 @@ and the sections, keys, whole files and links the recipe owns. It records no rec
 # Written by the-cook; do not edit by hand.
 version: 1
 recipes:
-  - name: "dev.thecook:agents:permissions"
-    source: "dev.thecook:agents:0.1.0:permissions"
+  - name: "io.github.lmarqs:agents:permissions"
+    source: "io.github.lmarqs:agents:0.1.0:permissions"
     sha256: "3f5a…"
     owns:
       keys:
@@ -187,13 +187,13 @@ recipes:
           path: ["permissions"]
       files:
         - ".codex/rules/default.rules"
-  - name: "dev.thecook:agents:instructions"
-    source: "dev.thecook:agents:0.1.0:instructions"
+  - name: "io.github.lmarqs:agents:instructions"
+    source: "io.github.lmarqs:agents:0.1.0:instructions"
     sha256: "3f5a…"
     owns:
       sections:
         - file: "CLAUDE.md"
-          id: "dev.thecook:agents:instructions#instructions"
+          id: "io.github.lmarqs:agents:instructions#instructions"
 ```
 
 The source is a path relative to the repository root or the recipe's coordinates. A key path is a
@@ -223,7 +223,7 @@ a lock that lists no recipe is deleted. Content the recipe does not own stays, i
 hand-written text and files a seed wrote the first time the recipe was cooked. Discard removes; it does not restore
 the values the recipe replaced, because the repository's history already holds them (FR-15).
 
-For example, when `CLAUDE.md` holds a hand-written line above the section `dev.thecook:agents:instructions` owns,
+For example, when `CLAUDE.md` holds a hand-written line above the section `io.github.lmarqs:agents:instructions` owns,
 discarding that recipe proposes:
 
 ```diff
@@ -231,9 +231,9 @@ discarding that recipe proposes:
 +++ b/CLAUDE.md
 @@ -1,4 +1,1 @@
  Hand-written notes stay.
--<!-- cook:begin dev.thecook:agents:instructions#instructions -->
+-<!-- cook:begin io.github.lmarqs:agents:instructions#instructions -->
 -@AGENTS.md
--<!-- cook:end dev.thecook:agents:instructions#instructions -->
+-<!-- cook:end io.github.lmarqs:agents:instructions#instructions -->
 ```
 
 Discard follows the same diff, whole-batch approval and failure rollback as cooking. To get back content from before

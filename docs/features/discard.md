@@ -61,25 +61,25 @@ diff shows that removal. A recipe that `cook.lock` does not list is refused, and
 
 ### Discard example
 
-`CLAUDE.md` holds a hand-written line and a section that `dev.thecook:agents:instructions` owns:
+`CLAUDE.md` holds a hand-written line and a section that `io.github.lmarqs:agents:instructions` owns:
 
 ```markdown
 Hand-written notes stay.
-<!-- cook:begin dev.thecook:agents:instructions#instructions -->
+<!-- cook:begin io.github.lmarqs:agents:instructions#instructions -->
 @AGENTS.md
-<!-- cook:end dev.thecook:agents:instructions#instructions -->
+<!-- cook:end io.github.lmarqs:agents:instructions#instructions -->
 ```
 
-`./cook discard dev.thecook:agents:0.1.0:instructions` proposes:
+`./cook discard io.github.lmarqs:agents:0.1.0:instructions` proposes:
 
 ```diff
 --- a/CLAUDE.md
 +++ b/CLAUDE.md
 @@ -1,4 +1,1 @@
  Hand-written notes stay.
--<!-- cook:begin dev.thecook:agents:instructions#instructions -->
+-<!-- cook:begin io.github.lmarqs:agents:instructions#instructions -->
 -@AGENTS.md
--<!-- cook:end dev.thecook:agents:instructions#instructions -->
+-<!-- cook:end io.github.lmarqs:agents:instructions#instructions -->
 ```
 
 together with the removal of the recipe's entry from `cook.lock`.

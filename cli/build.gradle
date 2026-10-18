@@ -2,7 +2,7 @@ plugins {
   id 'groovy'
   id 'application'
 }
-group = 'dev.thecook'
+group = 'io.github.lmarqs'
 version = '0.1.0'
 repositories { mavenCentral() }
 java {
@@ -11,8 +11,8 @@ java {
   }
 }
 dependencies {
-  implementation 'dev.thecook:the-cook-core:0.1.0'
-  implementation 'dev.thecook:the-cook-infra:0.1.0'
+  implementation 'io.github.lmarqs:the-cook-core:0.1.0'
+  implementation 'io.github.lmarqs:the-cook-infra:0.1.0'
   implementation 'info.picocli:picocli:4.7.7'
   testImplementation 'junit:junit:4.13.2'
 }

@@ -12,8 +12,8 @@ from.
 ## Cook
 
 ```sh
-./cook dev.thecook:ralph:0.1.0
-./cook dev.thecook:ralph:0.1.0 --tracker=beads --mode=mise --issue-prefix=cook
+./cook io.github.lmarqs:ralph:0.1.0
+./cook io.github.lmarqs:ralph:0.1.0 --tracker=beads --mode=mise --issue-prefix=cook
 ```
 
 ## Writes
@@ -33,9 +33,9 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 
 ## With other recipes
 
-- `dev.thecook:ralph:0.1.0:prd-story` writes a PRD reduced to one story. Cook it before
-  `dev.thecook:ralph:0.1.0`, with `--prd` pointing at the same path.
-- `dev.thecook:ralph:0.1.0:bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
+- `io.github.lmarqs:ralph:0.1.0:prd-story` writes a PRD reduced to one story. Cook it before
+  `io.github.lmarqs:ralph:0.1.0`, with `--prd` pointing at the same path.
+- `io.github.lmarqs:ralph:0.1.0:bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
   It needs `--tracker=beads` and `--mode=mise`.
 ''')
 @yield('''
@@ -43,10 +43,10 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 - `--mode=mise`: run `mise install`, then `mise run ralph:run` with the same argument. `mise run beads:ready` lists
   the ready Beads tasks.
 ''')
-import dev.thecook.beads.Beads
-import dev.thecook.git.Git
-import dev.thecook.mise.Mise
-import dev.thecook.ralph.Ralph
+import io.github.lmarqs.beads.Beads
+import io.github.lmarqs.git.Git
+import io.github.lmarqs.mise.Mise
+import io.github.lmarqs.ralph.Ralph
 
 @param(value = ['agent'], default = 'codex', doc = 'The agent Ralph drives, by its Ralph plugin name') String agent
 @param(value = ['tracker'], choices = ['json', 'beads'], default = 'json', doc = 'Where Ralph takes its stories from') String tracker

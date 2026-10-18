@@ -1,4 +1,4 @@
-package dev.thecook.terraform
+package io.github.lmarqs.terraform
 
 /**
  * Models Terraform configuration files and supplies toolchain and plan-command facts for other models.
@@ -16,8 +16,8 @@ package dev.thecook.terraform
  * ## Use
  *
  * ```groovy
- * import dev.thecook.mise.Mise
- * import dev.thecook.terraform.Terraform
+ * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.terraform.Terraform
  *
  * @ingredient(Terraform) def terraform
  * @ingredient(Mise) def mise

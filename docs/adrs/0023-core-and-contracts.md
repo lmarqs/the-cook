@@ -24,7 +24,7 @@ write their inputs and results.
   changes is a separate interface decision (FR-11).
 - Ingredients model native program files and configuration in cookbooks ([0022](0022-tool-integration.md)).
 - In the `core` and `cli` builds of this repository, `cli/build.gradle` depends on the core artifact
-  `dev.thecook:the-cook-core`, and `core/build.gradle` declares no dependency on the CLI.
+  `io.github.lmarqs:the-cook-core`, and `core/build.gradle` declares no dependency on the CLI.
 
 ## Decision
 

@@ -1,4 +1,4 @@
-package dev.thecook.mise
+package io.github.lmarqs.mise
 
 /**
  * Models the tools, environment and tasks mise uses in a project.
@@ -16,8 +16,8 @@ package dev.thecook.mise
  * ## Use
  *
  * ```groovy
- * import dev.thecook.mise.Mise
- * import dev.thecook.node.Node
+ * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.node.Node
  *
  * @ingredient(Mise) def mise
  * @ingredient(Node) def node

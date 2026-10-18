@@ -1,4 +1,4 @@
-package dev.thecook.ralph
+package io.github.lmarqs.ralph
 
 /**
  * Models Ralph TUI's loop configuration, runner and selected JSON PRD.
@@ -16,7 +16,7 @@ package dev.thecook.ralph
  * ## Use
  *
  * ```groovy
- * import dev.thecook.ralph.Ralph
+ * import io.github.lmarqs.ralph.Ralph
  *
  * @ingredient(Ralph) def ralph
  *

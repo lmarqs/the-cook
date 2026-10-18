@@ -1,4 +1,4 @@
-package dev.thecook.aws
+package io.github.lmarqs.aws
 
 /**
  * Supplies AWS credentials, permissions, local environment values and a session-check script for other models.
@@ -18,9 +18,9 @@ package dev.thecook.aws
  * ## Use
  *
  * ```groovy
- * import dev.thecook.aws.Aws
- * import dev.thecook.mise.Mise
- * import dev.thecook.terraform.Terraform
+ * import io.github.lmarqs.aws.Aws
+ * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.terraform.Terraform
  *
  * @ingredient(Aws) def aws
  * @ingredient(Mise) def mise

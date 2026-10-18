@@ -61,7 +61,7 @@ final class RecipeSource {
 
       if (!(release ==~ /[^:]+:[^:]+/)) {
         throw new IllegalArgumentException(
-        "@cookbook('${release}') must name a release as group:version, such as dev.thecook:0.1.0")
+        "@cookbook('${release}') must name a release as group:version, such as io.github.lmarqs:0.1.0")
       }
 
       if (releases[group] && releases[group] != version) {

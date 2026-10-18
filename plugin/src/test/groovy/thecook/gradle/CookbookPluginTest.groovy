@@ -15,7 +15,7 @@ class CookbookPluginTest {
     def root = cookbook(['notes', 'review'])
     def project = project(root)
 
-    project.pluginManager.apply('dev.thecook.cookbook')
+    project.pluginManager.apply('io.github.lmarqs.cookbook')
 
     assert project.group == 'acme' && project.version == '1.2.3'
     def publications = project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication)
@@ -28,7 +28,7 @@ class CookbookPluginTest {
     def project = project(cookbook(['cookbook']))
 
     try {
-      project.pluginManager.apply('dev.thecook.cookbook')
+      project.pluginManager.apply('io.github.lmarqs.cookbook')
       throw new AssertionError('expected the plugin to refuse a directory named cookbook')
     } catch (Exception error) {
       def cause = error

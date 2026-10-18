@@ -31,8 +31,8 @@ publish the cookbook to `cookbook/build/repository`:
 Read the `agents` artifact's front page and one of its recipes, without running anything:
 
 ```sh
-./cook help dev.thecook:agents:0.1.0
-./cook help dev.thecook:agents:0.1.0:instructions
+./cook help io.github.lmarqs:agents:0.1.0
+./cook help io.github.lmarqs:agents:0.1.0:instructions
 ```
 
 Make a scratch kitchen whose `cook.toml` resolves from this checkout's repository, then cook two recipes in it:
@@ -40,7 +40,7 @@ Make a scratch kitchen whose `cook.toml` resolves from this checkout's repositor
 ```sh
 kitchen=$(mktemp -d)
 printf 'repositories = ["%s/cookbook/build/repository"]\n' "$PWD" > "$kitchen/cook.toml"
-./cook -C "$kitchen" dev.thecook:agents:0.1.0:permissions --harness=claude dev.thecook:agents:0.1.0:instructions --harness=claude
+./cook -C "$kitchen" io.github.lmarqs:agents:0.1.0:permissions --harness=claude io.github.lmarqs:agents:0.1.0:instructions --harness=claude
 ```
 
 Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
@@ -93,9 +93,9 @@ imports, resolved through the same repositories as coordinates:
 
 ```groovy
 @help('Shares the solid skill with Claude, through AGENTS.md and CLAUDE.md.')
-@cookbook('dev.thecook:0.1.0')
-import dev.thecook.agents.Agents
-import dev.thecook.agents.Claude
+@cookbook('io.github.lmarqs:0.1.0')
+import io.github.lmarqs.agents.Agents
+import io.github.lmarqs.agents.Claude
 
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude
@@ -107,9 +107,9 @@ agents.connect([claude])
 A path outside the kitchen, through a symbolic link too, is refused, as are two releases of one cookbook.
 
 Of the [cookbook](cookbook/README.md), the `agents` artifact runs; the other directories are a design sketch that has
-not been compiled. `./gradlew :cookbook:publish` packages the cookbook with the `dev.thecook.cookbook` Gradle plugin,
-built from [`plugin`](plugin) apart from the engine: a jar and a POM per directory and the `dev.thecook:cookbook` BOM.
-Packaging compiles nothing; the engine compiles an artifact's sources when one of its recipes is cooked.
+not been compiled. `./gradlew :cookbook:publish` packages the cookbook with the `io.github.lmarqs.cookbook` Gradle
+plugin, built from [`plugin`](plugin) apart from the engine: a jar and a POM per directory and the
+`io.github.lmarqs:cookbook` BOM. Packaging compiles nothing; the engine compiles an artifact's sources when one of its recipes is cooked.
 
 ### Development tooling
 
@@ -153,7 +153,7 @@ Its help output also begins with `Usage:`. The image includes the CLI and a Java
 from the repository you want to cook, or name it with `-C`:
 
 ```sh
-/path/to/the-cook/bin/the-cook -C /path/to/repository dev.thecook:agents:0.1.0:instructions --harness=claude
+/path/to/the-cook/bin/the-cook -C /path/to/repository io.github.lmarqs:agents:0.1.0:instructions --harness=claude
 ```
 
 The paths above are for Linux. The build defines `the-cook.app/Contents/MacOS/the-cook` on macOS and

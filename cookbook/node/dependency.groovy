@@ -9,8 +9,8 @@ to run the install task. The version range is recorded as supplied.
 ## Cook
 
 ```sh
-./cook dev.thecook:node:0.1.0:dependency --package=zod --version=^3.23.0 --dir=packages/api
-./cook dev.thecook:node:0.1.0:dependency --package=typescript --version=^5.7.0 --kind=devDependencies --manager=yarn
+./cook io.github.lmarqs:node:0.1.0:dependency --package=zod --version=^3.23.0 --dir=packages/api
+./cook io.github.lmarqs:node:0.1.0:dependency --package=typescript --version=^5.7.0 --kind=devDependencies --manager=yarn
 ```
 
 ## Writes
@@ -25,15 +25,15 @@ file.
 
 ## With other recipes
 
-`dev.thecook:node:0.1.0:project` supplies tool pins and setup tasks for a root project. Use the same manager
+`io.github.lmarqs:node:0.1.0:project` supplies tool pins and setup tasks for a root project. Use the same manager
 and `--dir=.` to target that project. Each application of this dependency recipe declares the same
 `tasks."dependency:node"` key; the last recipe in an invocation owns the task and selects its directory.
 ''')
 @yield('''
 Run `mise run dependency:node` to install dependencies in the selected directory.
 ''')
-import dev.thecook.node.Node
-import dev.thecook.mise.Mise
+import io.github.lmarqs.node.Node
+import io.github.lmarqs.mise.Mise
 
 @param(value = ['package'], doc = 'The package name') String packageName
 @param(value = ['version'], doc = 'The version range to record') String version

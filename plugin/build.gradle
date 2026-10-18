@@ -4,7 +4,7 @@ plugins {
   id 'maven-publish'
 }
 
-group = 'dev.thecook'
+group = 'io.github.lmarqs'
 version = '0.1.0'
 
 repositories {
@@ -22,7 +22,7 @@ dependencies {
 
 gradlePlugin {
   plugins {
-    cookbook { id = 'dev.thecook.cookbook'; implementationClass = 'thecook.gradle.CookbookPlugin' }
+    cookbook { id = 'io.github.lmarqs.cookbook'; implementationClass = 'thecook.gradle.CookbookPlugin' }
   }
 }
 

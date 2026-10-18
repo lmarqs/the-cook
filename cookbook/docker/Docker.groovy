@@ -1,4 +1,4 @@
-package dev.thecook.docker
+package io.github.lmarqs.docker
 
 import java.util.regex.Pattern
 
@@ -18,8 +18,8 @@ import java.util.regex.Pattern
  * ## Use
  *
  * ```groovy
- * import dev.thecook.docker.Docker
- * import dev.thecook.mise.Mise
+ * import io.github.lmarqs.docker.Docker
+ * import io.github.lmarqs.mise.Mise
  *
  * @ingredient(Docker) def docker
  * @ingredient(Mise) def mise

@@ -26,11 +26,11 @@ define ordered file changes, review, recorded ownership and discard.
    targets use the same review and approval flow; recorded ownership never blocks a change.
 3. Users manage recipe versions and supply the version they intend to cook. Each recipe has a short name that
    markers and `cook.lock` use: a path's place in the repository without `.groovy`, such as `recipes/setup`, or
-   coordinates without the version, such as `dev.thecook:agents:instructions`. `cook.lock` records its source, sha256
-   and owned targets ([0007](0007-ownership.md)). Cooking a new version removes what the previous version owned and no
-   longer declares, including edited values. Discarding a recipe removes what the lock lists for it without
-   evaluating it again. Moving a recipe file renames it; cooking the new name and discarding the old one moves the
-   ownership.
+   coordinates without the version, such as `io.github.lmarqs:agents:instructions`. `cook.lock` records its source,
+   sha256 and owned targets ([0007](0007-ownership.md)). Cooking a new version removes what the previous version
+   owned and no longer declares, including edited values. Discarding a recipe removes what the lock lists for it
+   without evaluating it again. Moving a recipe file renames it; cooking the new name and discarding the old one moves
+   the ownership.
 4. A recipe's source stays where its user keeps it; Cook keeps no copy of it ([0014](0014-directory-layout.md)).
 5. A recipe reads a file through a `@resource('<path>')` line, which gives it the file's text: beside a recipe path,
    inside the repository, or in the recipe's artifact. The file counts toward the recipe's sha256.

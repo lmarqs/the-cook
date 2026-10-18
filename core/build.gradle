@@ -3,7 +3,7 @@ plugins {
   id 'java-library'
 }
 
-group = 'dev.thecook'
+group = 'io.github.lmarqs'
 
 version = '0.1.0'
 

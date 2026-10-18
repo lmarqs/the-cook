@@ -13,18 +13,18 @@ A cookbook has one release version, released as a git tag on the repository that
 `cookbook.toml` is at the repository root, `<dir>/v<version>` when the cookbook is in the directory `<dir>`. This
 cookbook releases as `cookbook/v0.1.0`.
 
-Publishing jars is optional packaging of the same release. The `dev.thecook.cookbook` Gradle plugin packages one jar
-per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
+Publishing jars is optional packaging of the same release. The `io.github.lmarqs.cookbook` Gradle plugin packages one
+jar per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
 `<group>:cookbook:<version>`, listing the artifacts at that release, so no directory is named `cookbook`. Each jar
-holds the directory's sources, resources and README under its package path, such as `dev/thecook/ralph/`: everything
-a reader needs without the source checkout.
+holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/ralph/`:
+everything a reader needs without the source checkout.
 
 A recipe is addressed as `group:artifact:version[:recipe]`. The recipe named like its directory is the
-default: `dev.thecook:ralph:0.1.0` cooks `ralph`, while `dev.thecook:ralph:0.1.0:prd-story` cooks `prd-story`.
+default: `io.github.lmarqs:ralph:0.1.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.1.0:prd-story` cooks `prd-story`.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources, the same whether a tag or a jar supplied them.
 
-A loose recipe declares `@cookbook('dev.thecook:0.1.0')` once per cookbook it uses. The declaration selects the
+A loose recipe declares `@cookbook('io.github.lmarqs:0.1.0')` once per cookbook it uses. The declaration selects the
 cookbook at that release so its model imports resolve to its artifacts. Two versions of one artifact
 inside one recipe's dependency tree are an error.
 
@@ -49,9 +49,9 @@ The engine does not find recipes. People find them in a cookbook's repository, o
 teammate's link. Given the coordinates:
 
 ```sh
-./cook help dev.thecook:agents:0.1.0                # the artifact's front page
-./cook help dev.thecook:agents:0.1.0:instructions   # the recipe's help, params and ingredients
-./cook dev.thecook:agents:0.1.0:permissions --harness=claude dev.thecook:agents:0.1.0:instructions --harness=claude
+./cook help io.github.lmarqs:agents:0.1.0                # the artifact's front page
+./cook help io.github.lmarqs:agents:0.1.0:instructions   # the recipe's help, params and ingredients
+./cook io.github.lmarqs:agents:0.1.0:permissions --harness=claude io.github.lmarqs:agents:0.1.0:instructions --harness=claude
 ```
 
 `help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version:recipe` it prints
@@ -61,8 +61,8 @@ in its own classloader. A recipe never composes another recipe.
 ## Names
 
 A model's package is its cookbook's group plus its directory name: `cookbook/docker/Compose.groovy` declares
-`dev.thecook.docker.Compose` in the artifact `dev.thecook:docker`. A recipe imports every type it injects, so its
-imports are its visible dependency list and `@ingredient(Compose)` resolves through them.
+`io.github.lmarqs.docker.Compose` in the artifact `io.github.lmarqs:docker`. A recipe imports every type it injects, so
+its imports are its visible dependency list and `@ingredient(Compose)` resolves through them.
 
 Recipe names are noun phrases naming the state the destination gets, without repeating the directory's topic:
 `node/project.groovy`, `docker/base-image.groovy` and `agents/permissions.groovy`. A recipe that configures one of
@@ -125,7 +125,7 @@ Rules:
 
 | Annotation | On | Declares |
 | --- | --- | --- |
-| `@cookbook('group:version')` | loose recipe | The cookbook release used by its imports, once per cookbook it uses; for example, `@cookbook('dev.thecook:0.1.0')`. |
+| `@cookbook('group:version')` | loose recipe | The cookbook release used by its imports, once per cookbook it uses; for example, `@cookbook('io.github.lmarqs:0.1.0')`. |
 | `@help('''...''')` | first import | The recipe's description, in Markdown. Required. |
 | `@confirm('''...''')` | first import | A consequence the diff cannot show, displayed above the diff when asking for approval. Optional. |
 | `@yield('''...''')` | first import | What to do next, printed after the writes succeed. Optional. |
@@ -208,14 +208,14 @@ A model's class doc comment holds these sections in order.
 Rendered help for an artifact and a recipe, as the design intends it:
 
 ```text
-$ ./cook help dev.thecook:ralph:0.1.0
+$ ./cook help io.github.lmarqs:ralph:0.1.0
 Ralph TUI configuration and runners for recipe-driven development loops.
 ```
 
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ```text
-$ ./cook help dev.thecook:ralph:0.1.0:ralph
+$ ./cook help io.github.lmarqs:ralph:0.1.0:ralph
 ralph
 
 Sets up Ralph TUI as the repository's loop runner: its configuration, a runner and the tracker it takes stories
@@ -232,10 +232,10 @@ Parameters
   --issue-prefix=<String>   The Beads issue prefix, for the beads tracker             default: none
 
 Ingredients
-  dev.thecook.beads.Beads
-  dev.thecook.git.Git
-  dev.thecook.mise.Mise
-  dev.thecook.ralph.Ralph
+  io.github.lmarqs.beads.Beads
+  io.github.lmarqs.git.Git
+  io.github.lmarqs.mise.Mise
+  io.github.lmarqs.ralph.Ralph
 
 After cooking
   - `--mode=standalone`: run `.ralph-tui/run`, with a PRD path or a Beads epic id as its argument.
@@ -250,7 +250,7 @@ After cooking
 <dir>/README.md          the artifact's front page
 <dir>/...               resources beside the models and recipes
 cookbook.toml           the cookbook manifest at the cookbook root
-build.gradle            applies the dev.thecook.cookbook plugin at the cookbook root
+build.gradle            applies the io.github.lmarqs.cookbook plugin at the cookbook root
 ```
 
 Each topic directory is one artifact. Skill content lives under `<dir>/skills/<name>/`, with `SKILL.md` and its
@@ -262,7 +262,7 @@ instructions, since Codex reads every `AGENTS.md` between the repository root an
 other cookbooks it uses at exact releases. This cookbook's manifest is:
 
 ```toml
-group = "dev.thecook"
+group = "io.github.lmarqs"
 version = "0.1.0"
 api = 1
 ```
@@ -271,7 +271,7 @@ api = 1
 
 A developer's own recipes live in their own cookbook, packaged by the same plugin and cooked by coordinates from Maven
 local. The plugin comes from Maven local too: `./gradlew -p plugin publishToMavenLocal` in a checkout of this
-repository publishes `dev.thecook.cookbook` there.
+repository publishes `io.github.lmarqs.cookbook` there.
 
 The cookbook's root holds `cookbook.toml`, as above, one directory per artifact, and these two build files. The
 plugin depends on a library from Maven Central, so plugin resolution lists both repositories:
@@ -290,7 +290,7 @@ rootProject.name = 'my-cookbook'
 ```groovy
 // build.gradle
 plugins {
-  id 'dev.thecook.cookbook' version '0.1.0'
+  id 'io.github.lmarqs.cookbook' version '0.1.0'
 }
 ```
 

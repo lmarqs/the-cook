@@ -97,7 +97,7 @@ More unrelated text.
 A marker names the owning recipe's short name, such as `recipes/setup`, followed by `#` and the region within that
 recipe, such as `commands`. Each recipe has a short name that markers and `cook.lock` use: a path's place in the
 repository without `.groovy`, so `recipes/setup.groovy` is `recipes/setup`, or coordinates without the version, such
-as `dev.thecook:agents:instructions`. Manual edits within the
+as `io.github.lmarqs:agents:instructions`. Manual edits within the
 section are included in the next actual diff; ownership never blocks them.
 
 Omitting a recipe from a later invocation leaves its section in place; a new version of the recipe that omits

@@ -14,7 +14,8 @@ class MavenLocalPluginTest {
   @Test void aCookbookOutsideThisRepositoryAppliesThePluginFromMavenLocal() {
     def repository = copy(Path.of(System.getProperty('thecook.mavenLocal')), folder.newFolder('m2').toPath())
     def version = System.getProperty('thecook.pluginVersion')
-    assert new File(repository, "dev/thecook/cookbook/dev.thecook.cookbook.gradle.plugin/${version}").isDirectory()
+    def marker = "io/github/lmarqs/cookbook/io.github.lmarqs.cookbook.gradle.plugin/${version}"
+    assert new File(repository, marker).isDirectory()
     def book = folder.newFolder('book')
     new File(book, 'settings.gradle').text = '''pluginManagement {
   repositories {
@@ -24,7 +25,7 @@ class MavenLocalPluginTest {
 }
 rootProject.name = 'book'
 '''
-    new File(book, 'build.gradle').text = "plugins {\n  id 'dev.thecook.cookbook' version '${version}'\n}\n"
+    new File(book, 'build.gradle').text = "plugins {\n  id 'io.github.lmarqs.cookbook' version '${version}'\n}\n"
     new File(book, 'cookbook.toml').text = 'group = "acme"\nversion = "1.2.3"\napi = 1\n'
     new File(book, 'notes').mkdirs()
     new File(book, 'notes/notes.groovy').text = "@help('Notes.')\nimport java.util.List\n"

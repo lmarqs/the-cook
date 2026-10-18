@@ -10,7 +10,7 @@ The policy supplies instruction lines and command permissions for both harnesses
 ## Cook
 
 ```sh
-./cook dev.thecook:cook:0.1.0:setup
+./cook io.github.lmarqs:cook:0.1.0:setup
 ```
 
 ## Writes
@@ -35,10 +35,10 @@ Codex reads `AGENTS.md` and `.agents/skills/` natively.
 Review the rendered permissions against each harness's permission model; edit the shared policy and
 cook again to update them.
 ''')
-import dev.thecook.agents.Agents
-import dev.thecook.agents.Claude
-import dev.thecook.agents.Codex
-import dev.thecook.git.Git
+import io.github.lmarqs.agents.Agents
+import io.github.lmarqs.agents.Claude
+import io.github.lmarqs.agents.Codex
+import io.github.lmarqs.git.Git
 
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude

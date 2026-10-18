@@ -1,4 +1,4 @@
-package dev.thecook.docker
+package io.github.lmarqs.docker
 
 /**
  * Models services in a Docker Compose file.
@@ -16,8 +16,8 @@ package dev.thecook.docker
  * ## Use
  *
  * ```groovy
- * import dev.thecook.docker.Compose
- * import dev.thecook.mise.Mise
+ * import io.github.lmarqs.docker.Compose
+ * import io.github.lmarqs.mise.Mise
  *
  * @ingredient(Compose) def compose
  * @ingredient(Mise) def mise

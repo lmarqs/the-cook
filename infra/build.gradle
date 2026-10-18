@@ -3,7 +3,7 @@ plugins {
   id 'java-library'
 }
 
-group = 'dev.thecook'
+group = 'io.github.lmarqs'
 
 version = '0.1.0'
 
@@ -19,7 +19,7 @@ java {
 
 dependencies {
   // CookToml returns core's CookbookRepositories, so callers compile against core.
-  api 'dev.thecook:the-cook-core:0.1.0'
+  api 'io.github.lmarqs:the-cook-core:0.1.0'
   implementation 'org.tomlj:tomlj:1.1.1'
   testImplementation 'junit:junit:4.13.2'
 }

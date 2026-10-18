@@ -16,7 +16,11 @@ class RecipeSourceTest {
       new RecipeParam(['harness'], 'String[]', 'Harnesses that read the shared instructions', '[]',
       ['claude', 'codex'], true)
     ]
-    assert texts.ingredients == ['dev.thecook.agents.Agents', 'dev.thecook.agents.Claude', 'dev.thecook.agents.Codex']
+    assert texts.ingredients == [
+      'io.github.lmarqs.agents.Agents',
+      'io.github.lmarqs.agents.Claude',
+      'io.github.lmarqs.agents.Codex',
+    ]
   }
 
   @Test void keepsEscapedLineBreaksInTexts() {
