@@ -74,6 +74,12 @@ tasks.register('jpackage') {
   dependsOn gradle.includedBuild('cli').task(':jpackage')
 }
 
+tasks.register('jpackageArchive') {
+  group = 'distribution'
+  description = 'Archive the Linux app image for this architecture, with its sha256.'
+  dependsOn gradle.includedBuild('cli').task(':jpackageArchive')
+}
+
 tasks.register('jpackageTest') {
   group = 'verification'
   description = 'Build and smoke-test the packaged CLI.'

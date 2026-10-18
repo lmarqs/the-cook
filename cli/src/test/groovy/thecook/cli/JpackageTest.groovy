@@ -1,7 +1,9 @@
 package thecook.cli
 
+import org.junit.Assume
 import org.junit.Test
 import java.nio.file.Files
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 class JpackageTest {
@@ -31,6 +33,38 @@ notes.add('local')
     } finally {
       root.deleteDir()
     }
+  }
+
+  @Test void linuxArchiveHoldsTheImageUnderTheCookWithAnExecutableLauncherAndItsSha256() {
+    def path = System.getProperty('cook.packageArchive')
+    Assume.assumeNotNull(path)
+    def archive = new File(path)
+    def entries = tar(archive, '-tzf').readLines()
+
+    assert 'the-cook/bin/the-cook' in entries
+    assert entries.every { it.startsWith('the-cook/') }
+    def root = Files.createTempDirectory('cook archive ').toFile()
+
+    try {
+      tar(archive, '-xzf', '-C', root.path, 'the-cook/bin/the-cook')
+      assert new File(root, 'the-cook/bin/the-cook').canExecute()
+    } finally {
+      root.deleteDir()
+    }
+
+    def sha256 = MessageDigest.getInstance('SHA-256')
+        .digest(archive.bytes)
+        .encodeHex()
+    assert new File("${archive}.sha256").text == "${sha256}  ${archive.name}\n"
+  }
+
+  private static String tar(File archive, String... arguments) {
+    def process = new ProcessBuilder(['tar', arguments[0], archive.path] + arguments.drop(1).toList())
+    .redirectErrorStream(true)
+    .start()
+    def output = process.inputStream.text
+    assert process.waitFor() == 0 : output
+    output
   }
 
   private String run(File directory, Object... arguments) {

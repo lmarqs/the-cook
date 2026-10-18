@@ -45,6 +45,38 @@ tasks.register('jpackage', Exec) {
   }
 }
 
+// The release names each Linux image by the architecture the wrapper reads from `uname -m`.
+def linuxArchitecture = [amd64: 'x64', x86_64: 'x64', aarch64: 'arm64'][System.getProperty('os.arch')]
+def linux = !windows && !mac && linuxArchitecture
+def packageArchive = tasks.register('jpackageArchive', Tar) {
+  group = 'distribution'
+  description = 'Archive the Linux app image as the-cook-<version>-linux-<arch>.tar.gz, with its sha256 beside it.'
+  dependsOn 'jpackage'
+  archiveFileName = "the-cook-${project.version}-linux-${linuxArchitecture}.tar.gz"
+  destinationDirectory = layout.buildDirectory.dir('distributions')
+  compression = Compression.GZIP
+  preserveFileTimestamps = false
+  reproducibleFileOrder = true
+  // The launcher and the bundled runtime's helpers must stay executable.
+  useFileSystemPermissions()
+  from(packageOutput) { include "${imageName}/**" }
+  def checksum = destinationDirectory.file(archiveFileName.map { "${it}.sha256" })
+  outputs.file(checksum)
+  doFirst {
+    if (!linux) {
+      throw new GradleException('jpackageArchive packages Linux x64 and arm64 images, not ' +
+      "${System.getProperty('os.name')} ${System.getProperty('os.arch')}")
+    }
+  }
+  doLast {
+    def archive = archiveFile.get().asFile
+    def sha256 = java.security.MessageDigest.getInstance('SHA-256')
+        .digest(archive.bytes)
+        .encodeHex()
+    checksum.get().asFile.text = "${sha256}  ${archive.name}\n"
+  }
+}
+
 tasks.register('jpackageTest', Test) {
   group = 'verification'
   description = 'Exercise the native launcher without Java or Gradle on PATH.'
@@ -55,4 +87,9 @@ tasks.register('jpackageTest', Test) {
   useJUnit()
   inputs.dir(packageOutput)
   systemProperty 'cook.packagedLauncher', packagedLauncher.get().asFile.absolutePath
+
+  if (linux) {
+    inputs.file(packageArchive.flatMap { it.archiveFile })
+    systemProperty 'cook.packageArchive', packageArchive.get().archiveFile.get().asFile.absolutePath
+  }
 }
