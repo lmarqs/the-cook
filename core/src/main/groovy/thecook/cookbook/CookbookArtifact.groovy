@@ -2,7 +2,6 @@ package thecook.cookbook
 
 import thecook.filesystem.Repository
 
-import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
 
 /**
@@ -13,31 +12,16 @@ final class CookbookArtifact {
   final Coordinates coordinates
   /**
    * The sha256 of the artifact's sources: of one line `<sha256 of the file>  <path>` per file, in the byte order of the
-   * paths, so a jar and a git tag holding the same files have the same hash.
+   * paths, so the hash does not depend on the order of the jar's entries.
    */
   final String sha256
   private final Map<String, byte[]> files
 
-  // Ant's default excludes, which Gradle leaves out of every jar. A file whose path has a name matching one is not a
-  // source, so a tag holding it hashes as the jar of the same directory does.
-  private static final List<Pattern> EXCLUDED = ('*~ #*# .#* %*% ._* CVS .cvsignore SCCS vssver.scc .svn .git ' +
-  '.gitattributes .gitignore .gitmodules .hg .hgignore .hgsubstate .hgtags ' +
-  '.bzr .bzrignore .DS_Store').split(' ').collect { glob ->
-    Pattern.compile(glob.split(/\*/, -1)
-        .collect {
-          Pattern.quote(it)
-        }
-        .join('.*'))
-  }
-
-  /**
-   * `files` holds the artifact's files keyed by their path below the artifact's directory; those a jar leaves out are
-   * dropped.
-   */
+  /** `files` holds the artifact's files keyed by their path below the artifact's directory. */
   CookbookArtifact(Coordinates coordinates, Map<String, byte[]> files) {
     this.coordinates = coordinates
-    this.files = files.findAll { path, bytes -> source(path) }
-    this.sha256 = sourcesSha256(this.files)
+    this.files = files
+    this.sha256 = sourcesSha256(files)
   }
 
   /** The artifact whose files are the entries of the ZIP archive `zip` below `directory`. */
@@ -100,14 +84,6 @@ final class CookbookArtifact {
         .findAll { !it.contains('/') && it.endsWith('.groovy') }
         *.replaceAll(/\.groovy$/, '')
         .sort()
-  }
-
-  private static boolean source(String path) {
-    !path.split('/').any { name ->
-      EXCLUDED.any {
-        it.matcher(name).matches()
-      }
-    }
   }
 
   /** The sha256 of `files`, keyed by path, as `sha256` defines it. */

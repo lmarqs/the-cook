@@ -9,11 +9,7 @@ A cookbook directory is one artifact holding its models, recipes, resources and 
 how a program reads its files, or supplies content another model consumes; a recipe chooses a setup through models.
 Models may depend on other models for their types and on ordinary libraries. Recipes depend on models.
 
-A cookbook has one release version, released as a git tag on the repository that holds it: `v<version>` when
-`cookbook.toml` is at the repository root, `<dir>/v<version>` when the cookbook is in the directory `<dir>`. This
-cookbook releases as `cookbook/v0.1.0`.
-
-Publishing jars is optional packaging of the same release. The `io.github.lmarqs.cookbook` Gradle plugin packages one
+A cookbook releases as jars in a Maven-layout repository. The `io.github.lmarqs.cookbook` Gradle plugin packages one
 jar per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
 `<group>:cookbook:<version>`, listing the artifacts at that release, so no directory is named `cookbook`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/ralph/`:
@@ -22,24 +18,19 @@ everything a reader needs without the source checkout.
 A recipe is addressed as `group:artifact:version[#recipe]`. The recipe named like its directory is the
 default: `io.github.lmarqs:ralph:0.1.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.1.0#prd-story` cooks `prd-story`.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
-records the address and a sha256 of the artifact's sources, the same whether a tag or a jar supplied them.
+records the address and a sha256 of the artifact's sources.
 
 A loose recipe compiles against the models in its own directory, the upper-case `.groovy` files beside it, as a
 recipe in an artifact compiles against that artifact's models.
 
-A committed `cook.toml` at the destination lists the repositories to resolve from, in order, as `repositories`: a git
-repository as `{ git = "<url>", dir = "<dir>" }`, with `dir` naming the cookbook's directory when it is not at the
-root, or a Maven-layout repository as an `https://` URL or a path: one starting with `~/` is relative to the user's
-home, any other to the destination. A git repository is
-used for a group when its `cookbook.toml` at the release tag names that group. Cook fetches the tag with the machine's
-`git`, which uses the credentials git already has, and keeps it in `$XDG_CACHE_HOME/the-cook/git`, or
-`~/.cache/the-cook/git`, so a fetched release cooks offline; each later run fetches the tag again when the
-repository can be read, so a moved tag shows as a changed hash in `cook.lock`. Without a `cook.toml`, Cook resolves
-from Maven Central. [ADR 0029](../docs/adrs/0029-cookbook-distribution.md) records the reasons.
+A committed `cook.toml` at the destination lists the Maven-layout repositories to resolve from, in order, as
+`repositories`: each an `https://` URL or a path, one starting with `~/` relative to the user's home and any other to
+the destination. Without a `cook.toml`, Cook resolves from Maven Central.
+[ADR 0029](../docs/adrs/0029-cookbook-distribution.md) records the reasons.
 
 ```toml
 repositories = [
-  { git = "https://github.com/lmarqs/the-cook", dir = "cookbook" },
+  "https://maven.example.com/releases/",
   "https://repo.maven.apache.org/maven2/",
 ]
 ```
@@ -297,7 +288,7 @@ cooks from there lists it in its `cook.toml`, last so that shared repositories c
 
 ```toml
 repositories = [
-  { git = "https://github.com/lmarqs/the-cook", dir = "cookbook" },
+  "https://repo.maven.apache.org/maven2/",
   "~/.m2/repository",
 ]
 ```

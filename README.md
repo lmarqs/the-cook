@@ -75,8 +75,7 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
 
 Coordinates resolve from the first repository of the kitchen's `cook.toml` `repositories` list that holds them, and
 from Maven Central when the kitchen has no `cook.toml`. An entry is a Maven-layout repository of jars, an `https://` URL
-or a path, where `~/` starts from the user's home as in `~/.m2/repository`, or a git repository,
-`{ git = "<url>", dir = "<dir>" }`, read at the release tag with the machine's `git` ([cookbook](cookbook/README.md)).
+or a path, where `~/` starts from the user's home as in `~/.m2/repository` ([cookbook](cookbook/README.md)).
 Arguments follow their recipe as `--name=value` or `--name value`, and a yes-or-no argument as a bare `--name` or
 `--name=false`. A word that contains `/` or `:` or ends with `.groovy` starts the next recipe, so a value shaped like
 one is written `--name=value`.
@@ -125,8 +124,8 @@ is a design sketch that has not been compiled.
 
 See [the core implementation](core/README.md) for how the engine cooks a recipe and how it differs from the
 intended architecture.
-[Infra](infra/README.md) reads the kitchen's `cook.toml` and fetches cookbook releases from Maven-layout and git
-repositories; the CLI hands its repositories to the core.
+[Infra](infra/README.md) reads the kitchen's `cook.toml` and fetches cookbook releases from Maven-layout repositories;
+the CLI hands its repositories to the core.
 
 ## Read next
 

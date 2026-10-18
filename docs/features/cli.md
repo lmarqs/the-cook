@@ -170,7 +170,7 @@ leave the file to whoever edits it.
 files. Noninteractive execution without this flag does not silently authorize writes.
 
 The review starts with a `Changed source` notice for each release whose sources differ from what `cook.lock` recorded
-under the same coordinates, as when a release tag moved, with both sha256 values. The diff that follows shows what the
+under the same coordinates, as when a jar was republished under its version, with both sha256 values. The diff that follows shows what the
 changed sources write.
 
 ```sh

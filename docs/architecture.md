@@ -36,7 +36,7 @@ so cooking a new version keeps the same owner. Moving a recipe file renames it: 
 old one moves the ownership ([discard](features/discard.md)).
 
 A cookbook repository holds and distributes ingredients and recipes. Cookbook distribution is separate from engine
-distribution: a cookbook releases by git tag, and may also publish jars of the same sources
+distribution: a cookbook releases as jars of its sources in Maven-layout repositories
 ([cookbook distribution](#cookbook-distribution)). Keeping program models in cookbooks lets their authors maintain
 program-specific setup separately from the engine's evaluation, review, and writing responsibilities.
 
@@ -199,12 +199,11 @@ recipes:
 The source is a path relative to the repository root or the recipe's coordinates. A key path is a
 list, so a key containing a dot stays one segment; `links` lists the symbolic links a recipe owns. The sha256 identifies
 the recipe version that produced the recorded ownership. It is the hash of the recipe's sources: for a path, the
-recipe file and the files its `@resource` lines name; for coordinates, the artifact's files, the same whichever
-repository supplied them. The hash is the sha256 of one line `<sha256 of the file>  <path>` per file, each ending in a
+recipe file, the models beside it and the files its `@resource` lines name; for coordinates, the artifact's files,
+the same whichever repository supplied them. The hash is the sha256 of one line `<sha256 of the file>  <path>` per file, each ending in a
 newline, sorted by the UTF-8 bytes of the path. The path is relative to the repository root for a recipe path and to
-the artifact's directory for coordinates, separated by `/`, and both hashes are written in lower-case hex. A file
-with a name on its path that matches one of Ant's default excludes, which Gradle leaves out of every jar (`.git`,
-`.gitignore`, `.gitattributes`, `.DS_Store`, `*~` and the like), is not a source. Because the lock is committed, every clone has the same ownership information.
+the artifact's directory for coordinates, separated by `/`, and both hashes are written in lower-case hex. Because
+the lock is committed, every clone has the same ownership information.
 
 Cooking works without the lock. When the lock is missing or names no entry for a recipe, Cook evaluates the recipe as
 usual and shows the diff; it has no previous ownership to compare against, so it removes nothing on the recipe's
@@ -295,14 +294,14 @@ The root README's [install section](../README.md#install) describes the current 
 
 ## Cookbook distribution
 
-A cookbook releases by git tag on the repository that holds it: `v<version>`, or `<dir>/v<version>` for a cookbook in
-the directory `<dir>`. The destination's committed `cook.toml` lists the repositories coordinates resolve from, in
-order: git repositories, and Maven-layout repositories holding jars of the same sources; without a `cook.toml`, Maven
-Central. A path entry starting with `~/` is relative to the user's home, so a developer lists `~/.m2/repository`, last,
-to cook their own cookbooks published to Maven local. Coordinates name exact releases only.
+A cookbook releases as one jar per artifact, holding its sources, resources and README, in a Maven-layout
+repository. The destination's committed `cook.toml` lists the Maven-layout repositories coordinates resolve from, in
+order; without a `cook.toml`, Maven Central. A path entry starting with `~/` is relative to the user's home, so a
+developer lists `~/.m2/repository`, last, to cook their own cookbooks published to Maven local. Coordinates name exact
+releases only.
 
-`cook.lock` records a hash of the artifact's sources, so one release has one hash from either kind of repository, and
-a different hash under a recorded version shows as a changed source before the diff. The
+`cook.lock` records a hash of the artifact's sources, so two builds of one release have one hash, and a different
+hash under a recorded version shows as a changed source before the diff. The
 [cookbook distribution ADR](adrs/0029-cookbook-distribution.md) records the reasons.
 
 ## Requirements
