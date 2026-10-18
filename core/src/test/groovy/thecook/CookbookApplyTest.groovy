@@ -303,6 +303,31 @@ text.text = 'first\\n'
     assert !again.after('cook.lock').contains(recorded)
   }
 
+  @Test void aModelBesideARecipePathReadsTheFilesOfItsDirectory() {
+    def kitchen = kitchen()
+    def source = new File(COOKBOOK, 'agents')
+    source.eachFileRecurse(groovy.io.FileType.FILES) { file ->
+      def copy = new File(kitchen, "agents/${source.toPath().relativize(file.toPath())}")
+      copy.parentFile.mkdirs()
+      copy.bytes = file.bytes
+    }
+    recipe(kitchen, 'agents/skill-check.groovy', """@help('Links one skill.')
+import io.github.lmarqs.agents.Agents
+import io.github.lmarqs.agents.Claude
+@ingredient(Agents) def agents
+@ingredient(Claude) def claude
+agents.instruct('Run the tests.')
+agents.skills('solid')
+agents.connect([claude])
+""")
+
+    apply(kitchen, 'agents/skill-check.groovy', [:]).commit()
+
+    assert new File(kitchen, 'AGENTS.md').text.startsWith(new File(COOKBOOK, 'agents/AGENTS.template.md').text)
+    assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
+    new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
+  }
+
   @Test void reportsAChangedSourceUnderARecordedVersionButNotAnEditedPath() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')

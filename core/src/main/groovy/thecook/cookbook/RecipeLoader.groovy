@@ -15,6 +15,7 @@ final class RecipeLoader {
   private final Map<String, ClassLoader> models = [:]
   private final Map<Path, ClassLoader> directoryModels = [:]
   private final Map<ClassLoader, CookbookArtifact> modelArtifacts = [:]
+  private final Map<ClassLoader, Path> modelDirectories = [:]
 
   RecipeLoader(File kitchen, CookbookRepositories repositories) {
     this.kitchen = kitchen.toPath().toRealPath()
@@ -36,12 +37,16 @@ final class RecipeLoader {
         relative(kitchen, operand).replaceAll(/\.groovy$/, '')
   }
 
-  /** What a model of `type` reads: its own artifact's packaged files, and `draft` as the current content. */
+  /**
+   * What a model of `type` reads: its own artifact's packaged files, the files of its directory for a model beside a
+   * recipe path, and `draft` as the current content.
+   */
   ModelReads reads(Class type, Draft draft) {
     def artifact = modelArtifacts[type.classLoader]
+    def directory = modelDirectories[type.classLoader]
     [
-      resource: { String path -> artifact?.resource(path) },
-      resources: { String path -> artifact?.resources(path) },
+      resource: { String path -> directory ? directoryFile(directory, path) : artifact?.resource(path) },
+      resources: { String path -> directory ? directoryFiles(directory, path) : artifact?.resources(path) },
       current: { draft.read(it) },
     ] as ModelReads
   }
@@ -101,7 +106,7 @@ final class RecipeLoader {
   /** The upper-case `.groovy` files in `directory`, the models of the recipes there, keyed by their kitchen path. */
   private Map<String, byte[]> modelFiles(Path directory) {
     List<Path> files = Files.list(directory).withCloseable { paths ->
-      paths.filter { Files.isRegularFile(it) && it.fileName.toString() ==~ /[A-Z].*\.groovy/ }.toList()
+      paths.filter { Files.isRegularFile(it) && model(it.fileName.toString()) }.toList()
     }
     files.collectEntries { model ->
       if (!model.toRealPath().startsWith(kitchen)) {
@@ -110,6 +115,11 @@ final class RecipeLoader {
 
       [(kitchen.relativize(model).join('/')): Files.readAllBytes(model)]
     }
+  }
+
+  // The rule CookbookArtifact applies to an artifact's files, so a directory and its jar hold the same models.
+  private static boolean model(String fileName) {
+    fileName.endsWith('.groovy') && Character.isUpperCase(fileName.charAt(0))
   }
 
   // A resource resolves from the recipe's directory and, like the recipe, stays inside the kitchen.
@@ -164,8 +174,37 @@ final class RecipeLoader {
   private ClassLoader models(Path directory, Map<String, byte[]> files) {
     directoryModels.computeIfAbsent(directory) {
       Map<String, byte[]> byName = files.collectEntries { place, bytes -> [(place.tokenize('/').last()): bytes] }
-      CookbookCompiler.models(new CookbookArtifact(null, byName))
+      def loader = CookbookCompiler.models(new CookbookArtifact(null, byName))
+      modelDirectories[loader] = directory
+      loader
     }
+  }
+
+  // A model beside a recipe path reads the files of its directory as a model in a jar reads the jar's files.
+  private String directoryFile(Path directory, String path) {
+    def file = directory.resolve(path).normalize()
+    file.startsWith(directory) && Files.isRegularFile(file) ? kitchenText(file) : null
+  }
+
+  private Map<String, String> directoryFiles(Path directory, String path) {
+    def root = directory.resolve(path).normalize()
+
+    if (!root.startsWith(directory) || !Files.isDirectory(root)) {
+      return [:]
+    }
+
+    List<Path> files = Files.walk(root).withCloseable { paths ->
+      paths.filter { Files.isRegularFile(it) }.toList()
+    }
+    files.collectEntries { [(root.relativize(it).join('/')): kitchenText(it)] }.sort()
+  }
+
+  private String kitchenText(Path file) {
+    if (!file.toRealPath().startsWith(kitchen)) {
+      throw new IllegalArgumentException('the model\'s file is outside the kitchen; move it into the kitchen')
+    }
+
+    new String(Files.readAllBytes(file), 'UTF-8')
   }
 }
 

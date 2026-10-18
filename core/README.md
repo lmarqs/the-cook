@@ -23,8 +23,8 @@ The core reaches no network and runs no external command. It declares `CookbookR
    its own class loader over them. Every unit imports the author's annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and
    `java.nio.file` by default. A recipe's `@param` and `@ingredient` lines become fields.
 3. `RecipeRun` binds each `@param` from the recipe's arguments, injects each `@ingredient` as a new model instance at
-   its directory, and runs the recipe's body. A model reads its own artifact's packaged files and the draft's current
-   content.
+   its directory, and runs the recipe's body. A model reads its own artifact's packaged files, or for a model beside a
+   recipe path the files of its directory, and the draft's current content.
 4. `Declarations` reads what the models declare through their annotated members: the sections, keys, whole files and
    links they own, the files they seed and the files they delete.
 5. The recipe is cooked into one in-memory `Draft` of the kitchen: it withdraws what `cook.lock` says it owned and no
