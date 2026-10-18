@@ -1,0 +1,55 @@
+// Maven Central requires this POM metadata on every publication and a signature on every file. The release passes the
+// signing key as the properties signingKey and signingPassword; without them nothing is signed.
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+def central = layout.buildDirectory.dir('central')
+def cleanCentral = tasks.register('cleanCentral', Delete) { delete central }
+
+publishing {
+  repositories {
+    maven {
+      name = 'central'
+      url = central
+    }
+  }
+  publications.withType(MavenPublication).configureEach { publication ->
+    pom {
+      name = provider { publication.artifactId }
+      description = provider { project.description }
+      url = 'https://github.com/lmarqs/the-cook'
+      licenses {
+        license {
+          name = 'Apache-2.0'
+          url = 'https://www.apache.org/licenses/LICENSE-2.0'
+        }
+      }
+      developers {
+        developer {
+          id = 'lmarqs'
+          name = 'lmarqs'
+          url = 'https://github.com/lmarqs'
+        }
+      }
+      scm {
+        connection = 'scm:git:https://github.com/lmarqs/the-cook.git'
+        developerConnection = 'scm:git:ssh://git@github.com/lmarqs/the-cook.git'
+        url = 'https://github.com/lmarqs/the-cook'
+      }
+    }
+  }
+}
+
+// The bundle holds one release, so each publication to it starts from an empty directory.
+tasks.withType(PublishToMavenRepository).configureEach {
+  if (name.endsWith('ToCentralRepository')) {
+    dependsOn cleanCentral
+  }
+}
+
+if (findProperty('signingKey')) {
+  signing {
+    useInMemoryPgpKeys(findProperty('signingKey'), findProperty('signingPassword'))
+    sign publishing.publications
+  }
+}

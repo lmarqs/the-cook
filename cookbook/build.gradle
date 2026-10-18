@@ -1,3 +1,27 @@
 plugins {
   id 'io.github.lmarqs.cookbook'
 }
+
+description = 'Recipes and models for the-cook, a recipe driven configuration tool'
+
+apply from: '../gradle/central.gradle'
+
+// Maven Central takes `agents` with a sources and a javadoc jar. Its jar holds only sources, so the sources jar
+// repeats it, and the javadoc jar holds its README.
+def agentsSources = tasks.register('agentsSourcesJar', Jar) {
+  archiveBaseName = 'agents'
+  archiveClassifier = 'sources'
+  destinationDirectory = layout.buildDirectory.dir('libs')
+  from(file('agents')) { into("${project.group.toString().replace('.', '/')}/agents") }
+}
+def agentsJavadoc = tasks.register('agentsJavadocJar', Jar) {
+  archiveBaseName = 'agents'
+  archiveClassifier = 'javadoc'
+  destinationDirectory = layout.buildDirectory.dir('libs')
+  from(file('agents/README.md'))
+}
+
+publishing.publications.named('agents', MavenPublication) {
+  artifact(agentsSources)
+  artifact(agentsJavadoc)
+}

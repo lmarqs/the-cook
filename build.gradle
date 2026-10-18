@@ -59,8 +59,50 @@ tasks.register('codenarc', JavaExec) {
   args '-maxPriority1Violations=0', '-maxPriority2Violations=0', '-maxPriority3Violations=0'
 }
 
+// The Maven Central Portal takes one zip of a Maven-layout tree for a release. The published artifacts are `agents`,
+// the cookbook plugin and the plugin's marker.
+def releaseVersion = findProperty('releaseVersion') ?: '0.0.0'
+def centralBundle = tasks.register('centralBundle', Zip) {
+  group = 'publishing'
+  description = 'Bundle agents, the cookbook plugin and its marker, with their checksums, for the Central Portal.'
+  dependsOn gradle.includedBuild('cookbook').task(':publishAgentsPublicationToCentralRepository')
+  dependsOn gradle.includedBuild('plugin').task(':publishAllPublicationsToCentralRepository')
+  from('cookbook/build/central', 'plugin/build/central')
+  exclude '**/maven-metadata.xml*'
+  includeEmptyDirs = false
+  archiveFileName = 'central-bundle.zip'
+  destinationDirectory = layout.buildDirectory.dir('central')
+}
+
+tasks.register('centralBundleTest') {
+  group = 'verification'
+  description = 'Check that the Central bundle holds exactly the published artifacts, each with its checksums.'
+  def bundle = centralBundle.flatMap { it.archiveFile }
+  inputs.file(bundle)
+  doLast {
+    def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
+    def v = releaseVersion
+    def agents = "io/github/lmarqs/agents/${v}/agents-${v}"
+    def plugin = "io/github/lmarqs/the-cook-plugin/${v}/the-cook-plugin-${v}"
+    def marker = 'io.github.lmarqs.cookbook.gradle.plugin'
+    def expected = ['', '-sources', '-javadoc'].collectMany { ["${agents}${it}.jar", "${plugin}${it}.jar"] } + [
+      "${agents}.pom",
+      "${plugin}.pom",
+      "${plugin}.module",
+      "io/github/lmarqs/cookbook/${marker}/${v}/${marker}-${v}.pom",
+    ]
+    def files = entries.findAll { !it.endsWith('/') && !(it ==~ /.*\.(md5|sha1|sha256|sha512|asc)/) }
+    def missing = files.findAll { !(entries.contains(it + '.md5') && entries.contains(it + '.sha1')) }
+
+    if (files.sort() != expected*.toString().sort() || missing) {
+      throw new GradleException("The Central bundle holds ${files}, with ${missing} missing a checksum; " +
+      "expected ${expected}")
+    }
+  }
+}
+
 tasks.named('check') {
-  dependsOn 'codenarc'
+  dependsOn 'codenarc', 'centralBundleTest'
   dependsOn gradle.includedBuild('core').task(':check'), gradle.includedBuild('infra').task(':check')
   dependsOn gradle.includedBuild('cli').task(':check')
   dependsOn gradle.includedBuild('docs').task(':check'), gradle.includedBuild('plugin').task(':check')
