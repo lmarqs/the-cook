@@ -8,10 +8,11 @@ import org.gradle.api.tasks.bundling.Jar
 import org.tomlj.Toml
 
 /**
- * Packages a cookbook from its root, where `cookbook.toml` names its `group` and release `version`. Each top-level
- * directory is one artifact: a jar of the directory's files under its package path, `<group>/<dir>/`, with a POM.
- * The `cookbook` BOM lists every artifact at the release. `publish` writes them to the Maven-layout repository at
- * `build/repository`. Packaging compiles nothing, because the engine compiles recipe sources when it cooks them.
+ * Packages a cookbook from its root, where `cookbook.toml` names its `group`. The release version is the Gradle
+ * property `releaseVersion`, `0.0.0` without it. Each top-level directory is one artifact: a jar of the directory's
+ * files under its package path, `<group>/<dir>/`, with a POM. The `cookbook` BOM lists every artifact at the release.
+ * `publish` writes them to the Maven-layout repository at `build/repository`. Packaging compiles nothing, because the
+ * engine compiles recipe sources when it cooks them.
  */
 class CookbookPlugin implements Plugin<Project> {
   static final String BOM = 'cookbook'
@@ -20,7 +21,7 @@ class CookbookPlugin implements Plugin<Project> {
     ['base', 'maven-publish'].each { project.pluginManager.apply(it) }
     def manifest = Toml.parse(project.file('cookbook.toml').getText('UTF-8'))
     project.group = manifest.getString('group')
-    project.version = manifest.getString('version')
+    project.version = project.findProperty('releaseVersion') ?: '0.0.0'
     def publishing = project.extensions.getByType(PublishingExtension)
     publishing.repositories.maven {
       name = 'cookbook'

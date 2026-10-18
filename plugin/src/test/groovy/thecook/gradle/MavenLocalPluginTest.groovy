@@ -26,13 +26,13 @@ class MavenLocalPluginTest {
 rootProject.name = 'book'
 '''
     new File(book, 'build.gradle').text = "plugins {\n  id 'io.github.lmarqs.cookbook' version '${version}'\n}\n"
-    new File(book, 'cookbook.toml').text = 'group = "acme"\nversion = "1.2.3"\napi = 1\n'
+    new File(book, 'cookbook.toml').text = 'group = "acme"\napi = 1\n'
     new File(book, 'notes').mkdirs()
     new File(book, 'notes/notes.groovy').text = "@help('Notes.')\nimport java.util.List\n"
 
     GradleRunner.create()
         .withProjectDir(book)
-        .withArguments('publishToMavenLocal', "-Dmaven.repo.local=${repository}")
+        .withArguments('publishToMavenLocal', '-PreleaseVersion=1.2.3', "-Dmaven.repo.local=${repository}")
         .build()
 
     assert new File(repository, 'acme/notes/1.2.3/notes-1.2.3.jar').isFile()

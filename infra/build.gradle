@@ -5,7 +5,7 @@ plugins {
 
 group = 'io.github.lmarqs'
 
-version = '0.1.0'
+version = findProperty('releaseVersion') ?: '0.0.0'
 
 repositories {
   mavenCentral()
@@ -19,7 +19,7 @@ java {
 
 dependencies {
   // CookToml returns core's CookbookRepositories, so callers compile against core.
-  api 'io.github.lmarqs:the-cook-core:0.1.0'
+  api "io.github.lmarqs:the-cook-core:${version}"
   implementation 'org.tomlj:tomlj:1.1.1'
   testImplementation 'junit:junit:4.13.2'
 }

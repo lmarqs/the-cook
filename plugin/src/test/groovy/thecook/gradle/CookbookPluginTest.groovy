@@ -14,6 +14,7 @@ class CookbookPluginTest {
   @Test void publishesOneJarPerDirectoryAndTheBom() {
     def root = cookbook(['notes', 'review'])
     def project = project(root)
+    project.extensions.extraProperties.set('releaseVersion', '1.2.3')
 
     project.pluginManager.apply('io.github.lmarqs.cookbook')
 
@@ -22,6 +23,15 @@ class CookbookPluginTest {
     assert publications*.artifactId.sort() == ['cookbook', 'notes', 'review']
     assert project.tasks.named('notesJar').get().archiveFileName.get() == 'notes-1.2.3.jar'
     assert publications.getByName('cookbook').pom.packaging == 'pom'
+  }
+
+  @Test void withoutAReleaseVersionTheVersionIsZero() {
+    def project = project(cookbook(['notes']))
+
+    project.pluginManager.apply('io.github.lmarqs.cookbook')
+
+    assert project.version == '0.0.0'
+    assert project.tasks.named('notesJar').get().archiveFileName.get() == 'notes-0.0.0.jar'
   }
 
   @Test void refusesADirectoryNamedLikeTheBom() {
@@ -50,7 +60,7 @@ class CookbookPluginTest {
 
   private File cookbook(List<String> directories) {
     def root = folder.newFolder('book')
-    new File(root, 'cookbook.toml').text = 'group = "acme"\nversion = "1.2.3"\napi = 1\n'
+    new File(root, 'cookbook.toml').text = 'group = "acme"\napi = 1\n'
     directories.each { new File(root, it).mkdirs() }
     root
   }

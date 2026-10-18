@@ -16,7 +16,7 @@ holds the directory's sources, resources and README under its package path, such
 everything a reader needs without the source checkout.
 
 A recipe is addressed as `group:artifact:version[#recipe]`. The recipe named like its directory is the
-default: `io.github.lmarqs:ralph:0.1.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.1.0#prd-story` cooks `prd-story`.
+default: `io.github.lmarqs:ralph:0.0.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.0.0#prd-story` cooks `prd-story`.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources.
 
@@ -39,9 +39,9 @@ The engine does not find recipes. People find them in a cookbook's repository, o
 teammate's link. Given the coordinates:
 
 ```sh
-./cook help io.github.lmarqs:agents:0.1.0                # the artifact's front page
-./cook help io.github.lmarqs:agents:0.1.0#instructions   # the recipe's help, params and ingredients
-./cook io.github.lmarqs:agents:0.1.0#permissions --harness=claude io.github.lmarqs:agents:0.1.0#instructions --harness=claude
+./cook help io.github.lmarqs:agents:0.0.0                # the artifact's front page
+./cook help io.github.lmarqs:agents:0.0.0#instructions   # the recipe's help, params and ingredients
+./cook io.github.lmarqs:agents:0.0.0#permissions --harness=claude io.github.lmarqs:agents:0.0.0#instructions --harness=claude
 ```
 
 `help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version#recipe` it prints
@@ -197,14 +197,14 @@ A model's class doc comment holds these sections in order.
 Rendered help for an artifact and a recipe, as the design intends it:
 
 ```text
-$ ./cook help io.github.lmarqs:ralph:0.1.0
+$ ./cook help io.github.lmarqs:ralph:0.0.0
 Ralph TUI configuration and runners for recipe-driven development loops.
 ```
 
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ```text
-$ ./cook help io.github.lmarqs:ralph:0.1.0#ralph
+$ ./cook help io.github.lmarqs:ralph:0.0.0#ralph
 ralph
 
 Sets up Ralph TUI as the repository's loop runner: its configuration, a runner and the tracker it takes stories
@@ -247,12 +247,12 @@ supporting files together. A template for a seeded file is named `<name>.templat
 `agents/AGENTS.template.md`: under the file's own name, agents working in the cookbook would read it as
 instructions, since Codex reads every `AGENTS.md` between the repository root and its working directory.
 
-`cookbook.toml` declares the cookbook's `group`, its release `version`, the engine API version as `api`, and any
-other cookbooks it uses at exact releases. This cookbook's manifest is:
+`cookbook.toml` declares the cookbook's `group` and the engine API version as `api`. The release version is the
+Gradle property `releaseVersion`, set by the build that publishes the release, and `0.0.0` without it. This
+cookbook's manifest is:
 
 ```toml
 group = "io.github.lmarqs"
-version = "0.1.0"
 api = 1
 ```
 
@@ -279,7 +279,7 @@ rootProject.name = 'my-cookbook'
 ```groovy
 // build.gradle
 plugins {
-  id 'io.github.lmarqs.cookbook' version '0.1.0'
+  id 'io.github.lmarqs.cookbook' version '0.0.0'
 }
 ```
 

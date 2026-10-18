@@ -31,8 +31,8 @@ publish the cookbook to `cookbook/build/repository`:
 Read the `agents` artifact's front page and one of its recipes, without running anything:
 
 ```sh
-./cook help io.github.lmarqs:agents:0.1.0
-./cook help io.github.lmarqs:agents:0.1.0#instructions
+./cook help io.github.lmarqs:agents:0.0.0
+./cook help io.github.lmarqs:agents:0.0.0#instructions
 ```
 
 Make a scratch kitchen whose `cook.toml` resolves from this checkout's repository, then cook two recipes in it:
@@ -40,7 +40,7 @@ Make a scratch kitchen whose `cook.toml` resolves from this checkout's repositor
 ```sh
 kitchen=$(mktemp -d)
 printf 'repositories = ["%s/cookbook/build/repository"]\n' "$PWD" > "$kitchen/cook.toml"
-./cook -C "$kitchen" io.github.lmarqs:agents:0.1.0#permissions --harness=claude io.github.lmarqs:agents:0.1.0#instructions --harness=claude
+./cook -C "$kitchen" io.github.lmarqs:agents:0.0.0#permissions --harness=claude io.github.lmarqs:agents:0.0.0#instructions --harness=claude
 ```
 
 Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
@@ -149,7 +149,7 @@ Its help output also begins with `Usage:`. The image includes the CLI and a Java
 from the repository you want to cook, or name it with `-C`:
 
 ```sh
-/path/to/the-cook/bin/the-cook -C /path/to/repository io.github.lmarqs:agents:0.1.0#instructions --harness=claude
+/path/to/the-cook/bin/the-cook -C /path/to/repository io.github.lmarqs:agents:0.0.0#instructions --harness=claude
 ```
 
 The paths above are for Linux. The build defines `the-cook.app/Contents/MacOS/the-cook` on macOS and

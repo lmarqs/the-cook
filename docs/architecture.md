@@ -179,7 +179,7 @@ and the sections, keys, whole files and links the recipe owns. It records no rec
 version: 1
 recipes:
   - name: "io.github.lmarqs:agents#permissions"
-    source: "io.github.lmarqs:agents:0.1.0#permissions"
+    source: "io.github.lmarqs:agents:0.0.0#permissions"
     sha256: "3f5a…"
     owns:
       keys:
@@ -188,7 +188,7 @@ recipes:
       files:
         - ".codex/rules/default.rules"
   - name: "io.github.lmarqs:agents#instructions"
-    source: "io.github.lmarqs:agents:0.1.0#instructions"
+    source: "io.github.lmarqs:agents:0.0.0#instructions"
     sha256: "3f5a…"
     owns:
       sections:

@@ -70,7 +70,7 @@ Hand-written notes stay.
 <!-- cook:end io.github.lmarqs:agents#instructions#instructions -->
 ```
 
-`./cook discard io.github.lmarqs:agents:0.1.0#instructions` proposes:
+`./cook discard io.github.lmarqs:agents:0.0.0#instructions` proposes:
 
 ```diff
 --- a/CLAUDE.md
