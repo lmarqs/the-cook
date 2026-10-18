@@ -71,9 +71,8 @@ def packageArchive = tasks.register('jpackageArchive', Tar) {
   doLast {
     def archive = archiveFile.get().asFile
     def sha256 = java.security.MessageDigest.getInstance('SHA-256')
-        .digest(archive.bytes)
-        .encodeHex()
-    checksum.get().asFile.text = "${sha256}  ${archive.name}\n"
+    archive.eachByte(1 << 16) { byte[] buffer, int length -> sha256.update(buffer, 0, length) }
+    checksum.get().asFile.text = "${sha256.digest().encodeHex()}  ${archive.name}\n"
   }
 }
 
