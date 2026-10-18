@@ -136,29 +136,55 @@ the CLI hands its repositories to the core.
 
 ## Install
 
-There is no published release. The [jpackage task](cli/gradle/jpackage.gradle) builds a self-contained distribution
-with a Java 17 JDK (including `jpackage`):
+Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 as
+`the-cook-<version>-linux-<arch>.tar.gz`, a complete package with its own Java runtime, and the `cook` wrapper, each
+with a `.sha256`. Commit the wrapper to pin the engine version for a repository:
+
+```sh
+curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
+chmod +x cook
+./cook --help
+git add cook
+```
+
+On first use the wrapper downloads the package for the machine, refuses it unless its sha256 matches the one written
+in the wrapper, and caches it under `${XDG_CACHE_HOME:-~/.cache}/the-cook`. Later runs start the cached package. To
+upgrade, commit the wrapper of another release ([wrapper](docs/features/wrapper.md)).
+
+To run a package without the wrapper, unpack the **whole** `the-cook` directory and run its `bin/the-cook` from the
+repository you want to cook, or name the repository with `-C`:
+
+```sh
+v=<version>
+curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
+tar -xzf "the-cook-$v-linux-x64.tar.gz"
+the-cook/bin/the-cook -C /path/to/repository "io.github.lmarqs:agents:$v#instructions" --harness=claude
+```
+
+Without a `cook.toml`, coordinates such as `io.github.lmarqs:agents:<version>#instructions` resolve from Maven
+Central.
+
+### From source
+
+The [jpackage task](cli/gradle/jpackage.gradle) builds the same self-contained package for the machine that runs it,
+with a Java 17 JDK (including `jpackage`), and `jpackageArchive` packs it as the release's `.tar.gz` with its `.sha256`
+in `cli/build/distributions`:
 
 ```sh
 ./gradlew jpackage
 cli/build/jpackage/the-cook/bin/the-cook --help
 ```
 
-Its help output also begins with `Usage:`. The image includes the CLI and a Java runtime. Copy the **whole**
-`cli/build/jpackage/the-cook` directory to another machine with the same OS and architecture. Run its `bin/the-cook`
-from the repository you want to cook, or name it with `-C`:
-
-```sh
-/path/to/the-cook/bin/the-cook -C /path/to/repository io.github.lmarqs:agents:0.0.0#instructions --harness=claude
-```
-
 The paths above are for Linux. The build defines `the-cook.app/Contents/MacOS/the-cook` on macOS and
-`the-cook/the-cook.exe` on Windows. Build on the target OS and architecture. This task produces an application
-directory. The Windows path in the build configuration does not establish verified Windows support.
+`the-cook/the-cook.exe` on Windows; releases ship Linux packages only.
 
-`./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help, cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C` and a usage error. This distribution check runs separately from `./gradlew check`.
+`./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help,
+cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C`
+and a usage error. On Linux it also checks the archive: every entry under `the-cook/`, an executable launcher and a
+matching `.sha256`.
 
-For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry point; that distribution requires Java 17 on the user's machine.
+For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry
+point; that distribution requires Java 17 on the user's machine.
 
 ## License
 

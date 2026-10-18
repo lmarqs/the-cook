@@ -23,7 +23,7 @@ changes it proposes.
 
 Document Cook invocations through the committed `./cook` wrapper, which pins an engine version and package checksums.
 The [wrapper](../features/wrapper.md) page covers first-use download, checksum verification, caching and upgrades; the
-root README's [install section](../../README.md#install) covers current local packaging and its limitations.
+root README's [install section](../../README.md#install) covers installing a release and building from source.
 
 The CLI is the public cooking interface. Gradle builds and packages the engine and cookbooks. Cookbook repositories and
 builds remain separate from engine releases.

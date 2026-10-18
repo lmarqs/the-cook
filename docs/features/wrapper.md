@@ -9,32 +9,42 @@ repository reviewed before it runs.
 checksum before execution, and upgrades only through an explicit, reviewed change.
 
 This page owns the `./cook` wrapper of the [intended architecture](../architecture.md#engine-distribution): its pin,
-checksum verification, first-use download, cache and upgrades. The current source-repository
-[`cook` script](../../cook) is a development launcher for a local build; see
-[current repository launcher](#current-repository-launcher).
+checksum verification, first-use download, cache and upgrades. This source repository's own [`cook` script](../../cook)
+is a development launcher for a local build; see [source repository launcher](#source-repository-launcher).
 
 ## Overview
 
-A repository commits an executable `./cook` [wrapper](glossary.md) with an engine version and matching platform-package
-checksums. It selects the pinned package for the machine's OS and architecture. Cook is JVM-based: the package is
-produced with `jpackage` and contains Java. The wrapper caches and launches the complete package.
+Each [release](https://github.com/lmarqs/the-cook/releases) publishes a `cook` [wrapper](glossary.md): a POSIX `sh`
+script with the release's version, its download location and the sha256 of its Linux x64 and arm64 packages written
+in it. A repository commits that file as its executable `./cook`. The wrapper selects the package for the machine's
+architecture. Cook is JVM-based: the package is produced with `jpackage` and contains Java. The wrapper caches and
+launches the complete package.
+
+```sh
+curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
+chmod +x cook
+git add cook
+```
 
 The engine pin belongs in committed repository content, separate from [`cook.lock`](glossary.md), which records
 recipe ownership.
 
 ## How it works
 
-1. Read the committed engine version and checksum for the target platform package.
-2. If that pinned package is already cached locally, launch it.
-3. Otherwise download that version's package and compare it with the committed checksum before execution.
-4. Refuse to run a download whose checksum does not match; do not accept it as the cached package.
-5. Cache the verified complete package, including Java, and launch it with the supplied CLI arguments.
+1. Select the package from `uname -s` and `uname -m`: `x86_64` or `amd64` is `linux-x64`, and `aarch64` or `arm64` is
+   `linux-arm64`. Any other platform is refused, named, with exit status 1.
+2. If `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/linux-<arch>/the-cook/bin/the-cook` exists, launch it.
+3. Otherwise download `the-cook-<version>-linux-<arch>.tar.gz` from the release with `curl`, or `wget` when `curl` is
+   absent, and compute its sha256 with `sha256sum`, or `shasum -a 256` when `sha256sum` is absent.
+4. Refuse a download whose sha256 differs from the one in the wrapper: print the file and both hashes, exit with
+   status 1, and cache nothing.
+5. Unpack the verified package beside the cache and move it in with one rename, so the cache never holds a partial
+   package, then launch it with the supplied CLI arguments.
 
-First use of an uncached version needs access to its download source and tools for downloading, checksum
-verification, and unpacking. Later use of the cached package requires no download. The cache must distinguish
-platform packages as well as versions; a package built for one OS or architecture is not a substitute for another.
-The specific tools, exact asset names, download-source configuration, pin file format, cache layout, shell
-prerequisites, and failure exit codes belong to the implementation.
+First use of an uncached version needs access to the release, `tar`, one of `curl` and `wget`, and one of `sha256sum`
+and `shasum`; without them the wrapper names the tool it needs and exits with status 1. Later use of the cached
+package requires no download. The cache keeps each version and platform apart; a package built for one architecture
+is not a substitute for another.
 
 The wrapper passes its CLI arguments to the engine. The [CLI reference](cli.md) defines cooking, discard and help, recipe
 operands, and batch options. The invocation directory is the destination for declared file
@@ -51,8 +61,9 @@ A checksum detects whether a download matches the reviewed pin. It does not by i
 
 ## Upgrading
 
-Upgrade by explicitly changing the committed version and its corresponding package checksums together. Review
-the pin change; on the next use, obtain the new package through the same verified download/cache flow. An ordinary
+Upgrade by replacing `./cook` with the wrapper of another release, which changes the version and its package
+checksums together. Review the pin change; on the next use, the wrapper obtains the new package through the same
+verified download/cache flow. An ordinary
 invocation does not move the pin or select a newer engine release.
 
 Changing the engine pin does not manage recipe versions, fetch cookbook updates, or automatically cook recipes into
@@ -78,11 +89,12 @@ Review the wrapper, engine version, and checksums together. A checksum mismatch 
 from running. Protect cached executable packages from unintended changes. Package verification is separate from
 recipe trust: Groovy recipes are executable code, and batch approval is not a sandbox for recipe side effects.
 
-## Current repository launcher
+## Source repository launcher
 
-The existing [`cook` script](../../cook) invokes `cli/build/install/the-cook/bin/the-cook` after changing into the
-source repository. If that local distribution is absent, it prints `Build the CLI first: ./gradlew cliBuild`. The
-root README's [install section](../../README.md#install) describes the existing self-contained jpackage build.
+This repository's [`cook` script](../../cook) runs the local build, `cli/build/install/the-cook/bin/the-cook`, from the
+directory it is called in, so that directory is the kitchen. If that local distribution is absent, it prints
+`Build the CLI first: ./gradlew cliBuild`. The root README's [install section](../../README.md#install) describes
+installing a release.
 
 ## Troubleshooting
 
@@ -90,5 +102,7 @@ root README's [install section](../../README.md#install) describes the existing 
 | --- | --- |
 | An uncached package cannot be downloaded | Obtain the pinned platform package; a cached complete package runs offline |
 | A download does not match its checksum | Refuse execution; resolve the download or pin discrepancy |
+| The wrapper names a tool it needs | Install `curl` or `wget`, and `sha256sum` or `shasum` |
+| The wrapper has no package for the platform | Run on Linux x64 or arm64 |
 | A copied launcher cannot find its runtime | Transfer the complete jpackage image, including Java |
-| The current repository script prints `Build the CLI first: ./gradlew cliBuild` | The local CLI distribution is absent; run `./gradlew cliBuild`; see the [quick start](../../README.md#quick-start) |
+| This repository's script prints `Build the CLI first: ./gradlew cliBuild` | The local CLI distribution is absent; run `./gradlew cliBuild`; see the [quick start](../../README.md#quick-start) |

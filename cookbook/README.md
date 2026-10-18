@@ -13,7 +13,9 @@ A cookbook releases as jars in a Maven-layout repository. The `io.github.lmarqs.
 jar per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
 `<group>:cookbook:<version>`, listing the artifacts at that release, so no directory is named `cookbook`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/ralph/`:
-everything a reader needs without the source checkout.
+everything a reader needs without the source checkout. Each release of this repository publishes the `agents`
+artifact to Maven Central as `io.github.lmarqs:agents:<version>`, so it cooks with no `cook.toml`; the other
+directories are not published.
 
 A recipe is addressed as `group:artifact:version[#recipe]`. The recipe named like its directory is the
 default: `io.github.lmarqs:ralph:0.0.0` cooks `ralph`, while `io.github.lmarqs:ralph:0.0.0#prd-story` cooks `prd-story`.
@@ -259,11 +261,11 @@ api = 1
 ## A cookbook outside this repository
 
 A developer's own recipes live in their own cookbook, packaged by the same plugin and cooked by coordinates from Maven
-local. The plugin comes from Maven local too: `./gradlew -p plugin publishToMavenLocal` in a checkout of this
-repository publishes `io.github.lmarqs.cookbook` there.
+local. Each release publishes the `io.github.lmarqs.cookbook` plugin to Maven Central. In a checkout of this
+repository, `./gradlew -p plugin publishToMavenLocal` publishes it to Maven local as version `0.0.0`.
 
-The cookbook's root holds `cookbook.toml`, as above, one directory per artifact, and these two build files. The
-plugin depends on a library from Maven Central, so plugin resolution lists both repositories:
+The cookbook's root holds `cookbook.toml`, as above, one directory per artifact, and these two build files. Plugin
+resolution lists Maven local and Maven Central:
 
 ```groovy
 // settings.gradle
@@ -279,11 +281,12 @@ rootProject.name = 'my-cookbook'
 ```groovy
 // build.gradle
 plugins {
-  id 'io.github.lmarqs.cookbook' version '0.0.0'
+  id 'io.github.lmarqs.cookbook' version '<version>'
 }
 ```
 
-`./gradlew publishToMavenLocal` publishes each artifact's jar and the BOM to `~/.m2/repository`. A kitchen that
+`./gradlew publishToMavenLocal -PreleaseVersion=<version>` publishes each artifact's jar and the BOM to
+`~/.m2/repository` at that version, or at `0.0.0` without the property. A kitchen that
 cooks from there lists it in its `cook.toml`, last so that shared repositories come first:
 
 ```toml
