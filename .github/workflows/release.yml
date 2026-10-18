@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# Two runs would compute the same version and publish it twice.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 env:
   SEMANTIC_RELEASE: >-
     npx --yes
@@ -89,6 +94,15 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+      # semantic-release tags nothing once main has moved past the commit it was started on, and Central cannot take a
+      # release back, so the bundle goes up only while main still points at this commit.
+      - name: Check that main has not moved
+        run: |
+          main=$(git ls-remote origin refs/heads/main | cut -f 1)
+          if [ "$main" != "$GITHUB_SHA" ]; then
+            echo "main moved to $main after the release started at $GITHUB_SHA; start release again" >&2
+            exit 1
+          fi
       # The GitHub release follows only once Central has validated the bundle, so a refused bundle tags nothing.
       - name: Publish to Maven Central
         run: |
