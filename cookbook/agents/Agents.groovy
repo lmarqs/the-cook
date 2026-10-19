@@ -26,7 +26,7 @@ package io.github.lmarqs.cookbook.agents
  * @ingredient(Claude) def claude
  *
  * agents.instruct('Run the project checks before delivery.')
- * agents.skills('solid')
+ * agents.skills('agents-layout')
  * agents.permit([claude])
  * agents.connect([claude])
  * ```
@@ -78,9 +78,9 @@ class Agents {
   }
 
   /**
-   * Adds skills packaged with this artifact to the shared skill directory, by name: `solid` (SOLID principles,
-   * TDD and clean code), `hexagonal-layout` (business logic boundaries and dependency direction) and
-   * `effective-java-core` (Java and Groovy API design). Rejects any other name. Add skills before calling `connect`.
+   * Adds skills packaged with this artifact to the shared skill directory, by name: `agents-layout`, which explains
+   * the shared layout, how to adopt and change it, and how to investigate misuse. Rejects any other name. Add skills
+   * before calling `connect`.
    */
   void skills(String... names) {
     names.each { if (!resources("skills/${it}")) throw new IllegalArgumentException("No packaged skill named ${it}") }

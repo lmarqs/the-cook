@@ -62,6 +62,9 @@ recipes:
       keys:
         - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
+      files:
+        - ".agents/skills/agents-layout/SKILL.md"
+        - ".agents/skills/agents-layout/references/policy.md"
       links:
         - ".claude/commands"
         - ".claude/settings.json"
@@ -394,6 +397,10 @@ worker [[git, [commit, push]]]
 
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
 
+    // Every repository with the layout carries the skill that explains it, where both harnesses find skills.
+    assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
+    new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
+    assert new File(kitchen, '.claude/skills/agents-layout/SKILL.md').isFile()
     assert new File(kitchen, '.gitignore').text == '''\
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
 /.claude/*
@@ -442,6 +449,8 @@ CLAUDE.local.md
     assert connected.changes == [
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
+      '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/references/policy.md',
       '.claude/commands',
       '.claude/settings.json',
       '.claude/skills',
@@ -487,15 +496,20 @@ import io.github.lmarqs.cookbook.agents.Claude
 agents.skills(skill)
 agents.connect([claude])
 """])
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#skill-check', [skill: ['solid']]).commit()
-    assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
-    new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#skill-check', [skill: ['agents-layout']]).commit()
+    assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
+    new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
     def link = new File(kitchen, '.claude/skills').toPath()
     assert Files.readSymbolicLink(link).toString() == '../.agents/skills'
-    assert new File(kitchen, '.claude/skills/solid/SKILL.md').isFile()
+    assert new File(kitchen, '.claude/skills/agents-layout/SKILL.md').isFile()
 
     def fewer = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#skill-check', [:])
-    assert fewer.changes == ['.agents/skills/solid/SKILL.md', '.claude/skills', 'cook.lock']
+    assert fewer.changes == [
+      '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/references/policy.md',
+      '.claude/skills',
+      'cook.lock',
+    ]
     fewer.commit()
     assert !new File(kitchen, '.agents/skills').exists()
     assert !new File(kitchen, '.claude/skills').exists()
@@ -541,15 +555,15 @@ import io.github.lmarqs.cookbook.agents.Claude
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude
 agents.instruct('Run the tests.')
-agents.skills('solid')
+agents.skills('agents-layout')
 agents.connect([claude])
 """)
 
     cook(kitchen, 'agents/skill-check.groovy', [:]).commit()
 
     assert new File(kitchen, 'AGENTS.md').text.startsWith(new File(COOKBOOK, 'agents/seed/AGENTS.template.md').text)
-    assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
-    new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
+    assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
+    new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
   }
 
   @Test void reportsAChangedSourceUnderARecordedVersionButNotAnEditedPath() {

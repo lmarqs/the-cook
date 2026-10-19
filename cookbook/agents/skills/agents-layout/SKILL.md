@@ -39,7 +39,6 @@ reach every agent when they go where every agent reads them, and personal ones s
 | To | Edit | Then |
 | --- | --- | --- |
 | Tell every agent something | `AGENTS.md` | Commit |
-| Tell only Claude something | A file in `.claude/rules/` | Commit |
 | Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
 | Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
 | Share a skill, slash command, hook script or durable fact | `.agents/skills/`, `commands/`, `hooks/` or `memory/` | Commit; the links expose it |
@@ -69,7 +68,7 @@ The diff shows `Bash(./gradlew test *)` added to `.agents/adapters/claude/settin
   edit reaches one harness only, and the next cook proposes undoing it.
 - **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists here
   or in a directory above, Claude stops reading `AGENTS.md`. `.gitignore` keeps them out of commits; a local one still
-  affects whoever has it. Claude-only notes fit `.claude/rules/`, personal notes `~/.claude/CLAUDE.md`.
+  affects whoever has it. Personal notes fit `~/.claude/CLAUDE.md`, which does not count.
 - **Widen in `commands`, narrow in roles.** A role only adds denies, so a worker never gets more than a person at the
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
 - **Use `ask` sparingly.** Nobody answers in an unattended run, so an `ask` refuses there, and every unattended run that

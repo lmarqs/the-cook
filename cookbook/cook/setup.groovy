@@ -1,5 +1,5 @@
 @help('''
-Sets up this repository's shared policy for Claude and Codex, three skills, working instructions and an
+Sets up this repository's shared policy for Claude and Codex, the `agents-layout` skill, working instructions and an
 ignore pattern for Claude's local settings file.
 
 ## Before cooking
@@ -20,7 +20,7 @@ The policy supplies command permissions for both harnesses.
 | `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `AGENTS.md` | Title, seeded when absent; never owned | Always |
 | `AGENTS.md` | The section `instructions`: working guidance | Always |
-| `.agents/skills/<name>/` | Whole files for `solid`, `hexagonal-layout`, `effective-java-core` | Always |
+| `.agents/skills/agents-layout/` | Whole files of the skill that explains the shared layout | Always |
 | `.agents/adapters/claude/settings.json` | `permissions`, linked from `.claude/settings.json` | Always |
 | `.claude/skills` | A relative link to `../.agents/skills` | Always |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write`, linked from `.codex/config.toml` | Always |
@@ -46,13 +46,9 @@ import io.github.lmarqs.cookbook.git.Git
 
 def harnesses = [claude, codex]
 
-agents.skills('solid', 'hexagonal-layout', 'effective-java-core')
+agents.skills('agents-layout')
 agents.instruct(
   '# Working on the-cook',
-  '',
-  'Use .agents/skills/solid for implementation and review.',
-  'Use .agents/skills/hexagonal-layout for application boundaries and adapters.',
-  'Use .agents/skills/effective-java-core for Java and Groovy API design.',
   '',
   'Core, infra, the CLI, and cookbook ingredients and recipes are Groovy.',
   'Build and verify changes with ./gradlew check cliBuild.')
