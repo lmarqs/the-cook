@@ -7,7 +7,8 @@ it in several ways at once: one person runs Claude Code at the keyboard, another
 third has Claude coordinate Codex workers through ralph-tui. Today's layout serves one person and one harness well
 and breaks down in a team:
 
-- `.claude/` is ignored as a whole, so a fresh clone, a cloud session or CI gets no shared setup until someone cooks;
+- each connected harness's directory, `.claude/` and `.codex/` alike, is ignored as a whole, so a fresh clone, a cloud
+  session or CI gets no shared setup until someone cooks;
 - `Claude.permit` imposes `defaultMode: acceptEdits` on everyone;
 - Claude reads instructions through a `.claude/CLAUDE.md` link while Codex reads `AGENTS.md` directly;
 - the policy has no roles, no alternatives and no way to state a rule only one harness can express;
