@@ -106,7 +106,7 @@ jobs:
       # The GitHub release follows only once Central has validated the bundle, so a refused bundle tags nothing.
       - name: Publish to Maven Central
         run: |
-          auth="Authorization: Bearer $(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 -w 0)"
+          auth="Authorization: Bearer $(printf '%s:%s' "$MAVEN_CENTRAL_USERNAME" "$MAVEN_CENTRAL_PASSWORD" | base64 -w 0)"
           deployment=$(curl --fail-with-body -sS -X POST -H "$auth" \
             -F bundle=@build/central/central-bundle.zip \
             "https://central.sonatype.com/api/v1/publisher/upload?name=the-cook-$VERSION&publishingType=AUTOMATIC")
@@ -123,8 +123,8 @@ jobs:
           echo "Deployment $deployment was not validated in 15 minutes" >&2
           exit 1
         env:
-          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
       - name: Release on GitHub
         run: $SEMANTIC_RELEASE
         env:
