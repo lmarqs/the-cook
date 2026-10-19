@@ -10,8 +10,8 @@ must be available to run the task.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:go:0.1.0#dependency --module=github.com/google/uuid --version=v1.6.0
-./cook io.github.lmarqs:go:0.1.0#dependency --module=github.com/google/uuid --version=v1.6.0 --dir=services/api
+./cook io.github.lmarqs.cookbook:go:0.1.0#dependency --module=github.com/google/uuid --version=v1.6.0
+./cook io.github.lmarqs.cookbook:go:0.1.0#dependency --module=github.com/google/uuid --version=v1.6.0 --dir=services/api
 ```
 
 ## Writes
@@ -30,8 +30,8 @@ key, so the last recipe in an invocation selects the module directory for the ti
 Run `mise run dependency:go` to run `go mod tidy` and `go test ./...` in the selected directory. Review
 the resulting `go.mod` and `go.sum` changes alongside the dependency line.
 ''')
-import io.github.lmarqs.go.Go
-import io.github.lmarqs.mise.Mise
+import io.github.lmarqs.cookbook.go.Go
+import io.github.lmarqs.cookbook.mise.Mise
 
 @param(value = ['module'], doc = 'Module path') String module
 @param(value = ['version'], doc = 'Module version, such as v1.2.3') String version

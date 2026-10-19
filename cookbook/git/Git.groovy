@@ -1,4 +1,4 @@
-package io.github.lmarqs.git
+package io.github.lmarqs.cookbook.git
 
 /**
  * Models the ignore patterns Git reads from `.gitignore`.
@@ -15,7 +15,7 @@ package io.github.lmarqs.git
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.git.Git
+ * import io.github.lmarqs.cookbook.git.Git
  *
  * @ingredient(Git) def git
  *

@@ -9,7 +9,7 @@ stored as written; quote it for the shell when passing `--script`.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:mise:0.1.0#grill --script='./gradlew check'
+./cook io.github.lmarqs.cookbook:mise:0.1.0#grill --script='./gradlew check'
 ```
 
 ## Writes
@@ -20,14 +20,14 @@ stored as written; quote it for the shell when passing `--script`.
 
 ## With other recipes
 
-Cook `io.github.lmarqs:mise:0.1.0#runtime-version` alongside this recipe when the command needs a pinned runtime.
+Cook `io.github.lmarqs.cookbook:mise:0.1.0#runtime-version` alongside this recipe when the command needs a pinned runtime.
 Its tool pin and this task are separate targets. Other recipes can add tasks under different names; the last
 recipe to declare `tasks.grill` owns that task whole.
 ''')
 @yield('''
 Run `mise run grill` from the project to run the command.
 ''')
-import io.github.lmarqs.mise.Mise
+import io.github.lmarqs.cookbook.mise.Mise
 
 @param(value = ['script'], doc = 'The command the task runs') String script
 

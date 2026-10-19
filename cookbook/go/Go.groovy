@@ -1,4 +1,4 @@
-package io.github.lmarqs.go
+package io.github.lmarqs.cookbook.go
 
 import java.util.regex.Pattern
 
@@ -18,8 +18,8 @@ import java.util.regex.Pattern
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.go.Go
- * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.cookbook.go.Go
+ * import io.github.lmarqs.cookbook.mise.Mise
  *
  * @ingredient(Go) def go
  * @ingredient(Mise) def mise

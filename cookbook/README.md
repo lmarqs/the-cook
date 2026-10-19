@@ -12,12 +12,12 @@ Models may depend on other models for their types and on ordinary libraries. Rec
 A cookbook releases as jars in a Maven-layout repository. The `io.github.lmarqs.cookbook` Gradle plugin packages one
 jar per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
 `<group>:cookbook:<version>`, listing the artifacts at that release, so no directory is named `cookbook`. Each jar
-holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/ralph/`:
+holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
 everything a reader needs without the source checkout. Each release of this repository publishes the `agents`
-artifact to Maven Central as `io.github.lmarqs:agents:<version>`, so it cooks with no `cook.toml`; the other
+artifact to Maven Central as `io.github.lmarqs.cookbook:agents:<version>`, so it cooks with no `cook.toml`; the other
 directories are not published.
 
-A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs:ralph:0.0.0#prd-story`. Without
+A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#prd-story`. Without
 `#recipe` the address names the artifact, which `./cook help` describes and nothing cooks.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources.
@@ -42,9 +42,9 @@ The engine does not find recipes. People find them in a cookbook's repository, o
 teammate's link. Given the coordinates:
 
 ```sh
-./cook help io.github.lmarqs:agents:0.0.0                # the artifact's front page
-./cook help io.github.lmarqs:agents:0.0.0#instructions   # the recipe's help, params and ingredients
-./cook io.github.lmarqs:agents:0.0.0#permissions --harness=claude io.github.lmarqs:agents:0.0.0#instructions --harness=claude
+./cook help io.github.lmarqs.cookbook:agents:0.0.0                # the artifact's front page
+./cook help io.github.lmarqs.cookbook:agents:0.0.0#instructions   # the recipe's help, params and ingredients
+./cook io.github.lmarqs.cookbook:agents:0.0.0#permissions --harness=claude io.github.lmarqs.cookbook:agents:0.0.0#instructions --harness=claude
 ```
 
 `help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version#recipe` it prints
@@ -54,7 +54,7 @@ in its own classloader. A recipe never composes another recipe.
 ## Names
 
 A model's package is its cookbook's group plus its directory name: `cookbook/docker/Compose.groovy` declares
-`io.github.lmarqs.docker.Compose` in the artifact `io.github.lmarqs:docker`. A recipe imports every type it injects, so
+`io.github.lmarqs.cookbook.docker.Compose` in the artifact `io.github.lmarqs.cookbook:docker`. A recipe imports every type it injects, so
 its imports are its visible dependency list and `@ingredient(Compose)` resolves through them.
 
 Recipe names are noun phrases naming the state the destination gets, without repeating the directory's topic:
@@ -200,14 +200,14 @@ A model's class doc comment holds these sections in order.
 Rendered help for an artifact and a recipe, as the design intends it:
 
 ```text
-$ ./cook help io.github.lmarqs:ralph:0.0.0
+$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0
 Ralph TUI configuration and runners for recipe-driven development loops.
 ```
 
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ```text
-$ ./cook help io.github.lmarqs:ralph:0.0.0#ralph-tui
+$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
 ralph-tui
 
 Sets up Ralph TUI as the repository's loop runner: its configuration, a runner and the tracker it takes stories
@@ -224,10 +224,10 @@ Parameters
   --issue-prefix=<String>   The Beads issue prefix, for the beads tracker             default: none
 
 Ingredients
-  io.github.lmarqs.beads.Beads
-  io.github.lmarqs.git.Git
-  io.github.lmarqs.mise.Mise
-  io.github.lmarqs.ralph.RalphTui
+  io.github.lmarqs.cookbook.beads.Beads
+  io.github.lmarqs.cookbook.git.Git
+  io.github.lmarqs.cookbook.mise.Mise
+  io.github.lmarqs.cookbook.ralph.RalphTui
 
 After cooking
   - `--mode=standalone`: run `.ralph-tui/run`, with a PRD path or a Beads epic id as its argument.
@@ -255,7 +255,7 @@ Gradle property `releaseVersion`, set by the build that publishes the release, a
 cookbook's manifest is:
 
 ```toml
-group = "io.github.lmarqs"
+group = "io.github.lmarqs.cookbook"
 api = 1
 ```
 

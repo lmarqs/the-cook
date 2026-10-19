@@ -7,13 +7,13 @@ and cooked again.
 ## Before cooking
 
 Reads `.agents/policy.yaml` when present, or seeds the starter, and seeds the shared directories that are absent.
-Cook `io.github.lmarqs:agents:0.1.0#seed` first to create `AGENTS.md` too.
+Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` too.
 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:agents:0.1.0#connect --harness=claude
-./cook io.github.lmarqs:agents:0.1.0#connect --harness=claude --harness=codex
+./cook io.github.lmarqs.cookbook:agents:0.1.0#connect --harness=claude
+./cook io.github.lmarqs.cookbook:agents:0.1.0#connect --harness=claude --harness=codex
 ```
 
 ## Writes
@@ -37,16 +37,16 @@ Cooking with fewer harnesses removes the outputs of the ones left out. When the 
 
 ## With other recipes
 
-`io.github.lmarqs:agents:0.1.0#seed` creates the layout this recipe connects. `#claude-settings` and
+`io.github.lmarqs.cookbook:agents:0.1.0#seed` creates the layout this recipe connects. `#claude-settings` and
 `#codex-settings` write further keys into the same adapter files.
 ''')
 @yield('''
 Review the rendered permissions against each harness's permission model. Edit `.agents/policy.yaml` and cook again
 to update them; after deleting `.claude/` or `.codex/`, cook again to recreate the links.
 ''')
-import io.github.lmarqs.agents.Agents
-import io.github.lmarqs.agents.Claude
-import io.github.lmarqs.agents.Codex
+import io.github.lmarqs.cookbook.agents.Agents
+import io.github.lmarqs.cookbook.agents.Claude
+import io.github.lmarqs.cookbook.agents.Codex
 
 @param(value = ['harness'], choices = ['claude', 'codex'], many = true, doc = 'Harnesses to connect to the shared layout')
 String[] harness

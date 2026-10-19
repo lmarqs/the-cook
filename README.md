@@ -37,14 +37,14 @@ printf 'repositories = ["%s/cookbook"]\n' "$PWD" > "$kitchen/cook.toml"
 Read the `agents` artifact's front page and one of its recipes, without running anything:
 
 ```sh
-./cook -C "$kitchen" help io.github.lmarqs:agents:0.0.0
-./cook -C "$kitchen" help io.github.lmarqs:agents:0.0.0#instructions
+./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0
+./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0#instructions
 ```
 
 Cook two recipes in it:
 
 ```sh
-./cook -C "$kitchen" io.github.lmarqs:agents:0.0.0#permissions --harness=claude io.github.lmarqs:agents:0.0.0#instructions --harness=claude
+./cook -C "$kitchen" io.github.lmarqs.cookbook:agents:0.0.0#permissions --harness=claude io.github.lmarqs.cookbook:agents:0.0.0#instructions --harness=claude
 ```
 
 Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
@@ -165,10 +165,10 @@ cook, or name the repository with `-C`. On Linux the launcher is `the-cook/bin/t
 v=<version>
 curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
 tar -xzf "the-cook-$v-linux-x64.tar.gz"
-the-cook/bin/the-cook -C /path/to/repository "io.github.lmarqs:agents:$v#instructions" --harness=claude
+the-cook/bin/the-cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#instructions" --harness=claude
 ```
 
-Without a `cook.toml`, coordinates such as `io.github.lmarqs:agents:<version>#instructions` resolve from Maven
+Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#instructions` resolve from Maven
 Central.
 
 ### From source

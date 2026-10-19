@@ -10,7 +10,7 @@ unsupported versions, unknown top-level fields and invalid command prefixes are 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:agents:0.1.0#permissions --harness=claude --harness=codex
+./cook io.github.lmarqs.cookbook:agents:0.1.0#permissions --harness=claude --harness=codex
 ```
 
 ## Writes
@@ -28,15 +28,15 @@ Cooking with fewer harnesses removes the outputs of the ones left out.
 
 ## With other recipes
 
-Cook `io.github.lmarqs:agents:0.1.0#instructions` with the same harness selection to connect shared instructions.
+Cook `io.github.lmarqs.cookbook:agents:0.1.0#instructions` with the same harness selection to connect shared instructions.
 The recipes write separate targets and work in either order.
 ''')
 @yield('''
 Edit the shared policy and cook again to render the permissions.
 ''')
-import io.github.lmarqs.agents.Agents
-import io.github.lmarqs.agents.Claude
-import io.github.lmarqs.agents.Codex
+import io.github.lmarqs.cookbook.agents.Agents
+import io.github.lmarqs.cookbook.agents.Claude
+import io.github.lmarqs.cookbook.agents.Codex
 
 @param(value = ['harness'], choices = ['claude', 'codex'], many = true, doc = 'Harnesses that receive the shared policy')
 String[] harness

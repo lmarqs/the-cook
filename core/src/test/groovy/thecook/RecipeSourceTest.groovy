@@ -17,9 +17,9 @@ class RecipeSourceTest {
       ['claude', 'codex'], true)
     ]
     assert texts.ingredients == [
-      'io.github.lmarqs.agents.Agents',
-      'io.github.lmarqs.agents.Claude',
-      'io.github.lmarqs.agents.Codex',
+      'io.github.lmarqs.cookbook.agents.Agents',
+      'io.github.lmarqs.cookbook.agents.Claude',
+      'io.github.lmarqs.cookbook.agents.Codex',
     ]
   }
 

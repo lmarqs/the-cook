@@ -1,4 +1,4 @@
-package io.github.lmarqs.docker
+package io.github.lmarqs.cookbook.docker
 
 /**
  * Models services in a Docker Compose file.
@@ -16,8 +16,8 @@ package io.github.lmarqs.docker
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.docker.Compose
- * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.cookbook.docker.Compose
+ * import io.github.lmarqs.cookbook.mise.Mise
  *
  * @ingredient(Compose) def compose
  * @ingredient(Mise) def mise

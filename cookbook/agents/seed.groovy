@@ -6,7 +6,7 @@ memory, which `.agents/README.md` describes.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:agents:0.1.0#seed
+./cook io.github.lmarqs.cookbook:agents:0.1.0#seed
 ```
 
 ## Writes
@@ -23,12 +23,12 @@ the template, or with `--skip` to keep it as it is.
 
 ## With other recipes
 
-Cook `io.github.lmarqs:agents:0.1.0#connect` with the harnesses to use, to have them read this layout.
+Cook `io.github.lmarqs.cookbook:agents:0.1.0#connect` with the harnesses to use, to have them read this layout.
 ''')
 @yield('''
-Have an agent fill in `AGENTS.md`, edit `.agents/policy.yaml`, then cook `io.github.lmarqs:agents:0.1.0#connect`.
+Have an agent fill in `AGENTS.md`, edit `.agents/policy.yaml`, then cook `io.github.lmarqs.cookbook:agents:0.1.0#connect`.
 ''')
-import io.github.lmarqs.agents.Agents
+import io.github.lmarqs.cookbook.agents.Agents
 
 @ingredient(Agents) def agents
 

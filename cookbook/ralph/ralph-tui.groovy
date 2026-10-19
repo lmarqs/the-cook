@@ -12,8 +12,8 @@ from.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:ralph:0.1.0#ralph-tui
-./cook io.github.lmarqs:ralph:0.1.0#ralph-tui --tracker=beads --mode=mise --issue-prefix=cook
+./cook io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui
+./cook io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui --tracker=beads --mode=mise --issue-prefix=cook
 ```
 
 ## Writes
@@ -33,9 +33,9 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 
 ## With other recipes
 
-- `io.github.lmarqs:ralph:0.1.0#prd-story` writes a PRD reduced to one story. Cook it before
-  `io.github.lmarqs:ralph:0.1.0#ralph-tui`, with `--prd` pointing at the same path.
-- `io.github.lmarqs:ralph:0.1.0#bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
+- `io.github.lmarqs.cookbook:ralph:0.1.0#prd-story` writes a PRD reduced to one story. Cook it before
+  `io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui`, with `--prd` pointing at the same path.
+- `io.github.lmarqs.cookbook:ralph:0.1.0#bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
   It needs `--tracker=beads` and `--mode=mise`.
 ''')
 @yield('''
@@ -43,10 +43,10 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 - `--mode=mise`: run `mise install`, then `mise run ralph:run` with the same argument. `mise run beads:ready` lists
   the ready Beads tasks.
 ''')
-import io.github.lmarqs.beads.Beads
-import io.github.lmarqs.git.Git
-import io.github.lmarqs.mise.Mise
-import io.github.lmarqs.ralph.RalphTui
+import io.github.lmarqs.cookbook.beads.Beads
+import io.github.lmarqs.cookbook.git.Git
+import io.github.lmarqs.cookbook.mise.Mise
+import io.github.lmarqs.cookbook.ralph.RalphTui
 
 @param(value = ['agent'], default = 'codex', doc = 'The agent Ralph drives, by its Ralph plugin name') String agent
 @param(value = ['tracker'], choices = ['json', 'beads'], default = 'json', doc = 'Where Ralph takes its stories from') String tracker

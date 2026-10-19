@@ -1,4 +1,4 @@
-package io.github.lmarqs.node
+package io.github.lmarqs.cookbook.node
 
 /**
  * A Node project: `package.json`, its package manager and the files the toolchain leaves behind.
@@ -19,9 +19,9 @@ package io.github.lmarqs.node
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.node.Node
- * import io.github.lmarqs.mise.Mise
- * import io.github.lmarqs.git.Git
+ * import io.github.lmarqs.cookbook.node.Node
+ * import io.github.lmarqs.cookbook.mise.Mise
+ * import io.github.lmarqs.cookbook.git.Git
  *
  * @ingredient(Node) def node
  * @ingredient(Mise) def mise

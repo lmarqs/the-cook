@@ -1,4 +1,4 @@
-# What coding agents may run in this repository. Cooking io.github.lmarqs:agents#connect renders this file into each
+# What coding agents may run in this repository. Cooking io.github.lmarqs.cookbook:agents#connect renders this file into each
 # harness's settings under .agents/adapters/; edit it, then cook again.
 version: 1
 

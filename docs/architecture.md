@@ -31,7 +31,7 @@ A recipe is trusted executable Groovy code that describes requested file operati
 recipes produces the batch that Cook reviews and writes. The models describe program configuration; the engine
 handles the resulting file operations. Each recipe has a short name that markers and the lock use to identify it. A
 recipe cooked from a path is named by its place in the repository without `.groovy`, such as `recipes/setup`. A recipe
-cooked by its coordinates is named by its address without the version, such as `io.github.lmarqs:agents#instructions`,
+cooked by its coordinates is named by its address without the version, such as `io.github.lmarqs.cookbook:agents#instructions`,
 so cooking a new version keeps the same owner. Moving a recipe file renames it: cooking the new name and discarding the
 old one moves the ownership ([discard](features/discard.md)).
 
@@ -178,8 +178,8 @@ and the sections, keys, whole files and links the recipe owns. It records no rec
 # Written by the-cook; do not edit by hand.
 version: 1
 recipes:
-  - name: "io.github.lmarqs:agents#permissions"
-    source: "io.github.lmarqs:agents:0.0.0#permissions"
+  - name: "io.github.lmarqs.cookbook:agents#permissions"
+    source: "io.github.lmarqs.cookbook:agents:0.0.0#permissions"
     sha256: "3f5a…"
     owns:
       keys:
@@ -187,13 +187,13 @@ recipes:
           path: ["permissions"]
       files:
         - ".agents/adapters/codex/rules/default.rules"
-  - name: "io.github.lmarqs:agents#instructions"
-    source: "io.github.lmarqs:agents:0.0.0#instructions"
+  - name: "io.github.lmarqs.cookbook:agents#instructions"
+    source: "io.github.lmarqs.cookbook:agents:0.0.0#instructions"
     sha256: "3f5a…"
     owns:
       sections:
         - file: ".agents/adapters/claude/CLAUDE.md"
-          id: "io.github.lmarqs:agents#instructions#instructions"
+          id: "io.github.lmarqs.cookbook:agents#instructions#instructions"
       links:
         - ".claude/CLAUDE.md"
 ```
@@ -225,7 +225,7 @@ hand-written text and files a seed wrote the first time the recipe was cooked. D
 the values the recipe replaced, because the repository's history already holds them (FR-15).
 
 For example, when `.agents/adapters/claude/CLAUDE.md` holds a hand-written line above the section
-`io.github.lmarqs:agents#instructions` owns, discarding that recipe proposes, besides removing the `.claude/CLAUDE.md`
+`io.github.lmarqs.cookbook:agents#instructions` owns, discarding that recipe proposes, besides removing the `.claude/CLAUDE.md`
 link:
 
 ```diff
@@ -233,9 +233,9 @@ link:
 +++ b/.agents/adapters/claude/CLAUDE.md
 @@ -1,4 +1,1 @@
  Hand-written notes stay.
--<!-- cook:begin io.github.lmarqs:agents#instructions#instructions -->
+-<!-- cook:begin io.github.lmarqs.cookbook:agents#instructions#instructions -->
 -@../../../AGENTS.md
--<!-- cook:end io.github.lmarqs:agents#instructions#instructions -->
+-<!-- cook:end io.github.lmarqs.cookbook:agents#instructions#instructions -->
 ```
 
 Discard follows the same diff, whole-batch approval and failure rollback as cooking. To get back content from before
@@ -292,7 +292,7 @@ publishes:
 
 - on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
   package with its `.sha256`, and the `cook` wrapper with its `.sha256`;
-- on Maven Central, the `io.github.lmarqs:agents` cookbook artifact and the cookbook Gradle plugin with its marker.
+- on Maven Central, the `io.github.lmarqs.cookbook:agents` cookbook artifact and the cookbook Gradle plugin with its marker.
 
 A repository commits the release's executable `./cook` wrapper, which pins the engine version and the checksum of
 each package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,

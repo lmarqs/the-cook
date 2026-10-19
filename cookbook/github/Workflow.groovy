@@ -1,4 +1,4 @@
-package io.github.lmarqs.github
+package io.github.lmarqs.cookbook.github
 
 /**
  * Models jobs, permissions and steps in a GitHub Actions workflow file.
@@ -16,8 +16,8 @@ package io.github.lmarqs.github
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.aws.Aws
- * import io.github.lmarqs.github.Workflow
+ * import io.github.lmarqs.cookbook.aws.Aws
+ * import io.github.lmarqs.cookbook.github.Workflow
  *
  * @ingredient(Workflow) def ci
  * @ingredient(Aws) def aws

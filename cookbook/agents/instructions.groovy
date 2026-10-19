@@ -4,8 +4,8 @@ Seeds `AGENTS.md` with a section template for an agent to fill in, and connects 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:agents:0.1.0#instructions
-./cook io.github.lmarqs:agents:0.1.0#instructions --harness=claude
+./cook io.github.lmarqs.cookbook:agents:0.1.0#instructions
+./cook io.github.lmarqs.cookbook:agents:0.1.0#instructions --harness=claude
 ```
 
 ## Writes
@@ -25,7 +25,7 @@ selecting `codex` adds no target.
 
 ## With other recipes
 
-Cook `io.github.lmarqs:agents:0.1.0#permissions` with the same harness selection to render the shared policy.
+Cook `io.github.lmarqs.cookbook:agents:0.1.0#permissions` with the same harness selection to render the shared policy.
 The recipes write separate targets and work in either order.
 ''')
 @yield('''
@@ -33,9 +33,9 @@ Have an agent fill in `AGENTS.md`; the note at its top tells the agent how, and 
 as a guide for readers. Then, in a fresh session, ask an agent to set up the checkout, make a small change and pass
 the Done check using only `AGENTS.md`, and correct the file where the agent went wrong.
 ''')
-import io.github.lmarqs.agents.Agents
-import io.github.lmarqs.agents.Claude
-import io.github.lmarqs.agents.Codex
+import io.github.lmarqs.cookbook.agents.Agents
+import io.github.lmarqs.cookbook.agents.Claude
+import io.github.lmarqs.cookbook.agents.Codex
 
 @param(value = ['harness'], default = [], choices = ['claude', 'codex'], many = true, doc = 'Harnesses that read the shared instructions')
 String[] harness

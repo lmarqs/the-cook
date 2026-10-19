@@ -11,8 +11,8 @@ The Terraform configuration must use the supplied AWS endpoint and test credenti
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:aws:0.1.0#local-resource --path=infra/local/queue.tf --from=setup/queue.tf
-./cook io.github.lmarqs:aws:0.1.0#local-resource --path=infra/local/queue.tf --from=setup/queue.tf --endpoint=http://localstack:4566
+./cook io.github.lmarqs.cookbook:aws:0.1.0#local-resource --path=infra/local/queue.tf --from=setup/queue.tf
+./cook io.github.lmarqs.cookbook:aws:0.1.0#local-resource --path=infra/local/queue.tf --from=setup/queue.tf --endpoint=http://localstack:4566
 ```
 
 ## Writes
@@ -34,9 +34,9 @@ endpoint. Another recipe writing the same file supplies its whole content when i
 @yield('''
 Initialize Terraform in the directory holding the written file, then run `mise run localstack:resource`.
 ''')
-import io.github.lmarqs.aws.Aws
-import io.github.lmarqs.mise.Mise
-import io.github.lmarqs.terraform.Terraform
+import io.github.lmarqs.cookbook.aws.Aws
+import io.github.lmarqs.cookbook.mise.Mise
+import io.github.lmarqs.cookbook.terraform.Terraform
 
 @param(value = ['path'], doc = 'Where the Terraform file goes') String path
 @param(value = ['from'], doc = 'File holding the Terraform text') File from

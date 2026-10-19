@@ -83,7 +83,7 @@ tasks.register('centralBundleTest') {
   doLast {
     def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
     def v = releaseVersion
-    def agents = "io/github/lmarqs/agents/${v}/agents-${v}"
+    def agents = "io/github/lmarqs/cookbook/agents/${v}/agents-${v}"
     def plugin = "io/github/lmarqs/the-cook-plugin/${v}/the-cook-plugin-${v}"
     def marker = "io/github/lmarqs/cookbook/io.github.lmarqs.cookbook.gradle.plugin/${v}/" +
         "io.github.lmarqs.cookbook.gradle.plugin-${v}"

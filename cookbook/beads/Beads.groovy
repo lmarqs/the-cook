@@ -1,4 +1,4 @@
-package io.github.lmarqs.beads
+package io.github.lmarqs.cookbook.beads
 
 /**
  * Models the files the Beads tracker reads and leaves behind.
@@ -16,9 +16,9 @@ package io.github.lmarqs.beads
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.beads.Beads
- * import io.github.lmarqs.git.Git
- * import io.github.lmarqs.mise.Mise
+ * import io.github.lmarqs.cookbook.beads.Beads
+ * import io.github.lmarqs.cookbook.git.Git
+ * import io.github.lmarqs.cookbook.mise.Mise
  *
  * @ingredient(Beads) def beads
  * @ingredient(Git) def git

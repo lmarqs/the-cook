@@ -10,8 +10,8 @@ lock file; use the lock task to create or refresh it.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:node:0.1.0#project --manager=yarn
-./cook io.github.lmarqs:node:0.1.0#project --node=22 --manager=npm --manager-version=10.9.8
+./cook io.github.lmarqs.cookbook:node:0.1.0#project --manager=yarn
+./cook io.github.lmarqs.cookbook:node:0.1.0#project --node=22 --manager=npm --manager-version=10.9.8
 ```
 
 ## Writes
@@ -27,7 +27,7 @@ lock file; use the lock task to create or refresh it.
 
 ## With other recipes
 
-Cook `io.github.lmarqs:node:0.1.0#dependency` with the same manager and `--dir=.` to add a dependency to this
+Cook `io.github.lmarqs.cookbook:node:0.1.0#dependency` with the same manager and `--dir=.` to add a dependency to this
 project. Its dependency keys compose with the engine and manager keys; refresh the lock file after changes.
 Other recipes can add distinct tool pins and tasks in the same `mise.toml`.
 ''')
@@ -35,9 +35,9 @@ Other recipes can add distinct tool pins and tasks in the same `mise.toml`.
 Run `mise install` to install the pinned tools. Run `mise run node:lock` when the lock file needs creating or
 refreshing, and `mise run node:setup` to install dependencies from it.
 ''')
-import io.github.lmarqs.node.Node
-import io.github.lmarqs.mise.Mise
-import io.github.lmarqs.git.Git
+import io.github.lmarqs.cookbook.node.Node
+import io.github.lmarqs.cookbook.mise.Mise
+import io.github.lmarqs.cookbook.git.Git
 
 @param(value = ['node'], default = '22', doc = 'The Node version') String nodeVersion
 @param(value = ['manager'], choices = ['npm', 'yarn'], default = 'npm', doc = 'The package manager for the project tools and tasks') String manager

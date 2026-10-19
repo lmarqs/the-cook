@@ -1,4 +1,4 @@
-package io.github.lmarqs.agents
+package io.github.lmarqs.cookbook.agents
 
 /**
  * Models the project instructions, policy and skills shared by coding agents in a repository.
@@ -18,8 +18,8 @@ package io.github.lmarqs.agents
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.agents.Agents
- * import io.github.lmarqs.agents.Claude
+ * import io.github.lmarqs.cookbook.agents.Agents
+ * import io.github.lmarqs.cookbook.agents.Claude
  *
  * @ingredient(Agents) def agents
  * @ingredient(Claude) def claude

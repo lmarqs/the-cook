@@ -1,4 +1,4 @@
-package io.github.lmarqs.agents
+package io.github.lmarqs.cookbook.agents
 
 /**
  * Models the project configuration, hooks, rules and instructions Codex reads in a repository.
@@ -19,8 +19,8 @@ package io.github.lmarqs.agents
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.agents.Agents
- * import io.github.lmarqs.agents.Codex
+ * import io.github.lmarqs.cookbook.agents.Agents
+ * import io.github.lmarqs.cookbook.agents.Codex
  *
  * @ingredient(Agents) def agents
  * @ingredient(Codex) def codex
@@ -32,7 +32,7 @@ package io.github.lmarqs.agents
  *
  * ## With other models
  *
- * `io.github.lmarqs.agents.Agents` drives this harness through `permit`, `readInstructions` and `readDirectories`.
+ * `io.github.lmarqs.cookbook.agents.Agents` drives this harness through `permit`, `readInstructions` and `readDirectories`.
  * It supplies the shared policy and paths; Codex translates the policy into its native settings and rules,
  * and checks that the shared paths are the ones it reads natively. The same command prefixes do not mean
  * identical enforcement across harnesses; review the generated rules against Codex's permission model.
