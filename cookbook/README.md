@@ -25,9 +25,10 @@ records the address and a sha256 of the artifact's sources.
 A loose recipe compiles against the models in its own directory, the upper-case `.groovy` files beside it, as a
 recipe in an artifact compiles against that artifact's models.
 
-A committed `cook.toml` at the destination lists the Maven-layout repositories to resolve from, in order, as
-`repositories`: each an `https://` URL or a path, one starting with `~/` relative to the user's home and any other to
-the destination. Without a `cook.toml`, Cook resolves from Maven Central.
+A committed `cook.toml` at the destination lists the repositories to resolve from, in order, as `repositories`: each
+an `https://` URL or a path, one starting with `~/` relative to the user's home and any other to the destination. A
+URL or path names a Maven-layout repository, or a path names a cookbook's source directory, the one holding
+`cookbook.toml`. Without a `cook.toml`, Cook resolves from Maven Central.
 [ADR 0029](../docs/adrs/0029-cookbook-distribution.md) records the reasons.
 
 ```toml
@@ -300,5 +301,12 @@ repositories = [
 ./cook <group>:<artifact>:<version>#<recipe>
 ```
 
-Coordinates take exact release versions. Publishing a changed cookbook under the same version is cooked as it is
-now: the next cook prints `Changed source <address>` above the diff and records the new sha256 in `cook.lock`.
+While developing a cookbook, a kitchen lists its source directory instead, and cooks each edit with no build. The
+directory serves `<group>:<artifact>:<any version>` from the files of `<artifact>/`, leaving out hidden files:
+
+```toml
+repositories = ["../../../cookbook"]
+```
+
+Coordinates take exact release versions. Publishing a changed cookbook under the same version, or editing it in a
+listed source directory, is cooked as it is now: the next cook prints `Changed source <address>` above the diff and records the new sha256 in `cook.lock`.

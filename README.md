@@ -21,25 +21,29 @@ This section describes what runs on `main`. The [architecture](docs/architecture
 
 ### Quick start
 
-With a Java 17 JDK and access to obtain Gradle and build dependencies, from the checkout root, build the CLI and
-publish the cookbook to `cookbook/build/repository`:
+With a Java 17 JDK and access to obtain Gradle and build dependencies, from the checkout root, build the CLI:
 
 ```sh
-./gradlew cliBuild :cookbook:publish
+./gradlew cliBuild
+```
+
+Make a scratch kitchen whose `cook.toml` resolves from this checkout's cookbook sources:
+
+```sh
+kitchen=$(mktemp -d)
+printf 'repositories = ["%s/cookbook"]\n' "$PWD" > "$kitchen/cook.toml"
 ```
 
 Read the `agents` artifact's front page and one of its recipes, without running anything:
 
 ```sh
-./cook help io.github.lmarqs:agents:0.0.0
-./cook help io.github.lmarqs:agents:0.0.0#instructions
+./cook -C "$kitchen" help io.github.lmarqs:agents:0.0.0
+./cook -C "$kitchen" help io.github.lmarqs:agents:0.0.0#instructions
 ```
 
-Make a scratch kitchen whose `cook.toml` resolves from this checkout's repository, then cook two recipes in it:
+Cook two recipes in it:
 
 ```sh
-kitchen=$(mktemp -d)
-printf 'repositories = ["%s/cookbook/build/repository"]\n' "$PWD" > "$kitchen/cook.toml"
 ./cook -C "$kitchen" io.github.lmarqs:agents:0.0.0#permissions --harness=claude io.github.lmarqs:agents:0.0.0#instructions --harness=claude
 ```
 
@@ -74,8 +78,9 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
 - `help` on an artifact, a recipe or a recipe path, read without running it.
 
 Coordinates resolve from the first repository of the kitchen's `cook.toml` `repositories` list that holds them, and
-from Maven Central when the kitchen has no `cook.toml`. An entry is a Maven-layout repository of jars, an `https://` URL
-or a path, where `~/` starts from the user's home as in `~/.m2/repository` ([cookbook](cookbook/README.md)).
+from Maven Central when the kitchen has no `cook.toml`. An entry is an `https://` URL or a path to a Maven-layout
+repository of jars, where `~/` starts from the user's home as in `~/.m2/repository`, or a path to a cookbook's source
+directory, which serves its artifacts at any version as they are, with no build ([cookbook](cookbook/README.md)).
 Arguments follow their recipe as `--name=value` or `--name value`, and a yes-or-no argument as a bare `--name` or
 `--name=false`. A word that contains `/` or `:` or ends with `.groovy` starts the next recipe, so a value shaped like
 one is written `--name=value`.

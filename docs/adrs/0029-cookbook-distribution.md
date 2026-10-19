@@ -31,8 +31,10 @@ repository cooking a release can tell when the content under that release change
 
 1. A cookbook release is one jar per artifact in a Maven-layout repository, at `<group>:<artifact>:<version>`. The
    cookbook's `cookbook.toml` names its group, and the build that publishes the release sets the version.
-2. A repository entry in the kitchen's `cook.toml` is a Maven-layout repository, an `https://` URL or a path. A path
-   starting with `~/` is relative to the user's home, any other path to the kitchen. Entries are tried in order.
+2. A repository entry in the kitchen's `cook.toml` is an `https://` URL or a path to a Maven-layout repository, or a
+   path to a cookbook's source directory, the one holding `cookbook.toml`. A source directory serves each artifact of
+   its group, at any version, from the files of its top-level directory. A path starting with `~/` is relative to the
+   user's home, any other path to the kitchen. Entries are tried in order.
 3. Without a `cook.toml`, the engine resolves from Maven Central.
 4. `cook.lock` records the sha256 of the artifact's sources: each path and its content, in path order. A different
    hash under a version the lock records is shown as a changed source before the diff.
@@ -46,7 +48,8 @@ repository cooking a release can tell when the content under that release change
 - **2.** Listing repositories in the kitchen keeps the sources a repository trusts in one reviewed file. A `~/` path
   lets a committed `cook.toml` name Maven local, `~/.m2/repository`, where a developer publishes their own cookbooks,
   without writing a personal home directory into the file. The trade is an entry that resolves differently on each
-  machine.
+  machine. A source directory entry lets a cookbook's author cook an edit without building or publishing it. The trade
+  is an entry that ignores the version, so the lock shows each edit as a changed source under the same version.
 - **3.** Maven Central serves public artifacts to anyone without credentials, so a kitchen without a `cook.toml` cooks
   published cookbooks with no setup.
 - **4.** A jar's bytes identify more than the artifact: two builds of one release can differ in bytes. A hash of the
@@ -105,3 +108,5 @@ Must be maintained:
   diff?
 - Review a kitchen that lists `~/.m2/repository`: does a cookbook its developer published to Maven local cook by its
   coordinates?
+- Review a kitchen that lists a cookbook's source directory: does an edit to one of its recipes cook on the next run
+  with no build?

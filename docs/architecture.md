@@ -307,7 +307,9 @@ A cookbook releases as one jar per artifact, holding its sources, resources and 
 repository; the build that publishes a release sets its version. The destination's committed `cook.toml` lists the
 Maven-layout repositories coordinates resolve from, in order; without a `cook.toml`, Maven Central. A path entry
 starting with `~/` is relative to the user's home, so a developer lists `~/.m2/repository`, last, to cook their own
-cookbooks published to Maven local. Coordinates name exact releases only.
+cookbooks published to Maven local. A path entry to a cookbook's source directory, the one holding `cookbook.toml`,
+serves that cookbook's artifacts at any version straight from their files, so its author cooks an edit with no build.
+Coordinates name exact releases only.
 
 `cook.lock` records a hash of the artifact's sources, so two builds of one release have one hash, and a different
 hash under a recorded version shows as a changed source before the diff. The
