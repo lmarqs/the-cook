@@ -18,9 +18,10 @@ and hyphens, and may not be `.` or `..`.
 
 | Target | Part | When |
 | --- | --- | --- |
-| `.codex/config.toml` | Each top-level key of the config file, owned whole | `--config` supplies keys |
-| `.codex/hooks.json` | Each top-level key of the hooks file, owned whole | `--hooks` supplies keys |
-| `.codex/rules/<name>` | One whole file per file in the rules directory | `--rules` supplies files |
+| `.agents/adapters/codex/config.toml` | Each top-level key of the config file, owned whole | `--config` supplies keys |
+| `.agents/adapters/codex/hooks.json` | Each top-level key of the hooks file, owned whole | `--hooks` supplies keys |
+| `.agents/adapters/codex/rules/<name>` | One whole file per file in the rules directory | `--rules` supplies files |
+| `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | Each one written |
 | `AGENTS.md` | The section `codex` | `--instructions` supplies text |
 
 Codex reads the project configuration, hooks, rules and instructions.
@@ -39,13 +40,13 @@ inputs to change them.
 ''')
 import io.github.lmarqs.agents.Codex
 
-@param(value = ['config'], default = null, doc = 'TOML file whose top-level keys are written into .codex/config.toml')
+@param(value = ['config'], default = null, doc = 'TOML file whose top-level keys are written into .agents/adapters/codex/config.toml')
 File config
 
-@param(value = ['hooks'], default = null, doc = 'JSON file whose top-level keys are written into .codex/hooks.json')
+@param(value = ['hooks'], default = null, doc = 'JSON file whose top-level keys are written into .agents/adapters/codex/hooks.json')
 File hooks
 
-@param(value = ['rules'], default = null, doc = 'Directory whose files become .codex/rules/<name>')
+@param(value = ['rules'], default = null, doc = 'Directory whose files become .agents/adapters/codex/rules/<name>')
 File rules
 
 @param(value = ['instructions'], default = null, doc = 'Codex-specific instruction text for AGENTS.md')

@@ -43,4 +43,5 @@ String[] harness
 @ingredient(Claude) def claude
 @ingredient(Codex) def codex
 
+agents.seedInstructions()
 agents.connect([claude, codex].findAll { it.name in harness })

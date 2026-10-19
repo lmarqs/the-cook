@@ -41,6 +41,16 @@ class Agents {
   private List<String> skills = []
   private boolean instructionsUsed = false
   private boolean policyUsed = false
+  private List<String> localDirectories = []
+
+  /** Requests the seeds of `AGENTS.md` and `.agents/policy.yaml`, written only when absent and never owned. */
+  void seed() {
+    seedInstructions()
+    policyUsed = true
+  }
+
+  /** Requests the seed of `AGENTS.md`, written from the template only when absent and never owned. */
+  void seedInstructions() { instructionsUsed = true }
 
   /** Adds individual Markdown lines to the shared instructions and requests the instruction file's seed. */
   void instruct(String... lines) { instruct(lines as List) }
@@ -75,7 +85,6 @@ class Agents {
 
   /** Points each harness at `AGENTS.md` and the shared skills, by paths relative to where it sits. Call it after adding skills. */
   void connect(Collection<Harness> harnesses) {
-    instructionsUsed = true
     harnesses.each { harness ->
       harness.readInstructions(reach(harness, 'AGENTS.md'))
       if (skills) harness.readSkills(reach(harness, '.agents/skills'), skills)
@@ -83,11 +92,19 @@ class Agents {
   }
 
   /**
+   * Ignores each harness's local directory in Git, such as `/.claude/`: it holds only links Cook makes and files the
+   * harness writes locally, so it can be deleted and cooked again.
+   */
+  void ignoreLocalDirectories(Collection<Harness> harnesses) {
+    harnesses.each { localDirectories << ignored(it) }
+  }
+
+  /**
    * Seeds `AGENTS.md` with the packaged `AGENTS.template.md`: a note telling agents to fill the file in when the
    * developer asks, then sections, related ones grouped under one heading, each with a line saying what it holds and a
    * body in the shape of its answer: a table with labelled rows, or a list of bracketed placeholders.
    * `AGENTS.template.design.md` beside it states why the template is shaped so and names the sources. Written once
-   * instructions are added or a harness is connected; when `AGENTS.md` already exists, cooking the recipe the first
+   * instructions are added or the seed is requested; when `AGENTS.md` already exists, cooking the recipe the first
    * time fails unless Cook runs with `--force`, which replaces it, or `--skip`, which keeps it; never owned.
    */
   @Seed(path = 'AGENTS.md', existing = 'fail')
@@ -101,12 +118,23 @@ class Agents {
   @Section(path = 'AGENTS.md', id = 'instructions')
   List<String> instructionsSection() { instructions ?: null }
 
+  /**
+   * The `harnesses` section of `.gitignore`, one pattern per local directory `ignoreLocalDirectories` was given, such
+   * as `/.claude/`.
+   */
+  @Section(path = '.gitignore', id = 'harnesses')
+  List<String> ignoredDirectories() { localDirectories.unique() ?: null }
+
   /** Whole files under `.agents/skills/<name>/`, when skills are added. */
   @Files(path = '.agents/skills')
   Map<String, String> skillFiles() {
     skills.collectEntries { name ->
       resources("skills/${name}").collectEntries { path, body -> ["${name}/${path}", body] }
     } ?: null
+  }
+
+  private String ignored(Harness harness) {
+    "/${Path.of(directory).normalize().relativize(Path.of(harness.directory, harness.localDirectory).normalize())}/"
   }
 
   private String reach(Harness harness, String path) {
@@ -121,6 +149,12 @@ interface Harness {
 
   /** The harness instance's directory relative to the destination, with `.` at its root. */
   String getDirectory()
+
+  /**
+   * The directory, relative to the harness instance's, that holds only links Cook makes and files the harness writes
+   * locally, such as `.claude`; Agents ignores it in Git.
+   */
+  String getLocalDirectory()
 
   /** Renders the shared policy into the harness's own permission model. */
   void permit(Policy policy)

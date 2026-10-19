@@ -5,9 +5,10 @@ package io.github.lmarqs.agents
  *
  * ## Writes for
  *
- * Top-level TOML keys in `.codex/config.toml`, top-level JSON keys in `.codex/hooks.json`, rule files under
- * `.codex/rules/` and Markdown instructions in `AGENTS.md`. Command rules use the Codex `prefix_rule` syntax:
- * `prefix_rule(pattern = ["git", "status"], decision = "allow")`, with `allow`, `prompt` or `forbidden` decisions.
+ * Top-level TOML keys in `config.toml`, top-level JSON keys in `hooks.json` and rule files under `rules/`, all in
+ * `.agents/adapters/codex/` and linked from `.codex/`, and Markdown instructions in `AGENTS.md`. Command rules use the
+ * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", "status"], decision = "allow")`, with `allow`, `prompt`
+ * or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
  *
  * ## Instances
  *
@@ -39,6 +40,8 @@ package io.github.lmarqs.agents
 class Codex implements Harness {
   /** The harness name `codex`, used to select Codex. */
   final String name = 'codex'
+  /** `.codex`, which holds only links Cook makes. */
+  final String localDirectory = '.codex'
   private Map config = [:]
   private Map hooks = [:]
   private Map<String, String> rules = [:]
@@ -66,7 +69,7 @@ class Codex implements Harness {
   void hooks(Map more) { hooks += more }
 
   /**
-   * Adds a whole rule file with `body` under `.codex/rules/`, replacing an earlier rule with the same name.
+   * Adds a whole rule file with `body` under `.agents/adapters/codex/rules/`, replacing an earlier rule with the same name.
    * The name accepts letters, digits, underscores, dots and hyphens; empty names, `.` and `..` are rejected.
    */
   void rule(String name, String body) {
@@ -86,21 +89,38 @@ class Codex implements Harness {
    */
   void readSkills(String path, List<String> names) { readsNatively(path, '.agents/skills') }
 
-  /** Each supplied top-level key of `.codex/config.toml`, owned whole, when configuration or permissions are set. */
-  @Keys(path = '.codex/config.toml')
+  /**
+   * Each supplied top-level key of `.agents/adapters/codex/config.toml`, owned whole, when configuration or permissions
+   * are set.
+   */
+  @Keys(path = '.agents/adapters/codex/config.toml')
   Map configKeys() { config ?: null }
 
-  /** Each supplied top-level key of `.codex/hooks.json`, owned whole, when hooks keys are added. */
-  @Keys(path = '.codex/hooks.json')
+  /** Each supplied top-level key of `.agents/adapters/codex/hooks.json`, owned whole, when hooks keys are added. */
+  @Keys(path = '.agents/adapters/codex/hooks.json')
   Map hookKeys() { hooks ?: null }
 
-  /** One whole file under `.codex/rules/` per named rule, when rules are added. */
-  @Files(path = '.codex/rules')
+  /** One whole file under `.agents/adapters/codex/rules/` per named rule, when rules are added. */
+  @Files(path = '.agents/adapters/codex/rules')
   Map<String, String> ruleFiles() { rules ?: null }
 
-  /** The `commands` section of `.codex/rules/cook.rules`, in `#` comment syntax, when the policy has command rules. */
-  @Section(path = '.codex/rules/cook.rules', id = 'commands', comment = '#')
+  /**
+   * The `commands` section of `.agents/adapters/codex/rules/cook.rules`, in `#` comment syntax, when the policy has
+   * command rules.
+   */
+  @Section(path = '.agents/adapters/codex/rules/cook.rules', id = 'commands', comment = '#')
   List<String> commandRules() { commands ?: null }
+
+  /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json` and `rules`. */
+  @Links(path = '.codex')
+  Map<String, String> links() {
+    def written = [
+      'config.toml': config,
+      'hooks.json': hooks,
+      rules: rules || commands,
+    ].findAll { name, declared -> declared }
+    written.collectEntries { name, declared -> [name, "../.agents/adapters/codex/${name}"] } ?: null
+  }
 
   /** The `codex` section of `AGENTS.md`, when Codex-specific instruction lines are added. */
   @Section(path = 'AGENTS.md', id = 'codex')

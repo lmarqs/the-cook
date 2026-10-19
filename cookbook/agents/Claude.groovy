@@ -5,9 +5,10 @@ package io.github.lmarqs.agents
  *
  * ## Writes for
  *
- * The Claude Code settings schema in `.claude/settings.json`: top-level JSON keys, including hooks and
- * `permissions` with `defaultMode` and `allow`, `ask` and `deny` lists of `Bash(<prefix> *)` rules.
- * Markdown instructions in `CLAUDE.md` and symbolic links under `.claude/skills/` complete the project setup.
+ * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
+ * top-level JSON keys, including hooks and `permissions` with `defaultMode` and `allow`, `ask` and `deny` lists of
+ * `Bash(<prefix> *)` rules. Markdown instructions in `CLAUDE.md` and symbolic links under `.claude/skills/` complete
+ * the project setup. `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
  * ## Instances
  *
@@ -39,6 +40,8 @@ package io.github.lmarqs.agents
 class Claude implements Harness {
   /** The harness name `claude`, used to select Claude Code. */
   final String name = 'claude'
+  /** `.claude`, which holds only links Cook makes and files Claude Code writes locally. */
+  final String localDirectory = '.claude'
   private Map settings = [:]
   private List<String> instructions = []
   private Map<String, String> skillLinks = [:]
@@ -73,9 +76,16 @@ class Claude implements Harness {
     names.each { skillLinks[it] = "../../${path}/${it}" }
   }
 
-  /** Each supplied top-level key of `.claude/settings.json`, owned whole, when settings or permissions are set. */
-  @Keys(path = '.claude/settings.json')
+  /**
+   * Each supplied top-level key of `.agents/adapters/claude/settings.json`, owned whole, when settings or permissions
+   * are set.
+   */
+  @Keys(path = '.agents/adapters/claude/settings.json')
   Map settingsKeys() { settings ?: null }
+
+  /** `.claude/settings.json`, a link to the adapter's settings, when settings or permissions are set. */
+  @Links(path = '.claude')
+  Map<String, String> settingsLink() { settings ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
 
   /**
    * The `instructions` section of `CLAUDE.md`, when instruction lines or a shared instruction path are added. Fails

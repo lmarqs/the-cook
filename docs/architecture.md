@@ -183,10 +183,10 @@ recipes:
     sha256: "3f5a…"
     owns:
       keys:
-        - file: ".claude/settings.json"
+        - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
       files:
-        - ".codex/rules/default.rules"
+        - ".agents/adapters/codex/rules/default.rules"
   - name: "io.github.lmarqs:agents#instructions"
     source: "io.github.lmarqs:agents:0.0.0#instructions"
     sha256: "3f5a…"

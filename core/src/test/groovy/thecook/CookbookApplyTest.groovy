@@ -180,15 +180,15 @@ Run with --force to replace them, or --skip to keep them.'''
     assert section.message == 'io.github.lmarqs:agents:0.1.0#instructions: CLAUDE.md is a symbolic link to ' +
     'AGENTS.md; Cook writes sections and keys only into regular files'
 
-    new File(kitchen, '.claude').mkdirs()
-    new File(kitchen, '.claude/shared.json').text = '{}\n'
-    link('.claude/settings.json', 'shared.json')
+    new File(kitchen, '.agents/adapters/claude').mkdirs()
+    new File(kitchen, '.agents/adapters/claude/shared.json').text = '{}\n'
+    link('.agents/adapters/claude/settings.json', 'shared.json')
     def key = shouldFail(IllegalArgumentException) {
       apply(kitchen, 'io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude']])
     }
-    assert key.message == 'io.github.lmarqs:agents:0.1.0#permissions: .claude/settings.json is a symbolic link to ' +
-    'shared.json; Cook writes sections and keys only into regular files'
-    assert new File(kitchen, '.claude/shared.json').text == '{}\n'
+    assert key.message == 'io.github.lmarqs:agents:0.1.0#permissions: .agents/adapters/claude/settings.json is a ' +
+    'symbolic link to shared.json; Cook writes sections and keys only into regular files'
+    assert new File(kitchen, '.agents/adapters/claude/shared.json').text == '{}\n'
     assert !new File(kitchen, 'cook.lock').exists()
     assert Files.isSymbolicLink(new File(kitchen, 'CLAUDE.md').toPath())
   }
@@ -235,14 +235,24 @@ Run with --force to replace them, or --skip to keep them.'''
       request('io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude', 'codex']]),
       request('io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]),
     ])
-    assert proposal.changes ==
-    ['.agents/policy.yaml', '.claude/settings.json', '.codex/config.toml', 'AGENTS.md', 'CLAUDE.md', 'cook.lock']
+    assert proposal.changes == [
+      '.agents/adapters/claude/settings.json',
+      '.agents/adapters/codex/config.toml',
+      '.agents/policy.yaml',
+      '.claude/settings.json',
+      '.codex/config.toml',
+      'AGENTS.md',
+      'CLAUDE.md',
+      'cook.lock'
+    ]
     proposal.commit()
     assert new File(kitchen, '.agents/policy.yaml').text == 'version: 1\ninstructions: []\ncommands: {}\n'
+    assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
+    '../.agents/adapters/claude/settings.json'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
     [permissions: [defaultMode: 'acceptEdits', allow: [], ask: [], deny: []]]
     assert new File(kitchen, '.codex/config.toml').text.contains('sandbox_mode = "workspace-write"')
-    assert new File(kitchen, '.claude/settings.json').text == '''{
+    assert new File(kitchen, '.agents/adapters/claude/settings.json').text == '''{
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": [],
@@ -258,9 +268,43 @@ Run with --force to replace them, or --skip to keep them.'''
     assert same.changes == []
 
     def withoutCodex = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude']])
-    assert withoutCodex.changes == ['.codex/config.toml', 'cook.lock']
+    assert withoutCodex.changes == ['.agents/adapters/codex/config.toml', '.codex/config.toml', 'cook.lock']
     withoutCodex.commit()
     assert !new File(kitchen, '.codex').exists()
+    assert !new File(kitchen, '.agents/adapters/codex').exists()
+  }
+
+  @Test void seedsTheSharedLayoutAndConnectsHarnessesThroughDirectoriesThatCanBeDeleted() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def seed = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#seed', [:])
+    assert seed.changes == ['.agents/policy.yaml', 'AGENTS.md', 'cook.lock']
+    seed.commit()
+
+    def connect = { -> apply(kitchen, 'io.github.lmarqs:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
+    def connected = connect()
+    assert connected.changes == [
+      '.agents/adapters/claude/settings.json',
+      '.agents/adapters/codex/config.toml',
+      '.claude/settings.json',
+      '.codex/config.toml',
+      '.gitignore',
+      'CLAUDE.md',
+      'cook.lock'
+    ]
+    connected.commit()
+    assert new File(kitchen, '.gitignore').text.contains('/.claude/\n/.codex/\n')
+    assert Files.readSymbolicLink(new File(kitchen, '.codex/config.toml').toPath()).toString() ==
+    '../.agents/adapters/codex/config.toml'
+    assert connect().changes == []
+
+    new File(kitchen, '.claude').deleteDir()
+    new File(kitchen, '.codex').deleteDir()
+    def again = connect()
+    assert again.changes == ['.claude/settings.json', '.codex/config.toml']
+    again.commit()
+    assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions.defaultMode ==
+    'acceptEdits'
   }
 
   @Test void linksPackagedSkillsAndRemovesWhatALaterVersionNoLongerDeclares() {

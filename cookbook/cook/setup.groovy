@@ -21,11 +21,11 @@ The policy supplies instruction lines and command permissions for both harnesses
 | `AGENTS.md` | Title, seeded when absent; never owned | Always |
 | `AGENTS.md` | The section `instructions`: working guidance and policy instructions | Always |
 | `.agents/skills/<name>/` | Whole files for `solid`, `hexagonal-layout`, `effective-java-core` | Always |
-| `.claude/settings.json` | `permissions` | Always |
+| `.agents/adapters/claude/settings.json` | `permissions`, linked from `.claude/settings.json` | Always |
 | `CLAUDE.md` | The section `instructions`: `@AGENTS.md` | Always |
 | `.claude/skills/<name>` | One relative link per skill | Always |
-| `.codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | Always |
-| `.codex/rules/cook.rules` | The section `commands` | The policy has command rules |
+| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write`, linked from `.codex/config.toml` | Always |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, linked through `.codex/rules` | The policy has command rules |
 | `.gitignore` | The section `ignore`: `/.claude/settings.local.json` | Always |
 
 Claude reads the shared instructions through `CLAUDE.md` and skills through the relative links.
