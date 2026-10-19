@@ -290,7 +290,18 @@ check.policy = agents.policy()
 ''',
     ])
     def policy = new File(kitchen, '.agents/permission/policy.yaml')
-    policy.parentFile.mkdirs()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:]).commit()
+    assert policy.text == new File(COOKBOOK, 'agents/policy.template.yaml').text
+    assert new File(kitchen, 'POLICY.txt').text == 'allow []; ask []; deny []\nallow []; ask []; deny []\n\n'
+
+    // The starter's commented example, uncommented, is a valid policy.
+    def commented = policy.readLines().findAll { it.startsWith('#   ') }
+    def example = commented*.substring(4)
+    assert example
+    policy.text = 'version: 2\n' + example.join('\n') + '\n'
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:]).commit()
+    assert new File(kitchen, 'POLICY.txt').text.contains('worker [[git, [commit, push]], [gh]]')
+
     policy.text = '''version: 2
 commands:
   allow:
