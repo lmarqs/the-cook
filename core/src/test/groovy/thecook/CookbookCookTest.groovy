@@ -370,6 +370,23 @@ worker [[git, [commit, push]]]
     assert !roles.exists()
   }
 
+  @Test void rendersThePolicyIntoCodexRulesAndNamesWhatCodexCannotEnforce() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def policy = new File(kitchen, '.agents/permission/policy.yaml')
+    policy.parentFile.mkdirs()
+    policy.text = fixture('policy.yaml')
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['codex']]).commit()
+
+    def rules = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
+    assert rules.first() == '# cook:begin io.github.lmarqs.cookbook:agents#permissions#commands'
+    assert rules.last() == '# cook:end io.github.lmarqs.cookbook:agents#permissions#commands'
+    assert rules[1..-2].join('\n') + '\n' == fixture('codex-commands.rules')
+    // A Codex run cannot add a rules file of its own, so roles render nothing for Codex.
+    assert !new File(kitchen, '.agents/adapters/codex/roles').exists()
+  }
+
   @Test void seedsTheSharedLayoutAndConnectsHarnessesThroughDirectoriesThatCanBeDeleted() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')

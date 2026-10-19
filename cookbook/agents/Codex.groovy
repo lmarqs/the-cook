@@ -8,8 +8,8 @@ package io.github.lmarqs.cookbook.agents
  * Top-level TOML keys in `config.toml`, top-level JSON keys in `hooks.json` and rule files under `rules/`, all in
  * `.agents/adapters/codex/` and linked from `.codex/`, and a `.codex/hooks` link to the shared hook scripts. Codex reads
  * `AGENTS.md` and `.agents/skills/` natively. Command rules use the
- * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", "status"], decision = "allow")`, with `allow`, `prompt`
- * or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
+ * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", ["status", "diff"]], decision = "allow")`, where a nested
+ * list holds alternatives for one word, with `allow`, `prompt` or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
  *
  * ## Instances
  *
@@ -51,15 +51,17 @@ class Codex implements Harness {
   /**
    * Sets `sandbox_mode` to `workspace-write`, `approval_policy` to `on-request` and
    * `sandbox_workspace_write.network_access` to false. Replaces the command rules with one `prefix_rule` per
-   * shared policy command: `allow` stays `allow`, `ask` becomes `prompt` and `deny` becomes `forbidden`.
-   * These settings keys replace values supplied by an earlier `config` call.
+   * shared policy command entry, alternatives kept as nested lists: `allow` stays `allow`, `ask` becomes `prompt` and
+   * `deny` becomes `forbidden`. A Claude-only entry becomes a comment naming it, since Codex cannot enforce it, and
+   * tool entries and roles render nothing: tools are named per harness, and a Codex run cannot add a rules file of its
+   * own. These settings keys replace values supplied by an earlier `config` call.
    */
   void permit(Policy policy) {
     config += [sandbox_mode: 'workspace-write', approval_policy: 'on-request',
                sandbox_workspace_write: [network_access: false]]
-    commands = policy.commands.allow.collect { prefixRule(it, 'allow') } +
-      policy.commands.ask.collect { prefixRule(it, 'prompt') } +
-      policy.commands.deny.collect { prefixRule(it, 'forbidden') }
+    commands = [allow: 'allow', ask: 'prompt', deny: 'forbidden'].collectMany { decision, codexDecision ->
+      policy.commands[decision].collect { prefixRule(it, codexDecision) }
+    }
   }
 
   /** Adds top-level configuration keys; a supplied key replaces its earlier value whole. */
@@ -129,7 +131,11 @@ class Codex implements Harness {
   }
 
   private static String prefixRule(Command command, String decision) {
-    def pattern = command.prefix.collect { "\"${it}\"" }.join(', ')
-    "prefix_rule(pattern = [${pattern}], decision = \"${decision}\")"
+    if (command.claude) return "# Not enforced by Codex, Claude-only: ${command.claude}"
+    "prefix_rule(pattern = ${pattern(command.prefix)}, decision = \"${decision}\")"
+  }
+
+  private static String pattern(List words) {
+    '[' + words.collect { it instanceof List ? pattern(it) : "\"${it}\"" }.join(', ') + ']'
   }
 }
