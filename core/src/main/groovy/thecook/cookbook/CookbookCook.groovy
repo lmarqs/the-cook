@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException
  * what it owned and no longer declares, then writes what it declares, taking ownership from the recipes that held it.
  * `cook.lock` records the result.
  */
-final class CookbookApply {
+final class CookbookCook {
   private final File destination
   private final CookbookRepositories repositories
   private final ExistingSeed existing
@@ -19,7 +19,7 @@ final class CookbookApply {
    * Coordinates resolve from `repositories`; `existing` decides what cooking a recipe the first time does with a
    * file its `existing = 'fail'` seed writes.
    */
-  CookbookApply(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE) {
+  CookbookCook(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE) {
     this.destination = destination
     this.repositories = repositories
     this.existing = existing
@@ -30,8 +30,8 @@ final class CookbookApply {
     def loader = new RecipeLoader(destination, repositories)
     def draft = new Draft(destination)
     def lock = CookLock.parse(draft.read(CookLock.PATH))
-    Set<String> applied = []
-    List<Applied> recipes = []
+    Set<String> named = []
+    List<CookedRecipe> recipes = []
     List<ChangedSource> changedSources = []
     def seeds = new SeedOutcomes()
     requests.eachWithIndex { request, index ->
@@ -41,7 +41,7 @@ final class CookbookApply {
         def recipe = loader.load(request.operand)
         String name = recipe.name
 
-        if (!applied.add(name)) {
+        if (!named.add(name)) {
           throw new IllegalArgumentException("${name} is named twice; name it once per invocation")
         }
 
@@ -53,7 +53,7 @@ final class CookbookApply {
             .unique()
             .each { checkPristine(it, loader.reads(it, draft), name) }
         def declared = Declarations.of(ingredients, name)
-        apply(name, declared, draft, lock, seeds)
+        cook(name, declared, draft, lock, seeds)
         def recorded = lock.sha256(name, recipe.address)
 
         if (Coordinates.written(recipe.address) && recorded != null && recorded != recipe.sha256) {
@@ -62,7 +62,7 @@ final class CookbookApply {
 
         lock.record(name, recipe.address, recipe.sha256, declared.owned*.target)
         def texts = RecipeSource.texts(recipe.source, "${recipe.fileName}.groovy")
-        recipes.add(new Applied(recipe.address, texts?.confirm, texts?.yieldText))
+        recipes.add(new CookedRecipe(recipe.address, texts?.confirm, texts?.yieldText))
       } catch (Exception error) {
         def cause = error instanceof InvocationTargetException && error.cause instanceof Exception ? error.cause : error
         throw new IllegalArgumentException("${label}: ${cause.message ?: cause.class.simpleName}", cause)
@@ -96,7 +96,7 @@ final class CookbookApply {
     }
   }
 
-  private void apply(String name, Declared declared, Draft draft, CookLock lock, SeedOutcomes seeds) {
+  private void cook(String name, Declared declared, Draft draft, CookLock lock, SeedOutcomes seeds) {
     def owned = declared.owned
     owned.eachWithIndex { first, index ->
       def second = owned.drop(index + 1).find { it.target.overlaps(first.target) }
@@ -108,7 +108,7 @@ final class CookbookApply {
     declared.seeds.each { seed ->
       if (draft.read(seed.file) == null) {
         draft.write(seed.file, seed.text)
-      } else if (seed.failsOnExisting && !lock.applied(name)) {
+      } else if (seed.failsOnExisting && !lock.cooked(name)) {
         seeds.existing(existing, seed, name, draft)
       }
     }
@@ -142,12 +142,12 @@ final class RecipeRequest {
 }
 
 /** A recipe that ran: its address, the consequence to confirm before the writes and what to do after them. */
-final class Applied {
+final class CookedRecipe {
   final String address
   final String confirm
   final String yieldText
 
-  Applied(String address, String confirm, String yieldText) {
+  CookedRecipe(String address, String confirm, String yieldText) {
     this.address = address
     this.confirm = confirm
     this.yieldText = yieldText
@@ -219,10 +219,10 @@ final class SeedOutcomes {
 final class Proposal {
   private final Draft draft
   private final SeedOutcomes seeds
-  final List<Applied> recipes
+  final List<CookedRecipe> recipes
   final List<ChangedSource> changedSources
 
-  Proposal(Draft draft, List<Applied> recipes, List<ChangedSource> changedSources, SeedOutcomes seeds) {
+  Proposal(Draft draft, List<CookedRecipe> recipes, List<ChangedSource> changedSources, SeedOutcomes seeds) {
     this.draft = draft
     this.recipes = recipes
     this.changedSources = changedSources

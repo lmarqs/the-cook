@@ -2,7 +2,7 @@ package thecook.cli.terminal
 
 import picocli.CommandLine
 import thecook.cookbook.Argument
-import thecook.cookbook.CookbookApply
+import thecook.cookbook.CookbookCook
 import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookbookDiscard
 import thecook.cookbook.CookbookRepositories
@@ -167,7 +167,7 @@ final class CookCommand {
     def existing = root.force ? ExistingSeed.REPLACE : root.skip ? ExistingSeed.KEEP : ExistingSeed.REFUSE
     return {
       ->
-      def proposal = new CookbookApply(kitchen, repositories.apply(kitchen), existing).propose(requests)
+      def proposal = new CookbookCook(kitchen, repositories.apply(kitchen), existing).propose(requests)
       write(proposal, root.dryRun, root.batchApprove)
     }
   }

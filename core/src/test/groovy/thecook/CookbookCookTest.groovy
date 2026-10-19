@@ -5,7 +5,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import thecook.cookbook.Argument
 import thecook.cookbook.Coordinates
-import thecook.cookbook.CookbookApply
+import thecook.cookbook.CookbookCook
 import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookLock
 import thecook.cookbook.CookbookDiscard
@@ -21,7 +21,7 @@ import java.security.MessageDigest
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
-class CookbookApplyTest {
+class CookbookCookTest {
   private static final File COOKBOOK = new File(System.getProperty('cook.cookbook'))
   private static final String TEXT_MODEL = '''package acme.text
 
@@ -35,11 +35,11 @@ class Text {
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
-  @Test void appliesTheAgentsInstructionsAndRecordsOwnershipInTheLock() {
+  @Test void cooksTheAgentsInstructionsAndRecordsOwnershipInTheLock() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
 
-    def proposal = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
+    def proposal = cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
     assert proposal.changes == ['.agents/adapters/claude/CLAUDE.md', '.claude/CLAUDE.md', 'AGENTS.md', 'cook.lock']
     assert proposal.recipes*.address == ['io.github.lmarqs:agents:0.1.0#instructions']
     assert proposal.recipes.first().yieldText.startsWith('Have an agent fill in `AGENTS.md`')
@@ -65,9 +65,9 @@ recipes:
       links:
         - ".claude/CLAUDE.md"
 """
-    assert apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).changes == []
+    assert cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).changes == []
 
-    def fewer = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:])
+    def fewer = cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:])
     assert fewer.changes == ['.agents/adapters/claude/CLAUDE.md', '.claude/CLAUDE.md', 'cook.lock']
     fewer.commit()
     assert !new File(kitchen, '.agents/adapters/claude/CLAUDE.md').exists()
@@ -80,27 +80,27 @@ recipes:
     publishDirectory(kitchen, 'agents')
     new File(kitchen, 'AGENTS.md').text = '# Ours\n'
     def error = shouldFail(IllegalArgumentException) {
-      apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:])
+      cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:])
     }
     assert error.message == 'AGENTS.md already exists; io.github.lmarqs:agents#instructions writes it from a ' +
     'template the first time it is cooked. Run with --force to replace it, or --skip to keep it.'
     assert !new File(kitchen, 'cook.lock').exists()
 
     new File(kitchen, 'AGENTS.md').delete()
-    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:]).commit()
     new File(kitchen, 'AGENTS.md').text = '# Filled in\n'
-    def again = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
+    def again = cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
     assert again.changes == ['.agents/adapters/claude/CLAUDE.md', '.claude/CLAUDE.md', 'cook.lock']
   }
 
-  @Test void forceReplacesAndSkipKeepsAnExistingAgentsFileOnTheFirstApply() {
+  @Test void forceReplacesAndSkipKeepsAnExistingAgentsFileOnTheFirstCook() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     def template = new File(COOKBOOK, 'agents/AGENTS.template.md').text
     def agents = new File(kitchen, 'AGENTS.md')
     agents.text = '# Ours\n'
 
-    def kept = new CookbookApply(kitchen, repositories(kitchen), ExistingSeed.KEEP)
+    def kept = new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.KEEP)
         .propose([request('io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])])
     assert kept.actions == [
       '.agents/adapters/claude/CLAUDE.md': 'create',
@@ -111,14 +111,14 @@ recipes:
     kept.commit()
     assert agents.text == '# Ours\n'
     assert new File(kitchen, 'cook.lock').text.contains('"io.github.lmarqs:agents#instructions"')
-    assert new CookbookApply(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
+    assert new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
     .propose([request('io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])])
     .actions == [:]
 
     new File(kitchen, 'cook.lock').delete()
     new File(kitchen, '.agents').deleteDir()
     new File(kitchen, '.claude/CLAUDE.md').delete()
-    def replaced = new CookbookApply(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
+    def replaced = new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
         .propose([request('io.github.lmarqs:agents:0.1.0#instructions', [:])])
     assert replaced.actions == ['AGENTS.md': 'replace', 'cook.lock': 'create']
     replaced.commit()
@@ -128,7 +128,7 @@ recipes:
     agents.delete()
     def ours = new File(kitchen, 'OURS.md'); ours.text = '# Ours\n'
     Files.createSymbolicLink(agents.toPath(), java.nio.file.Paths.get('OURS.md'))
-    new CookbookApply(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
+    new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
         .propose([request('io.github.lmarqs:agents:0.1.0#instructions', [:])]).commit()
     assert !Files.isSymbolicLink(agents.toPath())
     assert agents.text == template
@@ -164,7 +164,7 @@ starters.second = 'second'
     new File(kitchen, 'FIRST.md').text = 'ours\n'
     new File(kitchen, 'SECOND.md').text = 'ours\n'
     def error = shouldFail(IllegalArgumentException) {
-      new CookbookApply(kitchen, repositories(kitchen))
+      new CookbookCook(kitchen, repositories(kitchen))
           .propose([request('acme:starters:1.0.0#one', [:]), request('acme:starters:1.0.0#two', [:])])
     }
     assert error.message == 'These files already exist, and their recipes write them from a template ' +
@@ -184,7 +184,7 @@ Run with --force to replace them, or --skip to keep them.'''
     }
     link('.agents/adapters/claude/CLAUDE.md', 'OURS.md')
     def section = shouldFail(IllegalArgumentException) {
-      apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
+      cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
     }
     assert section.message == 'io.github.lmarqs:agents:0.1.0#instructions: .agents/adapters/claude/CLAUDE.md is a ' +
     'symbolic link to OURS.md; Cook writes sections and keys only into regular files'
@@ -192,7 +192,7 @@ Run with --force to replace them, or --skip to keep them.'''
     new File(kitchen, '.agents/adapters/claude/shared.json').text = '{}\n'
     link('.agents/adapters/claude/settings.json', 'shared.json')
     def key = shouldFail(IllegalArgumentException) {
-      apply(kitchen, 'io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude']])
+      cook(kitchen, 'io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude']])
     }
     assert key.message == 'io.github.lmarqs:agents:0.1.0#permissions: .agents/adapters/claude/settings.json is a ' +
     'symbolic link to shared.json; Cook writes sections and keys only into regular files'
@@ -208,7 +208,7 @@ Run with --force to replace them, or --skip to keep them.'''
     def kitchen = new File(linked, 'kitchen'); kitchen.mkdirs()
     publishDirectory(kitchen, 'agents')
 
-    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
+    cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
     assert new File(real, 'kitchen/.claude/CLAUDE.md').text.contains('@../../../AGENTS.md')
   }
 
@@ -222,7 +222,7 @@ Run with --force to replace them, or --skip to keep them.'''
     ].each { text, line ->
       claude.text = text
       def error = shouldFail(IllegalArgumentException) {
-        apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
+        cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']])
       }
       assert error.message == 'io.github.lmarqs:agents:0.1.0#instructions: CLAUDE.md already imports @AGENTS.md ' +
       "on line ${line}; remove that line, since .claude/CLAUDE.md imports it"
@@ -231,16 +231,16 @@ Run with --force to replace them, or --skip to keep them.'''
     }
 
     claude.text = '# Notes\n'
-    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
+    cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
     assert claude.text == '# Notes\n'
     assert new File(kitchen, '.claude/CLAUDE.md').text.contains('@../../../AGENTS.md')
-    assert apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).changes == []
+    assert cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).changes == []
   }
 
   @Test void composesPermissionsAndInstructionsInOneInvocation() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def proposal = new CookbookApply(kitchen, repositories(kitchen)).propose([
+    def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose([
       request('io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude', 'codex']]),
       request('io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]),
     ])
@@ -271,13 +271,13 @@ Run with --force to replace them, or --skip to keep them.'''
   }
 }
 '''
-    def same = new CookbookApply(kitchen, repositories(kitchen)).propose([
+    def same = new CookbookCook(kitchen, repositories(kitchen)).propose([
       request('io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude', 'codex']]),
       request('io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]),
     ])
     assert same.changes == []
 
-    def withoutCodex = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude']])
+    def withoutCodex = cook(kitchen, 'io.github.lmarqs:agents:0.1.0#permissions', [harness: ['claude']])
     assert withoutCodex.changes == ['.agents/adapters/codex/config.toml', '.codex/config.toml', 'cook.lock']
     withoutCodex.commit()
     assert !new File(kitchen, '.codex').exists()
@@ -287,7 +287,7 @@ Run with --force to replace them, or --skip to keep them.'''
   @Test void seedsTheSharedLayoutAndConnectsHarnessesThroughDirectoriesThatCanBeDeleted() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def seed = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#seed', [:])
+    def seed = cook(kitchen, 'io.github.lmarqs:agents:0.1.0#seed', [:])
     assert seed.changes == [
       '.agents/README.md',
       '.agents/commands/.gitkeep',
@@ -300,7 +300,7 @@ Run with --force to replace them, or --skip to keep them.'''
     ]
     seed.commit()
 
-    def connect = { -> apply(kitchen, 'io.github.lmarqs:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
+    def connect = { -> cook(kitchen, 'io.github.lmarqs:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
     def connected = connect()
     assert connected.changes == [
       '.agents/adapters/claude/CLAUDE.md',
@@ -357,14 +357,14 @@ import io.github.lmarqs.agents.Claude
 agents.skills(skill)
 agents.connect([claude])
 """])
-    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#skill-check', [skill: ['solid']]).commit()
+    cook(kitchen, 'io.github.lmarqs:agents:0.1.0#skill-check', [skill: ['solid']]).commit()
     assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
     new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
     def link = new File(kitchen, '.claude/skills').toPath()
     assert Files.readSymbolicLink(link).toString() == '../.agents/skills'
     assert new File(kitchen, '.claude/skills/solid/SKILL.md').isFile()
 
-    def fewer = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#skill-check', [:])
+    def fewer = cook(kitchen, 'io.github.lmarqs:agents:0.1.0#skill-check', [:])
     assert fewer.changes == ['.agents/skills/solid/SKILL.md', '.claude/skills', 'cook.lock']
     fewer.commit()
     assert !new File(kitchen, '.agents/skills').exists()
@@ -372,7 +372,7 @@ agents.connect([claude])
     assert new File(kitchen, '.claude/CLAUDE.md').isFile()
   }
 
-  @Test void appliesARecipePathWithTheModelBesideItAndHashesTheModelWithTheRecipe() {
+  @Test void cooksARecipePathWithTheModelBesideItAndHashesTheModelWithTheRecipe() {
     def kitchen = kitchen()
     def model = recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
     recipe(kitchen, 'recipes/setup.groovy', """@help('Writes a file.')
@@ -381,7 +381,7 @@ import acme.text.Text
 text.text = 'first\\n'
 """)
 
-    apply(kitchen, 'recipes/setup.groovy', [:]).commit()
+    cook(kitchen, 'recipes/setup.groovy', [:]).commit()
 
     assert new File(kitchen, 'OUT.md').text == 'first\n'
     def recorded = sourcesSha256(kitchen, ['recipes/Text.groovy', 'recipes/setup.groovy'])
@@ -389,10 +389,10 @@ text.text = 'first\\n'
     source: "recipes/setup.groovy"
     sha256: "${recorded}"
 """)
-    assert apply(kitchen, './recipes/setup.groovy', [:]).changes.empty
+    assert cook(kitchen, './recipes/setup.groovy', [:]).changes.empty
 
     model.text += '// edited\n'
-    def again = apply(kitchen, 'recipes/setup.groovy', [:])
+    def again = cook(kitchen, 'recipes/setup.groovy', [:])
     assert again.changes == ['cook.lock']
     assert !again.after('cook.lock').contains(recorded)
   }
@@ -415,7 +415,7 @@ agents.skills('solid')
 agents.connect([claude])
 """)
 
-    apply(kitchen, 'agents/skill-check.groovy', [:]).commit()
+    cook(kitchen, 'agents/skill-check.groovy', [:]).commit()
 
     assert new File(kitchen, 'AGENTS.md').text.startsWith(new File(COOKBOOK, 'agents/AGENTS.template.md').text)
     assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
@@ -432,13 +432,13 @@ import acme.text.Text
 text.text = 'first\\n'
 """)
     def requests = [request('io.github.lmarqs:agents:0.1.0#instructions', [:]), request('recipes/setup.groovy', [:])]
-    def first = new CookbookApply(kitchen, repositories(kitchen)).propose(requests)
+    def first = new CookbookCook(kitchen, repositories(kitchen)).propose(requests)
     assert first.changedSources.empty
     first.commit()
 
     publishDirectory(kitchen, 'agents', ['NOTICE.md': 'changed under the same version'])
     path.text += '// edited\n'
-    def again = new CookbookApply(kitchen, repositories(kitchen)).propose(requests)
+    def again = new CookbookCook(kitchen, repositories(kitchen)).propose(requests)
 
     assert again.changedSources*.address == ['io.github.lmarqs:agents:0.1.0#instructions']
     def changed = again.changedSources.first()
@@ -457,14 +457,14 @@ text.text = template
 """)
     def template = recipe(kitchen, 'recipes/setup.md', 'first\n')
 
-    apply(kitchen, 'recipes/setup.groovy', [:]).commit()
+    cook(kitchen, 'recipes/setup.groovy', [:]).commit()
 
     assert new File(kitchen, 'OUT.md').text == 'first\n'
     def recorded = sourcesSha256(kitchen, ['recipes/Text.groovy', 'recipes/setup.groovy', 'recipes/setup.md'])
     assert new File(kitchen, 'cook.lock').text.contains("sha256: \"${recorded}\"")
 
     template.text = 'second\n'
-    def again = apply(kitchen, 'recipes/setup.groovy', [:])
+    def again = cook(kitchen, 'recipes/setup.groovy', [:])
     assert again.changes == ['OUT.md', 'cook.lock']
     assert again.after('OUT.md') == 'second\n'
     assert !again.after('cook.lock').contains(recorded)
@@ -492,7 +492,7 @@ ${declaration}
 text.text = template.toString()
 """)
 
-      def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'recipes/setup.groovy', [:]) }
+      def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'recipes/setup.groovy', [:]) }
       assert error.message == "recipes/setup.groovy: ${message}"
       assert !new File(kitchen, 'OUT.md').exists()
     }
@@ -514,11 +514,11 @@ text.text = template
 """,
     ])
 
-    apply(kitchen, 'acme:text:1.0.0#setup', [:]).commit()
+    cook(kitchen, 'acme:text:1.0.0#setup', [:]).commit()
     assert new File(kitchen, 'OUT.md').text == 'packaged\n'
 
     new File(kitchen, 'OUT.md').delete()
-    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:text:1.0.0#missing', [:]) }
+    def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:text:1.0.0#missing', [:]) }
     assert error.message == 'acme:text:1.0.0#missing: No file missing.md in acme:text:1.0.0'
     assert !new File(kitchen, 'OUT.md').exists()
   }
@@ -543,7 +543,7 @@ class Notes {
 notes.add(line)
 """)
 
-    def proposal = new CookbookApply(kitchen, repositories(kitchen)).propose([
+    def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose([
       request('io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]),
       request('notes.groovy', [line: ['first']]),
     ])
@@ -573,7 +573,7 @@ notes.add(line)
       'repository in cook.toml and cook the recipe by its coordinates',
       'models/inside.groovy': 'models/inside.groovy: the model is outside the kitchen; move it into the kitchen',
     ].each { operand, message ->
-      def error = shouldFail(IllegalArgumentException) { apply(kitchen, operand, [:]) }
+      def error = shouldFail(IllegalArgumentException) { cook(kitchen, operand, [:]) }
       assert error.message == message
     }
   }
@@ -605,9 +605,9 @@ notes.set(test: 'second')
     ])
     new File(kitchen, 'settings.json').text = '{"test": "old", "kept": true}\n'
 
-    apply(kitchen, 'acme:notes:1.0.0#first', [value: ['A']]).commit()
+    cook(kitchen, 'acme:notes:1.0.0#first', [value: ['A']]).commit()
     assert new File(kitchen, 'settings.json').text == '{"test": "A", "kept": true, "other":"first"}\n'
-    apply(kitchen, 'acme:notes:1.0.0#second', [:]).commit()
+    cook(kitchen, 'acme:notes:1.0.0#second', [:]).commit()
     assert new File(kitchen, 'settings.json').text == '{"test": "second", "kept": true, "other":"first"}\n'
     def lock = new File(kitchen, 'cook.lock').text
     assert lock.contains('''  - name: "acme:notes#first"
@@ -629,7 +629,7 @@ notes.set(test: 'second')
     ]
     failures.each { requests, message ->
       def error = shouldFail(IllegalArgumentException) {
-        new CookbookApply(kitchen, repositories(kitchen)).propose(requests.collect { request(it[0], it[1]) })
+        new CookbookCook(kitchen, repositories(kitchen)).propose(requests.collect { request(it[0], it[1]) })
       }
       assert error.message == message
     }
@@ -656,13 +656,13 @@ step.each { script.add(it) }
 ''',
     ])
     new File(kitchen, 'build.js').text = 'run();\n'
-    apply(kitchen, 'acme:script:1.0.0#script', [step: ['lint();']]).commit()
+    cook(kitchen, 'acme:script:1.0.0#script', [step: ['lint();']]).commit()
     assert new File(kitchen, 'build.js').text == '''run();
 // cook:begin acme:script#script#steps
 lint();
 // cook:end acme:script#script#steps
 '''
-    apply(kitchen, 'acme:script:1.0.0#script', [:]).commit()
+    cook(kitchen, 'acme:script:1.0.0#script', [:]).commit()
     assert new File(kitchen, 'build.js').text == 'run();\n'
   }
 
@@ -687,16 +687,16 @@ import acme.config.Config
 config.migrated = migrated
 ''',
     ])
-    apply(kitchen, 'acme:config:1.0.0#config', [:]).commit()
+    cook(kitchen, 'acme:config:1.0.0#config', [:]).commit()
     assert new File(kitchen, 'old.cfg').text == 'old'
-    apply(kitchen, 'acme:config:1.0.0#config', [migrated: ['true']]).commit()
+    cook(kitchen, 'acme:config:1.0.0#config', [migrated: ['true']]).commit()
     assert !new File(kitchen, 'old.cfg').exists()
   }
 
   @Test void discardRemovesTheSectionsARecipeOwnsAndLeavesTheRestOfTheFile() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
+    cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
     def claude = new File(kitchen, '.agents/adapters/claude/CLAUDE.md')
     claude.text = 'mine\n' + claude.text
     def agents = new File(kitchen, 'AGENTS.md').text
@@ -736,13 +736,13 @@ notes.set(test: 'new', other: 'mine')
     ])
     def settings = new File(kitchen, 'settings.json')
     settings.text = '{"test": "old", "kept": true}\n'
-    apply(kitchen, 'acme:notes:1.0.0#notes', [:]).commit()
+    cook(kitchen, 'acme:notes:1.0.0#notes', [:]).commit()
     recipe(kitchen, 'Notes.groovy', model)
     recipe(kitchen, 'local.groovy', '''import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.set(test: 'new', other: 'mine')
 ''')
-    apply(kitchen, 'local.groovy', [:]).commit()
+    cook(kitchen, 'local.groovy', [:]).commit()
     new File(kitchen, 'local.groovy').delete()
 
     new CookbookDiscard(kitchen).propose(['local.groovy']).commit()
@@ -771,10 +771,10 @@ class Notes {
 notes.set('kept')
 """
     def a = recipe(kitchen, 'recipes/a.groovy', source)
-    apply(kitchen, 'recipes/a.groovy', [:]).commit()
+    cook(kitchen, 'recipes/a.groovy', [:]).commit()
     a.delete()
     recipe(kitchen, 'recipes/b.groovy', source)
-    apply(kitchen, 'recipes/b.groovy', [:]).commit()
+    cook(kitchen, 'recipes/b.groovy', [:]).commit()
 
     def notes = new File(kitchen, 'NOTES.md')
     assert notes.text.contains('cook:begin recipes/a#notes') && notes.text.contains('cook:begin recipes/b#notes')
@@ -793,7 +793,7 @@ notes.set('kept')
   @Test void discardRefusesARecipeTheLockDoesNotListOrThatIsGivenTwice() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [:]).commit()
     [
       [
         ['io.github.lmarqs:agents:0.1.0#permissions'],
@@ -819,7 +819,7 @@ notes.set('kept')
   @Test void aFailedWriteLeavesTheFilesAsTheyWere() {
     def kitchen = kitchen()
     publishConfig(kitchen, 'sub/old.cfg')
-    def proposal = apply(kitchen, 'acme:config:1.0.0#config', [:])
+    def proposal = cook(kitchen, 'acme:config:1.0.0#config', [:])
     def blocked = new File(kitchen, 'sub')
     blocked.mkdir()
     blocked.setWritable(false)
@@ -849,7 +849,7 @@ import acme.broken.Broken
 @ingredient(Broken) def broken
 ''',
     ])
-    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:broken:1.0.0#broken', [:]) }
+    def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:broken:1.0.0#broken', [:]) }
     assert error.message == 'acme:broken:1.0.0#broken: cannot start'
   }
 
@@ -869,7 +869,7 @@ import acme.noisy.Noisy
 @ingredient(Noisy) def noisy
 ''',
     ])
-    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:noisy:1.0.0#noisy', [:]) }
+    def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:noisy:1.0.0#noisy', [:]) }
     assert error.message == 'acme:noisy:1.0.0#noisy: Noisy.notes() declares a seed of NOTES.md on a new instance; ' +
     'a model declares only what a recipe asks for'
   }
@@ -917,8 +917,8 @@ config.migrated = migrated
     ])
   }
 
-  private static def apply(File kitchen, String operand, Map<String, List<String>> arguments) {
-    new CookbookApply(kitchen, repositories(kitchen)).propose([request(operand, arguments)])
+  private static def cook(File kitchen, String operand, Map<String, List<String>> arguments) {
+    new CookbookCook(kitchen, repositories(kitchen)).propose([request(operand, arguments)])
   }
 
   private static RecipeRequest request(String operand, Map<String, List<String>> arguments) {

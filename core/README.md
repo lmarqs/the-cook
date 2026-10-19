@@ -8,12 +8,12 @@ kitchen. The engine and the author's annotations, in `thecook.cookbook.api.ingre
 Groovy.
 
 The core reaches no network and runs no external command. It declares `CookbookRepository`, and the caller hands
-`CookbookApply` the repositories coordinates resolve from: the CLI builds them from the kitchen's `cook.toml` with
+`CookbookCook` the repositories coordinates resolve from: the CLI builds them from the kitchen's `cook.toml` with
 [infra](../infra/README.md).
 
 ## One invocation
 
-`CookbookApply.propose` takes the recipes in the order given and returns a `Proposal`; nothing reaches the disk until
+`CookbookCook.propose` takes the recipes in the order given and returns a `Proposal`; nothing reaches the disk until
 `Proposal.commit`.
 
 1. `RecipeLoader` resolves each operand. Coordinates read the artifact from the first of the given repositories that
@@ -70,6 +70,6 @@ When a write fails, it restores the paths it already wrote and fails.
 
 ## Verification
 
-`./gradlew check` runs the core tests: `CookbookApplyTest` cooks the `agents` artifact and small artifacts built
+`./gradlew check` runs the core tests: `CookbookCookTest` cooks the `agents` artifact and small artifacts built
 in the test, by coordinates and by path; `DocumentsTest` edits JSON and TOML through the documents' own API;
 `CoordinatesTest` and `RecipeSourceTest` cover coordinates and recipe texts; `FilePatchTest` covers the review diff.

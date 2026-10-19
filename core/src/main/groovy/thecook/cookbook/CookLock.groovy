@@ -58,7 +58,7 @@ final class CookLock {
   }
 
   /** Whether the recipe `name` was cooked before. */
-  boolean applied(String name) {
+  boolean cooked(String name) {
     entries.containsKey(name)
   }
 
