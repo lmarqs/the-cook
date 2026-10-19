@@ -62,6 +62,36 @@ class CookTomlTest {
     assert reverse == forward
   }
 
+  @Test void readsAnArtifactFromACookbookSourceDirectoryAtAnyVersion() {
+    def kitchen = folder.newFolder('kitchen')
+    source(new File(folder.root, 'book'), [
+      'notes/notes.groovy': 'source notes',
+      'notes/Notes.groovy': 'class Notes {}',
+      'notes/templates/NOTES.md': 'resource',
+    ])
+    new File(kitchen, 'cook.toml').text = 'repositories = ["../book"]\n'
+
+    def artifact = repositories(kitchen).artifact(Coordinates.parse('acme:notes:1.2.3'))
+
+    assert artifact.recipes == ['notes']
+    assert artifact.models == ['Notes']
+    assert artifact.recipeSource('notes') == 'source notes'
+    assert repositories(kitchen).artifact(Coordinates.parse('acme:notes:9.9.9')).sha256 == artifact.sha256
+    assert repositories(kitchen).repositories*.class == [CookbookDirectory]
+  }
+
+  @Test void aCookbookSourceDirectoryServesOnlyItsGroupsArtifacts() {
+    def kitchen = folder.newFolder('kitchen')
+    source(new File(kitchen, 'book'), ['other/other.groovy': 'source other'])
+    source(new File(kitchen, 'elsewhere'), ['notes/notes.groovy': 'other group notes'], 'other')
+    publish(new File(kitchen, 'repository'), ['acme/notes/notes.groovy': 'published notes'])
+    new File(kitchen, 'cook.toml').text = 'repositories = ["book", "elsewhere", "repository"]\n'
+
+    def artifact = repositories(kitchen).artifact(Coordinates.parse('acme:notes:1.2.3'))
+
+    assert artifact.recipeSource('notes') == 'published notes'
+  }
+
   @Test void missingArtifactNamesTheRepositoriesSearched() {
     def kitchen = folder.newFolder('kitchen')
     new File(kitchen, 'cook.toml').text = 'repositories = ["repository"]\n'
@@ -117,6 +147,16 @@ class CookTomlTest {
         out.write(text.getBytes('UTF-8'))
         out.closeEntry()
       }
+    }
+  }
+
+  private static void source(File cookbook, Map<String, String> files, String group = 'acme') {
+    cookbook.mkdirs()
+    new File(cookbook, 'cookbook.toml').text = "group = \"${group}\"\n"
+    files.each { path, text ->
+      def file = new File(cookbook, path)
+      file.parentFile.mkdirs()
+      file.text = text
     }
   }
 

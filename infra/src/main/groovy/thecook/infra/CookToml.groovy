@@ -8,8 +8,9 @@ import java.nio.file.Path
 
 /**
  * The kitchen's `cook.toml`, which lists the repositories cookbook artifacts resolve from, or Maven Central when the
- * kitchen has none. An entry is a Maven-layout repository, an `https://` URL or a path. A path starting with `~/` is
- * relative to the user's home, any other path to the kitchen.
+ * kitchen has none. An entry is an `https://` URL or a path to a Maven-layout repository, or a path to a cookbook's
+ * source directory, the one holding `cookbook.toml`. A path starting with `~/` is relative to the user's home, any
+ * other path to the kitchen.
  */
 final class CookToml {
   static final URI CENTRAL = URI.create('https://repo.maven.apache.org/maven2/')
@@ -48,7 +49,7 @@ final class CookToml {
         throw misshapen(manifest)
       }
 
-      maven((String) entry, kitchen, home, manifest)
+      repository((String) entry, kitchen, home, manifest)
     }
     new CookbookRepositories(repositories, "the repositories in ${manifest}: ${repositories.join(', ')}")
   }
@@ -57,12 +58,16 @@ final class CookToml {
     new IllegalArgumentException("${manifest}: repositories must be a list of https:// URLs and paths")
   }
 
-  private static MavenRepository maven(String entry, File kitchen, File home, File manifest) {
+  private static CookbookRepository repository(String entry, File kitchen, File home, File manifest) {
     def (Path directory, String path) = base(entry, kitchen, home)
     def uri = directory.toUri().resolve(path.endsWith('/') ? path : "${path}/")
 
     if (!(uri.scheme in ['https', 'file'])) {
       throw new IllegalArgumentException("${manifest}: repository ${entry} must be an https:// URL or a path")
+    }
+
+    if (uri.scheme == 'file' && CookbookDirectory.isCookbook(new File(uri))) {
+      return new CookbookDirectory(uri)
     }
 
     new MavenRepository(uri)
