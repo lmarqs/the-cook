@@ -90,7 +90,7 @@ class Agents {
   /** The shared agent policy at `.agents/permission/policy.yaml`, or the packaged starter when the file is absent. */
   Policy policy() {
     policyUsed = true
-    Policy.parse(current(Policy.PATH) ?: resource('policy.template.yaml'))
+    Policy.parse(current(Policy.PATH) ?: resource('seed/policy.template.yaml'))
   }
 
   /** Renders the shared policy into each harness's own permission model. */
@@ -122,7 +122,7 @@ class Agents {
   }
 
   /**
-   * Seeds `AGENTS.md` with the packaged `AGENTS.template.md`: a note telling agents to fill the file in when the
+   * Seeds `AGENTS.md` with the packaged `seed/AGENTS.template.md`: a note telling agents to fill the file in when the
    * developer asks, then sections, related ones grouped under one heading, each with a line saying what it holds and a
    * body in the shape of its answer: a table with labelled rows, or a list of bracketed placeholders.
    * `AGENTS.template.design.md` beside it states why the template is shaped so and names the sources. Written once
@@ -130,18 +130,18 @@ class Agents {
    * time fails unless Cook runs with `--force`, which replaces it, or `--skip`, which keeps it; never owned.
    */
   @Seed(path = 'AGENTS.md', existing = 'fail')
-  String starter() { instructionsUsed ? resource('AGENTS.template.md') : null }
+  String starter() { instructionsUsed ? resource('seed/AGENTS.template.md') : null }
 
   /**
-   * Seeds `.agents/permission/policy.yaml` with the packaged `policy.template.yaml` when absent, once the policy is
-   * read: a policy that grants nothing, with comments explaining each field and an example; never owned.
+   * Seeds `.agents/permission/policy.yaml` with the packaged `seed/policy.template.yaml` when absent, once the policy
+   * is read: a policy that grants nothing, with comments explaining each field and an example; never owned.
    */
   @Seed(path = '.agents/permission/policy.yaml')
-  String starterPolicy() { policyUsed ? resource('policy.template.yaml') : null }
+  String starterPolicy() { policyUsed ? resource('seed/policy.template.yaml') : null }
 
   /** Seeds `.agents/README.md`, which says what each shared directory holds, once the layout is seeded. */
   @Seed(path = '.agents/README.md')
-  String layoutReadme() { layoutUsed ? resource('README.template.md') : null }
+  String layoutReadme() { layoutUsed ? resource('seed/README.template.md') : null }
 
   /** Seeds `.agents/skills/.gitkeep` so Git keeps the directory, once the layout is seeded. */
   @Seed(path = '.agents/skills/.gitkeep')

@@ -44,7 +44,7 @@ class Text {
     assert seed.recipes.first().yieldText.startsWith('Have an agent fill in `AGENTS.md`')
     assert !new File(kitchen, 'AGENTS.md').exists()
     seed.commit()
-    assert new File(kitchen, 'AGENTS.md').text == new File(COOKBOOK, 'agents/AGENTS.template.md').text
+    assert new File(kitchen, 'AGENTS.md').text == new File(COOKBOOK, 'agents/seed/AGENTS.template.md').text
 
     def proposal = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
     proposal.commit()
@@ -98,7 +98,7 @@ recipes:
   @Test void forceReplacesAndSkipKeepsAnExistingAgentsFileOnTheFirstCook() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def template = new File(COOKBOOK, 'agents/AGENTS.template.md').text
+    def template = new File(COOKBOOK, 'agents/seed/AGENTS.template.md').text
     def agents = new File(kitchen, 'AGENTS.md')
     agents.text = '# Ours\n'
 
@@ -233,7 +233,7 @@ Run with --force to replace them, or --skip to keep them.'''
     ]
     proposal.commit()
     assert new File(kitchen, '.agents/permission/policy.yaml').text ==
-    new File(COOKBOOK, 'agents/policy.template.yaml').text
+    new File(COOKBOOK, 'agents/seed/policy.template.yaml').text
     assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
     '../.agents/adapters/claude/settings.json'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
@@ -288,7 +288,7 @@ check.policy = agents.policy()
     ])
     def policy = new File(kitchen, '.agents/permission/policy.yaml')
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:]).commit()
-    assert policy.text == new File(COOKBOOK, 'agents/policy.template.yaml').text
+    assert policy.text == new File(COOKBOOK, 'agents/seed/policy.template.yaml').text
     assert new File(kitchen, 'POLICY.txt').text == 'allow []; ask []; deny []\nallow []; ask []; deny []\n\n'
 
     // The starter's commented example, uncommented, is a valid policy.
@@ -547,7 +547,7 @@ agents.connect([claude])
 
     cook(kitchen, 'agents/skill-check.groovy', [:]).commit()
 
-    assert new File(kitchen, 'AGENTS.md').text.startsWith(new File(COOKBOOK, 'agents/AGENTS.template.md').text)
+    assert new File(kitchen, 'AGENTS.md').text.startsWith(new File(COOKBOOK, 'agents/seed/AGENTS.template.md').text)
     assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
     new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
   }

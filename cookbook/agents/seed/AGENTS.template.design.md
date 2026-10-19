@@ -1,6 +1,6 @@
 # Why the AGENTS.md template is shaped this way
 
-`AGENTS.template.md` is seeded into a repository by the `instructions` recipe and read by every agent session there.
+`AGENTS.template.md` is seeded into a repository by the `seed` recipe and read by every agent session there.
 Each line costs every session, so the template holds what the evidence says agents use from such a file, and nothing
 the repository already shows. The reasons below name their sources; the full list is at the end.
 

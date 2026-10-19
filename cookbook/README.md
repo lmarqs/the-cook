@@ -246,9 +246,10 @@ build.gradle            applies the io.github.lmarqs.cookbook plugin at the cook
 ```
 
 Each topic directory is one artifact. Skill content lives under `<dir>/skills/<name>/`, with `SKILL.md` and its
-supporting files together. A template for a seeded file is named `<name>.template.<ext>`, as in
-`agents/AGENTS.template.md`: under the file's own name, agents working in the cookbook would read it as
-instructions, since Codex reads every `AGENTS.md` between the repository root and its working directory.
+supporting files together. The templates for seeded files live under `<dir>/seed/`, apart from the artifact's models
+and recipes, each named `<name>.template.<ext>`, as in `agents/seed/AGENTS.template.md`: under the file's own name,
+agents working in the cookbook would read it as instructions, since Codex reads every `AGENTS.md` between the
+repository root and its working directory.
 
 `cookbook.toml` declares the cookbook's `group` and the engine API version as `api`. The release version is the
 Gradle property `releaseVersion`, set by the build that publishes the release, and `0.0.0` without it. This
