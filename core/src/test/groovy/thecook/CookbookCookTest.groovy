@@ -58,7 +58,7 @@ recipes:
     owns:
       sections:
         - file: ".gitignore"
-          id: "io.github.lmarqs.cookbook:agents#connect#harnesses"
+          id: "io.github.lmarqs.cookbook:agents#connect/harnesses"
       keys:
         - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
@@ -380,8 +380,8 @@ worker [[git, [commit, push]]]
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['codex']]).commit()
 
     def rules = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
-    assert rules.first() == '# cook:begin io.github.lmarqs.cookbook:agents#permissions#commands'
-    assert rules.last() == '# cook:end io.github.lmarqs.cookbook:agents#permissions#commands'
+    assert rules.first() == '# cook:begin io.github.lmarqs.cookbook:agents#permissions/commands'
+    assert rules.last() == '# cook:end io.github.lmarqs.cookbook:agents#permissions/commands'
     assert rules[1..-2].join('\n') + '\n' == fixture('codex-commands.rules')
     // A Codex run cannot add a rules file of its own, so roles render nothing for Codex.
     assert !new File(kitchen, '.agents/adapters/codex/roles').exists()
@@ -657,7 +657,7 @@ notes.add(line)
     assert proposal.recipes*.address == ['io.github.lmarqs.cookbook:agents:0.1.0#seed', 'notes.groovy']
     proposal.commit()
     assert new File(kitchen, 'NOTES.md').text ==
-    '<!-- cook:begin notes#notes -->\nfirst\n<!-- cook:end notes#notes -->\n'
+    '<!-- cook:begin notes/notes -->\nfirst\n<!-- cook:end notes/notes -->\n'
     def lock = new File(kitchen, 'cook.lock').text
     assert lock.contains('- name: "io.github.lmarqs.cookbook:agents#seed"')
     assert lock.contains('- name: "notes"\n    source: "notes.groovy"')
@@ -764,9 +764,9 @@ step.each { script.add(it) }
     new File(kitchen, 'build.js').text = 'run();\n'
     cook(kitchen, 'acme:script:1.0.0#script', [step: ['lint();']]).commit()
     assert new File(kitchen, 'build.js').text == '''run();
-// cook:begin acme:script#script#steps
+// cook:begin acme:script#script/steps
 lint();
-// cook:end acme:script#script#steps
+// cook:end acme:script#script/steps
 '''
     cook(kitchen, 'acme:script:1.0.0#script', [:]).commit()
     assert new File(kitchen, 'build.js').text == 'run();\n'
@@ -880,7 +880,7 @@ notes.set('kept')
     cook(kitchen, 'recipes/b.groovy', [:]).commit()
 
     def notes = new File(kitchen, 'NOTES.md')
-    assert notes.text.contains('cook:begin recipes/a#notes') && notes.text.contains('cook:begin recipes/b#notes')
+    assert notes.text.contains('cook:begin recipes/a/notes') && notes.text.contains('cook:begin recipes/b/notes')
     def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
     assert lock.names == ['recipes/a', 'recipes/b'] as Set
     assert lock.owned('recipes/a').every { it instanceof SectionTarget }
@@ -888,7 +888,7 @@ notes.set('kept')
 
     new CookbookDiscard(kitchen).propose(['recipes/a.groovy']).commit()
 
-    assert notes.text == '<!-- cook:begin recipes/b#notes -->\nkept\n<!-- cook:end recipes/b#notes -->\n'
+    assert notes.text == '<!-- cook:begin recipes/b/notes -->\nkept\n<!-- cook:end recipes/b/notes -->\n'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, 'settings.json')) == [test: 'kept']
     assert CookLock.parse(new File(kitchen, 'cook.lock').text).names == ['recipes/b'] as Set
   }

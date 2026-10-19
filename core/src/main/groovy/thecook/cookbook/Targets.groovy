@@ -74,7 +74,7 @@ abstract class Target {
 
 /** A marked section of a text file. */
 final class SectionTarget extends Target {
-  /** The marker id, `<recipe>#<region>`. */
+  /** The marker id, `<recipe>/<region>`. */
   final String id
   // A recorded section has no declared comment; withdrawing it reads the comment from its marker.
   private final String comment

@@ -23,8 +23,8 @@ setup readers encounter.
 1. Recipe-declared instruction text states repository conventions in plain language. Describe the configured program
    or repository practice directly; references to Cook belong where readers need to invoke Cook. Keep frequently read
    instructions concise and put supporting detail in documentation, without an engine-enforced length bound.
-2. [Sections](../features/glossary.md) in shared text files use `cook:begin <recipe>#<region>` and
-   `cook:end <recipe>#<region>` markers with the format's appropriate comment syntax, including HTML comments in
+2. [Sections](../features/glossary.md) in shared text files use `cook:begin <recipe>/<region>` and
+   `cook:end <recipe>/<region>` markers with the format's appropriate comment syntax, including HTML comments in
    Markdown and hash comments in ignore files. Markers name the owning recipe and region
    ([0007](0007-ownership.md)). Text outside the declared section is preserved ([0008](0008-native-configuration.md)).
 3. Instruction sections and ignore entries follow the ordered composition and ownership of

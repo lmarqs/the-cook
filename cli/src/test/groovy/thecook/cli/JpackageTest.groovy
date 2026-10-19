@@ -26,7 +26,7 @@ notes.add('local')
       assert run(root, '--dry-run', *recipes).contains('Would create NOTES.md')
       assert !new File(root, 'NOTES.md').exists()
       assert run(root, '--batch-approve', *recipes).contains('Created cook.lock')
-      assert new File(root, 'NOTES.md').text.contains('<!-- cook:begin local#notes -->\nlocal\n')
+      assert new File(root, 'NOTES.md').text.contains('<!-- cook:begin local/notes -->\nlocal\n')
       def nested = new File(root, 'nested'); nested.mkdirs()
       assert run(nested, '-C', root.path, *recipes).trim() == 'Already cooked.'
       assert run(root, 'init', 2).contains('Not a recipe: init')

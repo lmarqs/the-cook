@@ -41,22 +41,22 @@ A notice is explanatory text; ownership is recorded in the committed `cook.lock`
 ## Sections and markers
 
 Markers bound a section in shared text and name the recipe that owns it and the region within that recipe:
-`cook:begin <recipe>#<region>` and `cook:end <recipe>#<region>`. The
+`cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`. The
 [architecture](../architecture.md#ordered-composition-and-declared-targets) defines section targets. Use the file
 format's appropriate comment syntax:
 
 ```markdown
 Text outside the section remains intact.
 
-<!-- cook:begin recipes/setup#commands -->
+<!-- cook:begin recipes/setup/commands -->
 Run the project's build command.
-<!-- cook:end recipes/setup#commands -->
+<!-- cook:end recipes/setup/commands -->
 ```
 
 ```gitignore
-# cook:begin git#ignore
+# cook:begin git/ignore
 /.claude/settings.local.json
-# cook:end git#ignore
+# cook:end git/ignore
 ```
 
 Markdown uses HTML comments; ignore files, TOML, YAML, and shell files use hash comments where their formats permit
@@ -68,7 +68,7 @@ inside the section appear in the next proposed diff; ownership never blocks a ch
 Each recipe has a short name that markers and `cook.lock` use. The region is a name the recipe chooses, after the `#`:
 in `recipes/setup#commands`, the recipe is `recipes/setup` and the region is `commands`. Several recipes can
 therefore keep separate sections in one file. `cook.lock` lists each recipe's sections by file and
-`<recipe>#<region>`. Recipes declare the sections they address.
+`<recipe>/<region>`. Recipes declare the sections they address.
 
 ### Instruction files and conventions
 

@@ -10,11 +10,11 @@ import thecook.rendering.KeyLocation
 
 class DocumentsTest {
   @Test void markdownReadsBackABlockWhoseIdContainsHashes() {
-    def id = 'acme:notes#more#notes'
+    def id = 'acme:notes#more/notes'
     def written = new BlockDocument('# Notes\n', '<!-- ', ' -->')
     written.write(id, new BlockLocation(), written.render('more'))
     assert written.text ==
-    '# Notes\n<!-- cook:begin acme:notes#more#notes -->\nmore\n<!-- cook:end acme:notes#more#notes -->\n'
+    '# Notes\n<!-- cook:begin acme:notes#more/notes -->\nmore\n<!-- cook:end acme:notes#more/notes -->\n'
 
     def reopened = new BlockDocument(written.text, '<!-- ', ' -->')
     assert reopened.read(id, new BlockLocation()) == 'more\n'

@@ -79,15 +79,15 @@ recipes can keep separate sections in one file. Markers use the file format's co
 
 | File kind | Opening marker | Closing marker |
 | --- | --- | --- |
-| Markdown | `<!-- cook:begin <recipe>#<region> -->` | `<!-- cook:end <recipe>#<region> -->` |
-| Hash-comment formats: ignore files, YAML, TOML, and shell scripts | `# cook:begin <recipe>#<region>` | `# cook:end <recipe>#<region>` |
+| Markdown | `<!-- cook:begin <recipe>/<region> -->` | `<!-- cook:end <recipe>/<region> -->` |
+| Hash-comment formats: ignore files, YAML, TOML, and shell scripts | `# cook:begin <recipe>/<region>` | `# cook:end <recipe>/<region>` |
 
 ```markdown
 Text people wrote outside the section.
 
-<!-- cook:begin recipes/setup#commands -->
+<!-- cook:begin recipes/setup/commands -->
 Run the project's build command.
-<!-- cook:end recipes/setup#commands -->
+<!-- cook:end recipes/setup/commands -->
 
 More unrelated text.
 ```

@@ -92,7 +92,7 @@ final class Declarations {
         break
       case Section:
         def section = (Section) annotation
-        def target = new SectionTarget(base, "${recipe}#${section.id()}".toString(), section.comment() ?: null)
+        def target = new SectionTarget(base, "${recipe}/${section.id()}".toString(), section.comment() ?: null)
         declared.owned << new Declaration(member, target, lines(member, value))
         break
       case Key:

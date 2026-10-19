@@ -126,25 +126,24 @@ Targets have three forms (FR-10):
 | Section in a shared text file | File path and begin/end markers | The bounded section, preserving text outside it |
 
 A section's markers name the recipe that owns it and the region within that recipe:
-`cook:begin <recipe>#<region>` and `cook:end <recipe>#<region>`. The recipe's short name precedes `#` and the region
-follows it. Several recipes can therefore keep separate sections
-in one file. Markers use the file format's comment syntax: HTML comments in Markdown, and hash comments in ignore
+`cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`. The recipe's short name precedes the last `/` and
+the region follows it. Several recipes can therefore keep separate sections in one file. Markers use the file format's comment syntax: HTML comments in Markdown, and hash comments in ignore
 files, YAML, TOML, and shell scripts. For example:
 
 ```markdown
 Text outside the section stays in place.
 
-<!-- cook:begin recipes/setup#commands -->
+<!-- cook:begin recipes/setup/commands -->
 Run the project's build command.
-<!-- cook:end recipes/setup#commands -->
+<!-- cook:end recipes/setup/commands -->
 
 More unrelated text stays in place.
 ```
 
 ```gitignore
-# cook:begin git#ignore
+# cook:begin git/ignore
 /.claude/settings.local.json
-# cook:end git#ignore
+# cook:end git/ignore
 ```
 
 Ownership decides what a recipe's later versions update and remove. It does not block changes: Cook proposes the
@@ -193,7 +192,7 @@ recipes:
     owns:
       sections:
         - file: ".agents/adapters/claude/CLAUDE.md"
-          id: "io.github.lmarqs.cookbook:agents#instructions#instructions"
+          id: "io.github.lmarqs.cookbook:agents#instructions/instructions"
       links:
         - ".claude/CLAUDE.md"
 ```
@@ -233,9 +232,9 @@ link:
 +++ b/.agents/adapters/claude/CLAUDE.md
 @@ -1,4 +1,1 @@
  Hand-written notes stay.
--<!-- cook:begin io.github.lmarqs.cookbook:agents#instructions#instructions -->
+-<!-- cook:begin io.github.lmarqs.cookbook:agents#instructions/instructions -->
 -@../../../AGENTS.md
--<!-- cook:end io.github.lmarqs.cookbook:agents#instructions#instructions -->
+-<!-- cook:end io.github.lmarqs.cookbook:agents#instructions/instructions -->
 ```
 
 Discard follows the same diff, whole-batch approval and failure rollback as cooking. To get back content from before
@@ -346,7 +345,7 @@ Other documents cite these requirements by number.
 - **FR-9:** Cook proposes the requested changes against current content, including content a developer edited.
   Ownership never blocks a change.
 - **FR-10:** Whole-file targets use file paths; structured targets use key paths; sections in shared text files use
-  `cook:begin <recipe>#<region>` and `cook:end <recipe>#<region>` markers in the file format's comment syntax,
+  `cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>` markers in the file format's comment syntax,
   including HTML comments for Markdown.
 - **FR-11:** The core proposes the batch, writes only the accepted changes, and records only those in `cook.lock`.
 - **FR-12:** The CLI displays the final diff in the terminal, preceded by each supplied recipe's `@confirm` text, and

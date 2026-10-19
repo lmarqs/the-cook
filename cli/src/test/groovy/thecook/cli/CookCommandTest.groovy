@@ -57,7 +57,7 @@ notes.add('notes')
       assert !notes.exists()
       assert cli.execute(['--kitchen', repo.path, '--batch-approve', 'notes.groovy'] as String[]) == 0 :
       stderr.toString('UTF-8')
-      assert notes.text == '<!-- cook:begin notes#notes -->\nnotes\n<!-- cook:end notes#notes -->\n'
+      assert notes.text == '<!-- cook:begin notes/notes -->\nnotes\n<!-- cook:end notes/notes -->\n'
       stdout.reset()
       assert cli.execute(['-C', repo.path, 'notes.groovy'] as String[]) == 0 : stderr.toString('UTF-8')
       assert stdout.toString('UTF-8') == 'Already cooked.\n'
@@ -200,9 +200,9 @@ Models
 --- /dev/null
 +++ b/NOTES.md
 @@ -0,0 +1,3 @@
-+<!-- cook:begin acme:notes#notes#notes -->
++<!-- cook:begin acme:notes#notes/notes -->
 +first
-+<!-- cook:end acme:notes#notes#notes -->
++<!-- cook:end acme:notes#notes/notes -->
 """
       assert cli.execute(['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 0 :
       stderr.toString('UTF-8')
@@ -237,12 +237,12 @@ Models
       stderr.toString('UTF-8')
       assert stdout.toString('UTF-8').endsWith('Updated NOTES.md\nUpdated cook.lock\n\n' +
       'After cooking acme:notes:1.2.3#notes\n  Read `NOTES.md`.\n')
-      assert notes.text == """<!-- cook:begin acme:notes#notes#notes -->
+      assert notes.text == """<!-- cook:begin acme:notes#notes/notes -->
 first
-<!-- cook:end acme:notes#notes#notes -->
-<!-- cook:begin acme:notes#more#notes -->
+<!-- cook:end acme:notes#notes/notes -->
+<!-- cook:begin acme:notes#more/notes -->
 more
-<!-- cook:end acme:notes#more#notes -->
+<!-- cook:end acme:notes#more/notes -->
 """
       stdout.reset()
       def recookBoth = ['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first', more]
@@ -274,8 +274,8 @@ notes.add('local')
       def withLocal = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line', 'second', 'local.groovy']
       assert cli.execute(withLocal as String[]) == 0 :
       stderr.toString('UTF-8')
-      assert stdout.toString('UTF-8').contains('\n+<!-- cook:begin local#notes -->\n+local\n' +
-      '+<!-- cook:end local#notes -->\n')
+      assert stdout.toString('UTF-8').contains('\n+<!-- cook:begin local/notes -->\n+local\n' +
+      '+<!-- cook:end local/notes -->\n')
       assert stdout.toString('UTF-8').endsWith('\nWould update NOTES.md\nWould update cook.lock\n')
 
       [
@@ -363,8 +363,8 @@ notes.add('local')
       def declined = new ByteArrayOutputStream(); stderr.reset()
       assert command(declined, stderr, 'n\n')
       .execute(['discard', '-C', repo.path, 'acme:notes:1.2.3#more'] as String[]) == 1
-      assert declined.toString('UTF-8').contains('\n-<!-- cook:begin acme:notes#more#notes -->\n-more\n' +
-      '-<!-- cook:end acme:notes#more#notes -->\n')
+      assert declined.toString('UTF-8').contains('\n-<!-- cook:begin acme:notes#more/notes -->\n-more\n' +
+      '-<!-- cook:end acme:notes#more/notes -->\n')
       assert stderr.toString('UTF-8') == 'Nothing written.\n'
 
       stdout.reset()
@@ -375,7 +375,7 @@ notes.add('local')
       stderr.toString('UTF-8')
       assert stdout.toString('UTF-8').endsWith('\nUpdated NOTES.md\nUpdated cook.lock\n')
       assert notes.text ==
-      '<!-- cook:begin acme:notes#notes#notes -->\nfirst\n<!-- cook:end acme:notes#notes#notes -->\nmine\n'
+      '<!-- cook:begin acme:notes#notes/notes -->\nfirst\n<!-- cook:end acme:notes#notes/notes -->\nmine\n'
 
       stdout.reset()
       assert cli.execute(['discard', '-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes'] as String[]) == 0 :

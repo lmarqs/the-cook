@@ -112,7 +112,7 @@ discovery belongs in the cookbook configuration for that program.
 ## Generated text in human files
 
 A recipe may declare a section in a shared instruction file. Markers bound the section and name its owning recipe
-and region, `cook:begin <recipe>#<region>` and `cook:end <recipe>#<region>`
+and region, `cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`
 ([generated-content-standards.md](generated-content-standards.md#sections-and-markers)). Keep instructions concise, avoid
 duplicating surrounding guidance, and link to supporting detail where useful. State conventions using the values that
 apply to the repository, so people and programs can understand them directly.

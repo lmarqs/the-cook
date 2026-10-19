@@ -25,7 +25,7 @@ disturbing anything else.
 ## Decision
 
 1. Recipe declarations address whole files by path, structured content by key path, and sections of shared text by
-   markers, `cook:begin <recipe>#<region>` and `cook:end <recipe>#<region>`, which name the owning recipe's short name
+   markers, `cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`, which name the owning recipe's short name
    and the region within it. Markers use the format's comment syntax, including HTML comments for Markdown. Content
    outside the declared targets is preserved ([0008](0008-native-configuration.md)).
 2. Recipes and their operations compose left to right against current content. When two recipes write the same
