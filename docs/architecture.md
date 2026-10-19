@@ -192,8 +192,10 @@ recipes:
     sha256: "3f5a…"
     owns:
       sections:
-        - file: "CLAUDE.md"
+        - file: ".agents/adapters/claude/CLAUDE.md"
           id: "io.github.lmarqs:agents#instructions#instructions"
+      links:
+        - ".claude/CLAUDE.md"
 ```
 
 The source is a path relative to the repository root or the recipe's coordinates. A key path is a
@@ -222,16 +224,17 @@ a lock that lists no recipe is deleted. Content the recipe does not own stays, i
 hand-written text and files a seed wrote the first time the recipe was cooked. Discard removes; it does not restore
 the values the recipe replaced, because the repository's history already holds them (FR-15).
 
-For example, when `CLAUDE.md` holds a hand-written line above the section `io.github.lmarqs:agents#instructions` owns,
-discarding that recipe proposes:
+For example, when `.agents/adapters/claude/CLAUDE.md` holds a hand-written line above the section
+`io.github.lmarqs:agents#instructions` owns, discarding that recipe proposes, besides removing the `.claude/CLAUDE.md`
+link:
 
 ```diff
---- a/CLAUDE.md
-+++ b/CLAUDE.md
+--- a/.agents/adapters/claude/CLAUDE.md
++++ b/.agents/adapters/claude/CLAUDE.md
 @@ -1,4 +1,1 @@
  Hand-written notes stay.
 -<!-- cook:begin io.github.lmarqs:agents#instructions#instructions -->
--@AGENTS.md
+-@../../../AGENTS.md
 -<!-- cook:end io.github.lmarqs:agents#instructions#instructions -->
 ```
 

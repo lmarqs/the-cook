@@ -18,7 +18,7 @@ each top-level key becomes one owned setting.
 | --- | --- | --- |
 | `.agents/adapters/claude/settings.json` | Each top-level key of the settings file, owned whole | `--settings` supplies keys |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--settings` supplies keys |
-| `CLAUDE.md` | The section `instructions` | `--instructions` supplies text |
+| `.agents/adapters/claude/CLAUDE.md` | The section `instructions`, linked from `.claude/CLAUDE.md` | `--instructions` supplies text |
 
 Claude Code reads the project settings and instructions.
 
@@ -37,7 +37,7 @@ import io.github.lmarqs.agents.Claude
 @param(value = ['settings'], default = null, doc = 'JSON file whose top-level keys are written into .agents/adapters/claude/settings.json')
 File settings
 
-@param(value = ['instructions'], default = null, doc = 'Instruction text for CLAUDE.md')
+@param(value = ['instructions'], default = null, doc = 'Instruction text for .claude/CLAUDE.md')
 String instructions
 
 @ingredient(Claude) def claude

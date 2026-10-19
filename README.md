@@ -48,8 +48,9 @@ Cook two recipes in it:
 ```
 
 Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
-`y`: it prints `Created` for `.agents/adapters/claude/settings.json`, `.agents/policy.yaml`, `.claude/settings.json` (a
-link to the former), `AGENTS.md`, `CLAUDE.md` and `cook.lock`, then what to do next. Run the same command again: nothing changed, so it prints `Already cooked.` and asks nothing.
+`y`: it prints `Created` for `.agents/adapters/claude/CLAUDE.md`, `.agents/adapters/claude/settings.json`,
+`.agents/policy.yaml`, `.claude/CLAUDE.md` and `.claude/settings.json` (links to the adapter's files), `AGENTS.md` and
+`cook.lock`, then what to do next. Run the same command again: nothing changed, so it prints `Already cooked.` and asks nothing.
 
 The repository's [`cook` script](cook) launches the local distribution, and the directory it runs from is the kitchen
 Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in `<dir>` as if Cook had started there.

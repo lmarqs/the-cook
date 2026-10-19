@@ -7,8 +7,9 @@ package io.github.lmarqs.agents
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `defaultMode` and `allow`, `ask` and `deny` lists of
- * `Bash(<prefix> *)` rules. Markdown instructions in `CLAUDE.md` and symbolic links from `.claude/skills`,
- * `.claude/commands`, `.claude/hooks` and `.claude/memory` to the shared directories complete the project setup. `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
+ * `Bash(<prefix> *)` rules. Markdown instructions in `.agents/adapters/claude/CLAUDE.md`, which `.claude/CLAUDE.md`
+ * links to, and symbolic links from `.claude/skills`, `.claude/commands`, `.claude/hooks` and `.claude/memory` to the
+ * shared directories complete the project setup. `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
  * ## Instances
  *
@@ -44,6 +45,7 @@ class Claude implements Harness {
   final String localDirectory = '.claude'
   private Map settings = [:]
   private List<String> instructions = []
+  private List<String> sharedInstructions = []
   private Map<String, String> directoryLinks = [:]
 
   /** Destination-root ignore patterns for the local settings file Claude Code writes. */
@@ -65,11 +67,17 @@ class Claude implements Harness {
   /** Adds top-level settings keys, hooks included; a supplied key replaces its earlier value whole. */
   void settings(Map more) { settings += more }
 
-  /** Appends Markdown instruction lines to the managed section in `CLAUDE.md`. */
+  /** Appends Markdown instruction lines to the managed section in `.agents/adapters/claude/CLAUDE.md`. */
   void instruct(String... lines) { instructions += lines.toList() }
 
-  /** Adds `@<path>` to `CLAUDE.md` to read shared instructions; `path` is relative to this instance's directory. */
-  void readInstructions(String path) { instruct("@${path}") }
+  /**
+   * Imports the shared instructions at `path`, relative to this instance's directory, into the adapter's `CLAUDE.md`.
+   * Claude resolves an import from the file a link points to, so the import climbs out of `.agents/adapters/claude/`.
+   */
+  void readInstructions(String path) {
+    sharedInstructions << path
+    instruct("@../../../${path}")
+  }
 
   /** Links `.claude/<name>` to each shared directory; each path is relative to this instance's directory. */
   void readDirectories(Map<String, String> paths) {
@@ -83,16 +91,24 @@ class Claude implements Harness {
   @Keys(path = '.agents/adapters/claude/settings.json')
   Map settingsKeys() { settings ?: null }
 
-  /** `.claude/settings.json`, a link to the adapter's settings, when settings or permissions are set. */
+  /**
+   * `.claude/settings.json` and `.claude/CLAUDE.md`, links to the adapter's files, when settings or instructions are
+   * set.
+   */
   @Links(path = '.claude')
-  Map<String, String> settingsLink() { settings ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
+  Map<String, String> adapterLinks() {
+    Map<String, String> links = [:]
+    if (settings) links['settings.json'] = '../.agents/adapters/claude/settings.json'
+    if (instructions) links['CLAUDE.md'] = '../.agents/adapters/claude/CLAUDE.md'
+    links ?: null
+  }
 
   /**
-   * The `instructions` section of `CLAUDE.md`, when instruction lines or a shared instruction path are added. Fails
-   * when `CLAUDE.md` already has one of the section's `@` imports outside an `instructions` section of this model,
-   * since Claude would then read the shared file twice.
+   * The `instructions` section of `.agents/adapters/claude/CLAUDE.md`, when instruction lines or a shared instruction
+   * path are added. Fails when the root `CLAUDE.md` imports the shared instructions outside an `instructions` section
+   * of this model, since Claude would then read them twice.
    */
-  @Section(path = 'CLAUDE.md', id = 'instructions')
+  @Section(path = '.agents/adapters/claude/CLAUDE.md', id = 'instructions')
   List<String> instructionsSection() {
     if (!instructions) {
       return null
@@ -106,7 +122,7 @@ class Claude implements Harness {
   Map<String, String> links() { directoryLinks ?: null }
 
   private void refuseImportsElsewhere() {
-    def imports = instructions.findAll { it.startsWith('@') } as Set
+    def imports = sharedInstructions.collect { "@${it}".toString() } as Set
     boolean own = false
     current('CLAUDE.md')?.readLines()?.eachWithIndex { String line, int index ->
       if (line ==~ /.*cook:begin \S+#instructions(?:\s.*)?/) {
@@ -115,7 +131,8 @@ class Claude implements Harness {
         own = false
       } else if (!own && line.trim() in imports) {
         throw new IllegalArgumentException(
-          "CLAUDE.md already imports ${line.trim()} on line ${index + 1}; remove that line so Cook owns the import")
+          "CLAUDE.md already imports ${line.trim()} on line ${index + 1}; remove that line, since " +
+          '.claude/CLAUDE.md imports it')
       }
     }
   }

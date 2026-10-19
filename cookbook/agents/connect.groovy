@@ -25,14 +25,14 @@ Cook `io.github.lmarqs:agents:0.1.0#seed` first to create `AGENTS.md` too.
 | `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.claude/skills`, `commands`, `hooks`, `memory` | Links to the directories of the same names in `../.agents/` | `--harness=claude` |
-| `CLAUDE.md` | The section `instructions`, containing `@AGENTS.md` | `--harness=claude` |
+| `.agents/adapters/claude/CLAUDE.md` | The section `instructions`, containing `@../../../AGENTS.md`, linked from `.claude/CLAUDE.md` | `--harness=claude` |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |
 | `.agents/adapters/codex/rules/cook.rules` | The section `commands` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
 | `.codex/hooks` | A link to `../.agents/hooks`; Codex reads `.agents/skills` natively | `--harness=codex` |
 | `.gitignore` | The section `harnesses`: `/.claude/`, `/.codex/` for the selected harnesses | Always |
 
-Cooking with fewer harnesses removes the outputs of the ones left out. When `CLAUDE.md` already imports
+Cooking with fewer harnesses removes the outputs of the ones left out. When the root `CLAUDE.md` already imports
 `@AGENTS.md` outside the recipe's section, cooking fails and names the line; remove that line and cook again.
 
 ## With other recipes

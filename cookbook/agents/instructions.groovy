@@ -13,13 +13,14 @@ Seeds `AGENTS.md` with a section template for an agent to fill in, and connects 
 | Target | Part | When |
 | --- | --- | --- |
 | `AGENTS.md` | Section template, written the first time the recipe is cooked; never owned | Always |
-| `CLAUDE.md` | The section `instructions`, containing `@AGENTS.md` | `--harness=claude` |
+| `.agents/adapters/claude/CLAUDE.md` | The section `instructions`, containing `@../../../AGENTS.md`, linked from `.claude/CLAUDE.md` | `--harness=claude` |
 
 The first time the recipe is cooked, it fails when `AGENTS.md` already exists. Run with `--force` to replace it with
 the template, then have an agent carry what the old file still needs into it, or with `--skip` to keep it as it is.
 
-Claude reads the file through `CLAUDE.md`. When `CLAUDE.md` already imports `@AGENTS.md` outside the recipe's
-section, cooking fails and names the line; remove that line and cook again. Codex reads `AGENTS.md` natively, so
+Claude reads the file through `.claude/CLAUDE.md`, a link to the adapter's file, which imports it by its path from
+there. When the root `CLAUDE.md` already imports `@AGENTS.md` outside the recipe's section, cooking fails and names
+the line; remove that line and cook again. Codex reads `AGENTS.md` natively, so
 selecting `codex` adds no target.
 
 ## With other recipes
