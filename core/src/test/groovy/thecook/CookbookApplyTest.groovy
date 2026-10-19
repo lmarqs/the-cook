@@ -278,7 +278,16 @@ Run with --force to replace them, or --skip to keep them.'''
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     def seed = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#seed', [:])
-    assert seed.changes == ['.agents/policy.yaml', 'AGENTS.md', 'cook.lock']
+    assert seed.changes == [
+      '.agents/README.md',
+      '.agents/commands/.gitkeep',
+      '.agents/hooks/.gitkeep',
+      '.agents/memory/.gitkeep',
+      '.agents/policy.yaml',
+      '.agents/skills/.gitkeep',
+      'AGENTS.md',
+      'cook.lock'
+    ]
     seed.commit()
 
     def connect = { -> apply(kitchen, 'io.github.lmarqs:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
@@ -286,8 +295,13 @@ Run with --force to replace them, or --skip to keep them.'''
     assert connected.changes == [
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
+      '.claude/commands',
+      '.claude/hooks',
+      '.claude/memory',
       '.claude/settings.json',
+      '.claude/skills',
       '.codex/config.toml',
+      '.codex/hooks',
       '.gitignore',
       'CLAUDE.md',
       'cook.lock'
@@ -296,18 +310,25 @@ Run with --force to replace them, or --skip to keep them.'''
     assert new File(kitchen, '.gitignore').text.contains('/.claude/\n/.codex/\n')
     assert Files.readSymbolicLink(new File(kitchen, '.codex/config.toml').toPath()).toString() ==
     '../.agents/adapters/codex/config.toml'
+    assert Files.readSymbolicLink(new File(kitchen, '.claude/memory').toPath()).toString() == '../.agents/memory'
+    assert new File(kitchen, '.codex/hooks/.gitkeep').isFile()
     assert connect().changes == []
 
-    new File(kitchen, '.claude').deleteDir()
-    new File(kitchen, '.codex').deleteDir()
+    // `File.deleteDir` would follow the links into `.agents/`; `rm -rf` does not, and neither does this.
+    ['.claude', '.codex'].each { directory ->
+      Files.walk(new File(kitchen, directory).toPath())
+          .sorted(Comparator.reverseOrder())
+          .each { Files.delete(it) }
+    }
     def again = connect()
-    assert again.changes == ['.claude/settings.json', '.codex/config.toml']
+    def links = ['.claude/commands', '.claude/hooks', '.claude/memory', '.claude/settings.json', '.claude/skills']
+    assert again.changes == links + ['.codex/config.toml', '.codex/hooks']
     again.commit()
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions.defaultMode ==
     'acceptEdits'
   }
 
-  @Test void linksPackagedSkillsAndRemovesWhatALaterVersionNoLongerDeclares() {
+  @Test void linksTheSharedSkillsAndRemovesWhatALaterVersionNoLongerDeclares() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents', ['skill-check.groovy': """@help('Links one skill.')
 import io.github.lmarqs.agents.Agents
@@ -321,12 +342,12 @@ agents.connect([claude])
     apply(kitchen, 'io.github.lmarqs:agents:0.1.0#skill-check', [skill: ['solid']]).commit()
     assert new File(kitchen, '.agents/skills/solid/SKILL.md').text ==
     new File(COOKBOOK, 'agents/skills/solid/SKILL.md').text
-    def link = new File(kitchen, '.claude/skills/solid').toPath()
-    assert Files.readSymbolicLink(link).toString() == '../../.agents/skills/solid'
+    def link = new File(kitchen, '.claude/skills').toPath()
+    assert Files.readSymbolicLink(link).toString() == '../.agents/skills'
     assert new File(kitchen, '.claude/skills/solid/SKILL.md').isFile()
 
     def fewer = apply(kitchen, 'io.github.lmarqs:agents:0.1.0#skill-check', [:])
-    assert fewer.changes == ['.agents/skills/solid/SKILL.md', '.claude/skills/solid', 'cook.lock']
+    assert fewer.changes == ['.agents/skills/solid/SKILL.md', '.claude/skills', 'cook.lock']
     fewer.commit()
     assert !new File(kitchen, '.agents/skills').exists()
     assert !new File(kitchen, '.claude/skills').exists()

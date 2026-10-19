@@ -6,8 +6,9 @@ package io.github.lmarqs.agents
  * ## Writes for
  *
  * Markdown instructions in `AGENTS.md`, seeded from a section template that an agent fills in when asked, whose
- * line under each heading says what the section holds; version 1 of the YAML policy at `.agents/policy.yaml`; and skill file trees under
- * `.agents/skills/`, each with `SKILL.md` and its supporting resources.
+ * line under each heading says what the section holds; version 1 of the YAML policy at `.agents/policy.yaml`; skill file trees under
+ * `.agents/skills/`, each with `SKILL.md` and its supporting resources; and the shared directories `.agents/skills/`,
+ * `.agents/commands/`, `.agents/hooks/` and `.agents/memory/`, described in `.agents/README.md`.
  *
  * ## Instances
  *
@@ -37,17 +38,31 @@ package io.github.lmarqs.agents
  */
 @Ingredient
 class Agents {
+  /** The shared directories under `.agents/` that `seed` creates and `connect` links each harness to. */
+  static final List<String> DIRECTORIES = ['skills', 'commands', 'hooks', 'memory']
+
   private List<String> instructions = []
   private List<String> skills = []
   private boolean instructionsUsed = false
   private boolean policyUsed = false
+  private boolean layoutUsed = false
   private List<String> localDirectories = []
 
-  /** Requests the seeds of `AGENTS.md` and `.agents/policy.yaml`, written only when absent and never owned. */
+  /**
+   * Requests the seeds of `AGENTS.md`, `.agents/policy.yaml` and the shared layout, written only when absent and never
+   * owned.
+   */
   void seed() {
     seedInstructions()
+    seedLayout()
     policyUsed = true
   }
+
+  /**
+   * Requests the seeds of the shared directories, each kept in Git by an empty `.gitkeep`, and of `.agents/README.md`,
+   * which says what each holds; `connect` then links every harness to all of them.
+   */
+  void seedLayout() { layoutUsed = true }
 
   /** Requests the seed of `AGENTS.md`, written from the template only when absent and never owned. */
   void seedInstructions() { instructionsUsed = true }
@@ -83,11 +98,15 @@ class Agents {
     harnesses.each { it.permit(shared) }
   }
 
-  /** Points each harness at `AGENTS.md` and the shared skills, by paths relative to where it sits. Call it after adding skills. */
+  /**
+   * Points each harness at `AGENTS.md` and the shared directories, by paths relative to where it sits: every directory
+   * once the layout is seeded, otherwise `.agents/skills` once skills are added. Call it after adding skills.
+   */
   void connect(Collection<Harness> harnesses) {
+    def shared = layoutUsed ? DIRECTORIES : skills ? ['skills'] : []
     harnesses.each { harness ->
       harness.readInstructions(reach(harness, 'AGENTS.md'))
-      if (skills) harness.readSkills(reach(harness, '.agents/skills'), skills)
+      if (shared) harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] })
     }
   }
 
@@ -114,6 +133,26 @@ class Agents {
   @Seed(path = '.agents/policy.yaml')
   String starterPolicy() { policyUsed ? Policy.STARTER : null }
 
+  /** Seeds `.agents/README.md`, which says what each shared directory holds, once the layout is seeded. */
+  @Seed(path = '.agents/README.md')
+  String layoutReadme() { layoutUsed ? resource('README.template.md') : null }
+
+  /** Seeds `.agents/skills/.gitkeep` so Git keeps the directory, once the layout is seeded. */
+  @Seed(path = '.agents/skills/.gitkeep')
+  String keepSkills() { keep() }
+
+  /** Seeds `.agents/commands/.gitkeep` so Git keeps the directory, once the layout is seeded. */
+  @Seed(path = '.agents/commands/.gitkeep')
+  String keepCommands() { keep() }
+
+  /** Seeds `.agents/hooks/.gitkeep` so Git keeps the directory, once the layout is seeded. */
+  @Seed(path = '.agents/hooks/.gitkeep')
+  String keepHooks() { keep() }
+
+  /** Seeds `.agents/memory/.gitkeep` so Git keeps the directory, once the layout is seeded. */
+  @Seed(path = '.agents/memory/.gitkeep')
+  String keepMemory() { keep() }
+
   /** The `instructions` section of `AGENTS.md`, when instruction lines are added. */
   @Section(path = 'AGENTS.md', id = 'instructions')
   List<String> instructionsSection() { instructions ?: null }
@@ -132,6 +171,8 @@ class Agents {
       resources("skills/${name}").collectEntries { path, body -> ["${name}/${path}", body] }
     } ?: null
   }
+
+  private String keep() { layoutUsed ? '' : null }
 
   private String ignored(Harness harness) {
     "/${Path.of(directory).normalize().relativize(Path.of(harness.directory, harness.localDirectory).normalize())}/"
@@ -162,8 +203,11 @@ interface Harness {
   /** Makes the harness read the shared instructions at `path`, relative to its directory. */
   void readInstructions(String path)
 
-  /** Makes the harness find the named shared skills under `path`, relative to its directory. */
-  void readSkills(String path, List<String> names)
+  /**
+   * Makes the harness read the shared directories it supports, keyed by name, such as `skills` or `hooks`, each at a
+   * path relative to its directory.
+   */
+  void readDirectories(Map<String, String> paths)
 }
 
 /** Version 1 of the shared policy: instructions and literal command prefixes with a decision each. */

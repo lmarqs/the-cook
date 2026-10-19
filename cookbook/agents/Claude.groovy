@@ -7,8 +7,8 @@ package io.github.lmarqs.agents
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `defaultMode` and `allow`, `ask` and `deny` lists of
- * `Bash(<prefix> *)` rules. Markdown instructions in `CLAUDE.md` and symbolic links under `.claude/skills/` complete
- * the project setup. `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
+ * `Bash(<prefix> *)` rules. Markdown instructions in `CLAUDE.md` and symbolic links from `.claude/skills`,
+ * `.claude/commands`, `.claude/hooks` and `.claude/memory` to the shared directories complete the project setup. `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
  * ## Instances
  *
@@ -31,7 +31,7 @@ package io.github.lmarqs.agents
  *
  * ## With other models
  *
- * `io.github.lmarqs.agents.Agents` drives this harness through `permit`, `readInstructions` and `readSkills`.
+ * `io.github.lmarqs.agents.Agents` drives this harness through `permit`, `readInstructions` and `readDirectories`.
  * It supplies the shared policy and paths; Claude translates them into its native files. The same command
  * prefixes do not mean identical enforcement across harnesses; review the generated permissions against
  * Claude's permission model. `localFiles` supplies ignore patterns for `io.github.lmarqs.git.Git`.
@@ -44,7 +44,7 @@ class Claude implements Harness {
   final String localDirectory = '.claude'
   private Map settings = [:]
   private List<String> instructions = []
-  private Map<String, String> skillLinks = [:]
+  private Map<String, String> directoryLinks = [:]
 
   /** Destination-root ignore patterns for the local settings file Claude Code writes. */
   final List<String> localFiles = ['/.claude/settings.local.json']
@@ -71,9 +71,9 @@ class Claude implements Harness {
   /** Adds `@<path>` to `CLAUDE.md` to read shared instructions; `path` is relative to this instance's directory. */
   void readInstructions(String path) { instruct("@${path}") }
 
-  /** Links each named shared skill under `.claude/skills/`; `path` is relative to this instance's directory. */
-  void readSkills(String path, List<String> names) {
-    names.each { skillLinks[it] = "../../${path}/${it}" }
+  /** Links `.claude/<name>` to each shared directory; each path is relative to this instance's directory. */
+  void readDirectories(Map<String, String> paths) {
+    paths.each { name, path -> directoryLinks[name] = "../${path}".toString() }
   }
 
   /**
@@ -101,9 +101,9 @@ class Claude implements Harness {
     instructions
   }
 
-  /** One relative link under `.claude/skills/` per named shared skill, when skills are connected. */
-  @Links(path = '.claude/skills')
-  Map<String, String> links() { skillLinks ?: null }
+  /** One relative link in `.claude/` per shared directory, such as `skills`, when the directories are connected. */
+  @Links(path = '.claude')
+  Map<String, String> links() { directoryLinks ?: null }
 
   private void refuseImportsElsewhere() {
     def imports = instructions.findAll { it.startsWith('@') } as Set

@@ -6,7 +6,8 @@ package io.github.lmarqs.agents
  * ## Writes for
  *
  * Top-level TOML keys in `config.toml`, top-level JSON keys in `hooks.json` and rule files under `rules/`, all in
- * `.agents/adapters/codex/` and linked from `.codex/`, and Markdown instructions in `AGENTS.md`. Command rules use the
+ * `.agents/adapters/codex/` and linked from `.codex/`, a `.codex/hooks` link to the shared hook scripts, and Markdown
+ * instructions in `AGENTS.md`. Command rules use the
  * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", "status"], decision = "allow")`, with `allow`, `prompt`
  * or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
  *
@@ -31,7 +32,7 @@ package io.github.lmarqs.agents
  *
  * ## With other models
  *
- * `io.github.lmarqs.agents.Agents` drives this harness through `permit`, `readInstructions` and `readSkills`.
+ * `io.github.lmarqs.agents.Agents` drives this harness through `permit`, `readInstructions` and `readDirectories`.
  * It supplies the shared policy and paths; Codex translates the policy into its native settings and rules,
  * and checks that the shared paths are the ones it reads natively. The same command prefixes do not mean
  * identical enforcement across harnesses; review the generated rules against Codex's permission model.
@@ -47,6 +48,7 @@ class Codex implements Harness {
   private Map<String, String> rules = [:]
   private List<String> commands = []
   private List<String> instructions = []
+  private String hooksPath
 
   /**
    * Sets `sandbox_mode` to `workspace-write`, `approval_policy` to `on-request` and
@@ -84,10 +86,13 @@ class Codex implements Harness {
   void readInstructions(String path) { readsNatively(path, 'AGENTS.md') }
 
   /**
-   * Checks that `path` is `.agents/skills`; rejects any other path. Codex discovers the named skills there
-   * natively in its own directory, so this call writes nothing and does not filter by `names`.
+   * Checks that `skills` is at `.agents/skills`, where Codex discovers skills natively in its own directory, and links
+   * `.codex/hooks` to `hooks`; Codex has no project commands or memory, so it reads no other directory.
    */
-  void readSkills(String path, List<String> names) { readsNatively(path, '.agents/skills') }
+  void readDirectories(Map<String, String> paths) {
+    if (paths.skills) readsNatively(paths.skills, '.agents/skills')
+    hooksPath = paths.hooks
+  }
 
   /**
    * Each supplied top-level key of `.agents/adapters/codex/config.toml`, owned whole, when configuration or permissions
@@ -111,7 +116,10 @@ class Codex implements Harness {
   @Section(path = '.agents/adapters/codex/rules/cook.rules', id = 'commands', comment = '#')
   List<String> commandRules() { commands ?: null }
 
-  /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json` and `rules`. */
+  /**
+   * One link in `.codex/` per adapter file or directory written, `config.toml`, `hooks.json` and `rules`, and `hooks`
+   * to the shared hook scripts when connected.
+   */
   @Links(path = '.codex')
   Map<String, String> links() {
     def written = [
@@ -119,7 +127,9 @@ class Codex implements Harness {
       'hooks.json': hooks,
       rules: rules || commands,
     ].findAll { name, declared -> declared }
-    written.collectEntries { name, declared -> [name, "../.agents/adapters/codex/${name}"] } ?: null
+    Map<String, String> links = written.collectEntries { name, declared -> [name, "../.agents/adapters/codex/${name}"] }
+    if (hooksPath) links.hooks = "../${hooksPath}".toString()
+    links ?: null
   }
 
   /** The `codex` section of `AGENTS.md`, when Codex-specific instruction lines are added. */
