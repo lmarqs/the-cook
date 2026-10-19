@@ -57,9 +57,9 @@ class Codex implements Harness {
   void permit(Policy policy) {
     config += [sandbox_mode: 'workspace-write', approval_policy: 'on-request',
                sandbox_workspace_write: [network_access: false]]
-    commands = policy.allow.collect { prefixRule(it, 'allow') } +
-      policy.ask.collect { prefixRule(it, 'prompt') } +
-      policy.deny.collect { prefixRule(it, 'forbidden') }
+    commands = policy.commands.allow.collect { prefixRule(it, 'allow') } +
+      policy.commands.ask.collect { prefixRule(it, 'prompt') } +
+      policy.commands.deny.collect { prefixRule(it, 'forbidden') }
   }
 
   /** Adds top-level configuration keys; a supplied key replaces its earlier value whole. */

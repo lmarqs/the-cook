@@ -226,7 +226,7 @@ Run with --force to replace them, or --skip to keep them.'''
       '.agents/commands/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/memory/.gitkeep',
-      '.agents/policy.yaml',
+      '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
       '.claude/settings.json',
       '.codex/config.toml',
@@ -234,7 +234,8 @@ Run with --force to replace them, or --skip to keep them.'''
       'cook.lock'
     ]
     proposal.commit()
-    assert new File(kitchen, '.agents/policy.yaml').text == new File(COOKBOOK, 'agents/policy.template.yaml').text
+    assert new File(kitchen, '.agents/permission/policy.yaml').text ==
+    new File(COOKBOOK, 'agents/policy.template.yaml').text
     assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
     '../.agents/adapters/claude/settings.json'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
@@ -262,6 +263,83 @@ Run with --force to replace them, or --skip to keep them.'''
     assert !new File(kitchen, '.agents/adapters/codex').exists()
   }
 
+  @Test void readsEveryFormOfThePolicyAndNamesTheFieldOfEachRefusal() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents', [
+      'PolicyCheck.groovy': '''package io.github.lmarqs.cookbook.agents
+
+@Ingredient
+class PolicyCheck {
+  Policy policy
+  @File(path = 'POLICY.txt')
+  String summary() {
+    if (!policy) return null
+    def entries = { Map<String, List<Command>> byName ->
+      byName.collect { name, list -> "${name} ${list.collect { it.claude ? "claude ${it.claude}" : it.prefix }}" }
+    }
+    [policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') }.join('\\n') + '\\n'
+  }
+}
+''',
+      'policy-check.groovy': '''@help('Reads the policy.')
+import io.github.lmarqs.cookbook.agents.Agents
+import io.github.lmarqs.cookbook.agents.PolicyCheck
+@ingredient(Agents) def agents
+@ingredient(PolicyCheck) def check
+check.policy = agents.policy()
+''',
+    ])
+    def policy = new File(kitchen, '.agents/permission/policy.yaml')
+    policy.parentFile.mkdirs()
+    policy.text = '''version: 2
+commands:
+  allow:
+    - [git, status]
+    - [gh, pr, [view, list]]
+  ask:
+    - [git, push]
+  deny:
+    - claude: "git push * --force*"
+tools:
+  allow:
+    - claude: "WebFetch(domain:docs.gradle.org)"
+roles:
+  worker:
+    deny:
+      - [git, [commit, push]]
+'''
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:]).commit()
+    assert new File(kitchen, 'POLICY.txt').text == '''\
+allow [[git, status], [gh, pr, [view, list]]]; ask [[git, push]]; deny [claude git push * --force*]
+allow [claude WebFetch(domain:docs.gradle.org)]; ask []; deny []
+worker [[git, [commit, push]]]
+'''
+
+    def entry = 'is not an entry; write the literal words a command starts with, a nested list for alternatives of ' +
+        'one word, or {claude: "<pattern>"}'
+    [
+      'version: 1\n': 'version must be 2',
+      'version: 2\ninstructions: []\n': 'unknown field [instructions]',
+      'version: 2\ncommands:\n  maybe: []\n': 'commands has unknown decision [maybe]; use allow, ask or deny',
+      'version: 2\ncommands:\n  allow:\n    - [git, "a b"]\n': "commands.allow: [git, a b] ${entry}",
+      'version: 2\ncommands:\n  deny:\n    - [git, []]\n': "commands.deny: [git, []] ${entry}",
+      'version: 2\ncommands:\n  ask:\n    - codex: x\n': "commands.ask: [codex:x] ${entry}",
+      'version: 2\ntools:\n  allow:\n    - [git]\n':
+      'tools.allow: [git] is not a tool entry; write {claude: "<pattern>"}',
+      'version: 2\nroles:\n  Worker:\n    deny: []\n':
+      'roles: Worker is not a role name; use lower-case letters, digits and hyphens, starting with a letter',
+      'version: 2\nroles:\n  worker:\n    allow:\n      - [git]\n':
+      'roles.worker: a role only adds denies; list them under deny, and keep allow and ask under commands',
+    ].each { text, message ->
+      policy.text = text
+      def error = shouldFail(IllegalArgumentException) {
+        cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:])
+      }
+      assert error.message == 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check: ' +
+      ".agents/permission/policy.yaml: ${message}"
+    }
+  }
+
   @Test void seedsTheSharedLayoutAndConnectsHarnessesThroughDirectoriesThatCanBeDeleted() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
@@ -271,7 +349,7 @@ Run with --force to replace them, or --skip to keep them.'''
       '.agents/commands/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/memory/.gitkeep',
-      '.agents/policy.yaml',
+      '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
       'AGENTS.md',
       'cook.lock'
@@ -679,7 +757,7 @@ config.migrated = migrated
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
     def ignore = new File(kitchen, '.gitignore')
     ignore.text = 'mine\n' + ignore.text
-    def policy = new File(kitchen, '.agents/policy.yaml').text
+    def policy = new File(kitchen, '.agents/permission/policy.yaml').text
 
     def discard = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:9.9.9#connect'])
 
@@ -687,7 +765,7 @@ config.migrated = migrated
     assert discard.actions['cook.lock'] == 'delete'
     discard.commit()
     assert ignore.text == 'mine\n'
-    assert new File(kitchen, '.agents/policy.yaml').text == policy
+    assert new File(kitchen, '.agents/permission/policy.yaml').text == policy
     assert !new File(kitchen, 'cook.lock').exists()
   }
 

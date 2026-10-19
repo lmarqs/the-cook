@@ -4,8 +4,8 @@ ignore pattern for Claude's local settings file.
 
 ## Before cooking
 
-Reads `.agents/policy.yaml` when present, or uses the version 1 starter policy when absent.
-The policy supplies instruction lines and command permissions for both harnesses.
+Reads `.agents/permission/policy.yaml` when present, or uses the starter policy when absent.
+The policy supplies command permissions for both harnesses.
 
 ## Cook
 
@@ -17,9 +17,9 @@ The policy supplies instruction lines and command permissions for both harnesses
 
 | Target | Part | When |
 | --- | --- | --- |
-| `.agents/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
+| `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `AGENTS.md` | Title, seeded when absent; never owned | Always |
-| `AGENTS.md` | The section `instructions`: working guidance and policy instructions | Always |
+| `AGENTS.md` | The section `instructions`: working guidance | Always |
 | `.agents/skills/<name>/` | Whole files for `solid`, `hexagonal-layout`, `effective-java-core` | Always |
 | `.agents/adapters/claude/settings.json` | `permissions`, linked from `.claude/settings.json` | Always |
 | `.claude/skills` | A relative link to `../.agents/skills` | Always |
@@ -56,7 +56,6 @@ agents.instruct(
   '',
   'Core, infra, the CLI, and cookbook ingredients and recipes are Groovy.',
   'Build and verify changes with ./gradlew check cliBuild.')
-agents.instruct(agents.policy().instructions)
 agents.permit(harnesses)
 agents.connect(harnesses)
 

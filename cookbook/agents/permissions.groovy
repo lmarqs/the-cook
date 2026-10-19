@@ -4,8 +4,8 @@ with the starter, which grants nothing.
 
 ## Before cooking
 
-Reads `.agents/policy.yaml` when present. The policy uses version 1 and literal command prefixes;
-unsupported versions, unknown top-level fields and invalid command prefixes are rejected.
+Reads `.agents/permission/policy.yaml` when present. The policy uses version 2;
+other versions, unknown fields, invalid entries and roles that do more than deny are rejected.
 
 ## Cook
 
@@ -17,7 +17,7 @@ unsupported versions, unknown top-level fields and invalid command prefixes are 
 
 | Target | Part | When |
 | --- | --- | --- |
-| `.agents/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
+| `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |

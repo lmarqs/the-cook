@@ -6,7 +6,8 @@ ignored in Git, so they can be deleted and cooked again.
 
 ## Before cooking
 
-Reads `.agents/policy.yaml` when present, or seeds the starter, and seeds the shared directories that are absent.
+Reads `.agents/permission/policy.yaml` when present, or seeds the starter, and seeds the shared directories that are
+absent.
 Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` too.
 
 ## Cook
@@ -20,7 +21,7 @@ Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` t
 
 | Target | Part | When |
 | --- | --- | --- |
-| `.agents/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
+| `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories, seeded when absent; never owned | Always |
 | `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
@@ -39,8 +40,8 @@ Cooking with fewer harnesses removes the outputs of the ones left out.
 `#codex-settings` write further keys into the same adapter files.
 ''')
 @yield('''
-Review the rendered permissions against each harness's permission model. Edit `.agents/policy.yaml` and cook again
-to update them; after deleting `.claude/` or `.codex/`, cook again to recreate the links.
+Review the rendered permissions against each harness's permission model. Edit `.agents/permission/policy.yaml` and
+cook again to update them; after deleting `.claude/` or `.codex/`, cook again to recreate the links.
 ''')
 import io.github.lmarqs.cookbook.agents.Agents
 import io.github.lmarqs.cookbook.agents.Claude

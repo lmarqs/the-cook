@@ -55,9 +55,9 @@ class Claude implements Harness {
   void permit(Policy policy) {
     settings.permissions = [
       defaultMode: 'acceptEdits',
-      allow: policy.allow.collect { rule(it) },
-      ask: policy.ask.collect { rule(it) },
-      deny: policy.deny.collect { rule(it) },
+      allow: policy.commands.allow.collect { rule(it) },
+      ask: policy.commands.ask.collect { rule(it) },
+      deny: policy.commands.deny.collect { rule(it) },
     ]
   }
 

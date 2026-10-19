@@ -6,9 +6,10 @@ package io.github.lmarqs.cookbook.agents
  * ## Writes for
  *
  * Markdown instructions in `AGENTS.md`, seeded from a section template that an agent fills in when asked, whose
- * line under each heading says what the section holds; version 1 of the YAML policy at `.agents/policy.yaml`; skill file trees under
- * `.agents/skills/`, each with `SKILL.md` and its supporting resources; and the shared directories `.agents/skills/`,
- * `.agents/commands/`, `.agents/hooks/` and `.agents/memory/`, described in `.agents/README.md`.
+ * line under each heading says what the section holds; version 2 of the YAML policy at
+ * `.agents/permission/policy.yaml`; skill file trees under `.agents/skills/`, each with `SKILL.md` and its supporting
+ * resources; and the shared directories `.agents/skills/`, `.agents/commands/`, `.agents/hooks/` and
+ * `.agents/memory/`, described in `.agents/README.md`.
  *
  * ## Instances
  *
@@ -49,8 +50,8 @@ class Agents {
   private List<String> localDirectories = []
 
   /**
-   * Requests the seeds of `AGENTS.md`, `.agents/policy.yaml` and the shared layout, written only when absent and never
-   * owned.
+   * Requests the seeds of `AGENTS.md`, `.agents/permission/policy.yaml` and the shared layout, written only when absent
+   * and never owned.
    */
   void seed() {
     seedInstructions()
@@ -86,10 +87,10 @@ class Agents {
     skills += names.toList()
   }
 
-  /** The shared agent policy at `.agents/policy.yaml`, or the packaged starter when the file is absent. */
+  /** The shared agent policy at `.agents/permission/policy.yaml`, or the packaged starter when the file is absent. */
   Policy policy() {
     policyUsed = true
-    Policy.parse(current('.agents/policy.yaml') ?: resource('policy.template.yaml'))
+    Policy.parse(current(Policy.PATH) ?: resource('policy.template.yaml'))
   }
 
   /** Renders the shared policy into each harness's own permission model. */
@@ -106,7 +107,9 @@ class Agents {
   void connect(Collection<Harness> harnesses) {
     def shared = layoutUsed ? DIRECTORIES : skills ? ['skills'] : []
     if (!shared) return
-    harnesses.each { harness -> harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] }) }
+    harnesses.each { harness ->
+      harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] })
+    }
   }
 
   /**
@@ -129,10 +132,10 @@ class Agents {
   String starter() { instructionsUsed ? resource('AGENTS.template.md') : null }
 
   /**
-   * Seeds `.agents/policy.yaml` with the packaged `policy.template.yaml` when absent, once the policy is read: a policy
-   * that grants nothing, with comments explaining each field and an example; never owned.
+   * Seeds `.agents/permission/policy.yaml` with the packaged `policy.template.yaml` when absent, once the policy is
+   * read: a policy that grants nothing, with comments explaining each field and an example; never owned.
    */
-  @Seed(path = '.agents/policy.yaml')
+  @Seed(path = '.agents/permission/policy.yaml')
   String starterPolicy() { policyUsed ? resource('policy.template.yaml') : null }
 
   /** Seeds `.agents/README.md`, which says what each shared directory holds, once the layout is seeded. */
@@ -209,48 +212,102 @@ interface Harness {
   void readDirectories(Map<String, String> paths)
 }
 
-/** Version 1 of the shared policy: instructions and literal command prefixes with a decision each. */
+/**
+ * Version 2 of the shared policy: command and tool entries with a decision each, and roles that add denies to the
+ * command entries for one kind of run.
+ */
 class Policy {
-  /** Shared instruction lines read from the policy's `instructions` field. */
-  List<String> instructions = []
+  /** Where the policy lives, relative to the shared setup's directory. */
+  static final String PATH = '.agents/permission/policy.yaml'
 
-  /** Command prefixes the harness permits. */
-  List<Command> allow = []
+  private static final List<String> DECISIONS = ['allow', 'ask', 'deny']
 
-  /** Command prefixes for which the harness requests approval. */
-  List<Command> ask = []
+  /** Command entries every session follows, under `allow`, `ask` and `deny`. */
+  Map<String, List<Command>> commands = [allow: [], ask: [], deny: []]
 
-  /** Command prefixes the harness refuses. */
-  List<Command> deny = []
+  /** Tool entries, each a harness entry, under `allow`, `ask` and `deny`. */
+  Map<String, List<Command>> tools = [allow: [], ask: [], deny: []]
 
-  /** Parses YAML policy text; rejects a version other than 1, unknown top-level fields and invalid command prefixes. */
-  static Policy parse(String text) {
-    def data = new YamlSlurper().parseText(text)
-    if (data.version != 1) throw new IllegalArgumentException('.agents/policy.yaml: policy version must be 1')
-    def unknown = data.keySet() - ['version', 'instructions', 'commands']
-    if (unknown) throw new IllegalArgumentException(".agents/policy.yaml: unknown field ${unknown}")
-    new Policy(
-      instructions: data.instructions ?: [],
-      allow: commands(data, 'allow'), ask: commands(data, 'ask'), deny: commands(data, 'deny'))
-  }
-
-  private static List<Command> commands(Map data, String decision) {
-    (data.commands?.get(decision) ?: []).collect { new Command(prefix: it) }
-  }
-}
-
-/** A literal argv prefix with no shell syntax, translated by each harness into its native permission rules. */
-class Command {
-  /** The ordered literal argv tokens that a permitted, prompted or forbidden command begins with. */
-  List<String> prefix
+  /** The command entries each role denies on top of `commands`, by role name. */
+  Map<String, List<Command>> roles = [:]
 
   /**
-   * Builds a command from `prefix`; rejects an empty prefix or tokens containing characters other than
-   * letters, digits, underscore, dot, slash, colon, equals, at sign, plus and hyphen.
+   * Parses YAML policy text; rejects a version other than 2, unknown fields, decisions other than `allow`, `ask` and
+   * `deny`, invalid entries, tool entries that are not harness entries, and roles that do more than deny.
    */
-  Command(Map args) {
-    prefix = args.prefix
-    if (!prefix || prefix.any { !(it ==~ /[a-zA-Z0-9_.\/:=@+-]+/) })
-      throw new IllegalArgumentException("Command prefix must be literal tokens: ${prefix}")
+  static Policy parse(String text) {
+    def data = new YamlSlurper().parseText(text)
+    if (!(data instanceof Map)) fail('the policy must be a YAML map')
+    if (data.version != 2) fail('version must be 2')
+    def unknown = data.keySet() - ['version', 'commands', 'tools', 'roles']
+    if (unknown) fail("unknown field ${unknown}")
+    new Policy(commands: decisions(data, 'commands', false), tools: decisions(data, 'tools', true),
+    roles: roles(data.roles))
   }
+
+  private static Map<String, List<Command>> decisions(Map data, String field, boolean toolsOnly) {
+    def value = data[field] ?: [:]
+    if (!(value instanceof Map)) fail("${field} must map allow, ask and deny to lists of entries")
+    def unknown = value.keySet() - DECISIONS
+    if (unknown) fail("${field} has unknown decision ${unknown}; use allow, ask or deny")
+    DECISIONS.collectEntries { decision -> [decision, entries(value[decision], "${field}.${decision}", toolsOnly)] }
+  }
+
+  private static List<Command> entries(Object value, String field, boolean toolsOnly) {
+    if (value == null) return []
+    if (!(value instanceof List)) fail("${field} must be a list of entries")
+    value.collect { entry ->
+      def command = Command.of(entry)
+      if (!command) {
+        fail("${field}: ${entry} is not an entry; write the literal words a command starts with, a nested list for " +
+            'alternatives of one word, or {claude: "<pattern>"}')
+      }
+      if (toolsOnly && !command.claude) fail("${field}: ${entry} is not a tool entry; write {claude: \"<pattern>\"}")
+      command
+    }
+  }
+
+  private static Map<String, List<Command>> roles(Object value) {
+    if (value == null) return [:]
+    if (!(value instanceof Map)) fail('roles must map each role name to its deny entries')
+    value.collectEntries { name, role ->
+      if (!(name ==~ /[a-z][a-z0-9-]*/)) {
+        fail("roles: ${name} is not a role name; use lower-case letters, digits and hyphens, starting with a letter")
+      }
+      if (!(role instanceof Map) || role.keySet() != ['deny'] as Set) {
+        fail("roles.${name}: a role only adds denies; list them under deny, and keep allow and ask under commands")
+      }
+      [name, entries(role.deny, "roles.${name}.deny", false)]
+    }
+  }
+
+  private static void fail(String message) { throw new IllegalArgumentException("${PATH}: ${message}") }
+}
+
+/**
+ * One policy entry, translated by each harness into its native permission rules: either the literal words a command
+ * starts with, where an item that is itself a list holds alternatives for that word, or a pattern only Claude can
+ * express.
+ */
+class Command {
+  /** The literal words, with a list of alternatives in place of a word; null for a harness entry. */
+  List prefix
+
+  /** A Claude permission pattern, where `*` matches anything; null for a prefix. */
+  String claude
+
+  /** The entry `value` describes, or null when it is neither a prefix of literal words nor `{claude: "<pattern>"}`. */
+  static Command of(Object value) {
+    if (value instanceof Map) {
+      boolean harness = value.keySet() == ['claude'] as Set && value.claude instanceof String && value.claude
+      return harness ? new Command(claude: value.claude) : null
+    }
+    boolean prefix = value instanceof List && value && value.every { item ->
+      item instanceof List ? item && item.every { word(it) } : word(item)
+    }
+    prefix ? new Command(prefix: value) : null
+  }
+
+  // Letters, digits, underscore, dot, slash, colon, equals, at sign, plus and hyphen: no shell syntax or wildcards.
+  private static boolean word(Object value) { value instanceof String && value ==~ /[a-zA-Z0-9_.\/:=@+-]+/ }
 }
