@@ -65,8 +65,8 @@ inside the section appear in the next proposed diff; ownership never blocks a ch
 
 ### Recipe and region names
 
-Each recipe has a short name that markers and `cook.lock` use. The region is a name the recipe chooses, after the `#`:
-in `recipes/setup#commands`, the recipe is `recipes/setup` and the region is `commands`. Several recipes can
+Each recipe has a short name that markers and `cook.lock` use. The region is a name the recipe chooses, after the last `/`:
+in `recipes/setup/commands`, the recipe is `recipes/setup` and the region is `commands`. Several recipes can
 therefore keep separate sections in one file. `cook.lock` lists each recipe's sections by file and
 `<recipe>/<region>`. Recipes declare the sections they address.
 

@@ -102,7 +102,7 @@ Must be maintained:
 
 ## Confirmation
 
-- Review a kitchen without a `cook.toml`: does `io.github.lmarqs.cookbook:agents:<version>#instructions` cook from Maven
+- Review a kitchen without a `cook.toml`: does `io.github.lmarqs.cookbook:agents:<version>#connect` cook from Maven
   Central?
 - Review a jar republished under the same version in Maven local: does the next run show a changed source before the
   diff?

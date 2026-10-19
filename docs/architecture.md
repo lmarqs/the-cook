@@ -31,7 +31,7 @@ A recipe is trusted executable Groovy code that describes requested file operati
 recipes produces the batch that Cook reviews and writes. The models describe program configuration; the engine
 handles the resulting file operations. Each recipe has a short name that markers and the lock use to identify it. A
 recipe cooked from a path is named by its place in the repository without `.groovy`, such as `recipes/setup`. A recipe
-cooked by its coordinates is named by its address without the version, such as `io.github.lmarqs.cookbook:agents#instructions`,
+cooked by its coordinates is named by its address without the version, such as `io.github.lmarqs.cookbook:agents#connect`,
 so cooking a new version keeps the same owner. Moving a recipe file renames it: cooking the new name and discarding the
 old one moves the ownership ([discard](features/discard.md)).
 
@@ -181,20 +181,21 @@ recipes:
     source: "io.github.lmarqs.cookbook:agents:0.0.0#permissions"
     sha256: "3f5a…"
     owns:
+      sections:
+        - file: ".agents/adapters/codex/rules/cook.rules"
+          id: "io.github.lmarqs.cookbook:agents#permissions/commands"
       keys:
         - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
-      files:
-        - ".agents/adapters/codex/rules/default.rules"
-  - name: "io.github.lmarqs.cookbook:agents#instructions"
-    source: "io.github.lmarqs.cookbook:agents:0.0.0#instructions"
+  - name: "io.github.lmarqs.cookbook:agents#connect"
+    source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
     sha256: "3f5a…"
     owns:
       sections:
-        - file: ".agents/adapters/claude/CLAUDE.md"
-          id: "io.github.lmarqs.cookbook:agents#instructions/instructions"
+        - file: ".gitignore"
+          id: "io.github.lmarqs.cookbook:agents#connect/harnesses"
       links:
-        - ".claude/CLAUDE.md"
+        - ".claude/skills"
 ```
 
 The source is a path relative to the repository root or the recipe's coordinates. A key path is a
@@ -223,18 +224,24 @@ a lock that lists no recipe is deleted. Content the recipe does not own stays, i
 hand-written text and files a seed wrote the first time the recipe was cooked. Discard removes; it does not restore
 the values the recipe replaced, because the repository's history already holds them (FR-15).
 
-For example, when `.agents/adapters/claude/CLAUDE.md` holds a hand-written line above the section
-`io.github.lmarqs.cookbook:agents#instructions` owns, discarding that recipe proposes, besides removing the `.claude/CLAUDE.md`
-link:
+For example, when `.gitignore` holds a hand-written line above the section `io.github.lmarqs.cookbook:agents#connect`
+owns, discarding that recipe proposes, besides removing the links and files it owns:
 
 ```diff
---- a/.agents/adapters/claude/CLAUDE.md
-+++ b/.agents/adapters/claude/CLAUDE.md
-@@ -1,4 +1,1 @@
- Hand-written notes stay.
--<!-- cook:begin io.github.lmarqs.cookbook:agents#instructions/instructions -->
--@../../../AGENTS.md
--<!-- cook:end io.github.lmarqs.cookbook:agents#instructions/instructions -->
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,11 +1,1 @@
+ /build/
+-# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+-/.claude/*
+-!/.claude/settings.json
+-!/.claude/skills
+-!/.claude/commands
+-# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
+-CLAUDE.md
+-CLAUDE.local.md
+-**/.claude/CLAUDE.md
+-# cook:end io.github.lmarqs.cookbook:agents#connect/harnesses
 ```
 
 Discard follows the same diff, whole-batch approval and failure rollback as cooking. To get back content from before

@@ -61,34 +61,48 @@ diff shows that removal. A recipe that `cook.lock` does not list is refused, and
 
 ### Discard example
 
-`.agents/adapters/claude/CLAUDE.md` holds a hand-written line and a section that
-`io.github.lmarqs.cookbook:agents#instructions` owns:
+`.gitignore` holds a hand-written line and a section that `io.github.lmarqs.cookbook:agents#connect` owns:
 
-```markdown
-Hand-written notes stay.
-<!-- cook:begin io.github.lmarqs.cookbook:agents#instructions/instructions -->
-@../../../AGENTS.md
-<!-- cook:end io.github.lmarqs.cookbook:agents#instructions/instructions -->
+```text
+/build/
+# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+/.claude/*
+!/.claude/settings.json
+!/.claude/skills
+!/.claude/commands
+# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
+CLAUDE.md
+CLAUDE.local.md
+**/.claude/CLAUDE.md
+# cook:end io.github.lmarqs.cookbook:agents#connect/harnesses
 ```
 
-`./cook discard io.github.lmarqs.cookbook:agents:0.0.0#instructions` proposes:
+`./cook discard io.github.lmarqs.cookbook:agents:0.0.0#connect` proposes:
 
 ```diff
---- a/.agents/adapters/claude/CLAUDE.md
-+++ b/.agents/adapters/claude/CLAUDE.md
-@@ -1,4 +1,1 @@
- Hand-written notes stay.
--<!-- cook:begin io.github.lmarqs.cookbook:agents#instructions/instructions -->
--@../../../AGENTS.md
--<!-- cook:end io.github.lmarqs.cookbook:agents#instructions/instructions -->
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,11 +1,1 @@
+ /build/
+-# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+-/.claude/*
+-!/.claude/settings.json
+-!/.claude/skills
+-!/.claude/commands
+-# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
+-CLAUDE.md
+-CLAUDE.local.md
+-**/.claude/CLAUDE.md
+-# cook:end io.github.lmarqs.cookbook:agents#connect/harnesses
 ```
 
-together with the removal of the `.claude/CLAUDE.md` link and of the recipe's entry from `cook.lock`.
+together with the removal of the `.claude/` links, the files and keys the recipe owns under `.agents/`, and the
+recipe's entry in `cook.lock`.
 
 ### Renaming a recipe
 
 A path recipe's short name is its place in the repository, so moving `recipes/a.groovy` to `recipes/b.groovy` renames
-it. Cooking `recipes/b.groovy` writes its own sections, such as `recipes/b#notes`, and takes over the keys and files
+it. Cooking `recipes/b.groovy` writes its own sections, such as `recipes/b/notes`, and takes over the keys and files
 both declare; `recipes/a`'s sections stay, because cooking one recipe never removes another's output. Discarding the
 old name removes what the lock still lists for it, although its file is gone:
 

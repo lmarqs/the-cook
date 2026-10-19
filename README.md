@@ -38,19 +38,19 @@ Read the `agents` artifact's front page and one of its recipes, without running 
 
 ```sh
 ./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0
-./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0#instructions
+./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0#connect
 ```
 
 Cook two recipes in it:
 
 ```sh
-./cook -C "$kitchen" io.github.lmarqs.cookbook:agents:0.0.0#permissions --harness=claude io.github.lmarqs.cookbook:agents:0.0.0#instructions --harness=claude
+./cook -C "$kitchen" io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
 ```
 
 Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
-`y`: it prints `Created` for `.agents/adapters/claude/CLAUDE.md`, `.agents/adapters/claude/settings.json`,
-`.agents/policy.yaml`, `.claude/CLAUDE.md` and `.claude/settings.json` (links to the adapter's files), `AGENTS.md` and
-`cook.lock`, then what to do next. Run the same command again: nothing changed, so it prints `Already cooked.` and asks nothing.
+`y`: it prints `Created` for `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml`, the shared
+directories, the `agents-layout` skill, `.agents/adapters/claude/settings.json`, the `.claude/` links into `.agents/`,
+`.gitignore` and `cook.lock`, then what to do next. Run the same command again: nothing changed, so it prints `Already cooked.` and asks nothing.
 
 The repository's [`cook` script](cook) launches the local distribution, and the directory it runs from is the kitchen
 Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in `<dir>` as if Cook had started there.
@@ -165,10 +165,10 @@ cook, or name the repository with `-C`. On Linux the launcher is `the-cook/bin/t
 v=<version>
 curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
 tar -xzf "the-cook-$v-linux-x64.tar.gz"
-the-cook/bin/the-cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#instructions" --harness=claude
+the-cook/bin/the-cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#connect" --harness=claude
 ```
 
-Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#instructions` resolve from Maven
+Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven
 Central.
 
 ### From source

@@ -42,9 +42,9 @@ The engine does not find recipes. People find them in a cookbook's repository, o
 teammate's link. Given the coordinates:
 
 ```sh
-./cook help io.github.lmarqs.cookbook:agents:0.0.0                # the artifact's front page
-./cook help io.github.lmarqs.cookbook:agents:0.0.0#instructions   # the recipe's help, params and ingredients
-./cook io.github.lmarqs.cookbook:agents:0.0.0#permissions --harness=claude io.github.lmarqs.cookbook:agents:0.0.0#instructions --harness=claude
+./cook help io.github.lmarqs.cookbook:agents:0.0.0           # the artifact's front page
+./cook help io.github.lmarqs.cookbook:agents:0.0.0#connect   # the recipe's help, params and ingredients
+./cook io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
 ```
 
 `help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version#recipe` it prints

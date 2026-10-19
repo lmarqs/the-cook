@@ -69,7 +69,7 @@ the-cook: target ../shared/settings.toml is outside the destination
 ```
 
 ```text
-the-cook: discard: cook.lock lists no recipe io.github.lmarqs.cookbook:agents#instructions; nothing was written
+the-cook: discard: cook.lock lists no recipe io.github.lmarqs.cookbook:agents#connect; nothing was written
   discard removes only what cook.lock records for a recipe
   check the recipe's name in cook.lock
 ```
