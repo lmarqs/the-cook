@@ -16,9 +16,9 @@ package io.github.lmarqs.ralph
  * ## Use
  *
  * ```groovy
- * import io.github.lmarqs.ralph.Ralph
+ * import io.github.lmarqs.ralph.RalphTui
  *
- * @ingredient(Ralph) def ralph
+ * @ingredient(RalphTui) def ralph
  *
  * ralph.configure(agent: 'codex', tracker: 'json')
  * ralph.focus('tasks/prd.json', 'US-007', '.ralph-tui/selected-prd.json')
@@ -32,7 +32,7 @@ package io.github.lmarqs.ralph
  * when the recipe selects that tracker. The recipe wires these models together.
  */
 @Ingredient
-class Ralph {
+class RalphTui {
   private static final List<String> SETTINGS = ['agent', 'tracker', 'prd', 'workers', 'maxIterations', 'autoCommit', 'headless']
 
   private boolean configured = false

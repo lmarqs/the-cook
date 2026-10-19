@@ -206,8 +206,8 @@ Ralph TUI configuration and runners for recipe-driven development loops.
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ```text
-$ ./cook help io.github.lmarqs:ralph:0.0.0#ralph
-ralph
+$ ./cook help io.github.lmarqs:ralph:0.0.0#ralph-tui
+ralph-tui
 
 Sets up Ralph TUI as the repository's loop runner: its configuration, a runner and the tracker it takes stories
 from.
@@ -226,7 +226,7 @@ Ingredients
   io.github.lmarqs.beads.Beads
   io.github.lmarqs.git.Git
   io.github.lmarqs.mise.Mise
-  io.github.lmarqs.ralph.Ralph
+  io.github.lmarqs.ralph.RalphTui
 
 After cooking
   - `--mode=standalone`: run `.ralph-tui/run`, with a PRD path or a Beads epic id as its argument.

@@ -12,8 +12,8 @@ from.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs:ralph:0.1.0#ralph
-./cook io.github.lmarqs:ralph:0.1.0#ralph --tracker=beads --mode=mise --issue-prefix=cook
+./cook io.github.lmarqs:ralph:0.1.0#ralph-tui
+./cook io.github.lmarqs:ralph:0.1.0#ralph-tui --tracker=beads --mode=mise --issue-prefix=cook
 ```
 
 ## Writes
@@ -34,7 +34,7 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 ## With other recipes
 
 - `io.github.lmarqs:ralph:0.1.0#prd-story` writes a PRD reduced to one story. Cook it before
-  `io.github.lmarqs:ralph:0.1.0#ralph`, with `--prd` pointing at the same path.
+  `io.github.lmarqs:ralph:0.1.0#ralph-tui`, with `--prd` pointing at the same path.
 - `io.github.lmarqs:ralph:0.1.0#bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
   It needs `--tracker=beads` and `--mode=mise`.
 ''')
@@ -46,7 +46,7 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 import io.github.lmarqs.beads.Beads
 import io.github.lmarqs.git.Git
 import io.github.lmarqs.mise.Mise
-import io.github.lmarqs.ralph.Ralph
+import io.github.lmarqs.ralph.RalphTui
 
 @param(value = ['agent'], default = 'codex', doc = 'The agent Ralph drives, by its Ralph plugin name') String agent
 @param(value = ['tracker'], choices = ['json', 'beads'], default = 'json', doc = 'Where Ralph takes its stories from') String tracker
@@ -58,7 +58,7 @@ import io.github.lmarqs.ralph.Ralph
 @param(value = ['headless'], default = false, doc = 'Run without the TUI') boolean headless
 @param(value = ['issue-prefix'], default = null, doc = 'The Beads issue prefix, for the beads tracker') String issuePrefix
 
-@ingredient(Ralph) def ralph
+@ingredient(RalphTui) def ralph
 @ingredient(Beads) def beads
 @ingredient(Mise) def mise
 @ingredient(Git) def git
