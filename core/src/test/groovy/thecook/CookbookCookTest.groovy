@@ -239,11 +239,10 @@ Run with --force to replace them, or --skip to keep them.'''
     assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
     '../.agents/adapters/claude/settings.json'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
-    [permissions: [defaultMode: 'acceptEdits', allow: [], ask: [], deny: []]]
+    [permissions: [allow: [], ask: [], deny: []]]
     assert new File(kitchen, '.codex/config.toml').text.contains('sandbox_mode = "workspace-write"')
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text == '''{
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [],
     "ask": [],
     "deny": []
@@ -351,6 +350,26 @@ worker [[git, [commit, push]]]
     }
   }
 
+  @Test void rendersThePolicyIntoClaudeSettingsAndOneDenyFilePerRole() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def policy = new File(kitchen, '.agents/permission/policy.yaml')
+    policy.parentFile.mkdirs()
+    policy.text = fixture('policy.yaml')
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
+
+    assert new File(kitchen, '.agents/adapters/claude/settings.json').text == fixture('claude-settings.json')
+    def roles = new File(kitchen, '.agents/adapters/claude/roles')
+    assert roles.list().sort() == ['reviewer.json', 'worker.json']
+    assert new File(roles, 'worker.json').text == fixture('claude-worker.json')
+    assert new File(roles, 'reviewer.json').text == fixture('claude-reviewer.json')
+
+    policy.text = policy.text.replaceAll(/(?s)\nroles:.*/, '\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
+    assert !roles.exists()
+  }
+
   @Test void seedsTheSharedLayoutAndConnectsHarnessesThroughDirectoriesThatCanBeDeleted() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
@@ -411,8 +430,9 @@ worker [[git, [commit, push]]]
     ]
     assert again.changes == links + ['.codex/config.toml', '.codex/hooks']
     again.commit()
-    assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions.defaultMode ==
-    'acceptEdits'
+    // How a session asks is each person's choice, so the shared settings leave out `defaultMode`.
+    assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions ==
+    [allow: [], ask: [], deny: []]
   }
 
   @Test void linksTheSharedSkillsAndRemovesWhatALaterVersionNoLongerDeclares() {
@@ -939,6 +959,11 @@ import acme.noisy.Noisy
     def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:noisy:1.0.0#noisy', [:]) }
     assert error.message == 'acme:noisy:1.0.0#noisy: Noisy.notes() declares a seed of NOTES.md on a new instance; ' +
     'a model declares only what a recipe asks for'
+  }
+
+  // The policy and the output the layout's mock-up was written with, copied from it.
+  private static String fixture(String name) {
+    CookbookCookTest.getResource("/agents-layout/${name}").text
   }
 
   private File kitchen() {

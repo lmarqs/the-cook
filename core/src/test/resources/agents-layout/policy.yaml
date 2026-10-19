@@ -1,0 +1,43 @@
+# What coding agents may do in this repository, whoever runs them, with whichever harness or model.
+# Cooking io.github.lmarqs:agents#connect renders this file into .agents/adapters/; edit it, then cook again.
+#
+# An entry is the literal words a command starts with: [git, push] covers `git push origin main`. A nested list is
+# a set of alternatives for one word. {claude: "<pattern>"} is a Claude-only pattern, where * matches anything;
+# Codex cannot express it and does not enforce that entry.
+#
+# Precedence, in every harness and settings scope: deny, then ask, then allow. A personal allow never outranks an
+# ask or a deny written here. When nobody can answer, in an unattended run, ask refuses.
+version: 2
+
+# Every session, whatever its role.
+commands:
+  allow:
+    - [git, [status, diff, log, show, add, commit, switch, fetch, pull, push]]
+    - [gh, pr, [view, list, diff, checks, create, comment]]
+    - [./gradlew, [test, check]]
+  ask:
+    - [gh, pr, merge]
+  deny:
+    - [git, push, [--force, -f]]
+    - [git, reset, --hard]
+    # The flag-last form, which a prefix cannot catch.
+    - claude: "git push * --force*"
+
+# Tools that are not shell commands, by each harness's own name.
+tools:
+  allow:
+    - claude: "WebFetch(domain:docs.gradle.org)"
+
+# A role narrows the base for one kind of run. It only adds denies, so a role never gets more than a person.
+# Each run picks its role at launch; .agents/README.md lists the command lines.
+roles:
+  # Ralph workers: their result is verified after they exit, so nothing may leave the worktree before that.
+  worker:
+    deny:
+      - [git, [commit, push, merge, rebase, stash, worktree]]
+      - [gh]
+  # Review sessions read and comment; they never change the branch or land a pull request.
+  reviewer:
+    deny:
+      - [git, [add, commit, push, merge, rebase]]
+      - [gh, pr, [merge, close, edit]]

@@ -6,8 +6,9 @@ package io.github.lmarqs.cookbook.agents
  * ## Writes for
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
- * top-level JSON keys, including hooks and `permissions` with `defaultMode` and `allow`, `ask` and `deny` lists of
- * `Bash(<prefix> *)` rules. Symbolic links from `.claude/skills`, `.claude/commands`, `.claude/hooks` and
+ * top-level JSON keys, including hooks and `permissions` with `allow`, `ask` and `deny` lists of `Bash(<prefix> *)`
+ * rules and tool patterns. One file per policy role under `.agents/adapters/claude/roles/`, holding only that role's
+ * `permissions.deny`, which a run adds with `claude --settings <file>`. Symbolic links from `.claude/skills`, `.claude/commands`, `.claude/hooks` and
  * `.claude/memory` to the shared directories complete the project setup. Claude Code reads `AGENTS.md` natively.
  * `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
@@ -43,22 +44,23 @@ class Claude implements Harness {
   /** `.claude`, which holds only links Cook makes and files Claude Code writes locally. */
   final String localDirectory = '.claude'
   private Map settings = [:]
+  private Map<String, List<String>> roleDenies = [:]
   private Map<String, String> directoryLinks = [:]
 
   /** Destination-root ignore patterns for the local settings file Claude Code writes. */
   final List<String> localFiles = ['/.claude/settings.local.json']
 
   /**
-   * Sets `permissions` from the shared policy: `acceptEdits` and one `Bash(<prefix> *)` entry per command
-   * in its `allow`, `ask` or `deny` list. Replaces any permissions supplied by an earlier `settings` call.
+   * Sets `permissions` from the shared policy: under `allow`, `ask` and `deny`, one `Bash(<words> *)` rule per
+   * combination of a command entry's alternatives, `Bash(<pattern>)` for a Claude-only command entry, and each tool
+   * pattern as it is. Writes one deny file per role. Sets no `defaultMode`: how a session asks is each person's choice.
+   * Replaces any permissions supplied by an earlier `settings` call.
    */
   void permit(Policy policy) {
-    settings.permissions = [
-      defaultMode: 'acceptEdits',
-      allow: policy.commands.allow.collect { rule(it) },
-      ask: policy.commands.ask.collect { rule(it) },
-      deny: policy.commands.deny.collect { rule(it) },
-    ]
+    settings.permissions = ['allow', 'ask', 'deny'].collectEntries { decision ->
+      [decision, policy.commands[decision].collectMany { rules(it) } + policy.tools[decision]*.claude]
+    }
+    roleDenies = policy.roles.collectEntries { name, denies -> [name, denies.collectMany { rules(it) }] }
   }
 
   /** Adds top-level settings keys, hooks included; a supplied key replaces its earlier value whole. */
@@ -80,9 +82,32 @@ class Claude implements Harness {
   @Links(path = '.claude')
   Map<String, String> adapterLinks() { settings ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
 
+  /**
+   * `.agents/adapters/claude/roles/<role>.json` per policy role, holding the role's `permissions.deny`; Claude merges it
+   * over the project settings when a run passes it with `--settings`.
+   */
+  @Files(path = '.agents/adapters/claude/roles')
+  Map<String, String> roleFiles() {
+    roleDenies.collectEntries { name, denies -> ["${name}.json".toString(), denyFile(denies)] } ?: null
+  }
+
   /** One relative link in `.claude/` per shared directory, such as `skills`, when the directories are connected. */
   @Links(path = '.claude')
   Map<String, String> links() { directoryLinks ?: null }
 
-  private static String rule(Command command) { "Bash(${command.prefix.join(' ')} *)" }
+  private static List<String> rules(Command command) {
+    if (command.claude) return ["Bash(${command.claude})".toString()]
+    combinations(command.prefix).collect { "Bash(${it.join(' ')} *)".toString() }
+  }
+
+  private static List<List<String>> combinations(List prefix) {
+    prefix.inject([[]]) { List<List<String>> heads, item ->
+      heads.collectMany { head -> (item instanceof List ? item : [item]).collect { head + it } }
+    }
+  }
+
+  private static String denyFile(List<String> denies) {
+    def list = denies ? '[\n' + denies.collect { "      ${groovy.json.JsonOutput.toJson(it)}" }.join(',\n') + '\n    ]' : '[]'
+    "{\n  \"permissions\": {\n    \"deny\": ${list}\n  }\n}\n"
+  }
 }
