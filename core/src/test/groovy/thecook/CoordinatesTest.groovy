@@ -13,7 +13,8 @@ class CoordinatesTest {
     assert coordinates.toString() == 'io.github.lmarqs:agents:0.1.0#instructions'
     def artifact = Coordinates.parse('io.github.lmarqs:agents:0.1.0')
     assert artifact.recipe == null
-    assert artifact.recipeName == 'io.github.lmarqs:agents#agents'
+    assert shouldFail(IllegalArgumentException) { artifact.recipeName }.message ==
+    'io.github.lmarqs:agents:0.1.0 names an artifact, not a recipe; write io.github.lmarqs:agents:0.1.0#<recipe>'
     assert artifact.recipeAddress('permissions') == 'io.github.lmarqs:agents:0.1.0#permissions'
     [
       'io.github.lmarqs:agents',

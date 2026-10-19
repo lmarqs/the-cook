@@ -36,8 +36,8 @@ define ordered file changes, review, recorded ownership and discard.
    inside the repository, or in the recipe's artifact. The file counts toward the recipe's sha256.
 6. A recipe compiles against the models of its own artifact: a recipe by coordinates against its artifact's models,
    and a recipe path against the upper-case `.groovy` files in its directory, which count toward its sha256.
-   Coordinates name a recipe as `group:artifact:version#recipe`; without `#recipe` they name the recipe called like
-   the artifact.
+   Coordinates name a recipe as `group:artifact:version#recipe`; without `#recipe` they name the
+   artifact, which `help` describes and nothing cooks.
 7. A recipe describes file operations; it does not launch agents or verify their results. Batch approval and rollback
    cover declared file operations, not arbitrary effects of trusted code.
 

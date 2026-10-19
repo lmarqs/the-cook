@@ -34,7 +34,7 @@ Omitting a recipe from a later invocation leaves its output in place; see [cooki
 ./cook discard [batch-options] <recipe>...
 ```
 
-Each recipe is written as for cooking: coordinates `group:artifact:version[#recipe]` or a `.groovy` path in the kitchen.
+Each recipe is written as for cooking: coordinates `group:artifact:version#recipe` or a `.groovy` path in the kitchen.
 Discard matches the recipe's short name in `cook.lock`, so the version in coordinates does not need to be the cooked
 one, and a path's file does not need to exist any more. Discard takes no recipe arguments. Batch options precede the
 first recipe; the [CLI reference](cli.md) defines them.

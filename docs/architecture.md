@@ -370,7 +370,7 @@ Other documents cite these requirements by number.
   of exactly `discard` or `help` selects that command; a recipe file with one of those names is supplied as a path,
   such as `./discard`.
 - **FR-18:** Recipe operands are paths inside the destination repository, or coordinates
-  `group:artifact:version[#recipe]` resolved from the repositories the destination's `cook.toml` lists. An operand
+  `group:artifact:version#recipe` resolved from the repositories the destination's `cook.toml` lists. An operand
   containing `://` is refused. A word is a
   recipe operand when it contains `/` or `:` or ends with `.groovy`, as `recipe.groovy` does; a recipe file with none
   of these marks is given with `./`, such as `./notes`.

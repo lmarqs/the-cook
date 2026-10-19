@@ -53,10 +53,10 @@ final class RecipeLoader {
 
   private LoadedRecipe fromCoordinates(Coordinates coordinates) {
     def artifact = artifact(coordinates)
-    def recipe = coordinates.recipe ?: coordinates.artifact
+    def recipe = coordinates.recipe
 
-    if (!coordinates.recipe && !(recipe in artifact.recipes)) {
-      throw new IllegalArgumentException("${coordinates} has no recipe named ${recipe} to cook by default; name one: " +
+    if (!recipe) {
+      throw new IllegalArgumentException("${coordinates} names an artifact, not a recipe; name one: " +
       artifact.recipes.collect { coordinates.recipeAddress(it) }.join(', '))
     }
 

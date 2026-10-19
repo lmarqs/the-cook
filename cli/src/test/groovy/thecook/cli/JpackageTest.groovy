@@ -21,7 +21,7 @@ notes.add('local')
 """
       assert run(root, 'help', 'acme:notes:1.2.3#notes').contains('--line=<String>')
       assert run(root, 'help', 'local.groovy').contains('Adds a local line.')
-      def recipes = ['acme:notes:1.2.3', '--line', 'first', 'local.groovy']
+      def recipes = ['acme:notes:1.2.3#notes', '--line', 'first', 'local.groovy']
       assert run(root, *recipes, 1).contains('run with --batch-approve to write without asking')
       assert run(root, '--dry-run', *recipes).contains('Would create NOTES.md')
       assert !new File(root, 'NOTES.md').exists()

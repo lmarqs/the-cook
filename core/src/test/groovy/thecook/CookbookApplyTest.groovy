@@ -541,7 +541,7 @@ notes.set(test: 'second')
       [['acme:notes:1.0.0#second', [:]], ['acme:notes:1.0.0#second', [:]]]:
       'recipe 2 (acme:notes:1.0.0#second): acme:notes#second is named twice; name it once per invocation',
       [['acme:notes:1.0.0', [:]]]:
-      'acme:notes:1.0.0: acme:notes:1.0.0 has no recipe named notes to cook by default; name one: ' +
+      'acme:notes:1.0.0: acme:notes:1.0.0 names an artifact, not a recipe; name one: ' +
       'acme:notes:1.0.0#first, acme:notes:1.0.0#second',
     ]
     failures.each { requests, message ->
@@ -573,13 +573,13 @@ step.each { script.add(it) }
 ''',
     ])
     new File(kitchen, 'build.js').text = 'run();\n'
-    apply(kitchen, 'acme:script:1.0.0', [step: ['lint();']]).commit()
+    apply(kitchen, 'acme:script:1.0.0#script', [step: ['lint();']]).commit()
     assert new File(kitchen, 'build.js').text == '''run();
 // cook:begin acme:script#script#steps
 lint();
 // cook:end acme:script#script#steps
 '''
-    apply(kitchen, 'acme:script:1.0.0', [:]).commit()
+    apply(kitchen, 'acme:script:1.0.0#script', [:]).commit()
     assert new File(kitchen, 'build.js').text == 'run();\n'
   }
 
@@ -604,9 +604,9 @@ import acme.config.Config
 config.migrated = migrated
 ''',
     ])
-    apply(kitchen, 'acme:config:1.0.0', [:]).commit()
+    apply(kitchen, 'acme:config:1.0.0#config', [:]).commit()
     assert new File(kitchen, 'old.cfg').text == 'old'
-    apply(kitchen, 'acme:config:1.0.0', [migrated: ['true']]).commit()
+    apply(kitchen, 'acme:config:1.0.0#config', [migrated: ['true']]).commit()
     assert !new File(kitchen, 'old.cfg').exists()
   }
 
@@ -649,7 +649,7 @@ notes.set(test: 'new', other: 'mine')
     ])
     def settings = new File(kitchen, 'settings.json')
     settings.text = '{"test": "old", "kept": true}\n'
-    apply(kitchen, 'acme:notes:1.0.0', [:]).commit()
+    apply(kitchen, 'acme:notes:1.0.0#notes', [:]).commit()
     recipe(kitchen, 'Notes.groovy', model)
     recipe(kitchen, 'local.groovy', '''import acme.notes.Notes
 @ingredient(Notes) def notes
@@ -732,7 +732,7 @@ notes.set('kept')
   @Test void aFailedWriteLeavesTheFilesAsTheyWere() {
     def kitchen = kitchen()
     publishConfig(kitchen, 'sub/old.cfg')
-    def proposal = apply(kitchen, 'acme:config:1.0.0', [:])
+    def proposal = apply(kitchen, 'acme:config:1.0.0#config', [:])
     def blocked = new File(kitchen, 'sub')
     blocked.mkdir()
     blocked.setWritable(false)
@@ -762,8 +762,8 @@ import acme.broken.Broken
 @ingredient(Broken) def broken
 ''',
     ])
-    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:broken:1.0.0', [:]) }
-    assert error.message == 'acme:broken:1.0.0: cannot start'
+    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:broken:1.0.0#broken', [:]) }
+    assert error.message == 'acme:broken:1.0.0#broken: cannot start'
   }
 
   @Test void refusesAModelThatDeclaresOutputOnANewInstance() {
@@ -782,8 +782,8 @@ import acme.noisy.Noisy
 @ingredient(Noisy) def noisy
 ''',
     ])
-    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:noisy:1.0.0', [:]) }
-    assert error.message == 'acme:noisy:1.0.0: Noisy.notes() declares a seed of NOTES.md on a new instance; ' +
+    def error = shouldFail(IllegalArgumentException) { apply(kitchen, 'acme:noisy:1.0.0#noisy', [:]) }
+    assert error.message == 'acme:noisy:1.0.0#noisy: Noisy.notes() declares a seed of NOTES.md on a new instance; ' +
     'a model declares only what a recipe asks for'
   }
 

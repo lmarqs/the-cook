@@ -49,12 +49,13 @@ final class Coordinates {
     "${group}:${artifact}:${version}"
   }
 
-  /**
-   * The short name of the recipe this address names, or of the artifact's own recipe: `group:artifact#recipe`, the
-   * address without its version.
-   */
+  /** The short name of the recipe this address names: `group:artifact#recipe`, the address without its version. */
   String getRecipeName() {
-    "${group}:${artifact}#${recipe ?: artifact}"
+    if (!recipe) {
+      throw new IllegalArgumentException("${this} names an artifact, not a recipe; write ${this}#<recipe>")
+    }
+
+    "${group}:${artifact}#${recipe}"
   }
 
   /** The address of `name`, a recipe in this artifact. */

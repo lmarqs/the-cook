@@ -10,7 +10,7 @@ The source PRD must exist in Ralph's JSON format and contain exactly one `userSt
 
 ```sh
 ./cook io.github.lmarqs:ralph:0.1.0#prd-story --story=US-007 \\
-       io.github.lmarqs:ralph:0.1.0 --prd=.ralph-tui/selected-prd.json --mode=mise
+       io.github.lmarqs:ralph:0.1.0#ralph --prd=.ralph-tui/selected-prd.json --mode=mise
 ```
 
 ## Writes
@@ -21,9 +21,9 @@ The source PRD must exist in Ralph's JSON format and contain exactly one `userSt
 
 ## With other recipes
 
-Cook `io.github.lmarqs:ralph:0.1.0` after this recipe, with `--prd` pointing at the same `--selected` path.
+Cook `io.github.lmarqs:ralph:0.1.0#ralph` after this recipe, with `--prd` pointing at the same `--selected` path.
 `io.github.lmarqs:ralph:0.1.0#bead-task` supplies a task for a Beads issue instead of a JSON story; it uses
-`io.github.lmarqs:ralph:0.1.0` with `--tracker=beads --mode=mise`.
+`io.github.lmarqs:ralph:0.1.0#ralph` with `--tracker=beads --mode=mise`.
 ''')
 @yield('''
 Run `mise install`, then `mise run ralph:run` to work on the selected story with the configuration above.

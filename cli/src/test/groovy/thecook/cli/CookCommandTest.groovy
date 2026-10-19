@@ -204,34 +204,35 @@ Models
 +first
 +<!-- cook:end acme:notes#notes#notes -->
 """
-      assert cli.execute(['-C', repo.path, '--dry-run', 'acme:notes:1.2.3', '--line=first'] as String[]) == 0 :
+      assert cli.execute(['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 0 :
       stderr.toString('UTF-8')
       assert stdout.toString('UTF-8').startsWith(review + '--- /dev/null\n+++ b/cook.lock\n')
       assert stdout.toString('UTF-8').endsWith('\n\nWould create NOTES.md\nWould create cook.lock\n')
       assert !notes.exists()
 
       stdout.reset()
-      assert cli.execute(['-C', repo.path, 'acme:notes:1.2.3', '--line=first'] as String[]) == 1
+      assert cli.execute(['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 1
       assert stderr.toString('UTF-8') ==
       'Cook asks before writing, and there is no terminal to ask in; run with --batch-approve to write without asking\n'
       assert !notes.exists()
 
       def declined = new ByteArrayOutputStream(); stderr.reset()
       assert command(declined, stderr, 'n\n')
-      .execute(['-C', repo.path, 'acme:notes:1.2.3', '--line=first'] as String[]) == 1
+      .execute(['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 1
       assert declined.toString('UTF-8').endsWith('\n\nWrite these changes? [y/N] ')
       assert stderr.toString('UTF-8') == 'Nothing written.\n'
       assert !notes.exists()
 
       def accepted = new ByteArrayOutputStream()
       assert command(accepted, stderr, 'y\n')
-      .execute(['-C', repo.path, 'acme:notes:1.2.3', '--line=first'] as String[]) == 0
+      .execute(['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 0
       assert accepted.toString('UTF-8').startsWith(review)
       assert accepted.toString('UTF-8').endsWith('Write these changes? [y/N] Created NOTES.md\nCreated cook.lock\n\n' +
       'After cooking acme:notes:1.2.3#notes\n  Read `NOTES.md`.\n')
 
       stdout.reset()
-      def cookBoth = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3', '--line=first', 'acme:notes:1.2.3#more']
+      def more = 'acme:notes:1.2.3#more'
+      def cookBoth = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes', '--line=first', more]
       assert cli.execute(cookBoth as String[]) == 0 :
       stderr.toString('UTF-8')
       assert stdout.toString('UTF-8').endsWith('Updated NOTES.md\nUpdated cook.lock\n\n' +
@@ -244,22 +245,24 @@ more
 <!-- cook:end acme:notes#more#notes -->
 """
       stdout.reset()
-      def recookBoth = ['-C', repo.path, 'acme:notes:1.2.3', '--line=first', 'acme:notes:1.2.3#more']
+      def recookBoth = ['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first', more]
       assert cli.execute(recookBoth as String[]) == 0
       assert stdout.toString('UTF-8') == 'Already cooked.\n'
       stdout.reset()
-      assert cli.execute(['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3', '--line=second'] as String[]) == 0
+      def recook = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes', '--line=second']
+      assert cli.execute(recook as String[]) == 0
       assert stdout.toString('UTF-8').contains('\n-first\n+second\n')
       assert stdout.toString('UTF-8').contains('\nUpdated NOTES.md\n\nAfter cooking')
       stdout.reset()
-      assert cli.execute(['-C', repo.path, '--dry-run', 'acme:notes:1.2.3', '--line=second', '--loud'] as String[]) == 0
+      def loud = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line=second', '--loud']
+      assert cli.execute(loud as String[]) == 0
       assert stdout.toString('UTF-8').contains('\n-second\n+SECOND\n')
       stdout.reset()
-      def quiet = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3', '--line=second', '--loud=false']
+      def quiet = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line=second', '--loud=false']
       assert cli.execute(quiet as String[]) == 0
       assert stdout.toString('UTF-8') == 'Already cooked.\n'
       stdout.reset()
-      def loudSeparate = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3', '--line', 'second', '--loud']
+      def loudSeparate = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line', 'second', '--loud']
       assert cli.execute(loudSeparate as String[]) == 0
       assert stdout.toString('UTF-8').contains('\n-second\n+SECOND\n')
       new File(repo, 'Notes.groovy').text = Fixtures.NOTES_MODEL
@@ -268,7 +271,7 @@ more
 notes.add('local')
 """
       stdout.reset()
-      def withLocal = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3', '--line', 'second', 'local.groovy']
+      def withLocal = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line', 'second', 'local.groovy']
       assert cli.execute(withLocal as String[]) == 0 :
       stderr.toString('UTF-8')
       assert stdout.toString('UTF-8').contains('\n+<!-- cook:begin local#notes -->\n+local\n' +
@@ -276,21 +279,21 @@ notes.add('local')
       assert stdout.toString('UTF-8').endsWith('\nWould update NOTES.md\nWould update cook.lock\n')
 
       [
-        [['acme:notes:1.2.3', '--line', 'a:b'], 2, 'Not a recipe: a:b. To give it to --line, write --line=a:b'],
-        [['acme:notes:1.2.3', '--line', 'a', 'b'], 2, 'Not a recipe: b. Recipe arguments start with --'],
+        [['acme:notes:1.2.3#notes', '--line', 'a:b'], 2, 'Not a recipe: a:b. To give it to --line, write --line=a:b'],
+        [['acme:notes:1.2.3#notes', '--line', 'a', 'b'], 2, 'Not a recipe: b. Recipe arguments start with --'],
         [
-          ['acme:notes:1.2.3', '--line=a', '--loud', 'false'],
+          ['acme:notes:1.2.3#notes', '--line=a', '--loud', 'false'],
           1,
-          'acme:notes:1.2.3: --loud takes no separate value; write --loud=false'
+          'acme:notes:1.2.3#notes: --loud takes no separate value; write --loud=false'
         ],
-        [['acme:notes:1.2.3', '--line'], 1, 'acme:notes:1.2.3: --line needs a value: write --line=<value>'],
-        [['acme:notes:1.2.3', '--line='], 2, 'Missing value for --line'],
+        [['acme:notes:1.2.3#notes', '--line'], 1, 'acme:notes:1.2.3#notes: --line needs a value: write --line=<value>'],
+        [['acme:notes:1.2.3#notes', '--line='], 2, 'Missing value for --line'],
         [
-          ['acme:notes:1.2.3', '--line=a', '--set=first'],
+          ['acme:notes:1.2.3#notes', '--line=a', '--set=first'],
           1,
-          'acme:notes:1.2.3: Unknown argument --set; its arguments are --line, --loud'
+          'acme:notes:1.2.3#notes: Unknown argument --set; its arguments are --line, --loud'
         ],
-        [['acme:notes:1.2.3', 'line=first'], 2, 'Not a recipe: line=first. Recipe arguments start with --'],
+        [['acme:notes:1.2.3#notes', 'line=first'], 2, 'Not a recipe: line=first. Recipe arguments start with --'],
         [['../outside.groovy'], 1, '../outside.groovy: the recipe is outside the kitchen; move it into the kitchen'],
         [
           ['https://example.com/notes.groovy'],
@@ -298,17 +301,17 @@ notes.add('local')
           'https://example.com/notes.groovy: a URL is not a recipe; list its repository in cook.toml and cook the ' +
           'recipe by its coordinates'
         ],
-        [['acme:notes:1.2.3', '--line=a', '--dry-run'], 2, '--dry-run goes before the first recipe'],
-        [['acme:notes:1.2.3', '--line=a', '--batch-approve'], 2, '--batch-approve goes before the first recipe'],
-        [['acme:notes:1.2.3', '--line=a', '--force'], 2, '--force goes before the first recipe'],
-        [['acme:notes:1.2.3', '--line=a', '--skip'], 2, '--skip goes before the first recipe'],
-        [['--force', '--skip', 'acme:notes:1.2.3', '--line=a'], 2, '--force and --skip exclude each other'],
+        [['acme:notes:1.2.3#notes', '--line=a', '--dry-run'], 2, '--dry-run goes before the first recipe'],
+        [['acme:notes:1.2.3#notes', '--line=a', '--batch-approve'], 2, '--batch-approve goes before the first recipe'],
+        [['acme:notes:1.2.3#notes', '--line=a', '--force'], 2, '--force goes before the first recipe'],
+        [['acme:notes:1.2.3#notes', '--line=a', '--skip'], 2, '--skip goes before the first recipe'],
+        [['--force', '--skip', 'acme:notes:1.2.3#notes', '--line=a'], 2, '--force and --skip exclude each other'],
         [
           ['acme:notes:1.2.3#more', 'acme:notes:1.2.3#more'],
           1,
           'recipe 2 (acme:notes:1.2.3#more): acme:notes#more is named twice; name it once per invocation'
         ],
-        [['acme:notes:1.2.3'], 1, 'acme:notes:1.2.3: Missing --line: The line to add'],
+        [['acme:notes:1.2.3#notes'], 1, 'acme:notes:1.2.3#notes: Missing --line: The line to add'],
       ].each { arguments, status, message ->
         stderr.reset()
         assert cli.execute((['-C', repo.path] + arguments) as String[]) == status
@@ -352,7 +355,8 @@ notes.add('local')
       def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
       def cli = command(stdout, stderr)
       def notes = new File(repo, 'NOTES.md'); def lock = new File(repo, 'cook.lock')
-      def cookBoth = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3', '--line=first', 'acme:notes:1.2.3#more']
+      def more = 'acme:notes:1.2.3#more'
+      def cookBoth = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes', '--line=first', more]
       assert cli.execute(cookBoth as String[]) == 0
       notes.text += 'mine\n'
 
@@ -374,7 +378,7 @@ notes.add('local')
       '<!-- cook:begin acme:notes#notes#notes -->\nfirst\n<!-- cook:end acme:notes#notes#notes -->\nmine\n'
 
       stdout.reset()
-      assert cli.execute(['discard', '-C', repo.path, '--batch-approve', 'acme:notes:1.2.3'] as String[]) == 0 :
+      assert cli.execute(['discard', '-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes'] as String[]) == 0 :
       stderr.toString('UTF-8')
       assert stdout.toString('UTF-8').endsWith('\nUpdated NOTES.md\nDeleted cook.lock\n')
       assert notes.text == 'mine\n'
@@ -383,14 +387,14 @@ notes.add('local')
       [
         [['discard'], 2, 'A recipe is required'],
         [['discard', 'notes'], 2, 'Not a recipe: notes. A recipe is coordinates or a .groovy path'],
-        [['discard', 'acme:notes:1.2.3', '--batch-approve'], 2, '--batch-approve goes before the first recipe'],
-        [['discard', 'acme:notes:1.2.3', '--line=a'], 2, 'discard takes no recipe arguments: --line=a'],
+        [['discard', 'acme:notes:1.2.3#notes', '--batch-approve'], 2, '--batch-approve goes before the first recipe'],
+        [['discard', 'acme:notes:1.2.3#notes', '--line=a'], 2, 'discard takes no recipe arguments: --line=a'],
         [
-          ['--dry-run', 'discard', 'acme:notes:1.2.3'],
+          ['--dry-run', 'discard', 'acme:notes:1.2.3#notes'],
           2,
           '--dry-run, --batch-approve, --force and --skip go before a recipe, not before a command'
         ],
-        [['discard', 'acme:notes:1.2.3'], 1, 'acme:notes#notes is not in cook.lock, which lists no recipe'],
+        [['discard', 'acme:notes:1.2.3#notes'], 1, 'acme:notes#notes is not in cook.lock, which lists no recipe'],
         [
           ['help', 'https://example.com/notes.groovy'],
           1,

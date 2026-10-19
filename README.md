@@ -54,7 +54,7 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
 ### What runs
 
 `./cook` cooks recipes left to right in one invocation, each named by coordinates,
-`group:artifact:version[#recipe]`, or by a `.groovy` path inside the kitchen:
+`group:artifact:version#recipe`, or by a `.groovy` path inside the kitchen:
 
 - One review before any write: a `Changed source` notice for a release whose sources differ from what `cook.lock`
   recorded under the same version, each recipe's `@confirm` text, a unified diff and one question; `--batch-approve` to
