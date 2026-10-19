@@ -1,13 +1,13 @@
 package thecook.cookbook
 
-import thecook.cookbook.api.Delete
-import thecook.cookbook.api.File as WholeFile
-import thecook.cookbook.api.Files
-import thecook.cookbook.api.Key
-import thecook.cookbook.api.Keys
-import thecook.cookbook.api.Links
-import thecook.cookbook.api.Section
-import thecook.cookbook.api.Seed
+import thecook.cookbook.api.injectable.Delete
+import thecook.cookbook.api.injectable.File as WholeFile
+import thecook.cookbook.api.injectable.Files
+import thecook.cookbook.api.injectable.Key
+import thecook.cookbook.api.injectable.Keys
+import thecook.cookbook.api.injectable.Links
+import thecook.cookbook.api.injectable.Section
+import thecook.cookbook.api.injectable.Seed
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.AccessibleObject

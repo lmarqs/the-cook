@@ -1,8 +1,9 @@
-package thecook.cookbook.api
+package thecook.cookbook.api.injectable
 
-// The author's API: the only engine types a recipe or model reaches, with the recipe annotations in
-// `thecook.cookbook.api.recipe`. The engine imports both packages into every unit, so recipes write `@param` and models
-// write `@Section` without an import. Model annotations name the part of a file they declare.
+// The author's API: the only engine types a recipe or model reaches. These model annotations make a class a recipe can
+// inject and name the part of a file each member declares; recipes inject with `thecook.cookbook.api.inject`. The
+// engine imports both packages into every unit, so recipes write `@param` and models write `@Section` without an
+// import.
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention

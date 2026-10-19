@@ -1,9 +1,9 @@
 package thecook.cookbook
 
 // Lower-case names would read as variables in Groovy expressions.
-import thecook.cookbook.api.recipe.ingredient as Injected
-import thecook.cookbook.api.recipe.param as Param
-import thecook.cookbook.api.recipe.resource as Resource
+import thecook.cookbook.api.inject.ingredient as Injected
+import thecook.cookbook.api.inject.param as Param
+import thecook.cookbook.api.inject.resource as Resource
 
 import java.lang.reflect.Field
 

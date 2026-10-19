@@ -4,7 +4,7 @@ This guide describes the engine on `main`. The [architecture](../docs/architectu
 and [issue #15](https://github.com/lmarqs/the-cook/issues/15) tracks the parts that do not run yet.
 
 The core is one engine, `thecook.cookbook`, that cooks recipes named by coordinates or by a `.groovy` path in the
-kitchen. The engine and the author's annotations, in `thecook.cookbook.api` and `thecook.cookbook.api.recipe`, are
+kitchen. The engine and the author's annotations, in `thecook.cookbook.api.injectable` and `thecook.cookbook.api.inject`, are
 Groovy.
 
 The core reaches no network and runs no external command. It declares `CookbookRepository`, and the caller hands

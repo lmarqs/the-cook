@@ -1,7 +1,8 @@
-package thecook.cookbook.api.recipe
+package thecook.cookbook.api.inject
 
-// Recipe annotations are lower case so they read as keywords in a recipe. They live apart from the model annotations
-// because `@ingredient` and `@Ingredient` would share one class file on a file system that ignores case.
+// Recipe annotations are lower case so they read as keywords in a recipe. They live apart from the model annotations in
+// `thecook.cookbook.api.injectable` because `@ingredient` and `@Ingredient` would share one class file on a file system
+// that ignores case.
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
