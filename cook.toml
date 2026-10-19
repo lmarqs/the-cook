@@ -1,1 +1,1 @@
-repositories = ["cookbook/build/repository"]
+repositories = ["cookbook"]
