@@ -269,8 +269,7 @@ describe what Cook actually does.
 - [ ] `./cook help io.github.lmarqs:agents:0.0.0`, run in this checkout, lists exactly `claude-settings`,
       `codex-settings`, `connect`, `permissions` and `seed`.
 - [ ] `grep -rnE 'agents(:[^#[:space:]]*)?#instructions|adapters/claude/CLAUDE\.md|\.agents/policy\.yaml' cookbook
-      --include='*.groovy'` returns nothing (a refusal that names `.agents/policy.yaml`, if the open question adds
-      one, is the only allowed match).
+      --include='*.groovy'` returns nothing.
 - [ ] No commit is required unless a defect is found; a fix is committed under the story it belongs to.
 
 ### US-012: The agents-layout skill content
@@ -392,7 +391,3 @@ page sends people to `#instructions`, `.agents/adapters/claude/CLAUDE.md` or the
 ## Open Questions
 
 - Whether Codex can choose a role per run (US-002); if not, roles are Claude-only and the skill says so.
-- Whether cooking should refuse when `.agents/policy.yaml` exists and `.agents/permission/policy.yaml` does not.
-  Without that, a kitchen upgrading to this release gets the starter, which grants nothing and also drops the
-  team's denies; the batch review shows it, but nothing stops an approval. Recommendation: refuse, naming the move
-  and `references/adopt.md`. That does not mean reading version 1.
