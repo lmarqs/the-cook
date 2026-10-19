@@ -37,6 +37,8 @@ tasks.named('test') {
   useJUnit()
   systemProperty 'cook.cookbook', file('../cookbook').absolutePath
   // The tests cook the cookbook's recipes, so a cookbook change must rerun them.
-  inputs.dir('../cookbook').withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName('cookbook')
+  inputs.dir('../cookbook')
+      .withPathSensitivity(PathSensitivity.RELATIVE)
+      .withPropertyName('cookbook')
   testLogging { events 'failed' }
 }
