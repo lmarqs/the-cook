@@ -1,6 +1,6 @@
 package thecook.cookbook
 
-import thecook.cookbook.api.injectable.Ingredient
+import thecook.cookbook.api.ingredient.Ingredient
 import thecook.filesystem.TargetPath
 
 import java.lang.reflect.InvocationTargetException

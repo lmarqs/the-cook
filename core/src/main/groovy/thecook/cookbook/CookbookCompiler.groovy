@@ -23,8 +23,8 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
 final class CookbookCompiler {
   private static final List<String> DEFAULT_IMPORTS =
   [
-    'thecook.cookbook.api.injectable',
-    'thecook.cookbook.api.inject',
+    'thecook.cookbook.api.ingredient',
+    'thecook.cookbook.api.recipe',
     'groovy.json',
     'groovy.yaml',
     'groovy.toml',
