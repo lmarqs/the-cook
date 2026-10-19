@@ -1,20 +1,20 @@
 package io.github.lmarqs.cookbook.agents
 
 /**
- * Models the project settings, instructions and skill links Claude Code reads in a repository.
+ * Models the project settings and shared directory links Claude Code reads in a repository.
  *
  * ## Writes for
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `defaultMode` and `allow`, `ask` and `deny` lists of
- * `Bash(<prefix> *)` rules. Markdown instructions in `.agents/adapters/claude/CLAUDE.md`, which `.claude/CLAUDE.md`
- * links to, and symbolic links from `.claude/skills`, `.claude/commands`, `.claude/hooks` and `.claude/memory` to the
- * shared directories complete the project setup. `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
+ * `Bash(<prefix> *)` rules. Symbolic links from `.claude/skills`, `.claude/commands`, `.claude/hooks` and
+ * `.claude/memory` to the shared directories complete the project setup. Claude Code reads `AGENTS.md` natively.
+ * `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
  * ## Instances
  *
  * One instance covers the Claude Code setup in one directory. Use `at` for a separate setup in another
- * directory; shared instruction and skill paths are relative to that instance's directory.
+ * directory; shared directory paths are relative to that instance's directory.
  *
  * ## Use
  *
@@ -25,14 +25,13 @@ package io.github.lmarqs.cookbook.agents
  * @ingredient(Agents) def agents
  * @ingredient(Claude) def claude
  *
- * agents.instruct('Run tests before committing.')
  * agents.permit([claude])
  * agents.connect([claude])
  * ```
  *
  * ## With other models
  *
- * `io.github.lmarqs.cookbook.agents.Agents` drives this harness through `permit`, `readInstructions` and `readDirectories`.
+ * `io.github.lmarqs.cookbook.agents.Agents` drives this harness through `permit` and `readDirectories`.
  * It supplies the shared policy and paths; Claude translates them into its native files. The same command
  * prefixes do not mean identical enforcement across harnesses; review the generated permissions against
  * Claude's permission model. `localFiles` supplies ignore patterns for `io.github.lmarqs.cookbook.git.Git`.
@@ -44,8 +43,6 @@ class Claude implements Harness {
   /** `.claude`, which holds only links Cook makes and files Claude Code writes locally. */
   final String localDirectory = '.claude'
   private Map settings = [:]
-  private List<String> instructions = []
-  private List<String> sharedInstructions = []
   private Map<String, String> directoryLinks = [:]
 
   /** Destination-root ignore patterns for the local settings file Claude Code writes. */
@@ -67,18 +64,6 @@ class Claude implements Harness {
   /** Adds top-level settings keys, hooks included; a supplied key replaces its earlier value whole. */
   void settings(Map more) { settings += more }
 
-  /** Appends Markdown instruction lines to the managed section in `.agents/adapters/claude/CLAUDE.md`. */
-  void instruct(String... lines) { instructions += lines.toList() }
-
-  /**
-   * Imports the shared instructions at `path`, relative to this instance's directory, into the adapter's `CLAUDE.md`.
-   * Claude resolves an import from the file a link points to, so the import climbs out of `.agents/adapters/claude/`.
-   */
-  void readInstructions(String path) {
-    sharedInstructions << path
-    instruct("@../../../${path}")
-  }
-
   /** Links `.claude/<name>` to each shared directory; each path is relative to this instance's directory. */
   void readDirectories(Map<String, String> paths) {
     paths.each { name, path -> directoryLinks[name] = "../${path}".toString() }
@@ -91,51 +76,13 @@ class Claude implements Harness {
   @Keys(path = '.agents/adapters/claude/settings.json')
   Map settingsKeys() { settings ?: null }
 
-  /**
-   * `.claude/settings.json` and `.claude/CLAUDE.md`, links to the adapter's files, when settings or instructions are
-   * set.
-   */
+  /** `.claude/settings.json`, a link to the adapter's file, when settings or permissions are set. */
   @Links(path = '.claude')
-  Map<String, String> adapterLinks() {
-    Map<String, String> links = [:]
-    if (settings) links['settings.json'] = '../.agents/adapters/claude/settings.json'
-    if (instructions) links['CLAUDE.md'] = '../.agents/adapters/claude/CLAUDE.md'
-    links ?: null
-  }
-
-  /**
-   * The `instructions` section of `.agents/adapters/claude/CLAUDE.md`, when instruction lines or a shared instruction
-   * path are added. Fails when the root `CLAUDE.md` imports the shared instructions outside an `instructions` section
-   * of this model, since Claude would then read them twice.
-   */
-  @Section(path = '.agents/adapters/claude/CLAUDE.md', id = 'instructions')
-  List<String> instructionsSection() {
-    if (!instructions) {
-      return null
-    }
-    refuseImportsElsewhere()
-    instructions
-  }
+  Map<String, String> adapterLinks() { settings ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
 
   /** One relative link in `.claude/` per shared directory, such as `skills`, when the directories are connected. */
   @Links(path = '.claude')
   Map<String, String> links() { directoryLinks ?: null }
-
-  private void refuseImportsElsewhere() {
-    def imports = sharedInstructions.collect { "@${it}".toString() } as Set
-    boolean own = false
-    current('CLAUDE.md')?.readLines()?.eachWithIndex { String line, int index ->
-      if (line ==~ /.*cook:begin \S+#instructions(?:\s.*)?/) {
-        own = true
-      } else if (line ==~ /.*cook:end \S+#instructions(?:\s.*)?/) {
-        own = false
-      } else if (!own && line.trim() in imports) {
-        throw new IllegalArgumentException(
-          "CLAUDE.md already imports ${line.trim()} on line ${index + 1}; remove that line, since " +
-          '.claude/CLAUDE.md imports it')
-      }
-    }
-  }
 
   private static String rule(Command command) { "Bash(${command.prefix.join(' ')} *)" }
 }

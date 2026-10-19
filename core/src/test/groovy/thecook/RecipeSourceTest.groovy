@@ -8,12 +8,12 @@ class RecipeSourceTest {
   private static final File COOKBOOK = new File(System.getProperty('cook.cookbook'))
 
   @Test void readsTextsAndDeclarationsWithoutResolvingImports() {
-    def texts = RecipeSource.texts(new File(COOKBOOK, 'agents/instructions.groovy').text, 'instructions.groovy')
-    assert texts.help.startsWith('Seeds `AGENTS.md` with a section template')
+    def texts = RecipeSource.texts(new File(COOKBOOK, 'agents/connect.groovy').text, 'connect.groovy')
+    assert texts.help.startsWith('Connects each selected harness to the shared agent layout')
     assert texts.confirm == null
-    assert texts.yieldText.startsWith('Have an agent fill in `AGENTS.md`; the note at its top')
+    assert texts.yieldText.startsWith('Review the rendered permissions against each harness')
     assert texts.params == [
-      new RecipeParam(['harness'], 'String[]', 'Harnesses that read the shared instructions', '[]',
+      new RecipeParam(['harness'], 'String[]', 'Harnesses to connect to the shared layout', null,
       ['claude', 'codex'], true)
     ]
     assert texts.ingredients == [

@@ -99,15 +99,14 @@ class Agents {
   }
 
   /**
-   * Points each harness at `AGENTS.md` and the shared directories, by paths relative to where it sits: every directory
-   * once the layout is seeded, otherwise `.agents/skills` once skills are added. Call it after adding skills.
+   * Points each harness at the shared directories, by paths relative to where it sits: every directory once the layout
+   * is seeded, otherwise `.agents/skills` once skills are added. Each harness reads `AGENTS.md` natively. Call it after
+   * adding skills.
    */
   void connect(Collection<Harness> harnesses) {
     def shared = layoutUsed ? DIRECTORIES : skills ? ['skills'] : []
-    harnesses.each { harness ->
-      harness.readInstructions(reach(harness, 'AGENTS.md'))
-      if (shared) harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] })
-    }
+    if (!shared) return
+    harnesses.each { harness -> harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] }) }
   }
 
   /**
@@ -202,9 +201,6 @@ interface Harness {
 
   /** Renders the shared policy into the harness's own permission model. */
   void permit(Policy policy)
-
-  /** Makes the harness read the shared instructions at `path`, relative to its directory. */
-  void readInstructions(String path)
 
   /**
    * Makes the harness read the shared directories it supports, keyed by name, such as `skills` or `hooks`, each at a

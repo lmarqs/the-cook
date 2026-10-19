@@ -1,20 +1,20 @@
 package io.github.lmarqs.cookbook.agents
 
 /**
- * Models the project configuration, hooks, rules and instructions Codex reads in a repository.
+ * Models the project configuration, hooks and rules Codex reads in a repository.
  *
  * ## Writes for
  *
  * Top-level TOML keys in `config.toml`, top-level JSON keys in `hooks.json` and rule files under `rules/`, all in
- * `.agents/adapters/codex/` and linked from `.codex/`, a `.codex/hooks` link to the shared hook scripts, and Markdown
- * instructions in `AGENTS.md`. Command rules use the
+ * `.agents/adapters/codex/` and linked from `.codex/`, and a `.codex/hooks` link to the shared hook scripts. Codex reads
+ * `AGENTS.md` and `.agents/skills/` natively. Command rules use the
  * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", "status"], decision = "allow")`, with `allow`, `prompt`
  * or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
  *
  * ## Instances
  *
  * One instance covers the Codex setup in one directory. Use `at` for a separate setup in another directory;
- * Codex reads shared instructions and skills only from that instance's own directory.
+ * Codex reads `AGENTS.md` and skills only from that instance's own directory.
  *
  * ## Use
  *
@@ -25,14 +25,13 @@ package io.github.lmarqs.cookbook.agents
  * @ingredient(Agents) def agents
  * @ingredient(Codex) def codex
  *
- * agents.instruct('Run tests before committing.')
  * agents.permit([codex])
  * agents.connect([codex])
  * ```
  *
  * ## With other models
  *
- * `io.github.lmarqs.cookbook.agents.Agents` drives this harness through `permit`, `readInstructions` and `readDirectories`.
+ * `io.github.lmarqs.cookbook.agents.Agents` drives this harness through `permit` and `readDirectories`.
  * It supplies the shared policy and paths; Codex translates the policy into its native settings and rules,
  * and checks that the shared paths are the ones it reads natively. The same command prefixes do not mean
  * identical enforcement across harnesses; review the generated rules against Codex's permission model.
@@ -47,7 +46,6 @@ class Codex implements Harness {
   private Map hooks = [:]
   private Map<String, String> rules = [:]
   private List<String> commands = []
-  private List<String> instructions = []
   private String hooksPath
 
   /**
@@ -78,12 +76,6 @@ class Codex implements Harness {
     if (!(name ==~ /[A-Za-z0-9_.-]+/) || name in ['.', '..']) throw new IllegalArgumentException("Rule file needs a simple name: ${name}")
     rules[name] = body
   }
-
-  /** Appends Markdown instruction lines to the `codex` section in `AGENTS.md`. */
-  void instruct(String... lines) { instructions += lines.toList() }
-
-  /** Checks that `path` is `AGENTS.md`, which Codex reads natively in its own directory; rejects any other path. */
-  void readInstructions(String path) { readsNatively(path, 'AGENTS.md') }
 
   /**
    * Checks that `skills` is at `.agents/skills`, where Codex discovers skills natively in its own directory, and links
@@ -131,10 +123,6 @@ class Codex implements Harness {
     if (hooksPath) links.hooks = "../${hooksPath}".toString()
     links ?: null
   }
-
-  /** The `codex` section of `AGENTS.md`, when Codex-specific instruction lines are added. */
-  @Section(path = 'AGENTS.md', id = 'codex')
-  List<String> instructionsSection() { instructions ?: null }
 
   private static void readsNatively(String path, String expected) {
     if (path != expected) throw new IllegalArgumentException("Codex reads ${expected} in its own directory, not ${path}")

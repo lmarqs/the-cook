@@ -22,13 +22,12 @@ The policy supplies instruction lines and command permissions for both harnesses
 | `AGENTS.md` | The section `instructions`: working guidance and policy instructions | Always |
 | `.agents/skills/<name>/` | Whole files for `solid`, `hexagonal-layout`, `effective-java-core` | Always |
 | `.agents/adapters/claude/settings.json` | `permissions`, linked from `.claude/settings.json` | Always |
-| `.agents/adapters/claude/CLAUDE.md` | The section `instructions`: `@../../../AGENTS.md`, linked from `.claude/CLAUDE.md` | Always |
 | `.claude/skills` | A relative link to `../.agents/skills` | Always |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write`, linked from `.codex/config.toml` | Always |
 | `.agents/adapters/codex/rules/cook.rules` | The section `commands`, linked through `.codex/rules` | The policy has command rules |
 | `.gitignore` | The section `ignore`: `/.claude/settings.local.json` | Always |
 
-Claude reads the shared instructions through `.claude/CLAUDE.md` and skills through `.claude/skills`.
+Claude reads `AGENTS.md` natively and skills through `.claude/skills`.
 Codex reads `AGENTS.md` and `.agents/skills/` natively.
 ''')
 @yield('''

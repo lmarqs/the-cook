@@ -1,5 +1,5 @@
 @help('''
-Writes chosen Codex configuration, hooks, rule files and instructions from files and arguments you supply.
+Writes chosen Codex configuration, hooks and rule files from files you supply.
 
 ## Before cooking
 
@@ -22,15 +22,12 @@ and hyphens, and may not be `.` or `..`.
 | `.agents/adapters/codex/hooks.json` | Each top-level key of the hooks file, owned whole | `--hooks` supplies keys |
 | `.agents/adapters/codex/rules/<name>` | One whole file per file in the rules directory | `--rules` supplies files |
 | `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | Each one written |
-| `AGENTS.md` | The section `codex` | `--instructions` supplies text |
 
-Codex reads the project configuration, hooks, rules and instructions.
+Codex reads the project configuration, hooks and rules; it reads `AGENTS.md` natively.
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:agents:0.1.0#instructions` before this recipe to seed `AGENTS.md` with the section template,
-which is written only when the file is absent and never owned; this recipe owns the `codex` section. Cook
-`io.github.lmarqs.cookbook:agents:0.1.0#permissions` after this recipe with `--harness=codex` to use the shared policy for
+Cook `io.github.lmarqs.cookbook:agents:0.1.0#permissions` after this recipe with `--harness=codex` to use the shared policy for
 `sandbox_mode`, `approval_policy` and `sandbox_workspace_write`; other configuration keys remain separate
 targets. Use other rule-file names when that recipe owns the `commands` section in `cook.rules`.
 ''')
@@ -49,12 +46,8 @@ File hooks
 @param(value = ['rules'], default = null, doc = 'Directory whose files become .agents/adapters/codex/rules/<name>')
 File rules
 
-@param(value = ['instructions'], default = null, doc = 'Codex-specific instruction text for AGENTS.md')
-String instructions
-
 @ingredient(Codex) def codex
 
 if (config) codex.config(new TomlSlurper().parse(config))
 if (hooks) codex.hooks(new JsonSlurper().parse(hooks))
 if (rules) rules.eachFile { codex.rule(it.name, it.text) }
-if (instructions) codex.instruct(instructions)

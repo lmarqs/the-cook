@@ -1,8 +1,8 @@
 @help('''
 Connects each selected harness to the shared agent layout: renders the shared policy into its settings under
-`.agents/adapters/<harness>/`, points it at `AGENTS.md`, and links its own directory, `.claude/` or `.codex/`, to
-those files and to the shared directories. The harness directories hold only links and local files and are ignored in Git, so they can be deleted
-and cooked again.
+`.agents/adapters/<harness>/` and links its own directory, `.claude/` or `.codex/`, to those files and to the shared
+directories. Each harness reads `AGENTS.md` natively. The harness directories hold only links and local files and are
+ignored in Git, so they can be deleted and cooked again.
 
 ## Before cooking
 
@@ -25,15 +25,13 @@ Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` t
 | `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.claude/skills`, `commands`, `hooks`, `memory` | Links to the directories of the same names in `../.agents/` | `--harness=claude` |
-| `.agents/adapters/claude/CLAUDE.md` | The section `instructions`, containing `@../../../AGENTS.md`, linked from `.claude/CLAUDE.md` | `--harness=claude` |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |
 | `.agents/adapters/codex/rules/cook.rules` | The section `commands` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
 | `.codex/hooks` | A link to `../.agents/hooks`; Codex reads `.agents/skills` natively | `--harness=codex` |
 | `.gitignore` | The section `harnesses`: `/.claude/`, `/.codex/` for the selected harnesses | Always |
 
-Cooking with fewer harnesses removes the outputs of the ones left out. When the root `CLAUDE.md` already imports
-`@AGENTS.md` outside the recipe's section, cooking fails and names the line; remove that line and cook again.
+Cooking with fewer harnesses removes the outputs of the ones left out.
 
 ## With other recipes
 

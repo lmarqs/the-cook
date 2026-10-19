@@ -28,8 +28,7 @@ Cooking with fewer harnesses removes the outputs of the ones left out.
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:agents:0.1.0#instructions` with the same harness selection to connect shared instructions.
-The recipes write separate targets and work in either order.
+`io.github.lmarqs.cookbook:agents:0.1.0#connect` renders the same policy and also links the shared directories.
 ''')
 @yield('''
 Edit the shared policy and cook again to render the permissions.
