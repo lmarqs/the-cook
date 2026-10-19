@@ -284,15 +284,15 @@ Cook uses JVM-based distribution with `jpackage`. Each platform-specific package
 bundled Java runtime. Distribute the complete package, including its runtime (FR-26).
 
 A release is cut when the maintainer starts the `release` workflow; its version comes from the Conventional Commits
-since the last `v*` tag. Nothing is published unless the Linux x64 and arm64 builds and their tests pass. A release
+since the last `v*` tag. Nothing is published unless the Linux x64 and arm64 and macOS arm64 builds and their tests pass. A release
 publishes:
 
-- on GitHub, `the-cook-<version>-linux-<arch>.tar.gz` for `x64` and `arm64`, each a complete package with its
-  `.sha256`, and the `cook` wrapper with its `.sha256`;
+- on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
+  package with its `.sha256`, and the `cook` wrapper with its `.sha256`;
 - on Maven Central, the `io.github.lmarqs:agents` cookbook artifact and the cookbook Gradle plugin with its marker.
 
 A repository commits the release's executable `./cook` wrapper, which pins the engine version and the checksum of
-each Linux package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
+each package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
 caching, and explicit upgrades.
 
 Engine releases supply the packaged runtime. Cookbook repositories hold and ship ingredients and recipes, with
@@ -395,7 +395,7 @@ Other documents cite these requirements by number.
 ### Distribution and documentation authority
 
 - **FR-26:** Cook uses JVM-based distribution with jpackage, one platform-specific package containing Java, released for
-  Linux x64 and arm64. A committed `./cook` wrapper, published with each release, pins a version and the checksum of
+  Linux x64 and arm64 and macOS arm64. A committed `./cook` wrapper, published with each release, pins a version and the checksum of
   each package, fetches the package on first use, refuses it unless its checksum matches, and caches it locally.
   Upgrades are explicit: a repository commits another release's wrapper.
 - **FR-27:** This document states the intended architecture. Supporting documents follow it. Documents that cover the

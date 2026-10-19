@@ -35,19 +35,23 @@ notes.add('local')
     }
   }
 
-  @Test void linuxArchiveHoldsTheImageUnderTheCookWithAnExecutableLauncherAndItsSha256() {
+  @Test void archiveHoldsTheImageWithAnExecutableLauncherThatRunsOnceUnpackedAndItsSha256() {
     def path = System.getProperty('cook.packageArchive')
     Assume.assumeNotNull(path)
     def archive = new File(path)
+    def launcher = System.getProperty('cook.packageArchiveLauncher')
+    def image = launcher.substring(0, launcher.indexOf('/') + 1)
     def entries = tar(archive, '-tzf').readLines()
 
-    assert 'the-cook/bin/the-cook' in entries
-    assert entries.every { it.startsWith('the-cook/') }
+    assert launcher in entries
+    assert entries.every { it.startsWith(image) }
     def root = Files.createTempDirectory('cook archive ').toFile()
 
     try {
-      tar(archive, '-xzf', '-C', root.path, 'the-cook/bin/the-cook')
-      assert new File(root, 'the-cook/bin/the-cook').canExecute()
+      tar(archive, '-xzf', '-C', root.path)
+      def unpacked = new File(root, launcher)
+      assert unpacked.canExecute()
+      assert runLauncher(root, unpacked, '--help').contains('Usage:')
     } finally {
       root.deleteDir()
     }
@@ -68,9 +72,12 @@ notes.add('local')
   }
 
   private String run(File directory, Object... arguments) {
+    runLauncher(directory, new File(System.getProperty('cook.packagedLauncher')), arguments)
+  }
+
+  private static String runLauncher(File directory, File launcher, Object... arguments) {
     def args = arguments.toList()
     def expected = args.last() instanceof Integer ? args.removeLast() : 0
-    def launcher = new File(System.getProperty('cook.packagedLauncher'))
     assert launcher.isFile(): "Packaged launcher missing: ${launcher}"
     def output = Files.createTempFile('cook-output-', '.txt').toFile()
 

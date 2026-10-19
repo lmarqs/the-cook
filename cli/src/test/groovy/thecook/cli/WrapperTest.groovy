@@ -11,14 +11,18 @@ import java.security.MessageDigest
 
 class WrapperTest {
   private static final String ARCH = [amd64: 'x64', x86_64: 'x64', aarch64: 'arm64'][System.getProperty('os.arch')]
-  private static final String PACKAGE = "/the-cook-1.2.3-linux-${ARCH}.tar.gz"
+  private static final String OS = System.getProperty('os.name') == 'Linux' ? 'linux' :
+  (System.getProperty('os.name').startsWith('Mac') ? 'macos' : null)
+  private static final String TARGET = "${OS}-${ARCH}".toString()
+  private static final String IMAGE = OS == 'macos' ? 'the-cook.app/Contents/MacOS/the-cook' : 'the-cook/bin/the-cook'
+  private static final String PACKAGE = "/the-cook-1.2.3-${TARGET}.tar.gz"
   private static final List<String> TOOLS = ['uname', 'mkdir', 'mktemp', 'rm', 'rmdir', 'mv', 'tar', 'gzip', 'cut']
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
-  // The wrapper runs only the Linux x64 and arm64 packages, so it has nothing to download anywhere else.
-  @Before void runsOnLinuxX64OrArm64() {
-    Assume.assumeTrue(System.getProperty('os.name') == 'Linux' && ARCH != null)
+  // The wrapper runs only the Linux x64 and arm64 and macOS arm64 packages, so it has nothing to download elsewhere.
+  @Before void runsOnAPlatformWithAPackage() {
+    Assume.assumeTrue(TARGET in ['linux-x64', 'linux-arm64', 'macos-arm64'])
   }
 
   @Test void downloadsVerifiesCachesAndRunsThePinnedPackageInTheCurrentDirectory() {
@@ -33,8 +37,8 @@ class WrapperTest {
       assert first.status == 0 : first.err
       assert first.out == "${kitchen.canonicalPath}\nhelp\ntwo words\n--line=x\n"
       assert requests == [PACKAGE]
-      assert new File(folder.root, "cache/the-cook/1.2.3/linux-${ARCH}/the-cook/bin/the-cook").canExecute()
-      assert new File(folder.root, 'cache/the-cook/1.2.3').list() as List == ["linux-${ARCH}"]
+      assert new File(folder.root, "cache/the-cook/1.2.3/${TARGET}/${IMAGE}").canExecute()
+      assert new File(folder.root, 'cache/the-cook/1.2.3').list() as List == [TARGET]
 
       def second = run(cook, kitchen, System.getenv('PATH'), 'help')
 
@@ -64,7 +68,7 @@ class WrapperTest {
 
   @Test void keepsAndRunsThePackageAnotherRunCachedDuringTheDownload() {
     def content = fakePackage()
-    def cached = new File(folder.root, "cache/the-cook/1.2.3/linux-${ARCH}/the-cook/bin/the-cook")
+    def cached = new File(folder.root, "cache/the-cook/1.2.3/${TARGET}/${IMAGE}")
     def cacheMeanwhile = {
       cached.parentFile.mkdirs()
       cached.text = '#!/bin/sh\necho cached meanwhile\n'
@@ -77,8 +81,8 @@ class WrapperTest {
       assert result.status == 0 : result.err
       assert result.out == 'cached meanwhile\n'
       assert requests == [PACKAGE]
-      assert new File(folder.root, 'cache/the-cook/1.2.3').list() as List == ["linux-${ARCH}"]
-      assert new File(folder.root, "cache/the-cook/1.2.3/linux-${ARCH}").list() as List == ['the-cook']
+      assert new File(folder.root, 'cache/the-cook/1.2.3').list() as List == [TARGET]
+      assert new File(folder.root, "cache/the-cook/1.2.3/${TARGET}").list() as List == [IMAGE.split('/')[0]]
     }, cacheMeanwhile)
   }
 
@@ -100,16 +104,17 @@ class WrapperTest {
   @Test void namesTheToolItNeedsAndAPlatformWithoutAPackage() {
     def cook = wrapper('http://127.0.0.1:9', '0' * 64)
     def uname = new File(folder.newFolder('uname'), 'uname')
-    uname.text = '#!/bin/sh\n[ "$1" = -s ] && echo Darwin || echo arm64\n'
+    uname.text = '#!/bin/sh\n[ "$1" = -s ] && echo Darwin || echo x86_64\n'
     uname.setExecutable(true)
+    def hasher = installed('sha256sum') ? 'sha256sum' : 'shasum'
 
     [
-      [tools(TOOLS + ['sha256sum']), 'cook: downloading the-cook needs curl or wget\n'],
+      [tools(TOOLS + [hasher]), 'cook: downloading the-cook needs curl or wget\n'],
       [tools(TOOLS + ['curl']), 'cook: verifying the-cook needs sha256sum or shasum\n'],
-      [tools(TOOLS - ['tar'] + ['curl', 'sha256sum']), 'cook: unpacking the-cook needs tar\n'],
+      [tools(TOOLS - ['tar'] + ['curl', hasher]), 'cook: unpacking the-cook needs tar\n'],
       [
         "${uname.parent}:${tools(TOOLS)}".toString(),
-        'cook: the-cook has no package for Darwin arm64; it runs on Linux x64 and arm64\n'
+        'cook: the-cook has no package for Darwin x86_64; it runs on Linux x64 and arm64 and macOS arm64\n'
       ],
     ].each { path, message ->
       def result = run(cook, folder.root, path, 'help')
@@ -121,12 +126,12 @@ class WrapperTest {
   // A package whose launcher prints its working directory and then each argument on its own line.
   private byte[] fakePackage() {
     def root = folder.newFolder()
-    def launcher = new File(root, 'the-cook/bin/the-cook')
+    def launcher = new File(root, IMAGE)
     launcher.parentFile.mkdirs()
     launcher.text = '#!/bin/sh\npwd -P\nfor argument in "$@"; do printf \'%s\\n\' "$argument"; done\n'
     launcher.setExecutable(true)
     def archive = new File(root, 'package.tar.gz')
-    def tar = new ProcessBuilder('tar', '-czf', archive.path, '-C', root.path, 'the-cook').start()
+    def tar = new ProcessBuilder('tar', '-czf', archive.path, '-C', root.path, IMAGE.split('/')[0]).start()
     assert tar.waitFor() == 0 : tar.errorStream.text
     archive.bytes
   }
@@ -138,6 +143,7 @@ class WrapperTest {
         .replace('@BASE_URL@', url)
         .replace('@SHA256_LINUX_X64@', sha256)
         .replace('@SHA256_LINUX_ARM64@', sha256)
+        .replace('@SHA256_MACOS_ARM64@', sha256)
     cook
   }
 

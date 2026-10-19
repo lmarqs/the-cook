@@ -17,8 +17,8 @@ proves and what trust remains their responsibility.
 - A checksum detects whether downloaded bytes match the recorded pin. If a package was already compromised when its
   checksum was chosen, that checksum will still match. Replacing both a package and an unreviewed checksum at its source
   defeats a comparison with that source; the committed checksum is the reference for subsequent downloads.
-- A release publishes each package with its sha256 and a wrapper with the version and both Linux checksums written
-  in it, from the build that produced the packages. A repository adopts or upgrades the engine by committing that
+- A release publishes each package with its sha256 and a wrapper with the version and every package's checksum
+  written in it, from the build that produced the packages. A repository adopts or upgrades the engine by committing that
   wrapper, which is when its pin is reviewed ([0017](0017-engine-version.md)).
 - Download transport and publisher identity are different concerns. A download host's identity alone does not prove
   who authored the executable content. Reviewing the wrapper and pin matters because both determine what runs.

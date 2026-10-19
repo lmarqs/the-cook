@@ -15,9 +15,9 @@ is a development launcher for a local build; see [source repository launcher](#s
 ## Overview
 
 Each [release](https://github.com/lmarqs/the-cook/releases) publishes a `cook` [wrapper](glossary.md): a POSIX `sh`
-script with the release's version, its download location and the sha256 of its Linux x64 and arm64 packages written
-in it. A repository commits that file as its executable `./cook`. The wrapper selects the package for the machine's
-architecture. Cook is JVM-based: the package is produced with `jpackage` and contains Java. The wrapper caches and
+script with the release's version, its download location and the sha256 of its Linux x64 and arm64 and macOS arm64
+packages written in it. A repository commits that file as its executable `./cook`. The wrapper selects the package for the machine's system
+and architecture. Cook is JVM-based: the package is produced with `jpackage` and contains Java. The wrapper caches and
 launches the complete package.
 
 ```sh
@@ -31,10 +31,12 @@ recipe ownership.
 
 ## How it works
 
-1. Select the package from `uname -s` and `uname -m`: `x86_64` or `amd64` is `linux-x64`, and `aarch64` or `arm64` is
-   `linux-arm64`. Any other platform is refused, named, with exit status 1.
-2. If `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/linux-<arch>/the-cook/bin/the-cook` exists, launch it.
-3. Otherwise download `the-cook-<version>-linux-<arch>.tar.gz` from the release with `curl`, or `wget` when `curl` is
+1. Select the package from `uname -s` and `uname -m`: on `Linux`, `x86_64` or `amd64` is `linux-x64` and `aarch64` or
+   `arm64` is `linux-arm64`; on `Darwin`, `arm64` is `macos-arm64`. Any other platform is refused, named, with exit
+   status 1.
+2. If the package's launcher exists under `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/<platform>/`, launch
+   it: `the-cook/bin/the-cook` on Linux, `the-cook.app/Contents/MacOS/the-cook` on macOS.
+3. Otherwise download `the-cook-<version>-<platform>.tar.gz` from the release with `curl`, or `wget` when `curl` is
    absent, and compute its sha256 with `sha256sum`, or `shasum -a 256` when `sha256sum` is absent.
 4. Refuse a download whose sha256 differs from the one in the wrapper: print the file and both hashes, exit with
    status 1, and cache nothing.
@@ -104,6 +106,6 @@ installing a release.
 | An uncached package cannot be downloaded | Obtain the pinned platform package; a cached complete package runs offline |
 | A download does not match its checksum | Refuse execution; resolve the download or pin discrepancy |
 | The wrapper names a tool it needs | Install `curl` or `wget`, and `sha256sum` or `shasum` |
-| The wrapper has no package for the platform | Run on Linux x64 or arm64 |
+| The wrapper has no package for the platform | Run on Linux x64 or arm64, or macOS arm64 |
 | A copied launcher cannot find its runtime | Transfer the complete jpackage image, including Java |
 | This repository's script prints `Build the CLI first: ./gradlew cliBuild` | The local CLI distribution is absent; run `./gradlew cliBuild`; see the [quick start](../../README.md#quick-start) |

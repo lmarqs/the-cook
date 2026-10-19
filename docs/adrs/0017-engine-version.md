@@ -24,22 +24,22 @@ version through the repository's entry point without installing Java or Gradle s
 - Recipe ownership lives in the committed `cook.lock`, the only file of Cook's own in a destination
   ([0014](0014-directory-layout.md)); cooking does not need it.
 - The [jpackage build](../../cli/gradle/jpackage.gradle) produces an application image with bundled Java for the
-  machine that builds it. The release workflow builds it on Linux x64 and arm64 and publishes each image as
-  `the-cook-<version>-linux-<arch>.tar.gz` with its sha256 on the GitHub release ([install](../../README.md#install)).
+  machine that builds it. The release workflow builds it on Linux x64 and arm64 and macOS arm64 and publishes
+  each image as `the-cook-<version>-<platform>.tar.gz` with its sha256 on the GitHub release ([install](../../README.md#install)).
 - This source repository's own [`cook` script](../../cook) launches a locally built JVM distribution for development.
 
 ## Decision
 
 1. The repository commits an executable `./cook` wrapper with an exact engine version and matching checksums for the
    platform packages. Each release publishes its wrapper as an asset, with the version, the release's download
-   location and the checksums of its Linux x64 and arm64 packages written in it; a repository commits that file. The
+   location and the checksums of its Linux x64 and arm64 and macOS arm64 packages written in it; a repository commits that file. The
    committed pin is separate from the recipe ownership in `cook.lock`.
 2. The engine ships as a complete platform-specific `jpackage` package containing Java. The wrapper caches and
    launches that complete package; copying only its launcher does not supply the runtime or other package contents.
 3. On first use of an uncached pin, the wrapper downloads the selected platform package and verifies it against the
    committed checksum before execution. A mismatch prevents execution and acceptance into the cache. Later invocations
    reuse the cached pinned package without downloading again. The package is cached in
-   `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/linux-<arch>/`, apart for each version and platform.
+   `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/<platform>/`, apart for each version and platform.
 4. An upgrade replaces the committed wrapper with another release's, changing the version and corresponding package
    checksums together for review.
    Ordinary invocations do not move the pin. A pin change does not automatically rewrite project files, migrate

@@ -33,11 +33,15 @@ tasks.register('jpackage', Exec) {
     commandLine packagingJava.get().metadata.installationPath.file('bin/jpackage' + (windows ? '.exe' : '')).asFile,
         '--type', 'app-image',
         '--name', application.applicationName,
-        '--app-version', project.version.toString(),
         '--input', packageInput.get().asFile,
         '--dest', packageOutput.get().asFile,
         '--main-jar', tasks.named('jar').get().archiveFileName.get(),
         '--main-class', application.mainClass.get()
+
+    // A macOS bundle refuses a version whose first number is 0, so a development build keeps jpackage's default.
+    if (!(mac && project.version.toString().startsWith('0.'))) {
+      args '--app-version', project.version.toString()
+    }
 
     if (windows) {
       args '--win-console'
@@ -45,14 +49,15 @@ tasks.register('jpackage', Exec) {
   }
 }
 
-// The release names each Linux image by the architecture the wrapper reads from `uname -m`.
-def linuxArchitecture = [amd64: 'x64', x86_64: 'x64', aarch64: 'arm64'][System.getProperty('os.arch')]
-def linux = !windows && !mac && linuxArchitecture
+// The release names each image by the system and architecture the wrapper reads from `uname -s` and `uname -m`.
+def architecture = [amd64: 'x64', x86_64: 'x64', aarch64: 'arm64'][System.getProperty('os.arch')]
+def archivePlatform = windows ? null : (mac ? (architecture == 'arm64' ? 'macos-arm64' : null) :
+    (architecture ? "linux-${architecture}" : null))
 def packageArchive = tasks.register('jpackageArchive', Tar) {
   group = 'distribution'
-  description = 'Archive the Linux app image as the-cook-<version>-linux-<arch>.tar.gz, with its sha256 beside it.'
+  description = 'Archive the app image as the-cook-<version>-<os>-<arch>.tar.gz, with its sha256 beside it.'
   dependsOn 'jpackage'
-  archiveFileName = "the-cook-${project.version}-linux-${linuxArchitecture}.tar.gz"
+  archiveFileName = "the-cook-${project.version}-${archivePlatform}.tar.gz"
   destinationDirectory = layout.buildDirectory.dir('distributions')
   compression = Compression.GZIP
   preserveFileTimestamps = false
@@ -63,8 +68,8 @@ def packageArchive = tasks.register('jpackageArchive', Tar) {
   def checksum = destinationDirectory.file(archiveFileName.map { "${it}.sha256" })
   outputs.file(checksum)
   doFirst {
-    if (!linux) {
-      throw new GradleException('jpackageArchive packages Linux x64 and arm64 images, not ' +
+    if (!archivePlatform) {
+      throw new GradleException('jpackageArchive packages Linux x64 and arm64 and macOS arm64 images, not ' +
       "${System.getProperty('os.name')} ${System.getProperty('os.arch')}")
     }
   }
@@ -87,8 +92,9 @@ tasks.register('jpackageTest', Test) {
   inputs.dir(packageOutput)
   systemProperty 'cook.packagedLauncher', packagedLauncher.get().asFile.absolutePath
 
-  if (linux) {
+  if (archivePlatform) {
     inputs.file(packageArchive.flatMap { it.archiveFile })
     systemProperty 'cook.packageArchive', packageArchive.get().archiveFile.get().asFile.absolutePath
+    systemProperty 'cook.packageArchiveLauncher', "${imageName}/${launcherPath}"
   }
 }

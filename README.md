@@ -136,9 +136,9 @@ the CLI hands its repositories to the core.
 
 ## Install
 
-Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 as
-`the-cook-<version>-linux-<arch>.tar.gz`, a complete package with its own Java runtime, and the `cook` wrapper, each
-with a `.sha256`. Commit the wrapper to pin the engine version for a repository:
+Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 and macOS
+arm64 as `the-cook-<version>-<platform>.tar.gz`, where the platform is `linux-x64`, `linux-arm64` or `macos-arm64`: a
+complete package with its own Java runtime. It also publishes the `cook` wrapper, and each file has a `.sha256`. Commit the wrapper to pin the engine version for a repository:
 
 ```sh
 curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
@@ -151,8 +151,9 @@ On first use the wrapper downloads the package for the machine, refuses it unles
 in the wrapper, and caches it under `${XDG_CACHE_HOME:-~/.cache}/the-cook`. Later runs start the cached package. To
 upgrade, commit the wrapper of another release ([wrapper](docs/features/wrapper.md)).
 
-To run a package without the wrapper, unpack the **whole** `the-cook` directory and run its `bin/the-cook` from the
-repository you want to cook, or name the repository with `-C`:
+To run a package without the wrapper, unpack the **whole** image and run its launcher from the repository you want to
+cook, or name the repository with `-C`. On Linux the launcher is `the-cook/bin/the-cook`, on macOS
+`the-cook.app/Contents/MacOS/the-cook`:
 
 ```sh
 v=<version>
@@ -176,12 +177,12 @@ cli/build/jpackage/the-cook/bin/the-cook --help
 ```
 
 The paths above are for Linux. The build defines `the-cook.app/Contents/MacOS/the-cook` on macOS and
-`the-cook/the-cook.exe` on Windows; releases ship Linux packages only.
+`the-cook/the-cook.exe` on Windows; releases ship Linux x64 and arm64 and macOS arm64 packages.
 
 `./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help,
 cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C`
-and a usage error. On Linux it also checks the archive: every entry under `the-cook/`, an executable launcher and a
-matching `.sha256`.
+and a usage error. On Linux x64 and arm64 and macOS arm64 it also checks the archive: every entry under the image
+directory, a launcher that runs once the archive is unpacked, and a matching `.sha256`.
 
 For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry
 point; that distribution requires Java 17 on the user's machine.
