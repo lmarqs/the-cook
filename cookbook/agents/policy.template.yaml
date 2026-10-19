@@ -1,0 +1,24 @@
+# What coding agents may run in this repository. Cooking io.github.lmarqs:agents#connect renders this file into each
+# harness's settings under .agents/adapters/; edit it, then cook again.
+version: 1
+
+# Instruction lines that recipes reading this policy add to their instructions. This repository's own instructions
+# belong in AGENTS.md.
+instructions: []
+
+# Each command is the list of literal words it starts with, with no shell syntax, wildcards or quotes, so
+# [git, push] covers `git push` and `git push origin main`. allow runs without asking, ask asks first and deny
+# refuses. Claude reads each as a Bash(<words> *) rule; Codex as a prefix_rule. For example:
+#
+#   allow:
+#     - [git, status]
+#     - [git, diff]
+#     - [./gradlew, check]
+#   ask:
+#     - [git, push]
+#   deny:
+#     - [git, reset, --hard]
+commands:
+  allow: []
+  ask: []
+  deny: []

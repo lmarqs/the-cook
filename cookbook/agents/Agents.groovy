@@ -86,10 +86,10 @@ class Agents {
     skills += names.toList()
   }
 
-  /** The shared agent policy at `.agents/policy.yaml`, or the starter when the file is absent. */
+  /** The shared agent policy at `.agents/policy.yaml`, or the packaged starter when the file is absent. */
   Policy policy() {
     policyUsed = true
-    Policy.parse(current('.agents/policy.yaml') ?: Policy.STARTER)
+    Policy.parse(current('.agents/policy.yaml') ?: resource('policy.template.yaml'))
   }
 
   /** Renders the shared policy into each harness's own permission model. */
@@ -129,9 +129,12 @@ class Agents {
   @Seed(path = 'AGENTS.md', existing = 'fail')
   String starter() { instructionsUsed ? resource('AGENTS.template.md') : null }
 
-  /** Seeds `.agents/policy.yaml` with the starter policy when absent, once the policy is read; never owned. */
+  /**
+   * Seeds `.agents/policy.yaml` with the packaged `policy.template.yaml` when absent, once the policy is read: a policy
+   * that grants nothing, with comments explaining each field and an example; never owned.
+   */
   @Seed(path = '.agents/policy.yaml')
-  String starterPolicy() { policyUsed ? Policy.STARTER : null }
+  String starterPolicy() { policyUsed ? resource('policy.template.yaml') : null }
 
   /** Seeds `.agents/README.md`, which says what each shared directory holds, once the layout is seeded. */
   @Seed(path = '.agents/README.md')
@@ -212,9 +215,6 @@ interface Harness {
 
 /** Version 1 of the shared policy: instructions and literal command prefixes with a decision each. */
 class Policy {
-  /** The version 1 YAML starter with no instructions or command permissions. */
-  static final String STARTER = 'version: 1\ninstructions: []\ncommands: {}\n'
-
   /** Shared instruction lines read from the policy's `instructions` field. */
   List<String> instructions = []
 

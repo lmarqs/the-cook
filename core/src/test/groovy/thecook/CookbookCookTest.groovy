@@ -256,7 +256,7 @@ Run with --force to replace them, or --skip to keep them.'''
       'cook.lock'
     ]
     proposal.commit()
-    assert new File(kitchen, '.agents/policy.yaml').text == 'version: 1\ninstructions: []\ncommands: {}\n'
+    assert new File(kitchen, '.agents/policy.yaml').text == new File(COOKBOOK, 'agents/policy.template.yaml').text
     assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
     '../.agents/adapters/claude/settings.json'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
