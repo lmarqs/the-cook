@@ -443,7 +443,8 @@ text.text = template
   @Test void composesARecipePathWithCoordinatesUnderItsShortName() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    recipe(kitchen, 'Notes.groovy', '''package acme.notes
+    // A model and a recipe whose names differ only in case would be one file on macOS.
+    recipe(kitchen, 'NotesModel.groovy', '''package acme.notes
 
 @Ingredient
 class Notes {

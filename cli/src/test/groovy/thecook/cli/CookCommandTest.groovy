@@ -39,7 +39,8 @@ class CookCommandTest {
   @Test void kitchenOptionCooksAsIfStartedThereAndGoesBeforeTheRecipe() {
     workspace { root, repo ->
       Fixtures.notesCookbook(repo)
-      new File(repo, 'Notes.groovy').text = Fixtures.NOTES_MODEL
+      // A model and a recipe whose names differ only in case would be one file on macOS.
+      new File(repo, 'NotesModel.groovy').text = Fixtures.NOTES_MODEL
       new File(repo, 'notes.groovy').text = """import acme.notes.Notes
 @ingredient(Notes) def notes
 notes.add('notes')
