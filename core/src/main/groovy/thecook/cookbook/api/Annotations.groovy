@@ -1,8 +1,8 @@
 package thecook.cookbook.api
 
-// The author's API: the only engine types a recipe or model reaches. The engine imports this package into every unit,
-// so recipes write `@param` and models write `@Section` without an import. Recipe annotations are lower case so they
-// read as keywords in a recipe; model annotations name the part of a file they declare.
+// The author's API: the only engine types a recipe or model reaches, with the recipe annotations in
+// `thecook.cookbook.api.recipe`. The engine imports both packages into every unit, so recipes write `@param` and models
+// write `@Section` without an import. Model annotations name the part of a file they declare.
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
@@ -78,48 +78,4 @@ import java.lang.annotation.Target
 @Retention(RetentionPolicy.RUNTIME)
 @interface Delete {
   String path()
-}
-
-/** The recipe's description, in Markdown, on its first import. */
-@Retention(RetentionPolicy.RUNTIME)
-@interface help {
-  String value()
-}
-
-/** A consequence the diff cannot show, on the recipe's first import. */
-@Retention(RetentionPolicy.RUNTIME)
-@interface confirm {
-  String value()
-}
-
-/** What to do after the writes succeed, on the recipe's first import. */
-@Retention(RetentionPolicy.RUNTIME)
-@interface yield {
-  String value()
-}
-
-/** An input bound from `--name=value`; required without a `default`, repeatable with `many`. */
-@Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
-@Retention(RetentionPolicy.RUNTIME)
-@interface param {
-  String[] value()
-  String doc()
-  String[] 'default'() default []
-  String[] choices() default []
-  boolean many() default false
-}
-
-/** An injected model instance, at the destination root or at the directory `at`. */
-@Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
-@Retention(RetentionPolicy.RUNTIME)
-@interface ingredient {
-  Class value()
-  String at() default '.'
-}
-
-/** The UTF-8 text of the file at `value`, beside a recipe path or in the recipe's artifact. */
-@Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
-@Retention(RetentionPolicy.RUNTIME)
-@interface resource {
-  String value()
 }

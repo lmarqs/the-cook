@@ -23,7 +23,8 @@ spotless {
   groovy {
     target '**/*.groovy'
     // The formatter cannot parse the quoted `default` member that recipes write as `@param(default = ...)`.
-    targetExclude generated + sketch + ['core/src/main/groovy/thecook/cookbook/api/Annotations.groovy']
+    targetExclude generated + sketch +
+        ['core/src/main/groovy/thecook/cookbook/api/recipe/RecipeAnnotations.groovy']
     greclipse().configFile('gradle/spotless/greclipse.properties')
   }
   groovyGradle {

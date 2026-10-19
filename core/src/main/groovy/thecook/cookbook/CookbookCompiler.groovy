@@ -22,7 +22,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
  */
 final class CookbookCompiler {
   private static final List<String> DEFAULT_IMPORTS =
-  ['thecook.cookbook.api', 'groovy.json', 'groovy.yaml', 'groovy.toml', 'java.nio.file']
+  ['thecook.cookbook.api', 'thecook.cookbook.api.recipe', 'groovy.json', 'groovy.yaml', 'groovy.toml', 'java.nio.file']
 
   private CookbookCompiler() { }
 
