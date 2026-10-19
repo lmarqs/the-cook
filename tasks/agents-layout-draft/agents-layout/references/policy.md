@@ -1,7 +1,7 @@
 # policy.yaml
 
 `.agents/permission/policy.yaml` says which commands and tools coding agents may use in this repository. Cooking
-`io.github.lmarqs:agents#connect` renders it into each harness's own settings under `.agents/adapters/`. It is the only
+`io.github.lmarqs.cookbook:agents#connect` renders it into each harness's own settings under `.agents/adapters/`. It is the only
 file to edit for permissions.
 
 ## Top level

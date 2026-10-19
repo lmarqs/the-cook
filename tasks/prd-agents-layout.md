@@ -2,10 +2,10 @@
 
 ## Overview
 
-The `io.github.lmarqs:agents` cookbook sets up the files coding agents read in a repository. Teams work with it in
-several ways at once: one person runs Claude Code at the keyboard, another leaves Codex running unattended, a third
-has Claude coordinate Codex workers through ralph-tui. Today's layout serves one person and one harness well and
-breaks down in a team:
+The `io.github.lmarqs.cookbook:agents` cookbook sets up the files coding agents read in a repository. Teams work with
+it in several ways at once: one person runs Claude Code at the keyboard, another leaves Codex running unattended, a
+third has Claude coordinate Codex workers through ralph-tui. Today's layout serves one person and one harness well
+and breaks down in a team:
 
 - `.claude/` is ignored as a whole, so a fresh clone, a cloud session or CI gets no shared setup until someone cooks;
 - `Claude.permit` imposes `defaultMode: acceptEdits` on everyone;
@@ -19,7 +19,7 @@ understand its reasoning. The layout guides; it does not control what people do 
 ([ADR 0028](../docs/adrs/0028-place-of-the-tool.md)).
 
 Tracking issue: #38. A hand-written mock-up of the target is in `cooked/agentic/seed` (untracked; read only; it
-predates some decisions, and US-011 lists where the result differs). Drafts of the skill are in
+predates some decisions, and US-012 lists where the result differs). Drafts of the skill are in
 `tasks/agents-layout-draft/agents-layout/`.
 
 ## Goals
@@ -102,7 +102,34 @@ a `.claude/skills` link, so that the layout links only what a harness cannot fin
 - [ ] `claude -p "List the skills available to you, names only."` is run; pass means `probe` is listed.
 - [ ] The result and the Claude Code version are posted on issue #38.
 
-### US-004: Both harnesses read AGENTS.md natively
+### US-004: Cookbook group io.github.lmarqs.cookbook
+
+**Description:** As a cookbook user, I want this repository's cookbook artifacts under the group
+`io.github.lmarqs.cookbook`, so that they are told apart from the engine's own artifacts
+(`io.github.lmarqs:the-cook-*`).
+
+**Acceptance Criteria:**
+- [ ] `cookbook/cookbook.toml` sets `group = "io.github.lmarqs.cookbook"`. The group is one per cookbook, so every
+      artifact moves: `agents`, `aws`, `beads`, `cook`, `docker`, `git`, `github`, `go`, `mise`, `node`, `python`,
+      `ralph` and `terraform`.
+- [ ] Every model's package becomes `io.github.lmarqs.cookbook.<directory>`, as `cookbook/README.md` requires (a
+      model's package is its cookbook's group plus its directory name), and every recipe, test and doc import
+      follows.
+- [ ] Every coordinate `io.github.lmarqs:<artifact>` of a cookbook artifact becomes
+      `io.github.lmarqs.cookbook:<artifact>`, in recipe help and yield texts, `README.md`, `cookbook/README.md`,
+      `docs/`, the ADR examples (corrected in place, no status label), the example in the error message of
+      `core/src/main/groovy/thecook/cookbook/Coordinates.groovy`, and tests.
+- [ ] The Central bundle check in `build.gradle` expects `io/github/lmarqs/cookbook/agents/<v>/agents-<v>`.
+- [ ] Untouched: `io.github.lmarqs:the-cook-core`, `the-cook-infra`, `the-cook-plugin`, and the plugin id
+      `io.github.lmarqs.cookbook` with its marker artifact `io.github.lmarqs.cookbook.gradle.plugin`.
+- [ ] With `a='(agents|aws|beads|cook|docker|git|github|go|mise|node|python|ralph|terraform)'`,
+      `grep -rnE "io\.github\.lmarqs[:.]$a\b" --exclude-dir={build,.gradle,cooked,.git,.beads} .` returns nothing
+      (in zsh or bash).
+- [ ] `./cook help io.github.lmarqs.cookbook:agents:0.0.0` lists the agents recipes.
+- [ ] `tasks/agents-layout-draft/` uses the new coordinates too.
+- [ ] Commit type `feat(cookbook)!:`.
+
+### US-005: Both harnesses read AGENTS.md natively
 
 **Description:** As a team member using either harness, I want Claude and Codex to read the root `AGENTS.md` by
 themselves, with no instruction file of their own, so that both get the same instructions.
@@ -129,7 +156,7 @@ themselves, with no instruction file of their own, so that both get the same ins
       returns nothing. (`CoordinatesTest` parses the string only and stays.)
 - [ ] Commit type `feat(cookbook)!:`.
 
-### US-005: Policy version 2 model at .agents/permission/policy.yaml
+### US-006: Policy version 2 model at .agents/permission/policy.yaml
 
 **Description:** As a team, I want `.agents/permission/policy.yaml` version 2 to express commands, tools,
 alternatives, harness-only rules and roles, so that one reviewed file holds the whole agreement.
@@ -146,16 +173,16 @@ alternatives, harness-only rules and roles, so that one reviewed file holds the 
       `allow` or `ask` inside a role is refused with a message saying a role only adds denies.
 - [ ] `Agents.policy()` reads `.agents/permission/policy.yaml`, and `starterPolicy()` seeds that path.
 - [ ] `cookbook/agents/policy.template.yaml` becomes `version: 2` with no `instructions` field; its full comments
-      come in US-006.
+      come in US-007.
 - [ ] `Policy.instructions` is gone, and `cookbook/cook/setup.groovy` no longer calls `agents.policy().instructions`.
-- [ ] Plain prefixes render as before. Rendering of alternatives, harness entries, tools and roles lands in US-007
-      and US-008, and no test asserts it in this story.
+- [ ] Plain prefixes render as before. Rendering of alternatives, harness entries, tools and roles lands in US-008
+      and US-009, and no test asserts it in this story.
 - [ ] `cooked/` is not committed, so no test reads it; a test that needs the mock-up's policy or output holds a copy.
 - [ ] Tests in `CookbookCookTest` (using its `publishDirectory`, `cook` and `kitchen` helpers) cover a valid policy
       with every form, each refusal above with its message, and `version: 1` refused.
 - [ ] Commit type `feat(cookbook)!:`.
 
-### US-006: Starter policy version 2
+### US-007: Starter policy version 2
 
 **Description:** As a new user, I want the seeded policy to explain every field with commented examples and grant
 nothing, so that I can fill it in without reading code.
@@ -170,7 +197,7 @@ nothing, so that I can fill it in without reading code.
 - [ ] Parsed as is, it renders empty Claude `allow`, `ask` and `deny` lists and no Codex command rules.
 - [ ] The test asserting the seeded text equals the template uses `.agents/permission/policy.yaml`.
 
-### US-007: Claude rendering
+### US-008: Claude rendering
 
 **Description:** As a Claude user, I want the policy rendered into Claude's settings with no personal choice imposed,
 so that Claude enforces exactly what the team agreed.
@@ -187,7 +214,7 @@ so that Claude enforces exactly what the team agreed.
       `defaultMode`.
 - [ ] Commit type `feat(cookbook)!:` (kitchens lose `defaultMode`).
 
-### US-008: Codex rendering
+### US-009: Codex rendering
 
 **Description:** As a Codex user, I want the same policy rendered into Codex rules, with any gap made visible, so
 that the two harnesses differ only where Codex cannot express a rule.
@@ -206,7 +233,7 @@ that the two harnesses differ only where Codex cannot express a rule.
       `decision` (run by hand, noted in the issue comment).
 - [ ] Tests cover nested patterns, the Claude-only comment and the role outcome.
 
-### US-009: Committed links and the ignore section
+### US-010: Committed links and the ignore section
 
 **Description:** As a team, I want the harness links committed and everything else in `.claude/` and `.codex/`
 ignored, with the files that make Claude skip `AGENTS.md` kept out of commits, so that a fresh clone works and the
@@ -228,7 +255,7 @@ shared state stays clean.
       `.claude/worktrees/x`, `CLAUDE.md`, `CLAUDE.local.md` and `sub/.claude/CLAUDE.md` are ignored.
 - [ ] Commit type `feat(cookbook)!:`.
 
-### US-010: The agents-layout skill replaces the placeholder skills
+### US-011: The agents-layout skill replaces the placeholder skills
 
 **Description:** As a user of the artifact, I want it to ship the one skill that explains the layout instead of
 three placeholders, so that every repository with the layout carries its own guide.
@@ -237,28 +264,30 @@ three placeholders, so that every repository with the layout carries its own gui
 - [ ] `cookbook/agents/skills/solid/`, `hexagonal-layout/` and `effective-java-core/` are deleted.
 - [ ] `cookbook/agents/skills/agents-layout/` holds `SKILL.md` and `references/policy.md` from
       `tasks/agents-layout-draft/agents-layout/`, without the advice to put Claude-only notes in `.claude/rules/`
-      (US-012 completes them).
+      (US-013 completes them).
 - [ ] `#connect` installs it as owned whole files under `.agents/skills/agents-layout/`.
 - [ ] The `Agents.skills` doc comment names `agents-layout` as the packaged skill; any other name is still refused.
 - [ ] `cookbook/cook/setup.groovy` no longer adds the placeholder skills or the instruction lines naming them.
-- [ ] `cookbook/agents/README.md`, whose opening paragraph `./cook help io.github.lmarqs:agents:0.0.0` prints,
+- [ ] `cookbook/agents/README.md`, whose opening paragraph `./cook help io.github.lmarqs.cookbook:agents:0.0.0` prints,
       describes the artifact without coding skills.
 - [ ] Tests that used `solid` use `agents-layout`, and a test asserts `#connect` writes
       `.agents/skills/agents-layout/SKILL.md` equal to the packaged file.
 - [ ] Commit type `feat(cookbook)!:`.
 
-### US-011: End-to-end check
+### US-012: End-to-end check
 
 **Description:** As the implementer, I want to prove what Cook writes for a real kitchen, so that the skill and docs
 describe what Cook actually does.
 
 **Acceptance Criteria:**
 - [ ] In a `mktemp -d` git repository whose `cook.toml` is
-      `repositories = ["<absolute path of this checkout>/cookbook"]`: `./cook -C <kitchen> --batch-approve io.github.lmarqs:agents:0.0.0#seed`, then
+      `repositories = ["<absolute path of this checkout>/cookbook"]`:
+      `./cook -C <kitchen> --batch-approve io.github.lmarqs.cookbook:agents:0.0.0#seed`, then
       `cooked/agentic/seed/.agents/permission/policy.yaml` copied to `.agents/permission/policy.yaml`, then
-      `./cook -C <kitchen> --batch-approve io.github.lmarqs:agents:0.0.0#connect --harness=claude --harness=codex`.
-- [ ] The kitchen has exactly the links US-009 names, `.agents/skills/agents-layout/SKILL.md`, the rendered files
-      US-007 and US-008 name, and no `CLAUDE.md` at any path.
+      `./cook -C <kitchen> --batch-approve io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
+      --harness=codex`.
+- [ ] The kitchen has exactly the links US-010 names, `.agents/skills/agents-layout/SKILL.md`, the rendered files
+      US-008 and US-009 name, and no `CLAUDE.md` at any path.
 - [ ] Each difference from `cooked/agentic/seed` is listed in the issue comment with the decision or spike that
       causes it. Expected: no `.claude/hooks`, `.claude/memory` or `.codex/hooks` links; no `!/.claude/rules`,
       `!/.claude/hooks`, `!/.claude/memory` or `!/.codex/hooks` lines; the section markers; the role files as the
@@ -266,13 +295,13 @@ describe what Cook actually does.
 - [ ] After a line with a made-up word is added to `AGENTS.md`, `claude -p` run in the kitchen answers that word.
 - [ ] `codex execpolicy check --rules .agents/adapters/codex/rules/cook.rules git push -f origin main` prints
       `"decision":"forbidden"`, and `git status` gives `"decision":"allow"`.
-- [ ] `./cook help io.github.lmarqs:agents:0.0.0`, run in this checkout, lists exactly `claude-settings`,
+- [ ] `./cook help io.github.lmarqs.cookbook:agents:0.0.0`, run in this checkout, lists exactly `claude-settings`,
       `codex-settings`, `connect`, `permissions` and `seed`.
 - [ ] `grep -rnE 'agents(:[^#[:space:]]*)?#instructions|adapters/claude/CLAUDE\.md|\.agents/policy\.yaml' cookbook
       --include='*.groovy'` returns nothing.
 - [ ] No commit is required unless a defect is found; a fix is committed under the story it belongs to.
 
-### US-012: The agents-layout skill content
+### US-013: The agents-layout skill content
 
 **Description:** As someone working in a repository with the layout, I want a skill that tells me where a change
 goes, why, how to adopt the layout and how to investigate misuse, with concrete examples, so that I can work in my
@@ -312,11 +341,11 @@ own way without breaking the team's setup.
       - that the policy is a guardrail, not enforcement, linking ADR 0028 by its GitHub URL, since the skill is
         installed in other repositories.
 - [ ] Every command the skill cites exists in the installed `claude --help`, `codex --help`, `codex exec --help` or
-      `./cook --help`, or is a recipe `./cook help io.github.lmarqs:agents:0.0.0` lists.
+      `./cook --help`, or is a recipe `./cook help io.github.lmarqs.cookbook:agents:0.0.0` lists.
 - [ ] Unverified behavior is labelled as such; spike outcomes are stated as found.
 - [ ] `tasks/agents-layout-draft/` is deleted in this story's commit.
 
-### US-013: Seeded README and project docs
+### US-014: Seeded README and project docs
 
 **Description:** As a reader of the repository's docs, I want them to describe the layout as it now is, so that no
 page sends people to `#instructions`, `.agents/adapters/claude/CLAUDE.md` or the old policy path.
@@ -361,6 +390,8 @@ page sends people to `#instructions`, `.agents/adapters/claude/CLAUDE.md` or the
 
 ## Technical Considerations
 
+- Maven Central verified the namespace `io.github.lmarqs`; publishing under `io.github.lmarqs.cookbook` relies on a
+  verified namespace covering its sub-groups (unverified here; check before the first release).
 - The engine's tests use the agents cookbook as a fixture (`CookbookCookTest`); the `kitchen()` helper is a plain
   temporary folder, not a git repository.
 - `File.deleteDir()` follows symbolic links into `.agents/`; tests that clean a kitchen with links use the

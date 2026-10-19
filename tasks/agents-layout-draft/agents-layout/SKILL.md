@@ -19,7 +19,7 @@ AGENTS.md                         instructions for every agent; Claude and Codex
 .claude/  .codex/                 committed links into .agents/, plus each person's local files
 ```
 
-Cook's `io.github.lmarqs:agents` recipes write it: `#seed` creates it and `#connect` renders the policy and makes the
+Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it and `#connect` renders the policy and makes the
 links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
 
 The layout cannot decide how people work; anyone can override it on their own machine. It guides: shared changes
@@ -56,7 +56,7 @@ commands:
 ```
 
 ```sh
-./cook io.github.lmarqs:agents:<version>#connect --harness=claude --harness=codex
+./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
 git add .agents cook.lock && git commit
 ```
 
