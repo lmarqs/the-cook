@@ -47,7 +47,7 @@ class Agents {
   private boolean instructionsUsed = false
   private boolean policyUsed = false
   private boolean layoutUsed = false
-  private List<String> localDirectories = []
+  private List<Harness> ignoredHarnesses = []
 
   /**
    * Requests the seeds of `AGENTS.md`, `.agents/permission/policy.yaml` and the shared layout, written only when absent
@@ -113,11 +113,12 @@ class Agents {
   }
 
   /**
-   * Ignores each harness's local directory in Git, such as `/.claude/`: it holds only links Cook makes and files the
-   * harness writes locally, so it can be deleted and cooked again.
+   * Keeps each harness's local directory, such as `.claude/`, out of Git except for the links Cook makes there, so a
+   * fresh clone reads the shared setup with no cooking while the files the harness writes locally stay out of commits.
+   * Also keeps out the files that would make a harness skip the shared setup.
    */
   void ignoreLocalDirectories(Collection<Harness> harnesses) {
-    harnesses.each { localDirectories << ignored(it) }
+    ignoredHarnesses = (ignoredHarnesses + harnesses).unique()
   }
 
   /**
@@ -163,11 +164,18 @@ class Agents {
   List<String> instructionsSection() { instructions ?: null }
 
   /**
-   * The `harnesses` section of `.gitignore`, one pattern per local directory `ignoreLocalDirectories` was given, such
-   * as `/.claude/`.
+   * The `harnesses` section of `.gitignore`: for each harness `ignoreLocalDirectories` was given, its local directory's
+   * contents, such as `/.claude/*`, then a negation per link Cook makes there, such as `!/.claude/skills`; then the
+   * files each harness would read in place of the shared setup.
    */
   @Section(path = '.gitignore', id = 'harnesses')
-  List<String> ignoredDirectories() { localDirectories.unique() ?: null }
+  List<String> ignoredDirectories() {
+    def lines = ignoredHarnesses.collectMany { harness ->
+      def local = ignored(harness)
+      ["${local}*"] + harness.linkNames.collect { "!${local}${it}" }
+    } + ignoredHarnesses.collectMany { it.ignoredFiles }
+    lines*.toString() ?: null
+  }
 
   /** Whole files under `.agents/skills/<name>/`, when skills are added. */
   @Files(path = '.agents/skills')
@@ -204,6 +212,15 @@ interface Harness {
 
   /** Renders the shared policy into the harness's own permission model. */
   void permit(Policy policy)
+
+  /** The names of the links Cook makes in the local directory, such as `settings.json`, which stay in Git. */
+  List<String> getLinkNames()
+
+  /**
+   * `.gitignore` lines, a comment saying why first, for files the harness would read in place of the shared setup;
+   * empty when there are none.
+   */
+  List<String> getIgnoredFiles()
 
   /**
    * Makes the harness read the shared directories it supports, keyed by name, such as `skills` or `hooks`, each at a

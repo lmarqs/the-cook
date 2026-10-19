@@ -64,8 +64,6 @@ recipes:
           path: ["permissions"]
       links:
         - ".claude/commands"
-        - ".claude/hooks"
-        - ".claude/memory"
         - ".claude/settings.json"
         - ".claude/skills"
   - name: "io.github.lmarqs.cookbook:agents#seed"
@@ -387,6 +385,42 @@ worker [[git, [commit, push]]]
     assert !new File(kitchen, '.agents/adapters/codex/roles').exists()
   }
 
+  @Test void commitsTheHarnessLinksAndKeepsEverythingElseInTheirDirectoriesOutOfGit() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    assert ['git', 'init', '-q', kitchen.path].execute().waitFor() == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    new File(kitchen, '.agents/permission/policy.yaml').text = fixture('policy.yaml')
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+
+    assert new File(kitchen, '.gitignore').text == '''\
+# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+/.claude/*
+!/.claude/settings.json
+!/.claude/skills
+!/.claude/commands
+/.codex/*
+!/.codex/config.toml
+!/.codex/rules
+# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
+CLAUDE.md
+CLAUDE.local.md
+**/.claude/CLAUDE.md
+# cook:end io.github.lmarqs.cookbook:agents#connect/harnesses
+'''
+    def ignored = { String path ->
+      ['git', '-C', kitchen.path, 'check-ignore', '-q', '--no-index', path].execute().waitFor() == 0
+    }
+    ['.claude/settings.json', '.claude/skills', '.claude/commands', '.codex/config.toml', '.codex/rules'].each {
+      assert Files.isSymbolicLink(new File(kitchen, it).toPath())
+      assert !ignored(it)
+    }
+    ['.claude/hooks', '.claude/memory', '.codex/hooks'].each { assert !new File(kitchen, it).exists() }
+    ['.claude/settings.local.json', '.claude/worktrees/x', 'CLAUDE.md', 'CLAUDE.local.md', 'sub/.claude/CLAUDE.md']
+    .each { assert ignored(it) }
+  }
+
   @Test void seedsTheSharedLayoutAndConnectsHarnessesThroughDirectoriesThatCanBeDeleted() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
@@ -409,17 +443,14 @@ worker [[git, [commit, push]]]
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
       '.claude/commands',
-      '.claude/hooks',
-      '.claude/memory',
       '.claude/settings.json',
       '.claude/skills',
       '.codex/config.toml',
-      '.codex/hooks',
       '.gitignore',
       'cook.lock'
     ]
     connected.commit()
-    assert new File(kitchen, '.gitignore').text.contains('/.claude/\n/.codex/\n')
+    assert new File(kitchen, '.gitignore').text.contains('/.claude/*\n')
     // Both harnesses read `AGENTS.md` natively, so the layout writes no instruction file of its own.
     def files = []
     kitchen.eachFileRecurse(groovy.io.FileType.FILES) { files << it.name }
@@ -427,8 +458,7 @@ worker [[git, [commit, push]]]
     assert !new File(kitchen, 'AGENTS.md').text.contains('#codex')
     assert Files.readSymbolicLink(new File(kitchen, '.codex/config.toml').toPath()).toString() ==
     '../.agents/adapters/codex/config.toml'
-    assert Files.readSymbolicLink(new File(kitchen, '.claude/memory').toPath()).toString() == '../.agents/memory'
-    assert new File(kitchen, '.codex/hooks/.gitkeep').isFile()
+    assert Files.readSymbolicLink(new File(kitchen, '.claude/commands').toPath()).toString() == '../.agents/commands'
     assert connect().changes == []
 
     // `File.deleteDir` would follow the links into `.agents/`; `rm -rf` does not, and neither does this.
@@ -438,14 +468,8 @@ worker [[git, [commit, push]]]
           .each { Files.delete(it) }
     }
     def again = connect()
-    def links = [
-      '.claude/commands',
-      '.claude/hooks',
-      '.claude/memory',
-      '.claude/settings.json',
-      '.claude/skills'
-    ]
-    assert again.changes == links + ['.codex/config.toml', '.codex/hooks']
+    def links = ['.claude/commands', '.claude/settings.json', '.claude/skills']
+    assert again.changes == links + ['.codex/config.toml']
     again.commit()
     // How a session asks is each person's choice, so the shared settings leave out `defaultMode`.
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions ==

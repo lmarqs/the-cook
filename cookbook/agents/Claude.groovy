@@ -8,8 +8,10 @@ package io.github.lmarqs.cookbook.agents
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `allow`, `ask` and `deny` lists of `Bash(<prefix> *)`
  * rules and tool patterns. One file per policy role under `.agents/adapters/claude/roles/`, holding only that role's
- * `permissions.deny`, which a run adds with `claude --settings <file>`. Symbolic links from `.claude/skills`, `.claude/commands`, `.claude/hooks` and
- * `.claude/memory` to the shared directories complete the project setup. Claude Code reads `AGENTS.md` natively.
+ * `permissions.deny`, which a run adds with `claude --settings <file>`. Symbolic links from `.claude/skills` and
+ * `.claude/commands` to the shared directories complete the project setup: Claude Code finds skills and commands only
+ * there. Hooks and memory are reached by their paths from the repository root, so they need no link, and Claude Code
+ * reads `AGENTS.md` natively.
  * `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
  * ## Instances
@@ -51,6 +53,17 @@ class Claude implements Harness {
   final List<String> localFiles = ['/.claude/settings.local.json']
 
   /**
+   * The instruction files that make Claude Code skip `AGENTS.md` while any of them exists in the directory or above,
+   * after a comment saying so.
+   */
+  final List<String> ignoredFiles = [
+    '# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.',
+    'CLAUDE.md',
+    'CLAUDE.local.md',
+    '**/.claude/CLAUDE.md',
+  ]
+
+  /**
    * Sets `permissions` from the shared policy: under `allow`, `ask` and `deny`, one `Bash(<words> *)` rule per
    * combination of a command entry's alternatives, `Bash(<pattern>)` for a Claude-only command entry, and each tool
    * pattern as it is. Writes one deny file per role. Sets no `defaultMode`: how a session asks is each person's choice.
@@ -66,10 +79,17 @@ class Claude implements Harness {
   /** Adds top-level settings keys, hooks included; a supplied key replaces its earlier value whole. */
   void settings(Map more) { settings += more }
 
-  /** Links `.claude/<name>` to each shared directory; each path is relative to this instance's directory. */
+  /**
+   * Links `.claude/skills` and `.claude/commands` to the shared directories of those names, the only ones Claude Code
+   * finds by a fixed path; each path is relative to this instance's directory.
+   */
   void readDirectories(Map<String, String> paths) {
-    paths.each { name, path -> directoryLinks[name] = "../${path}".toString() }
+    paths.findAll { name, path -> name in ['skills', 'commands'] }
+    .each { name, path -> directoryLinks[name] = "../${path}".toString() }
   }
+
+  /** `settings.json` when settings are set, then each shared directory linked. */
+  List<String> getLinkNames() { (settings ? ['settings.json'] : []) + directoryLinks.keySet() }
 
   /**
    * Each supplied top-level key of `.agents/adapters/claude/settings.json`, owned whole, when settings or permissions

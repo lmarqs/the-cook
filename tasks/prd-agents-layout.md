@@ -226,8 +226,7 @@ that the two harnesses differ only where Codex cannot express a rule.
 - [ ] Each `claude` entry under `commands` renders a comment line in the `commands` section:
       `# Not enforced by Codex, Claude-only: <pattern>`. `tools` render nothing for Codex.
 - [ ] For the mock-up's policy, the lines between the markers of the `commands` section equal those of
-      `cooked/agentic/seed/.agents/adapters/codex/rules/cook.rules` (a test holds both as copies; the markers differ,
-      since the mock-up uses a deferred marker format).
+      `cooked/agentic/seed/.agents/adapters/codex/rules/cook.rules` (a test holds both as copies).
 - [ ] Roles render according to US-002: on pass, `.agents/adapters/codex/roles/<role>.rules` and whatever the
       working selector needs; on fail, no Codex role files.
 - [ ] Every rendered rules file loads: `codex execpolicy check --rules <file> git status` prints JSON with a
@@ -291,7 +290,7 @@ describe what Cook actually does.
       US-008 and US-009 name, and no `CLAUDE.md` at any path.
 - [ ] Each difference from `cooked/agentic/seed` is listed in the issue comment with the decision or spike that
       causes it. Expected: no `.claude/hooks`, `.claude/memory` or `.codex/hooks` links; no `!/.claude/rules`,
-      `!/.claude/hooks`, `!/.claude/memory` or `!/.codex/hooks` lines; the section markers; the role files as the
+      `!/.claude/hooks`, `!/.claude/memory` or `!/.codex/hooks` lines; the role files as the
       spikes decided; `.claude/settings.local.json`, a hand-written example; the README.
 - [ ] After a line with a made-up word is added to `AGENTS.md`, `claude -p` run in the kitchen answers that word.
 - [ ] `codex execpolicy check --rules .agents/adapters/codex/rules/cook.rules git push -f origin main` prints
@@ -383,8 +382,8 @@ page sends people to `#instructions`, `.agents/adapters/claude/CLAUDE.md` or the
 - A new ADR. The layout is cookbook content ([ADR 0013](../docs/adrs/0013-organization-content.md)), and
   `docs/adrs/README.md` excludes features and file fields from the corpus; the reasoning lives in the skill's
   `references/design.md`.
-- A sandbox field in the policy, a hook declaration shared by both harnesses, `cook --check`, the
-  `#connect/instructions` marker format, and a generated launch table; each is separate work.
+- A sandbox field in the policy, a hook declaration shared by both harnesses, `cook --check`, and a generated launch
+  table; each is separate work.
 - Enforcing anything on a person's machine: no hooks or checks against personal files.
 - Fixing the hard-coded `0.1.0` in recipe help and yield text.
 - Changing the engine (`core/src/main`).

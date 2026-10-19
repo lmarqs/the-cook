@@ -1,8 +1,8 @@
 @help('''
 Connects each selected harness to the shared agent layout: renders the shared policy into its settings under
 `.agents/adapters/<harness>/` and links its own directory, `.claude/` or `.codex/`, to those files and to the shared
-directories. Each harness reads `AGENTS.md` natively. The harness directories hold only links and local files and are
-ignored in Git, so they can be deleted and cooked again.
+directories. Each harness reads `AGENTS.md` natively, and hooks and memory are reached by their paths. The links are
+committed, so a fresh clone needs no cooking; everything else in the harness directories is ignored in Git.
 
 ## Before cooking
 
@@ -26,12 +26,11 @@ Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` t
 | `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles |
-| `.claude/skills`, `commands`, `hooks`, `memory` | Links to the directories of the same names in `../.agents/` | `--harness=claude` |
+| `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude finds skills and commands | `--harness=claude` |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |
 | `.agents/adapters/codex/rules/cook.rules` | The section `commands` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
-| `.codex/hooks` | A link to `../.agents/hooks`; Codex reads `.agents/skills` natively | `--harness=codex` |
-| `.gitignore` | The section `harnesses`: `/.claude/`, `/.codex/` for the selected harnesses | Always |
+| `.gitignore` | The section `harnesses`: each selected harness's directory ignored except the links above, which are committed, and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always |
 
 Cooking with fewer harnesses removes the outputs of the ones left out.
 
