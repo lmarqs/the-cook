@@ -10,17 +10,6 @@ import java.security.MessageDigest
 class Repository {
   final File directory
   Repository(File directory) {
-    def path = directory.toPath()
-        .toAbsolutePath()
-        .normalize()
-    def part = path.root
-    path.each { segment ->
-      part = part.resolve(segment)
-
-      if (Files.isSymbolicLink(part)) {
-        throw new IllegalArgumentException('Symlink repository root or ancestor')
-      }
-    }
     this.directory = directory.canonicalFile
   }
   File target(String relative, boolean allowLeafLink = false) {

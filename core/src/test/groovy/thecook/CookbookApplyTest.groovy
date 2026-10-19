@@ -193,6 +193,17 @@ Run with --force to replace them, or --skip to keep them.'''
     assert Files.isSymbolicLink(new File(kitchen, 'CLAUDE.md').toPath())
   }
 
+  @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
+    def real = folder.newFolder('real')
+    def linked = new File(folder.root, 'linked')
+    Files.createSymbolicLink(linked.toPath(), real.toPath())
+    def kitchen = new File(linked, 'kitchen'); kitchen.mkdirs()
+    publishDirectory(kitchen, 'agents')
+
+    apply(kitchen, 'io.github.lmarqs:agents:0.1.0#instructions', [harness: ['claude']]).commit()
+    assert new File(real, 'kitchen/CLAUDE.md').text.contains('@AGENTS.md')
+  }
+
   @Test void refusesASecondAgentsImportInClaudeInstructions() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
