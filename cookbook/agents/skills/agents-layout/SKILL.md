@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Explains the shared .agents/ layout that lets several people run Claude Code and Codex in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills, commands, hooks or memory, investigate an agent that ignores the setup or does something the team did not expect, or understand why the layout is shaped as it is. Not for the repository's own code.
+description: Explains the shared .agents/ layout that lets several people run Claude Code and Codex in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Not for the repository's own code, and not for a person's own harness settings outside this repository.
 ---
 
 # Agents layout
@@ -8,6 +8,16 @@ description: Explains the shared .agents/ layout that lets several people run Cl
 One repository, many ways of working: one person runs Claude at the keyboard, another leaves Codex working alone,
 a third has Claude coordinate Codex workers through an orchestrator. The layout gives all of them the same knowledge
 and the same agreed permissions, and leaves each run free to pick its harness, model, mode and role.
+
+## Three owners
+
+Every file here has one owner. Most surprises come from editing a file someone else owns.
+
+| Owner | Files | Changed by |
+| --- | --- | --- |
+| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/`, `memory/`, `.agents/README.md` | Editing and committing, through review |
+| Cook | `.agents/adapters/`, the links in `.claude/` and `.codex/`, the `harnesses` section of `.gitignore`, `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
+| Each person | `~/.claude/`, `.claude/settings.local.json`, `~/.codex/` | Nobody else; Cook never writes them and git ignores them |
 
 ```text
 AGENTS.md                         instructions for every agent; Claude and Codex read it directly
@@ -19,8 +29,8 @@ AGENTS.md                         instructions for every agent; Claude and Codex
 .claude/  .codex/                 committed links into .agents/, plus each person's local files
 ```
 
-Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it and `#connect` renders the policy and makes the
-links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
+Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it and `#connect` renders the policy and
+makes the links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
 
 The layout cannot decide how people work; anyone can override it on their own machine. It guides: shared changes
 reach every agent when they go where every agent reads them, and personal ones stay out of the team's files.
@@ -59,8 +69,9 @@ commands:
 git add .agents cook.lock && git commit
 ```
 
-The diff shows `Bash(./gradlew test *)` added to `.agents/adapters/claude/settings.json` and a `prefix_rule` added to
-`.agents/adapters/codex/rules/cook.rules`, and nothing else.
+The diff adds `Bash(./gradlew test *)` to `.agents/adapters/claude/settings.json` and a `prefix_rule` to
+`.agents/adapters/codex/rules/cook.rules`, and `cook.lock` records them. The first command entry also creates that
+rules file, its `.codex/rules` link and the `.gitignore` line that commits the link.
 
 ## Guidance
 

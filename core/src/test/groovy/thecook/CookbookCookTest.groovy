@@ -64,6 +64,9 @@ recipes:
           path: ["permissions"]
       files:
         - ".agents/skills/agents-layout/SKILL.md"
+        - ".agents/skills/agents-layout/references/adopt.md"
+        - ".agents/skills/agents-layout/references/design.md"
+        - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
       links:
         - ".claude/commands"
@@ -450,6 +453,9 @@ CLAUDE.local.md
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
       '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.claude/commands',
       '.claude/settings.json',
@@ -506,6 +512,9 @@ agents.connect([claude])
     def fewer = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#skill-check', [:])
     assert fewer.changes == [
       '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.claude/skills',
       'cook.lock',

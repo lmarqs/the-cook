@@ -67,9 +67,15 @@ express the rule, because a prefix reaches every harness.
 | --- | --- | --- | --- |
 | `deny` | List of entries | Yes | Commands this kind of run never runs, on top of `commands` |
 
-A role name is lower case with hyphens, such as `worker`; it names the role's files. A role only adds denies, so a run
-in a role does at most what any session does. Claude gets `.agents/adapters/claude/roles/<role>.json`, added at launch
-with `claude --settings`. Codex gets `.agents/adapters/codex/roles/<role>.rules`; a way to add it per run is pending.
+A role name holds lower-case letters, digits and hyphens and starts with a letter, such as `worker`; it names the
+role's files. A role only adds denies, so a run in a role does at most what any session does.
+
+| Harness | Renders | Run in the role |
+| --- | --- | --- |
+| Claude | `.agents/adapters/claude/roles/<role>.json`, holding only `permissions.deny` | `claude --settings .agents/adapters/claude/roles/<role>.json` |
+| Codex | Nothing | Not possible: Codex 0.160.1 has no option that adds a rules file to one run, so a Codex run gets `commands` only |
+
+A deny from `--settings` wins over an allow in the project settings: tested with Claude Code 2.1.303.
 
 ## Examples
 
@@ -119,12 +125,19 @@ tools:
     - claude: "mcp__datadog__search_*"
 ```
 
-### Mistakes this format catches or prevents
+## Mistakes Cook refuses
 
-| Written | Result | Instead |
+Cook stops before writing anything and names the file and the field. Each message below starts with
+`.agents/permission/policy.yaml: `, after the recipe that read it.
+
+| Written | Cook prints | Instead |
 | --- | --- | --- |
-| `- git push` | Refused: an entry is a list of words or a harness entry | `- [git, push]` |
-| `- [git, "push --force"]` | Refused: a word holds no spaces | `- [git, push, --force]` |
-| `- [rm, "-rf", "*"]` | Refused: no wildcards in a prefix | `- [rm, -rf]`, or a `claude:` pattern |
-| `roles: {worker: {allow: [...]}}` | Refused: a role only denies | Add it to `commands.allow` for everyone |
-| `model: opus` at the top level | Refused: unknown field | Personal settings, or the orchestrator's config |
+| `- git push` | `commands.allow: git push is not an entry; write the literal words a command starts with, a nested list for alternatives of one word, or {claude: "<pattern>"}` | `- [git, push]` |
+| `- [git, "push --force"]` | `commands.allow: [git, push --force] is not an entry; ...` | `- [git, push, --force]` |
+| `- [rm, -rf, "*"]` | `commands.allow: [rm, -rf, *] is not an entry; ...` | `- [rm, -rf]`, or a `claude:` pattern |
+| `tools: {allow: [[git]]}` | `tools.allow: [git] is not a tool entry; write {claude: "<pattern>"}` | A shell command goes under `commands` |
+| `commands: {maybe: []}` | `commands has unknown decision [maybe]; use allow, ask or deny` | `allow`, `ask` or `deny` |
+| `roles: {worker: {allow: [[git]]}}` | `roles.worker: a role only adds denies; list them under deny, and keep allow and ask under commands` | Add it to `commands.allow` for everyone |
+| `roles: {Worker: ...}` | `roles: Worker is not a role name; use lower-case letters, digits and hyphens, starting with a letter` | `worker` |
+| `model: opus` | `unknown field [model]` | Personal settings, or the orchestrator's config |
+| `version: 1` | `version must be 2` | Move it by [adopt.md](adopt.md#a-version-1-agentspolicyyaml) |
