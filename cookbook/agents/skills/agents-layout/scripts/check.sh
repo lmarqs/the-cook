@@ -89,7 +89,7 @@ check_claude_files() {
   IFS=$newline
   for file in $inside; do
     fail "$file exists, and Claude skips AGENTS.md while it does" \
-      "move its lines into AGENTS.md, or a person's own into ~/.claude/CLAUDE.md, then delete it"
+      'move what the team needs into AGENTS.md, then delete it'
     found=1
   done
   IFS=$saved_ifs

@@ -69,8 +69,10 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/`, `memory/`, `.agents/README.md` | Editing and committing, through review |
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
 | Cook | `.agents/adapters/`, the links in `.claude/` and `.codex/`, the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
-| Each person | `~/.claude/`, `.claude/settings.local.json`, `~/.codex/` | Nobody else; Cook never writes them and git ignores them |
+| Each person | `.claude/settings.local.json` | Nobody else; Cook never writes it and git ignores it |
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
+
+External user settings may override this behavior.
 
 ```text
 AGENTS.md                         instructions for every agent; each harness reads it directly
@@ -130,7 +132,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Share a skill, slash command, hook script or durable fact | `.agents/skills/`, `commands/`, `hooks/` or `memory/` | Commit; the links expose it |
 | Run a shared hook script on a harness event | The `hooks` key of a JSON file cooked with `#claude-settings --settings=<file>`, and a JSON file cooked with `#codex-settings --hooks=<file>` | Cook, review, commit |
 | Change another shared harness setting, such as `env` | A JSON file cooked with `#claude-settings --settings=<file>`, or a TOML file cooked with `#codex-settings --config=<file>` | Cook, review, commit |
-| Change something for yourself | `~/.claude/`, `.claude/settings.local.json` or `~/.codex/` | Nothing to commit |
+| Change something for yourself | `.claude/settings.local.json` | Nothing to commit |
 | Choose the harness, model, mode or role of one run | The launch command, from Launching in `.agents/README.md` | Nothing to commit |
 
 For example, to let every agent run the test suite:
@@ -159,9 +161,8 @@ rules file and its `.codex/rules` link.
 
 - **Edit the policy, not what is rendered from it.** `.agents/adapters/` and the links come from `policy.yaml`. A hand
   edit reaches one harness only, and the next cook proposes undoing it.
-- **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists here
-  or in a directory above, Claude stops reading `AGENTS.md`. `.gitignore` keeps them out of commits; a local one still
-  affects whoever has it. Personal notes fit `~/.claude/CLAUDE.md`, which does not count.
+- **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists,
+  Claude stops reading `AGENTS.md`. `.gitignore` keeps them out of commits; a local one still affects whoever has it.
 - **Widen in `commands`, narrow in roles.** A role only adds denies, so a worker never gets more than a person at the
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
 - **Use `ask` sparingly.** Nobody answers in an unattended run, so an `ask` refuses there, and every unattended run that

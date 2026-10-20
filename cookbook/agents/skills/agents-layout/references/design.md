@@ -18,7 +18,7 @@ rest to each run.
 | Role | A person at the keyboard, an unattended worker, a reviewer | Per run | Launch flags that add `.agents/adapters/claude/roles/<role>.json` |
 | Model | Any the harness offers | Per person, or per role in a loop runner | Personal settings, the runner's configuration or `--model` |
 | Environment | Sandbox, machine, network, credentials | Per machine, or by the organization | The harness's sandbox, managed settings, the machine |
-| Person | Theme, default mode, standing approvals, personal notes | Each person | `~/.claude/`, `.claude/settings.local.json`, `~/.codex/` |
+| Person | Theme, default mode, standing approvals, personal notes | Each person | `.claude/settings.local.json` |
 
 Committed: knowledge, the policy, and Cook's rendering of it. Chosen per run: everything else. The test for a new
 setting is the same: if two people in the team could reasonably want different values, it is not shared.
@@ -34,8 +34,8 @@ directory that otherwise holds only links. A rule worth writing is worth giving 
 only for some tasks fits a skill, which both harnesses load on demand.
 
 `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` are ignored, because any of them makes Claude skip `AGENTS.md`
-(tested, including `CLAUDE.local.md`). `~/.claude/CLAUDE.md` does not, so it is where personal notes go. The cost: a
-person cannot keep notes for this repository alone in Claude without hiding the team's.
+(tested, including `CLAUDE.local.md`). The cost: a person cannot keep notes for this repository alone in Claude
+without hiding the team's.
 
 ## Links only where a harness reads a fixed path
 
@@ -108,7 +108,7 @@ A role needs a way for one run to add rules that another run does not get. Codex
 
 - `CODEX_PERMISSION_PROFILE` is a variable Codex sets for the commands it runs, not one that selects a profile.
 - `prefix_rules` in configuration exist only in `requirements.toml`, which an administrator controls.
-- `--profile <name>` layers `$CODEX_HOME/<name>.config.toml`, a file in the person's home, not in the repository.
+- `--profile <name>` layers a profile from the person's own configuration, not from the repository.
 - No option names a rules file; Codex loads the project's `.codex/rules` whole, or skips them with `--ignore-rules`.
 
 So Cook renders no Codex role, and a Codex run gets `commands` only. A team that runs Codex only as a worker can move

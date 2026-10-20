@@ -120,7 +120,7 @@ above, so the file has to go, not just stop being committed. This belongs to ste
    ```
 
 2. Move each line every agent needs into `AGENTS.md`. Drop `@AGENTS.md` imports and lines the README already says.
-   Lines that are one person's preference go to that person's `~/.claude/CLAUDE.md`.
+   Lines that are one person's preference leave the repository; hand them back to their author.
 3. Remove the files from git and from the disk. `.gitignore` does not untrack a committed file:
 
    ```sh
@@ -138,8 +138,7 @@ Run `pnpm test` before every commit.
 I prefer short answers.
 ```
 
-After: the first two rules are in `AGENTS.md`, the last line is in its author's `~/.claude/CLAUDE.md`, and
-`CLAUDE.md` is gone.
+After: the first two rules are in `AGENTS.md`, the last line is back with its author, and `CLAUDE.md` is gone.
 
 ### Claude path-scoped rules in .claude/rules/
 
@@ -183,8 +182,8 @@ This belongs to step 6, and the file has to go before step 7: `#connect` refuses
    | `Bash(git push * --force*)`, a wildcard in the middle | `claude: "git push * --force*"`; Codex does not enforce it |
    | `WebFetch(domain:docs.gradle.org)`, `mcp__github__get_*` | `claude: "<rule>"` under `tools` |
 
-2. Move every other key out of the file. `model` and `defaultMode` are each person's choice: their own
-   `~/.claude/settings.json`. Keys the team shares, such as `hooks` or `env`, go in a JSON file cooked with
+2. Move every other key out of the file. `model` and `defaultMode` are each person's choice and leave the
+   repository. Keys the team shares, such as `hooks` or `env`, go in a JSON file cooked with
    `io.github.lmarqs.cookbook:agents:<version>#claude-settings --settings=<file>`.
 3. `git rm .claude/settings.json`; `#connect` makes it a link to the adapter.
 4. After step 7, compare `.agents/adapters/claude/settings.json` with the removed file: every rule is

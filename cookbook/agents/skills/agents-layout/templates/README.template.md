@@ -18,7 +18,7 @@ investigate an agent that misbehaves, and why it is shaped this way.
 | `adapters/<harness>/` | The policy in each harness's own format; generated, never edited by hand | Cook |
 | `adapters/claude/roles/` | One file of denies per role, added at launch | Cook |
 | `/.claude/`, `/.codex/` links | Committed, so a fresh clone, a cloud session or CI reads the setup with no cooking | Cook |
-| `~/.claude/`, `~/.codex/`, `/.claude/settings.local.json` | Personal preferences and standing approvals | Each person; Cook never writes them |
+| `/.claude/settings.local.json` | Personal preferences and standing approvals | Each person; Cook never writes it |
 
 After editing `permission/policy.yaml`, cook the adapters again with every harness the team uses, using the version in
 `cook.lock`:
@@ -75,16 +75,13 @@ are.
 
 ## Personal settings
 
-Each person customizes in their harness's own files, never in this directory:
+Each person customizes in their harness's own settings, never in this directory. `.claude/settings.local.json` holds
+one person's settings for this project; Claude writes "don't ask again" approvals there. External user settings may
+override this behavior.
 
-- `~/.claude/settings.json`: default mode, theme, model, across every project.
-- `.claude/settings.local.json`: this project only. Claude writes "don't ask again" approvals here.
-- `~/.codex/config.toml` and `~/.codex/rules/`: the same for Codex.
-
-Claude reads `AGENTS.md` only while no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists here or in a
-directory above; any of them makes it skip `AGENTS.md`. `.gitignore` keeps them out of commits, so none reaches the
-team, but a local one still takes effect for whoever has it. Keep personal notes in `~/.claude/CLAUDE.md`, which does
-not count. Reading `AGENTS.md` needs Claude Code 2.1.277 or later.
+Claude reads `AGENTS.md` only while no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the repository;
+any of them makes it skip `AGENTS.md`. `.gitignore` keeps them out of commits, so none reaches the team, but a local
+one still takes effect for whoever has it. Reading `AGENTS.md` needs Claude Code 2.1.277 or later.
 
 This directory sets what the team shares, not what a person may do. A personal `allow` does not outrank a team `ask`
 or `deny`, but anyone can still override the shared setup on their machine: `claude --setting-sources user` skips the
