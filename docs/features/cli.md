@@ -169,7 +169,7 @@ shown in the diff:
 cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
   .codex/config.toml is a file, and this recipe makes it a link to ../.agents/adapters/codex/config.toml
     its contents would stop being read
-    move its contents into the inputs of #codex-settings, delete it, and cook again
+    move its contents into .agents/adapters/codex/config.toml, delete it, and cook again
 ```
 
 ## Batch options and approval

@@ -215,19 +215,20 @@ starters.second = 'second'
     assert section.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .gitignore section ' +
     'io.github.lmarqs.cookbook:agents#connect/harnesses\n  .gitignore is a symbolic link to OURS\n' +
     '    Cook writes sections and keys only into regular files'
+    assert Files.isSymbolicLink(new File(kitchen, '.gitignore').toPath())
 
+    new File(kitchen, '.gitignore').delete()
     new File(kitchen, '.agents/adapters/claude').mkdirs()
     new File(kitchen, '.agents/adapters/claude/shared.json').text = '{}\n'
     link('.agents/adapters/claude/settings.json', 'shared.json')
     def key = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']])
+      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
     }
-    assert key.message == 'io.github.lmarqs.cookbook:agents:0.1.0#permissions: .agents/adapters/claude/settings.json ' +
+    assert key.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/claude/settings.json ' +
     'key permissions\n  .agents/adapters/claude/settings.json is a symbolic link to shared.json\n' +
     '    Cook writes sections and keys only into regular files'
     assert new File(kitchen, '.agents/adapters/claude/shared.json').text == '{}\n'
     assert !new File(kitchen, 'cook.lock').exists()
-    assert Files.isSymbolicLink(new File(kitchen, '.gitignore').toPath())
   }
 
   @Test void refusesToReplaceAFileOrDirectoryItDoesNotOwnWithALink() {
@@ -241,7 +242,7 @@ starters.second = 'second'
     assert codex.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .codex/config.toml link\n' +
     '  .codex/config.toml is a file, and this ' +
     'recipe makes it a link to ../.agents/adapters/codex/config.toml\n    its contents would stop being read\n' +
-    '    move its contents into the inputs of #codex-settings, delete it, and cook again'
+    '    move its contents into .agents/adapters/codex/config.toml, delete it, and cook again'
     def forced = shouldFail(IllegalArgumentException) {
       new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
           .propose([request('io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])])
@@ -421,55 +422,33 @@ notes.set(features: [hooks: true])
     assert discarded.message.readLines()[0] == '.agents/adapters/claude/settings.json key permissions'
   }
 
-  @Test void claudeSettingsCooksWithAndWithoutItsSettingsFile() {
+  @Test void connectKeepsTheTeamsOwnKeysAndLinksTheCodexHooksFileOnceItExists() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings', [:]).changes == ['cook.lock']
-    def missing = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings', [settings: ['setup/claude.json']])
-    }
-    assert missing.message == 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings: setup/claude.json must exist'
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    def connect = { cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
+    connect().commit()
+    def settings = new File(kitchen, '.claude/settings.json')
+    def json = new groovy.json.JsonSlurper().parse(settings) +
+        [hooks: [Stop: [[hooks: [[type: 'command', command: '.agents/hooks/stop.sh']]]]], env: [CI: '1']]
+    settings.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)) + '\n'
+    def config = new File(kitchen, '.codex/config.toml')
+    config.append('\n[features]\nhooks = true\n')
+    new File(kitchen, '.agents/adapters/codex/hooks.json').text = '{"hooks": {}}\n'
+    def team = [settings.text, config.text]
 
-    new File(kitchen, 'setup').mkdirs()
-    new File(kitchen, 'setup/claude.json').text = '{"model": "opus"}\n'
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings', [settings: ['setup/claude.json']]).commit()
-    assert new File(kitchen, '.claude/settings.json').text == '{\n  "model": "opus"\n}\n'
-  }
+    def linked = connect()
 
-  @Test void codexSettingsCooksWithAndWithoutItsInputs() {
-    def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#codex-settings', [:]).changes == ['cook.lock']
-
-    new File(kitchen, 'setup').mkdirs()
-    new File(kitchen, 'setup/codex.toml').text = 'model = "o3"\n'
-    new File(kitchen, 'setup/codex-hooks.json').text = '{"hooks": {}}\n'
-    new File(kitchen, 'setup/git.rules').text = 'prefix_rule(pattern = ["git"])\n'
-    new File(kitchen, 'setup/npm.rules').text = 'prefix_rule(pattern = ["npm"])\n'
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#codex-settings', [
-      config: ['setup/codex.toml'], hooks: ['setup/codex-hooks.json'], rule: ['setup/git.rules', 'setup/npm.rules'],
-    ]).commit()
-    assert new File(kitchen, '.codex/config.toml').text == 'model = "o3"\n'
-    assert new File(kitchen, '.codex/hooks.json').text == '{\n  "hooks": {}\n}\n'
-    assert new File(kitchen, '.codex/rules/git.rules').text == 'prefix_rule(pattern = ["git"])\n'
-    assert new File(kitchen, '.codex/rules/npm.rules').text == 'prefix_rule(pattern = ["npm"])\n'
-  }
-
-  @Test void connectReincludesEveryLinkCodexSettingsMakesInTheIgnoreSection() {
-    def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    new File(kitchen, 'setup').mkdirs()
-    new File(kitchen, 'setup/codex-hooks.json').text = '{"hooks": {}}\n'
-    new File(kitchen, 'setup/git.rules').text = 'prefix_rule(pattern = ["git"])\n'
-
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#codex-settings', [
-      hooks: ['setup/codex-hooks.json'], rule: ['setup/git.rules'],
-    ]).commit()
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
-
+    assert linked.changes == ['.codex/hooks.json', 'cook.lock']
+    linked.commit()
+    assert Files.readSymbolicLink(new File(kitchen, '.codex/hooks.json').toPath()).toString() ==
+    '../.agents/adapters/codex/hooks.json'
+    assert [settings.text, config.text] == team
+    assert connect().changes == []
+    def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
+    assert lock.names == ['io.github.lmarqs.cookbook:agents#connect', 'io.github.lmarqs.cookbook:agents#seed'] as Set
     def ignore = new File(kitchen, '.gitignore').readLines()
     ['config.toml', 'hooks.json', 'rules'].each {
-      assert Files.isSymbolicLink(new File(kitchen, ".codex/${it}").toPath())
       assert ignore.indexOf("!/.codex/${it}".toString()) > ignore.indexOf('/.codex/*')
     }
   }
@@ -485,11 +464,11 @@ notes.set(features: [hooks: true])
     assert new File(real, 'kitchen/.claude/settings.json').text.contains('"permissions"')
   }
 
-  @Test void composesPermissionsAndTheSeedInOneInvocation() {
+  @Test void composesConnectAndTheSeedInOneInvocation() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose([
-      request('io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude', 'codex']]),
+      request('io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]),
       request('io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]),
     ])
     assert proposal.changes == [
@@ -511,8 +490,11 @@ notes.set(features: [hooks: true])
       '.agents/skills/agents-layout/templates/AGENTS.template.md',
       '.agents/skills/agents-layout/templates/README.template.md',
       '.agents/skills/agents-layout/templates/policy.template.yaml',
+      '.claude/commands',
       '.claude/settings.json',
+      '.claude/skills',
       '.codex/config.toml',
+      '.gitignore',
       'AGENTS.md',
       'cook.lock'
     ]
@@ -534,13 +516,14 @@ notes.set(features: [hooks: true])
 }
 '''
     def same = new CookbookCook(kitchen, repositories(kitchen)).propose([
-      request('io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude', 'codex']]),
+      request('io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]),
       request('io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]),
     ])
     assert same.changes == []
 
-    def withoutCodex = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']])
-    assert withoutCodex.changes == ['.agents/adapters/codex/config.toml', '.codex/config.toml', 'cook.lock']
+    def withoutCodex = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
+    assert withoutCodex.changes ==
+    ['.agents/adapters/codex/config.toml', '.codex/config.toml', '.gitignore', 'cook.lock']
     withoutCodex.commit()
     assert !new File(kitchen, '.codex').exists()
     assert !new File(kitchen, '.agents/adapters/codex').exists()
@@ -646,7 +629,7 @@ bypass allow
     policy.parentFile.mkdirs()
     policy.text = fixture('policy.yaml')
 
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
 
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text == fixture('claude-settings.json')
     def roles = new File(kitchen, '.agents/adapters/claude/roles')
@@ -655,11 +638,11 @@ bypass allow
     assert new File(roles, 'reviewer.json').text == fixture('claude-reviewer.json')
 
     policy.text = policy.text.replaceAll(/(?s)\nroles:.*/, '\n')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
     assert !roles.exists()
 
     policy.text = policy.text.replaceFirst('version: 2\n', 'version: 2\nbypass: allow\n')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
     // A later cook lays the changed value out as the first cook did.
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text ==
     fixture('claude-settings.json').replace('],\n    "disableBypassPermissionsMode": "disable"', ']')
@@ -672,17 +655,17 @@ bypass allow
     policy.parentFile.mkdirs()
     policy.text = fixture('policy.yaml')
 
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['codex']]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
 
     def rules = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
-    assert rules.first() == '# cook:begin io.github.lmarqs.cookbook:agents#permissions/commands'
-    assert rules.last() == '# cook:end io.github.lmarqs.cookbook:agents#permissions/commands'
+    assert rules.first() == '# cook:begin io.github.lmarqs.cookbook:agents#connect/commands'
+    assert rules.last() == '# cook:end io.github.lmarqs.cookbook:agents#connect/commands'
     assert rules[1..-2].join('\n') + '\n' == fixture('codex-commands.rules')
     // A Codex run cannot add a rules file of its own, so roles render nothing for Codex.
     assert !new File(kitchen, '.agents/adapters/codex/roles').exists()
 
     policy.text = policy.text.replaceFirst('version: 2\n', 'version: 2\nbypass: allow\n')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['codex']]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
     def allowed = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
     assert allowed[1..-2] == rules[2..-2]
   }
@@ -1355,8 +1338,8 @@ notes.set('kept')
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
     [
       [
-        ['io.github.lmarqs.cookbook:agents:0.1.0#permissions'],
-        'cook.lock lists no recipe io.github.lmarqs.cookbook:agents#permissions; nothing was written\n' +
+        ['io.github.lmarqs.cookbook:agents:0.1.0#connect'],
+        'cook.lock lists no recipe io.github.lmarqs.cookbook:agents#connect; nothing was written\n' +
         '  discard removes only what cook.lock records for a recipe\n' +
         '  check the recipe\'s name; cook.lock lists io.github.lmarqs.cookbook:agents#seed'
       ],

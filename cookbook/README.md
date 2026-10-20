@@ -58,8 +58,8 @@ A model's package is its cookbook's group plus its directory name: `cookbook/doc
 its imports are its visible dependency list and `@ingredient(Compose)` resolves through them.
 
 Recipe names are noun phrases naming the state the destination gets, without repeating the directory's topic:
-`node/project.groovy`, `docker/base-image.groovy` and `agents/permissions.groovy`. A recipe that configures one of
-several programs in its directory names the program first: `agents/claude-settings.groovy`.
+`node/project.groovy`, `docker/base-image.groovy` and `agents/connect.groovy`. A recipe that configures one of
+several programs in its directory names the program first: `ralph/ralph-tui.groovy`.
 
 The engine imports its own annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and `java.nio.file` into every
 unit, as the Groovy shell imports `java.util`. A unit imports nothing from the engine and nothing for JSON, YAML,

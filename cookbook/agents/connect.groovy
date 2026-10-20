@@ -34,14 +34,15 @@ replaced.
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | `--harness=codex` |
 | `.agents/adapters/codex/rules/cook.rules` | The section `commands`, opening with a comment on the runs Codex cannot refuse while `bypass` is `refuse` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
-| `.gitignore` | The section `harnesses`: each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above and `.codex/hooks.json`, which `#codex-settings` makes, all committed, and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always |
+| `.codex/hooks.json` | A link to `../.agents/adapters/codex/hooks.json`, which the team writes | `--harness=codex` and that file exists |
+| `.gitignore` | The section `harnesses`: each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above, all committed, and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always |
 
-Cooking with fewer harnesses removes the outputs of the ones left out.
+Cooking with fewer harnesses removes the outputs of the ones left out. Every other key in the adapter files, such as
+`hooks`, `env` or `[mcp_servers]`, belongs to the team: write it in the file, and cooking keeps it.
 
 ## With other recipes
 
-`io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects. `#claude-settings` and
-`#codex-settings` write further keys into the same adapter files.
+`io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects.
 ''')
 @yield('''
 Review the rendered permissions against each harness's permission model. Edit `.agents/permission/policy.yaml` and

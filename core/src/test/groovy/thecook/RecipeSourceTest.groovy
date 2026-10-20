@@ -24,11 +24,8 @@ class RecipeSourceTest {
   }
 
   @Test void readsAnEmptyDefaultAsAnOptionalParamWithNoValue() {
-    def texts = RecipeSource.texts(new File(COOKBOOK, 'agents/claude-settings.groovy').text, 'claude-settings.groovy')
-    assert texts.params == [
-      new RecipeParam(['settings'], 'String',
-      'JSON file whose top-level keys are written into .agents/adapters/claude/settings.json', '', [], false)
-    ]
+    def texts = RecipeSource.texts(new File(COOKBOOK, 'python/dependency.groovy').text, 'dependency.groovy')
+    assert texts.params[1] == new RecipeParam(['group'], 'String', 'Optional dependency group', '', [], false)
   }
 
   @Test void keepsEscapedLineBreaksInTexts() {

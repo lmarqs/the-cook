@@ -47,6 +47,10 @@ class Codex implements Harness {
   private Map hooks = [:]
   private Map<String, String> rules = [:]
   private List<String> commands = []
+  private boolean hooksWritten
+
+  /** The hooks file a team may write by hand, which Codex reads through `.codex/hooks.json`. */
+  private static final String HOOKS_FILE = '.agents/adapters/codex/hooks.json'
 
   /** The key path permissions own in `config.toml`. */
   private static final List<String> NETWORK_ACCESS = ['sandbox_workspace_write', 'network_access']
@@ -99,29 +103,15 @@ class Codex implements Harness {
   }
 
   /**
-   * Adds the top-level keys of the TOML file at `path`, relative to this instance's directory, as `config` does. The
-   * file is read as the recipes before this one in the invocation left it; a missing file is rejected.
-   */
-  void configFrom(String path) { config((Map) new TomlSlurper().parseText(input(path))) }
-
-  /** Adds the top-level keys of the JSON file at `path` as `hooks` does, read as `configFrom` reads its file. */
-  void hooksFrom(String path) { hooks((Map) new JsonSlurper().parseText(input(path))) }
-
-  /** Adds the file at `path` as the rule named by its file name, as `rule` does, read as `configFrom` reads its file. */
-  void ruleFrom(String path) { rule(path.tokenize('/').last(), input(path)) }
-
-  /**
    * Checks that `skills` is at `.agents/skills`, where Codex discovers skills natively in its own directory; Codex
-   * links no shared directory.
+   * links no shared directory. Links `.codex/hooks.json` when the team wrote `.agents/adapters/codex/hooks.json`.
    */
   void readDirectories(Map<String, String> paths) {
     if (paths.skills) readsNatively(paths.skills, '.agents/skills')
+    hooksWritten = current(HOOKS_FILE) != null
   }
 
-  /**
-   * `config.toml`, `hooks.json` and `rules`, whether or not this instance writes them, since `#codex-settings` makes
-   * these links in a recipe of its own and the `.gitignore` section that keeps them in Git belongs to `#connect`.
-   */
+  /** `config.toml`, `hooks.json` and `rules`, the links this instance may make. */
   final List<String> linkNames = ['config.toml', 'hooks.json', 'rules']
 
   /**
@@ -147,20 +137,14 @@ class Codex implements Harness {
   List<String> commandRules() { commands ?: null }
 
   /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json` and `rules`. */
-  @Links(path = '.codex', instead = 'the inputs of #codex-settings')
+  @Links(path = '.codex')
   Map<String, String> links() {
     written().collectEntries { [it, "../.agents/adapters/codex/${it}".toString()] } ?: null
   }
 
   private List<String> written() {
-    ['config.toml': config, 'hooks.json': hooks, rules: rules || commands].findAll { name, declared -> declared }
-    .keySet() as List
-  }
-
-  private String input(String path) {
-    def text = current(path)
-    if (text == null) throw new IllegalArgumentException("${path} must exist")
-    text
+    ['config.toml': config, 'hooks.json': hooks || hooksWritten, rules: rules || commands]
+    .findAll { name, declared -> declared }.keySet() as List
   }
 
   private static void readsNatively(String path, String expected) {

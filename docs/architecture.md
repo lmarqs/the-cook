@@ -177,23 +177,18 @@ and the sections, keys, whole files and links the recipe owns. It records no rec
 # Written by the-cook; do not edit by hand.
 version: 1
 recipes:
-  - name: "io.github.lmarqs.cookbook:agents#permissions"
-    source: "io.github.lmarqs.cookbook:agents:0.0.0#permissions"
-    sha256: "3f5a…"
-    owns:
-      sections:
-        - file: ".agents/adapters/codex/rules/cook.rules"
-          id: "io.github.lmarqs.cookbook:agents#permissions/commands"
-      keys:
-        - file: ".agents/adapters/claude/settings.json"
-          path: ["permissions"]
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
     sha256: "3f5a…"
     owns:
       sections:
+        - file: ".agents/adapters/codex/rules/cook.rules"
+          id: "io.github.lmarqs.cookbook:agents#connect/commands"
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:agents#connect/harnesses"
+      keys:
+        - file: ".agents/adapters/claude/settings.json"
+          path: ["permissions"]
       links:
         - ".claude/skills"
 ```
