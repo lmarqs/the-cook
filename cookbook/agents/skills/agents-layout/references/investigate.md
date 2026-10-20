@@ -6,7 +6,7 @@ tested.
 
 | Symptom | Likely cause | Check | Fix |
 | --- | --- | --- | --- |
-| Claude ignores `AGENTS.md` | A `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the repository, so Claude reads that file instead | `git ls-files -co \| grep -E '(^\|/)CLAUDE(\.local)?\.md$'` | Move what the team needs to `AGENTS.md`, then delete it; [adopt.md](adopt.md#a-root-claudemd) |
+| Claude ignores `AGENTS.md` | A `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the directory of an `AGENTS.md` or one above, so Claude reads that file instead | `sh .agents/skills/agents-layout/scripts/check.sh` names it | Move what the team needs to `AGENTS.md`, then delete it; [adopt.md](adopt.md#a-root-claudemd) |
 | Claude ignores `AGENTS.md` | Claude Code older than 2.1.277, which added `AGENTS.md` support | `claude --version` | Update Claude Code |
 | Claude ignores `AGENTS.md` | The person turned the support off; Claude Code's changelog says it is set under "Project instructions" in `/config`; not tested here | `/config` inside a Claude session | Turn it back on |
 | Claude does not offer a shared skill or command | The `.claude/skills` or `.claude/commands` link is missing or broken; Claude finds them only there | `ls -l .claude` | Cook `#connect --harness=claude`; on Windows, see the links row |

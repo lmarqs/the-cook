@@ -83,17 +83,31 @@ check_agents_bytes() {
 }
 
 check_claude_files() {
+  # Claude reads a CLAUDE.md in the directory of an AGENTS.md or one above, ignored or not; one anywhere else, such as
+  # in an installed dependency, hides nothing.
+  directories=$(git ls-files | grep -E '(^|/)AGENTS\.md$' | while IFS= read -r file; do
+    directory=$(dirname "$file")
+    while :; do
+      printf '%s\n' "$directory"
+      [ "$directory" = . ] && break
+      directory=$(dirname "$directory")
+    done
+  done | sort -u)
   found=0
-  inside=$(git ls-files -co | grep -E '(^|/)(CLAUDE\.md|CLAUDE\.local\.md)$')
   saved_ifs=$IFS
   IFS=$newline
-  for file in $inside; do
-    fail "$file exists, and Claude skips AGENTS.md while it does" \
-      'move what the team needs into AGENTS.md, then delete it'
-    found=1
+  for directory in $directories; do
+    for name in CLAUDE.md CLAUDE.local.md .claude/CLAUDE.md; do
+      file=${directory#.}/$name
+      file=${file#/}
+      [ -e "$file" ] || continue
+      fail "$file exists, and Claude skips AGENTS.md while it does" \
+        'move what the team needs into AGENTS.md, then delete it'
+      found=1
+    done
   done
   IFS=$saved_ifs
-  [ "$found" -eq 0 ] && ok 'no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md in the repository'
+  [ "$found" -eq 0 ] && ok 'no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md beside or above an AGENTS.md'
 }
 
 check_links() {
@@ -102,14 +116,14 @@ check_links() {
     [ -L "$link" ] || continue
     links=$((links + 1))
     mode=$(git ls-files -s -- "$link" | awk '{ print $1 }')
+    # A tracked link stays in every commit whatever .gitignore says, so only an untracked one can be hidden by it.
     if [ "$mode" != 120000 ]; then
-      fail "$link is not tracked as a link" "git add $link, and check that git ls-files -s shows mode 120000"
+      fail "$link is not tracked as a link" \
+        "git add $link; when git add skips it, git check-ignore -v --no-index $link names the rule that hides it"
     elif [ ! -e "$link" ]; then
       fail "$link does not resolve" 'cook #connect again with every harness the team uses'
-    elif git check-ignore -q --no-index -- "$link"; then
-      fail "$link is ignored" "git check-ignore -v --no-index $link names the rule; move it or narrow it"
     else
-      ok "$link is a tracked link that resolves and is not ignored"
+      ok "$link is a tracked link that resolves"
     fi
   done
   if [ "$links" -eq 0 ]; then

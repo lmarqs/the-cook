@@ -17,6 +17,7 @@ import thecook.cookbook.RecipeRequest
 import thecook.cookbook.SectionTarget
 
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.security.MessageDigest
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -723,9 +724,61 @@ bypass allow
       'WARN AGENTS.md names .work/services.lock, which is not in the tree ',
     ]
     assert filledOutput.readLines().every { it.startsWith('ok ') || it.startsWith('WARN ') }
-    assert filledOutput.contains('ok no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md in the repository\n')
-    assert filledOutput.contains('ok .claude/settings.json is a tracked link that resolves and is not ignored\n')
-    assert filledOutput.contains('ok .codex/config.toml is a tracked link that resolves and is not ignored\n')
+    assert filledOutput.contains('ok no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md beside or above an AGENTS.md\n')
+    assert filledOutput.contains('ok .claude/settings.json is a tracked link that resolves\n')
+    assert filledOutput.contains('ok .codex/config.toml is a tracked link that resolves\n')
+  }
+
+  @Test void theLayoutCheckFailsOnlyOnAClaudeFileBesideOrAboveAnAgentsMdAndNeverOnATrackedLink() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def environment = System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1']
+    def run = { List<String> command ->
+      def process = command.execute(environment.collect { name, value -> "${name}=${value}" }, kitchen)
+      def output = process.text
+      [process.waitFor(), output]
+    }
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    def check = ['sh', '.agents/skills/agents-layout/scripts/check.sh']
+    new File(kitchen, '.gitignore').append('node_modules/\n')
+    def dependency = new File(kitchen, 'node_modules/x/CLAUDE.md')
+    dependency.parentFile.mkdirs()
+    dependency.text = 'a dependency of the project\n'
+    new File(kitchen, '.agents/hooks').mkdirs()
+    Files.createSymbolicLink(new File(kitchen, '.claude/hooks').toPath(), Paths.get('../.agents/hooks'))
+    def stage = ['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock']
+    assert run(stage)[0] == 0
+    // The team's own link sits under /.claude/*, so only a forced add tracks it.
+    assert run(['git', 'add', '-f', '.claude/hooks'])[0] == 0
+
+    def (installed, installedOutput) = run(check)
+
+    assert installed == 0
+    assert !installedOutput.contains('node_modules')
+    assert installedOutput.contains('ok .claude/hooks is a tracked link that resolves\n')
+
+    assert run(['git', 'rm', '-q', '--cached', '.claude/hooks'])[0] == 0
+    def (untracked, untrackedOutput) = run(check)
+
+    assert untracked == 1
+    def hooks = untrackedOutput.readLines().findAll { it.contains('.claude/hooks') }
+    assert hooks == [
+      'FAIL .claude/hooks is not tracked as a link -- git add .claude/hooks; ' +
+      'when git add skips it, git check-ignore -v --no-index .claude/hooks names the rule that hides it'
+    ]
+
+    assert run(['git', 'add', '-f', '.claude/hooks'])[0] == 0
+    new File(kitchen, 'CLAUDE.md').text = 'a personal file\n'
+    def (beside, besideOutput) = run(check)
+
+    assert beside == 1
+    assert besideOutput.readLines().findAll { it.startsWith('FAIL ') } ==
+    [
+      'FAIL CLAUDE.md exists, and Claude skips AGENTS.md while it does -- ' +
+      'move what the team needs into AGENTS.md, then delete it'
+    ]
   }
 
   @Test void commitsTheHarnessLinksAndKeepsEverythingElseInTheirDirectoriesOutOfGit() {

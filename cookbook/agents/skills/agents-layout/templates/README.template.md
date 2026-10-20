@@ -79,8 +79,8 @@ Each person customizes in their harness's own settings, never in this directory.
 one person's settings for this project; Claude writes "don't ask again" approvals there. External user settings may
 override this behavior.
 
-Claude reads `AGENTS.md` only while no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the repository;
-any of them makes it skip `AGENTS.md`. `.gitignore` keeps them out of commits, so none reaches the team, but a local
+Claude reads an `AGENTS.md` only while no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in its
+directory or one above; any of them makes it skip that `AGENTS.md`. `.gitignore` keeps them out of commits, so none reaches the team, but a local
 one still takes effect for whoever has it. Reading `AGENTS.md` needs Claude Code 2.1.277 or later.
 
 This directory sets what the team shares, not what a person may do. A personal `allow` does not outrank a team `ask`

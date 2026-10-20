@@ -161,8 +161,8 @@ rules file and its `.codex/rules` link.
 
 - **Edit the policy, not what is rendered from it.** `.agents/adapters/` and the links come from `policy.yaml`. A hand
   edit reaches one harness only, and the next cook proposes undoing it.
-- **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists,
-  Claude stops reading `AGENTS.md`. `.gitignore` keeps them out of commits; a local one still affects whoever has it.
+- **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists in
+  the directory of an `AGENTS.md` or one above, Claude stops reading that `AGENTS.md`. `.gitignore` keeps them out of commits; a local one still affects whoever has it.
 - **Widen in `commands`, narrow in roles.** A role only adds denies, so a worker never gets more than a person at the
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
 - **Use `ask` sparingly.** Nobody answers in an unattended run, so an `ask` refuses there, and every unattended run that
