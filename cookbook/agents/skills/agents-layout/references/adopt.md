@@ -24,7 +24,8 @@ Name every harness the team uses: `#connect` removes what it wrote for a harness
    ./cook io.github.lmarqs.cookbook:agents:<version>#seed
    ```
 
-   It writes `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml` and the shared directories. When
+   It writes `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml`, the shared directories and this
+   skill, in `.agents/skills/agents-layout/`. When
    `AGENTS.md` already exists, Cook refuses; add `--skip` before the recipe to keep it, or `--force` to replace it.
 2. Ask an agent to fill in `AGENTS.md`; the file's first line tells it how.
 3. Add to the policy what agents may run here. The starter grants nothing and ends with a commented example;

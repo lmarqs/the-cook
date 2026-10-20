@@ -62,12 +62,6 @@ recipes:
       keys:
         - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
-      files:
-        - ".agents/skills/agents-layout/SKILL.md"
-        - ".agents/skills/agents-layout/references/adopt.md"
-        - ".agents/skills/agents-layout/references/design.md"
-        - ".agents/skills/agents-layout/references/investigate.md"
-        - ".agents/skills/agents-layout/references/policy.md"
       links:
         - ".claude/commands"
         - ".claude/settings.json"
@@ -75,7 +69,13 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.1.0#seed"
     sha256: "${sha256}"
-    owns: {}
+    owns:
+      files:
+        - ".agents/skills/agents-layout/SKILL.md"
+        - ".agents/skills/agents-layout/references/adopt.md"
+        - ".agents/skills/agents-layout/references/design.md"
+        - ".agents/skills/agents-layout/references/investigate.md"
+        - ".agents/skills/agents-layout/references/policy.md"
 """
     assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).changes == []
 
@@ -232,6 +232,11 @@ Run with --force to replace them, or --skip to keep them.'''
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
+      '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/policy.md',
       '.claude/settings.json',
       '.codex/config.toml',
       'AGENTS.md',
@@ -396,13 +401,13 @@ worker [[git, [commit, push]]]
     publishDirectory(kitchen, 'agents')
     assert ['git', 'init', '-q', kitchen.path].execute().waitFor() == 0
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    // Every repository with the layout carries the skill that explains it, from the moment the layout exists.
+    assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
+    new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
     new File(kitchen, '.agents/permission/policy.yaml').text = fixture('policy.yaml')
 
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
 
-    // Every repository with the layout carries the skill that explains it, where both harnesses find skills.
-    assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
-    new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
     assert new File(kitchen, '.claude/skills/agents-layout/SKILL.md').isFile()
     assert new File(kitchen, '.gitignore').text == '''\
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
@@ -442,6 +447,11 @@ CLAUDE.local.md
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
+      '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/policy.md',
       'AGENTS.md',
       'cook.lock'
     ]
@@ -452,11 +462,6 @@ CLAUDE.local.md
     assert connected.changes == [
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
-      '.agents/skills/agents-layout/SKILL.md',
-      '.agents/skills/agents-layout/references/adopt.md',
-      '.agents/skills/agents-layout/references/design.md',
-      '.agents/skills/agents-layout/references/investigate.md',
-      '.agents/skills/agents-layout/references/policy.md',
       '.claude/commands',
       '.claude/settings.json',
       '.claude/skills',

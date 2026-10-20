@@ -16,7 +16,8 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | Owner | Files | Changed by |
 | --- | --- | --- |
 | The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/`, `memory/`, `.agents/README.md` | Editing and committing, through review |
-| Cook | `.agents/adapters/`, the links in `.claude/` and `.codex/`, the `harnesses` section of `.gitignore`, `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
+| Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
+| Cook | `.agents/adapters/`, the links in `.claude/` and `.codex/`, the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
 | Each person | `~/.claude/`, `.claude/settings.local.json`, `~/.codex/` | Nobody else; Cook never writes them and git ignores them |
 
 ```text
@@ -29,8 +30,8 @@ AGENTS.md                         instructions for every agent; Claude and Codex
 .claude/  .codex/                 committed links into .agents/, plus each person's local files
 ```
 
-Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it and `#connect` renders the policy and
-makes the links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
+Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it, this skill included, and `#connect`
+renders the policy and makes the links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
 
 The layout cannot decide how people work; anyone can override it on their own machine. It guides: shared changes
 reach every agent when they go where every agent reads them, and personal ones stay out of the team's files.

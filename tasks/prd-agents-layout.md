@@ -265,7 +265,7 @@ three placeholders, so that every repository with the layout carries its own gui
 - [ ] `cookbook/agents/skills/agents-layout/` holds `SKILL.md` and `references/policy.md` from
       `tasks/agents-layout-draft/agents-layout/`, without the advice to put Claude-only notes in `.claude/rules/`
       (US-013 completes them).
-- [ ] `#connect` installs it as owned whole files under `.agents/skills/agents-layout/`.
+- [ ] `#seed` installs it as owned whole files under `.agents/skills/agents-layout/`.
 - [ ] The `Agents.skills` doc comment names `agents-layout` as the packaged skill; any other name is still refused.
 - [ ] `cookbook/cook/setup.groovy` no longer adds the placeholder skills or the instruction lines naming them.
 - [ ] `cookbook/agents/README.md`, whose opening paragraph `./cook help io.github.lmarqs.cookbook:agents:0.0.0` prints,
@@ -372,7 +372,7 @@ page sends people to `#instructions`, `.agents/adapters/claude/CLAUDE.md` or the
 - FR-5: Cook must not write `defaultMode`, a model, or any instruction file for Claude.
 - FR-6: The `harnesses` section of `.gitignore` must ignore everything in `.claude/` and `.codex/` except the links
   Cook makes, and must ignore `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`.
-- FR-7: `#connect` must install the `agents-layout` skill as owned whole files.
+- FR-7: `#seed` must install the `agents-layout` skill as owned whole files.
 - FR-8: Cook must never write `~/.claude/`, `~/.codex/` or `.claude/settings.local.json`.
 
 ## Non-Goals

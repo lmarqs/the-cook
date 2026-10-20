@@ -65,8 +65,9 @@ names become.
 ## Seed files and the skill have different owners
 
 `#seed` writes `AGENTS.md`, `policy.yaml` and `.agents/README.md` once, when absent, and never owns them: from then on
-they are the team's, and Cook never overwrites them. `#connect` owns the `agents-layout` skill: Cook writes it whole
-on every cook, so a new release brings its corrections. Edit a seeded file freely; an edit to this skill is undone by
+they are the team's, and Cook never overwrites them. The same recipe owns the `agents-layout` skill: Cook writes it
+whole each time `#seed` is cooked, so the skill arrives with the layout it explains, and cooking a new release brings
+its corrections. Edit a seeded file freely; an edit to this skill is undone by
 the next cook, so propose it upstream instead.
 
 ## One policy file, rendered per harness

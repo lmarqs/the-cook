@@ -23,7 +23,6 @@ Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` t
 | --- | --- | --- |
 | `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories, seeded when absent; never owned | Always |
-| `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout | Always |
 | `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles |
@@ -57,7 +56,6 @@ String[] harness
 
 def selected = [claude, codex].findAll { it.name in harness }
 agents.seedLayout()
-agents.skills('agents-layout')
 agents.permit(selected)
 agents.connect(selected)
 agents.ignoreLocalDirectories(selected)
