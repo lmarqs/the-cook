@@ -212,8 +212,8 @@ starters.second = 'second'
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
     }
     assert section.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .gitignore section ' +
-    'io.github.lmarqs.cookbook:agents#connect/harnesses\n.gitignore is a symbolic link to OURS\n' +
-    '  Cook writes sections and keys only into regular files'
+    'io.github.lmarqs.cookbook:agents#connect/harnesses\n  .gitignore is a symbolic link to OURS\n' +
+    '    Cook writes sections and keys only into regular files'
 
     new File(kitchen, '.agents/adapters/claude').mkdirs()
     new File(kitchen, '.agents/adapters/claude/shared.json').text = '{}\n'
@@ -222,8 +222,8 @@ starters.second = 'second'
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']])
     }
     assert key.message == 'io.github.lmarqs.cookbook:agents:0.1.0#permissions: .agents/adapters/claude/settings.json ' +
-    'key permissions\n.agents/adapters/claude/settings.json is a symbolic link to shared.json\n' +
-    '  Cook writes sections and keys only into regular files'
+    'key permissions\n  .agents/adapters/claude/settings.json is a symbolic link to shared.json\n' +
+    '    Cook writes sections and keys only into regular files'
     assert new File(kitchen, '.agents/adapters/claude/shared.json').text == '{}\n'
     assert !new File(kitchen, 'cook.lock').exists()
     assert Files.isSymbolicLink(new File(kitchen, '.gitignore').toPath())
@@ -238,9 +238,9 @@ starters.second = 'second'
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
     }
     assert codex.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .codex/config.toml link\n' +
-    '.codex/config.toml is a file, and this ' +
-    'recipe makes it a link to ../.agents/adapters/codex/config.toml\n  its contents would stop being read\n' +
-    '  move its contents into the inputs of #codex-settings, delete it, and cook again'
+    '  .codex/config.toml is a file, and this ' +
+    'recipe makes it a link to ../.agents/adapters/codex/config.toml\n    its contents would stop being read\n' +
+    '    move its contents into the inputs of #codex-settings, delete it, and cook again'
     def forced = shouldFail(IllegalArgumentException) {
       new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
           .propose([request('io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])])
@@ -255,9 +255,9 @@ starters.second = 'second'
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
     }
     assert claude.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .claude/skills link\n' +
-    '.claude/skills is a directory, and ' +
-    'this recipe makes it a link to ../.agents/skills\n  its files would stop being read\n' +
-    '  move its files into .agents/skills/, delete it, and cook again'
+    '  .claude/skills is a directory, and ' +
+    'this recipe makes it a link to ../.agents/skills\n    its files would stop being read\n' +
+    '    move its files into .agents/skills/, delete it, and cook again'
     assert new File(kitchen, '.claude/skills/ours/SKILL.md').text == '# Ours\n'
     assert !new File(kitchen, '.agents').exists()
     assert !new File(kitchen, 'cook.lock').exists()
@@ -335,8 +335,8 @@ starters.second = 'second'
     }.message.readLines()
     assert json[0] ==
     'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/claude/settings.json key permissions'
-    assert json[1].startsWith('JSON: ')
-    assert json[2] == '  settings files are strict JSON: remove comments and trailing commas'
+    assert json[1].startsWith('  JSON: ')
+    assert json[2] == '    settings files are strict JSON: remove comments and trailing commas'
     assert json.size() == 3
 
     publish(kitchen, 'acme:notes:1.0.0', [
@@ -359,9 +359,9 @@ notes.set(features: [hooks: true])
     new File(kitchen, 'config.toml').text = '[features]\nhooks = false\n'
     def toml = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:notes:1.0.0#features', [:]) }
     assert toml.message == 'acme:notes:1.0.0#features: config.toml key features\n' +
-    'key features is written as a [features] table\n' +
-    '  Cook owns features whole and writes it as one inline table\n' +
-    '  replace it with features = { … } above the first [table], then cook again'
+    '  key features is written as a [features] table\n' +
+    '    Cook owns features whole and writes it as one inline table\n' +
+    '    replace it with features = { … } above the first [table], then cook again'
   }
 
   @Test void aTargetFileThatIsNotARegularFileIsNamedRelativeToTheKitchen() {
@@ -395,7 +395,7 @@ notes.set(features: [hooks: true])
     }
     assert withdrawn.message.readLines()[0..1] == [
       'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/codex/config.toml key approval_policy',
-      'key approval_policy is written as a [approval_policy] table'
+      '  key approval_policy is written as a [approval_policy] table'
     ]
 
     config.text = cooked

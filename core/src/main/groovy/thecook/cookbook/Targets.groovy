@@ -37,12 +37,12 @@ abstract class Target {
   abstract void withdraw(Draft draft)
 
   /**
-   * `error` with this target named on the first line: a one-line cause follows as the reason, and a cause already laid
-   * out as what, why and next follows unchanged.
+   * `error` with this target named on the first line and every line of its cause indented beneath it, so a cause laid
+   * out as what, why and next keeps its own indentation one level deeper.
    */
   final IllegalArgumentException failed(Exception error) {
     String cause = error.message ?: error.class.simpleName
-    new IllegalArgumentException(cause.contains('\n') ? "${this}\n${cause}" : Diagnostic.text(toString(), cause), error)
+    new IllegalArgumentException(([toString()] + cause.readLines().collect { "  ${it}" }).join('\n'), error)
   }
 
   /** Whether writing this target changes `other`: the same section, overlapping keys, or a whole file or link. */
