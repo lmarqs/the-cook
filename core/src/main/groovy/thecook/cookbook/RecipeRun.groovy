@@ -84,7 +84,7 @@ final class RecipeRun {
     }
 
     if (!declared.many() && values.size() > 1) {
-      throw new IllegalArgumentException("${name} takes one value; it was given ${values.size()}")
+      throw new IllegalArgumentException(Diagnostic.text("${name} takes one value", "it was given ${values.size()}"))
     }
 
     def choices = declared.choices().toList()
