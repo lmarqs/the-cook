@@ -49,6 +49,15 @@ Decided on 2026-10-20:
   This reverses the earlier "keep `cookbook/agents/seed/`".
 - **The medprev PR stays the user's.** Spikes and the end-to-end run use scratch clones.
 
+Decided during delivery:
+
+- **medprev-rest-api is not an acceptance target.** The maintainer set aside US-016's medprev criteria after its
+  scratch run ("ignore medprev-rest-api"); the greenfield run on the final skill is the end-to-end check.
+- **The skill looks only inside the repository.** It names no file outside it; one note says external user settings
+  may override its behaviour. Whether a harness persists trust given on the command line is out of scope.
+- **`check.sh` fails only a setup a harness cannot read**; budgets, blanks and names not found in the tree are
+  warnings the agent confirms.
+
 Tracking issue: #40 (follow-up to #39).
 
 ## Goals
