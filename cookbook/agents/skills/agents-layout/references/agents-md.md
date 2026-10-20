@@ -62,9 +62,15 @@ list is at the end. Tested with Claude Code 2.1.304.
   cell is a blank no search finds, and GitHub renders `<angle brackets>` as HTML tags and hides them. No sample values
   appear, because agents copy them into repositories where they are wrong.
 
-Not established: whether a repository's filled template improves what agents produce there. That needs the setup in
-[1], a fixed task set across several agents and models, with and without the file. The check within reach is
-narrower: a fresh session sets up, makes a small change and passes the Done check from `AGENTS.md` alone.
+Not established: whether a repository's filled template improves what agents produce there. One benchmark on one
+repository ran four fixed tasks with its old `AGENTS.md`, with the filled template and with no file, once per task,
+file and harness: 24 runs, one per cell, in Claude Code 2.1.304 and Codex CLI 0.160.1. The old and the filled file
+gave the same results: each run ran the check its file names and kept every rule that applied. Without a file, both
+harnesses skipped the repository's Python check, one run wrote its session note into a versioned memory file, and the
+runs used about 40% more tokens. One run per cell does not separate the old file from the filled one, and the gap to
+no file is observed, not established. Establishing it needs the setup in [1], a fixed task set across several agents
+and models with repeated runs. The check within reach is narrower: a fresh session sets up, makes a small change and
+passes the Done check from `AGENTS.md` alone.
 
 ## Sources
 
