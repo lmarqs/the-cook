@@ -34,7 +34,11 @@ class CookCommandTest {
     assert stderr.toString('UTF-8')
     .readLines()
     .first() ==
-    'cook: Not a recipe: init. A recipe is coordinates or a .groovy path'
+    'cook: Not a recipe: init'
+    stderr.reset()
+    assert cli.execute(['init'] as String[]) == 2
+    assert stderr.toString('UTF-8') ==
+    'cook: Not a recipe: init\n  a recipe is coordinates or a .groovy path\n  run: ./cook help\n'
   }
 
   @Test void kitchenOptionCooksAsIfStartedThereAndGoesBeforeTheRecipe() {
@@ -119,15 +123,15 @@ After cooking
         assert stderr.toString('UTF-8')
         .readLines()
         .first() in [
-          'cook: --help takes no other arguments; use help <recipe> to read a recipe',
+          'cook: --help takes no other arguments',
           'cook: help: help takes recipes only: --owner=me',
         ]
       }
       new File(repo, 'bare.groovy').text = 'println "no help"\n'
       [
-        [['help', 'bare.groovy'], 1, 'cook: help: bare.groovy has no help: its first import carries no @help'],
+        [['help', 'bare.groovy'], 1, 'cook: help: bare.groovy has no help'],
         [['help', 'missing.groovy'], 1, 'cook: help: Recipe file not found: missing.groovy'],
-        [['help', 'notes'], 2, 'cook: help: Not a recipe: notes. A recipe is coordinates or a .groovy path'],
+        [['help', 'notes'], 2, 'cook: help: Not a recipe: notes'],
       ].each { arguments, status, message ->
         stderr.reset()
         assert cli.execute((['-C', repo.path] + arguments) as String[]) == status
@@ -214,15 +218,16 @@ Models
       stdout.reset()
       assert cli.execute(['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 1
       assert stderr.toString('UTF-8') ==
-      'cook: Cook asks before writing, and there is no terminal to ask in; ' +
-      'run with --batch-approve to write without asking\n'
+      'cook: approval required; nothing was written\n' +
+      '  there is no terminal to ask in, and --batch-approve was not given\n' +
+      '  run interactively to review the diff, or run again with --batch-approve before the first recipe\n'
       assert !notes.exists()
 
       def declined = new ByteArrayOutputStream(); stderr.reset()
       assert command(declined, stderr, 'n\n')
       .execute(['-C', repo.path, 'acme:notes:1.2.3#notes', '--line=first'] as String[]) == 1
       assert declined.toString('UTF-8').endsWith('\n\nWrite these changes? [y/N] ')
-      assert stderr.toString('UTF-8') == 'cook: Nothing written.\n'
+      assert stderr.toString('UTF-8') == 'cook: nothing was written\n  the answer was not y or yes\n'
       assert !notes.exists()
 
       def accepted = new ByteArrayOutputStream()
@@ -281,12 +286,8 @@ notes.add('local')
       assert stdout.toString('UTF-8').endsWith('\nWould update NOTES.md\nWould update cook.lock\n')
 
       [
-        [
-          ['acme:notes:1.2.3#notes', '--line', 'a:b'],
-          2,
-          'cook: Not a recipe: a:b. To give it to --line, write --line=a:b'
-        ],
-        [['acme:notes:1.2.3#notes', '--line', 'a', 'b'], 2, 'cook: Not a recipe: b. Recipe arguments start with --'],
+        [['acme:notes:1.2.3#notes', '--line', 'a:b'], 2, 'cook: Not a recipe: a:b'],
+        [['acme:notes:1.2.3#notes', '--line', 'a', 'b'], 2, 'cook: Not a recipe: b'],
         [
           ['acme:notes:1.2.3#notes', '--line=a', '--loud', 'false'],
           1,
@@ -303,7 +304,7 @@ notes.add('local')
           1,
           'cook: acme:notes:1.2.3#notes: Unknown argument --set'
         ],
-        [['acme:notes:1.2.3#notes', 'line=first'], 2, 'cook: Not a recipe: line=first. Recipe arguments start with --'],
+        [['acme:notes:1.2.3#notes', 'line=first'], 2, 'cook: Not a recipe: line=first'],
         [
           ['../outside.groovy'],
           1,
@@ -382,7 +383,7 @@ notes.add('local')
       .execute(['discard', '-C', repo.path, 'acme:notes:1.2.3#more'] as String[]) == 1
       assert declined.toString('UTF-8').contains('\n-<!-- cook:begin acme:notes#more/notes -->\n-more\n' +
       '-<!-- cook:end acme:notes#more/notes -->\n')
-      assert stderr.toString('UTF-8') == 'cook: discard: Nothing written.\n'
+      assert stderr.toString('UTF-8') == 'cook: discard: nothing was written\n  the answer was not y or yes\n'
 
       stdout.reset()
       assert cli.execute(['discard', '-C', repo.path, '--dry-run', 'acme:notes:1.2.3#more'] as String[]) == 0
@@ -403,7 +404,7 @@ notes.add('local')
 
       [
         [['discard'], 2, 'cook: discard: A recipe is required'],
-        [['discard', 'notes'], 2, 'cook: discard: Not a recipe: notes. A recipe is coordinates or a .groovy path'],
+        [['discard', 'notes'], 2, 'cook: discard: Not a recipe: notes'],
         [
           ['discard', 'acme:notes:1.2.3#notes', '--batch-approve'],
           2,

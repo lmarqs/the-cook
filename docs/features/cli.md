@@ -104,11 +104,11 @@ The first invocation evaluates only `a.groovy` and gives it `source` with the va
 | `--agent=codex` | The value `codex` for `agent` |
 | `--agent codex` | The value `codex` for `agent` |
 | `--source=./b.groovy` | The value `./b.groovy` for `source` |
-| `--source ./b.groovy` | `./b.groovy` starts the next recipe, and `--source` is refused: `--source needs a value: write --source=<value>` |
-| `agent=codex`, after a recipe or a complete argument | Refused: `Not a recipe: agent=codex. Recipe arguments start with --, and a recipe contains / or : or ends with .groovy` |
+| `--source ./b.groovy` | `./b.groovy` starts the next recipe, and `--source` is refused: `--source needs a value`, with `write --source=<value>` below |
+| `agent=codex`, after a recipe or a complete argument | Refused: `Not a recipe: agent=codex`, with `recipe arguments start with --` below |
 | `--verbose`, for a yes-or-no param | The value `true` for `verbose`; `--verbose=false` turns it off |
-| `--verbose false`, for a yes-or-no param | Refused: `Not a recipe: false. To turn --verbose off, write --verbose=false` |
-| `--agent` with no value after it, for any other param | Refused, naming the recipe: `--agent needs a value: write --agent=<value>` |
+| `--verbose false`, for a yes-or-no param | Refused, naming the recipe: `--verbose takes no separate value`, with `write --verbose=false` below |
+| `--agent` with no value after it, for any other param | Refused, naming the recipe: `--agent needs a value`, with `write --agent=<value>` below |
 | The same recipe twice, with any arguments or versions | Refused: `cook.lock` keeps one entry per recipe |
 
 When a recipe fails to evaluate, nothing is written, and the error names the recipe by its position and operand, such
@@ -116,9 +116,9 @@ as `recipe 2 (io.github.lmarqs.cookbook:agents:0.0.0#connect)`.
 
 Before writing, Cook shows each recipe's `@confirm` text under the heading `Confirm <address>`, then a unified diff of
 every changed path, `cook.lock` included, and asks `Write these changes? [y/N]`. Any answer other than `y` or `yes`
-writes nothing, prints `cook: Nothing written.` and exits with status 1. `--batch-approve` shows the same texts and diff and
-writes without asking. Without a terminal to ask in, Cook writes only with `--batch-approve`; otherwise it exits with
-status 1 and writes nothing.
+writes nothing, prints `cook: nothing was written` and exits with status 1. `--batch-approve` shows the same texts and
+diff and writes without asking. Without a terminal to ask in, Cook writes only with `--batch-approve`; otherwise it
+prints `cook: approval required; nothing was written`, with the reason and the next step below, and exits with status 1.
 
 After the writes, Cook prints one line per changed path, in path order, or `Already cooked.` when nothing changes:
 

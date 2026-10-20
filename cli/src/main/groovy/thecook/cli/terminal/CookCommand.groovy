@@ -12,6 +12,7 @@ import thecook.cookbook.Proposal
 import thecook.cookbook.RecipeLoader
 import thecook.cookbook.RecipeRequest
 import thecook.cookbook.RecipeSource
+import thecook.model.Diagnostic
 import thecook.model.RecipeTexts
 
 import java.nio.file.Files
@@ -51,7 +52,7 @@ final class CookCommand {
     try {
       command = parse(args)
     } catch (UsageError error) {
-      diagnose(error.message + '\n  run: ./cook help')
+      diagnose(error.message)
       return 2
     } catch (IllegalArgumentException error) {
       diagnose(error.message)
@@ -84,7 +85,7 @@ final class CookCommand {
     }
 
     if (invocation.any { it.split('=', 2)[0] == '--help' }) {
-      throw new UsageError('--help takes no other arguments; use help <recipe> to read a recipe')
+      throw new UsageError('--help takes no other arguments', null, 'use ./cook help <recipe> to read a recipe')
     }
 
     def line = Grammar.commandLine()
@@ -144,7 +145,7 @@ final class CookCommand {
     }
 
     if (!isOperand(first)) {
-      throw new UsageError("Not a recipe: ${first}. A recipe is coordinates or a .groovy path")
+      throw new UsageError("Not a recipe: ${first}", 'a recipe is coordinates or a .groovy path')
     }
 
     List<String> operands = []
@@ -161,7 +162,7 @@ final class CookCommand {
         bare = null
       } else {
         if (bare == null) {
-          throw new UsageError("Not a recipe: ${token}. Recipe arguments start with --")
+          throw new UsageError("Not a recipe: ${token}", 'recipe arguments start with --')
         }
 
         arguments.last()[-1] = Argument.separate(bare, token)
@@ -192,7 +193,7 @@ final class CookCommand {
       }
 
       if (!isOperand(operand)) {
-        throw new UsageError("Not a recipe: ${operand}. A recipe is coordinates or a .groovy path")
+        throw new UsageError("Not a recipe: ${operand}", 'a recipe is coordinates or a .groovy path')
       }
     }
     return { -> write(new CookbookDiscard(kitchen).propose(args.recipes), args.dryRun, args.batchApprove) }
@@ -211,7 +212,7 @@ final class CookCommand {
       Coordinates.parse(token)
     } catch (IllegalArgumentException error) {
       if (bare != null) {
-        throw new UsageError("Not a recipe: ${token}. To give it to --${bare}, write --${bare}=${token}")
+        throw new UsageError("Not a recipe: ${token}", null, "to give it to --${bare}, write --${bare}=${token}")
       }
 
       throw error
@@ -261,7 +262,7 @@ final class CookCommand {
       }
 
       if (!isOperand(operand)) {
-        throw new UsageError("Not a recipe: ${operand}. A recipe is coordinates or a .groovy path")
+        throw new UsageError("Not a recipe: ${operand}", 'a recipe is coordinates or a .groovy path')
       }
 
       RecipeLoader.name(kitchen.toPath()
@@ -295,7 +296,8 @@ final class CookCommand {
     def texts = RecipeSource.texts(artifact.recipeSource(recipe), "${recipe}.groovy")
 
     if (texts == null) {
-      throw new IllegalArgumentException("${coordinates} has no help: its first import carries no @help")
+      throw new IllegalArgumentException(
+      Diagnostic.text("${coordinates} has no help", 'its first import carries no @help'))
     }
 
     render(coordinates.toString(), texts)
@@ -320,7 +322,7 @@ final class CookCommand {
     def texts = RecipeSource.texts(Files.readString(script), script.fileName.toString())
 
     if (texts == null) {
-      throw new IllegalArgumentException("${operand} has no help: its first import carries no @help")
+      throw new IllegalArgumentException(Diagnostic.text("${operand} has no help", 'its first import carries no @help'))
     }
 
     render(operand, texts)
@@ -358,7 +360,7 @@ final class CookCommand {
     review(proposal, proposal.changes)
 
     if (!dryRun && !batchApprove && !approved()) {
-      diagnose('Nothing written.')
+      diagnose(Diagnostic.text('nothing was written', 'the answer was not y or yes'))
       return false
     }
 
@@ -404,8 +406,9 @@ final class CookCommand {
 
   private boolean approved() {
     if (stdin == null) {
-      throw new IllegalArgumentException(
-      'Cook asks before writing, and there is no terminal to ask in; run with --batch-approve to write without asking')
+      throw new IllegalArgumentException(Diagnostic.text('approval required; nothing was written',
+      'there is no terminal to ask in, and --batch-approve was not given',
+      'run interactively to review the diff, or run again with --batch-approve before the first recipe'))
     }
 
     stdout.print('Write these changes? [y/N] ')
@@ -447,9 +450,10 @@ final class CookCommand {
     directory
   }
 
+  // A mistake in the command line; unless the message names a next step, the next step is reading the usage.
   private static final class UsageError extends IllegalArgumentException {
-    UsageError(String message) {
-      super(message)
+    UsageError(String what, String why = null, String next = 'run: ./cook help') {
+      super(Diagnostic.text(what, why, next))
     }
   }
 }
