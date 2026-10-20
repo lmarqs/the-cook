@@ -38,7 +38,7 @@ final class Coordinates {
     if (!match.matches()) {
       throw new IllegalArgumentException(
       "Invalid recipe coordinates: ${text}; expected group:artifact:version[#recipe] with an exact release " +
-      'version, such as io.github.lmarqs.cookbook:agents:0.1.0#instructions')
+      'version, such as io.github.lmarqs.cookbook:agents:1.2.3#seed')
     }
 
     new Coordinates(match.group(1), match.group(2), match.group(3), match.group(4))

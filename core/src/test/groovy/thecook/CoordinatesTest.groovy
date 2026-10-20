@@ -29,6 +29,8 @@ class CoordinatesTest {
     .each { text ->
       def error = shouldFail(IllegalArgumentException) { Coordinates.parse(text) }
       assert error.message.startsWith("Invalid recipe coordinates: ${text}")
+      // The example names a recipe the agents artifact has.
+      assert error.message.endsWith('such as io.github.lmarqs.cookbook:agents:1.2.3#seed')
     }
     assert Coordinates.written('acme:notes:1.2.3')
     assert !Coordinates.written('https://example.com/notes.groovy')
