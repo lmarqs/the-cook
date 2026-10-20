@@ -33,8 +33,8 @@ After editing `permission/policy.yaml`, cook the adapters again with every harne
 | --- | --- | --- | --- |
 | Role | developer, worker, reviewer | Per run, at launch | `permission/policy.yaml` `roles`, rendered to `adapters/claude/roles/` |
 | Mode | attended, unattended | Per run, at launch | Launch flags: unattended runs refuse what would ask |
-| Harness | Claude, Codex | Per person or orchestrator | `adapters/<harness>/` |
-| Model | Opus, Sonnet, GPT | Per person, or per role in an orchestrator | Personal settings or the orchestrator's config, never the policy |
+| Harness | Claude, Codex | Per person or loop runner | `adapters/<harness>/` |
+| Model | Opus, Sonnet, GPT | Per person, or per role in a loop runner | Personal settings or the runner's configuration, never the policy |
 
 ## Launching
 
@@ -54,10 +54,23 @@ Codex has no roles: it has no option that adds a rules file to one run, so every
 `commands` alone. A role's denies reach only Claude runs.
 
 Claude applies the project's allow rules only in a workspace someone has trusted, so start `claude` here once,
-interactively, before relying on unattended runs. Codex loads `.codex/rules` only in a trusted project.
+interactively, before relying on unattended runs. Codex loads `.codex/rules` only in a trusted project. A worktree of
+this clone, inside it or beside it, needs no setup of its own: the layout is committed, both harnesses take its trust
+from this checkout, and Claude reads this checkout's `.claude/settings.local.json` there.
 
-An orchestrator such as ralph-tui runs its coordinator attended in the developer role and starts each worker with the
-unattended line of the harness it uses.
+## Loop runners
+
+A loop runner, which runs agents over a series of tasks, often in worktrees, can rely on the paths above: `AGENTS.md`,
+the links in `.claude/` and `.codex/`, and the role files in `adapters/claude/roles/`. Cooking keeps them where they
+are.
+
+- Set the runner's command to the unattended line of the harness it starts, with the role file for a Claude worker,
+  and leave the coordinator, if it has one, in the developer role.
+- While `permission/policy.yaml` says `bypass: refuse`, Claude refuses `--dangerously-skip-permissions` and
+  `--permission-mode bypassPermissions`, which many runners pass by default. Codex keeps its rules under its bypass
+  flag, but `--ignore-rules`, `--ignore-user-config` and a clone nobody trusted skip them, and `--approve-for-me` lets
+  a reviewer approve the asks; configure Codex runners without them.
+- Where worktrees go, how one becomes runnable and how one is removed are in the Worktrees section of `/AGENTS.md`.
 
 ## Personal settings
 
@@ -74,5 +87,5 @@ not count. Reading `AGENTS.md` needs Claude Code 2.1.277 or later.
 
 This directory sets what the team shares, not what a person may do. A personal `allow` does not outrank a team `ask`
 or `deny`, but anyone can still override the shared setup on their machine: `claude --setting-sources user` skips the
-project's settings, `claude --dangerously-skip-permissions` skips every check, and `codex exec --ignore-rules` skips
-the rules. Enforcing a rule on everyone takes the organization's managed settings, outside the repository.
+project's settings, the bypass refusal included, and `codex exec --ignore-rules` skips the rules. Enforcing a rule on
+everyone takes the organization's managed settings, outside the repository.
