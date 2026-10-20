@@ -15,7 +15,7 @@ class CookbookDirectoryTest {
   @Test void servesAnArtifactAtAnyVersionFromItsFilesLeavingHiddenOnesOut() {
     def book = cookbook([
       'notes/notes.groovy': 'notes',
-      'notes/Notes.groovy': 'class Notes {}',
+      'notes/Note.groovy': 'class Note {}',
       'notes/templates/NOTES.md': 'resource',
       'notes/.DS_Store': 'hidden',
       'notes/.cache/x.groovy': 'hidden',
@@ -24,13 +24,13 @@ class CookbookDirectoryTest {
     def artifact = book.artifact(Coordinates.parse('acme:notes:1.2.3'))
 
     assert artifact.recipes == ['notes']
-    assert artifact.models == ['Notes']
+    assert artifact.models == ['Note']
     assert artifact.resources('templates') == ['NOTES.md': 'resource']
     assert artifact.resource('.DS_Store') == null
     assert book.artifact(Coordinates.parse('acme:notes:9.9.9')).sha256 == artifact.sha256
     def jar = zip([
       'acme/notes/notes.groovy': 'notes',
-      'acme/notes/Notes.groovy': 'class Notes {}',
+      'acme/notes/Note.groovy': 'class Note {}',
       'acme/notes/templates/NOTES.md': 'resource',
     ])
     def coordinates = Coordinates.parse('acme:notes:1.2.3')

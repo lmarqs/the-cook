@@ -66,7 +66,7 @@ class CookTomlTest {
     def kitchen = folder.newFolder('kitchen')
     source(new File(folder.root, 'book'), [
       'notes/notes.groovy': 'source notes',
-      'notes/Notes.groovy': 'class Notes {}',
+      'notes/Note.groovy': 'class Note {}',
       'notes/templates/NOTES.md': 'resource',
     ])
     new File(kitchen, 'cook.toml').text = 'repositories = ["../book"]\n'
@@ -74,7 +74,7 @@ class CookTomlTest {
     def artifact = repositories(kitchen).artifact(Coordinates.parse('acme:notes:1.2.3'))
 
     assert artifact.recipes == ['notes']
-    assert artifact.models == ['Notes']
+    assert artifact.models == ['Note']
     assert artifact.recipeSource('notes') == 'source notes'
     assert repositories(kitchen).artifact(Coordinates.parse('acme:notes:9.9.9')).sha256 == artifact.sha256
     assert repositories(kitchen).repositories*.class == [CookbookDirectory]
