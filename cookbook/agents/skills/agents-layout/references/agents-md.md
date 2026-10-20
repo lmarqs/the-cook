@@ -1,8 +1,9 @@
-# Why the AGENTS.md template is shaped this way
+# Why `AGENTS.md` holds what it holds
 
-`AGENTS.template.md` is seeded into a repository by the `seed` recipe and read by every agent session there.
-Each line costs every session, so the template holds what the evidence says agents use from such a file, and nothing
-the repository already shows. The reasons below name their sources; the full list is at the end.
+Read this when filling in `AGENTS.md` from the template `#seed` writes, or when deciding what to add to it or cut.
+Every agent session reads `AGENTS.md`, so each line costs every session: the template holds what the evidence says
+agents use from such a file, and nothing the repository already shows. The reasons below name their sources; the full
+list is at the end.
 
 ## What the evidence says
 
@@ -38,16 +39,17 @@ the repository already shows. The reasons below name their sources; the full lis
 - **Agent behavior lives in Boundaries only.** Running the quick check, reporting what ran, reading and adding
   Gotchas, updating the file: each rule is stated once, under Always, not repeated where it applies.
 - **Worktrees stay explicit**, with a row for removing one and what that removal cleans up, because removal is the
-  step agents skip.
+  step agents skip. The rows are the project's, whatever creates the worktrees: a person, a script or any loop
+  runner. A worktree inside the repository reads its own `AGENTS.md`, not the main checkout's, but a `CLAUDE.local.md`
+  in a directory above it still turns Claude's reading of `AGENTS.md` off (tested, Claude Code 2.1.304).
 - **The template is filled only when asked.** The file is loaded every session, so an unconditional instruction
   would make the first agent rewrite it during an unrelated task. Placeholders are `[bracketed]`, because GitHub
   renders `<angle brackets>` as HTML tags and hides them. No sample values appear, because agents copy them into
   repositories where they are wrong.
 
 Not established: whether a repository's filled template improves what agents produce there. That needs the setup in
-[1], a fixed task set across several agents and models, with and without the file. The `instructions` recipe's yield
-asks for the in-scope check instead: a fresh session sets up, makes a small change and passes the Done check from
-`AGENTS.md` alone.
+[1], a fixed task set across several agents and models, with and without the file. The check within reach is
+narrower: a fresh session sets up, makes a small change and passes the Done check from `AGENTS.md` alone.
 
 ## Sources
 

@@ -73,6 +73,7 @@ recipes:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
         - ".agents/skills/agents-layout/references/adopt.md"
+        - ".agents/skills/agents-layout/references/agents-md.md"
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
@@ -234,6 +235,7 @@ Run with --force to replace them, or --skip to keep them.'''
       '.agents/skills/.gitkeep',
       '.agents/skills/agents-layout/SKILL.md',
       '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/agents-md.md',
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
@@ -466,6 +468,7 @@ CLAUDE.local.md
       '.agents/skills/.gitkeep',
       '.agents/skills/agents-layout/SKILL.md',
       '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/agents-md.md',
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
@@ -535,6 +538,7 @@ agents.connect([claude])
     assert fewer.changes == [
       '.agents/skills/agents-layout/SKILL.md',
       '.agents/skills/agents-layout/references/adopt.md',
+      '.agents/skills/agents-layout/references/agents-md.md',
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',

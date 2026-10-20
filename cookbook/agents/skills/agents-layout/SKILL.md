@@ -62,6 +62,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Task | Read |
 | --- | --- |
 | Set the layout up, or move an existing `CLAUDE.md`, `.claude/` or `.codex/` setup into it | [references/adopt.md](references/adopt.md) |
+| Fill in or review `AGENTS.md` | [references/agents-md.md](references/agents-md.md) |
 | Write or review `policy.yaml` | [references/policy.md](references/policy.md) |
 | An agent ignores the instructions, asks when it should not, or runs what it should not | [references/investigate.md](references/investigate.md) |
 | Understand why the layout is shaped this way, or argue for changing it | [references/design.md](references/design.md) |

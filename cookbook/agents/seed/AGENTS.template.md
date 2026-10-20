@@ -1,9 +1,9 @@
 > **This file is an unfilled template.** When the developer asks you to fill it in, replace each [placeholder] and
-> empty table cell with what this repository shows, and run every command you write down. Text outside square
-> brackets holds for any repository: keep it unless it is wrong here. Fill only what you can verify now, and delete
-> the rows, sections and groups that do not apply. Keep the line under each heading, link to details instead of
-> copying them, and delete this note when you are done. Until then, tell the developer that this file is unfilled
-> before you start other work.
+> empty table cell with what this repository shows, and run every command you write down. Text outside square brackets
+> holds for any repository: keep it unless it is wrong here; `.agents/skills/agents-layout/references/agents-md.md`
+> says why it is there. Fill only what you can verify now, and delete the rows, sections and groups that do not apply.
+> Keep the line under each heading, link to details instead of copying them, and delete this note when you are done.
+> Until then, tell the developer that this file is unfilled before you start other work.
 
 # [Project name]
 
