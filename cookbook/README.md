@@ -123,7 +123,7 @@ Rules:
 | `@yield('''...''')` | first import | What to do next, printed after the writes succeed. Optional. |
 | `@ingredient(Type, at)` | field | An injected instance, at the destination root or at the directory `at`. |
 | `@resource('path')` | field | The text of a file: beside a loose recipe, inside the repository, or in the recipe's artifact. The field is a `String`. |
-| `@param(value = names, doc = '...', default = ..., choices = ..., many = ...)` | field | An input bound from `--name=value` or `--name value`. Required without a default. `many` accepts repeats. A `File` field is an input file in the destination, read as it was before the invocation. `doc` is required: it is the param's line in `help`. |
+| `@param(value = names, doc = '...', default = ..., choices = ..., many = ...)` | field | An input bound from `--name=value` or `--name value`. Required without a default; `default = []` makes it optional with no value. `many` accepts repeats. The field is a `String`, a yes-or-no `boolean`, an `int` or `long`, or with `many` a `String[]` or `List<String>`; an input file is passed as its path. `doc` is required: it is the param's line in `help`. |
 
 A file that another recipe in the same invocation may write, such as a program's own configuration or Ralph's PRD,
 is read by the ingredient that models it, through `current(path)`; the recipe passes its path as a `String`.

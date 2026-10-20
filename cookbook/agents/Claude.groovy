@@ -82,6 +82,16 @@ class Claude implements Harness {
   void settings(Map more) { settings += more }
 
   /**
+   * Adds the top-level keys of the JSON file at `path`, relative to this instance's directory, as `settings` does. The
+   * file is read as the recipes before this one in the invocation left it; a missing file is rejected.
+   */
+  void settingsFrom(String path) {
+    def text = current(path)
+    if (text == null) throw new IllegalArgumentException("${path} must exist")
+    settings((Map) new JsonSlurper().parseText(text))
+  }
+
+  /**
    * Links `.claude/skills` and `.claude/commands` to the shared directories of those names, the only ones Claude Code
    * finds by a fixed path; each path is relative to this instance's directory.
    */

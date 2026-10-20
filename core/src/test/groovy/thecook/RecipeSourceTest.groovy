@@ -23,6 +23,14 @@ class RecipeSourceTest {
     ]
   }
 
+  @Test void readsAnEmptyDefaultAsAnOptionalParamWithNoValue() {
+    def texts = RecipeSource.texts(new File(COOKBOOK, 'agents/claude-settings.groovy').text, 'claude-settings.groovy')
+    assert texts.params == [
+      new RecipeParam(['settings'], 'String',
+      'JSON file whose top-level keys are written into .agents/adapters/claude/settings.json', '', [], false)
+    ]
+  }
+
   @Test void keepsEscapedLineBreaksInTexts() {
     def texts = RecipeSource.texts(new File(COOKBOOK, 'github/aws-oidc.groovy').text, 'aws-oidc.groovy')
     assert texts.confirm.startsWith("The selected job's next run assumes the selected IAM role")

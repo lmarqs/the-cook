@@ -56,7 +56,7 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 @param(value = ['max-iterations'], default = 10, doc = 'Iterations before Ralph stops') int maxIterations
 @param(value = ['auto-commit'], default = false, doc = 'Commit after each iteration') boolean autoCommit
 @param(value = ['headless'], default = false, doc = 'Run without the TUI') boolean headless
-@param(value = ['issue-prefix'], default = null, doc = 'The Beads issue prefix, for the beads tracker') String issuePrefix
+@param(value = ['issue-prefix'], default = [], doc = 'The Beads issue prefix, for the beads tracker') String issuePrefix
 
 @ingredient(RalphTui) def ralph
 @ingredient(Beads) def beads

@@ -83,6 +83,7 @@ Edit `NOTES.md`.
 import example.notes.Notes
 
 @param(value = ['owner'], doc = 'Who keeps the notes', choices = ['me', 'team']) String owner
+@param(value = ['tag'], doc = 'A tag for the notes', default = []) String tag
 
 @ingredient(Notes) def notes
 
@@ -95,6 +96,8 @@ Seeds `NOTES.md`.
 Parameters
   --owner=<String>
       Who keeps the notes; required; choices: me, team
+  --tag=<String>
+      A tag for the notes; optional
 
 Ingredients
   example.notes.Notes

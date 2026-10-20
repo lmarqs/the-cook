@@ -41,7 +41,7 @@ import io.github.lmarqs.cookbook.python.Python
 import io.github.lmarqs.cookbook.mise.Mise
 
 @param(value = ['dependency'], doc = 'One requirement, such as httpx>=0.27') String dependency
-@param(value = ['group'], default = null, doc = 'Optional dependency group') String group
+@param(value = ['group'], default = [], doc = 'Optional dependency group') String group
 @param(value = ['installer'], choices = ['uv', 'pip'], default = 'uv', doc = 'The installer the mise task runs') String installer
 @param(value = ['manifest'], choices = ['pyproject.toml', 'requirements.txt'], default = 'pyproject.toml', doc = 'The manifest that records the requirement') String manifest
 @param(value = ['dir'], default = '.', doc = 'The project directory') String dir

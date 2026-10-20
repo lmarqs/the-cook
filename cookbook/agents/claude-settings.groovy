@@ -3,8 +3,8 @@ Writes chosen Claude Code settings from a file you supply.
 
 ## Before cooking
 
-The optional settings input is a JSON file in the destination. It is read as it exists before the invocation;
-each top-level key becomes one owned setting.
+The optional settings input is a JSON file in the destination, read as the recipes before this one in the invocation
+left it; a missing input is refused. Each top-level key becomes one owned setting.
 
 ## Cook
 
@@ -32,9 +32,9 @@ them.
 ''')
 import io.github.lmarqs.cookbook.agents.Claude
 
-@param(value = ['settings'], default = null, doc = 'JSON file whose top-level keys are written into .agents/adapters/claude/settings.json')
-File settings
+@param(value = ['settings'], default = [], doc = 'JSON file whose top-level keys are written into .agents/adapters/claude/settings.json')
+String settings
 
 @ingredient(Claude) def claude
 
-if (settings) claude.settings(new JsonSlurper().parse(settings))
+if (settings) claude.settingsFrom(settings)

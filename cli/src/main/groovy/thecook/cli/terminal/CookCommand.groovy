@@ -331,7 +331,7 @@ final class CookCommand {
   private static String render(String name, RecipeTexts texts) {
     def params = texts.params.collect { param ->
       def facts = [
-        param.defaultValue != null ? "default: ${param.defaultValue}" : 'required',
+        param.defaultValue == null ? 'required' : param.defaultValue ? "default: ${param.defaultValue}" : 'optional',
         param.choices ? "choices: ${param.choices.join(', ')}" : null,
         param.many ? 'repeatable' : null,
       ].findAll { it != null }

@@ -407,6 +407,40 @@ notes.set(features: [hooks: true])
     assert discarded.message.readLines()[0] == '.agents/adapters/claude/settings.json key permissions'
   }
 
+  @Test void claudeSettingsCooksWithAndWithoutItsSettingsFile() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings', [:]).changes == ['cook.lock']
+    def missing = shouldFail(IllegalArgumentException) {
+      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings', [settings: ['setup/claude.json']])
+    }
+    assert missing.message == 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings: setup/claude.json must exist'
+
+    new File(kitchen, 'setup').mkdirs()
+    new File(kitchen, 'setup/claude.json').text = '{"model": "opus"}\n'
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#claude-settings', [settings: ['setup/claude.json']]).commit()
+    assert new File(kitchen, '.claude/settings.json').text == '{\n  "model": "opus"\n}\n'
+  }
+
+  @Test void codexSettingsCooksWithAndWithoutItsInputs() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#codex-settings', [:]).changes == ['cook.lock']
+
+    new File(kitchen, 'setup').mkdirs()
+    new File(kitchen, 'setup/codex.toml').text = 'model = "o3"\n'
+    new File(kitchen, 'setup/codex-hooks.json').text = '{"hooks": {}}\n'
+    new File(kitchen, 'setup/git.rules').text = 'prefix_rule(pattern = ["git"])\n'
+    new File(kitchen, 'setup/npm.rules').text = 'prefix_rule(pattern = ["npm"])\n'
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#codex-settings', [
+      config: ['setup/codex.toml'], hooks: ['setup/codex-hooks.json'], rule: ['setup/git.rules', 'setup/npm.rules'],
+    ]).commit()
+    assert new File(kitchen, '.codex/config.toml').text == 'model = "o3"\n'
+    assert new File(kitchen, '.codex/hooks.json').text == '{\n  "hooks": {}\n}\n'
+    assert new File(kitchen, '.codex/rules/git.rules').text == 'prefix_rule(pattern = ["git"])\n'
+    assert new File(kitchen, '.codex/rules/npm.rules').text == 'prefix_rule(pattern = ["npm"])\n'
+  }
+
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
     def real = folder.newFolder('real')
     def linked = new File(folder.root, 'linked')

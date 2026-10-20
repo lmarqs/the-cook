@@ -86,9 +86,14 @@ final class RecipeSource {
         names instanceof ListExpression ? names.expressions*.text : [names.text],
         declaration.variableExpression.originType.toString(false),
         (String) constant(param.getMember('doc')),
-        param.getMember('default')?.text,
+        defaultText(param.getMember('default')),
         param.getMember('choices') instanceof ListExpression ? param.getMember('choices').expressions*.text : [],
         constant(param.getMember('many')) == true)
+  }
+
+  // `default = []` declares an optional param with no value, read as the empty text.
+  private static String defaultText(Expression expression) {
+    expression instanceof ListExpression ? expression.expressions*.text.join(', ') : expression?.text
   }
 
   private static Object constant(Expression expression) {

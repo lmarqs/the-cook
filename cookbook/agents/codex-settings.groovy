@@ -3,15 +3,15 @@ Writes chosen Codex configuration, hooks and rule files from files you supply.
 
 ## Before cooking
 
-The optional configuration input is a TOML file and the optional hooks input is a JSON file in the destination.
-Both are read as they exist before the invocation; each top-level key becomes one owned key. The optional
-rules input is a directory of rule files. Each file name may hold only letters, digits, underscores, dots
-and hyphens, and may not be `.` or `..`.
+The optional configuration input is a TOML file and the optional hooks input is a JSON file in the destination;
+each top-level key becomes one owned key. Each optional rule input is a rule file in the destination, written under
+its own file name, which may hold only letters, digits, underscores, dots and hyphens. Every input is read as the
+recipes before this one in the invocation left it, and a missing input is refused.
 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:agents:<version>#codex-settings --config=setup/codex.toml --rules=setup/codex-rules
+./cook io.github.lmarqs.cookbook:agents:<version>#codex-settings --config=setup/codex.toml --rule=setup/git.rules
 ```
 
 ## Writes
@@ -20,7 +20,7 @@ and hyphens, and may not be `.` or `..`.
 | --- | --- | --- |
 | `.agents/adapters/codex/config.toml` | Each top-level key of the config file, owned whole | `--config` supplies keys |
 | `.agents/adapters/codex/hooks.json` | Each top-level key of the hooks file, owned whole | `--hooks` supplies keys |
-| `.agents/adapters/codex/rules/<name>` | One whole file per file in the rules directory | `--rules` supplies files |
+| `.agents/adapters/codex/rules/<name>` | One whole file per rule file, under its file name | `--rule` supplies files |
 | `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | Each one written |
 
 Codex reads the project configuration, hooks and rules; it reads `AGENTS.md` natively.
@@ -37,17 +37,17 @@ inputs to change them.
 ''')
 import io.github.lmarqs.cookbook.agents.Codex
 
-@param(value = ['config'], default = null, doc = 'TOML file whose top-level keys are written into .agents/adapters/codex/config.toml')
-File config
+@param(value = ['config'], default = [], doc = 'TOML file whose top-level keys are written into .agents/adapters/codex/config.toml')
+String config
 
-@param(value = ['hooks'], default = null, doc = 'JSON file whose top-level keys are written into .agents/adapters/codex/hooks.json')
-File hooks
+@param(value = ['hooks'], default = [], doc = 'JSON file whose top-level keys are written into .agents/adapters/codex/hooks.json')
+String hooks
 
-@param(value = ['rules'], default = null, doc = 'Directory whose files become .agents/adapters/codex/rules/<name>')
-File rules
+@param(value = ['rule'], default = [], many = true, doc = 'Rule file written as .agents/adapters/codex/rules/<its name>; repeat for more')
+List<String> rule
 
 @ingredient(Codex) def codex
 
-if (config) codex.config(new TomlSlurper().parse(config))
-if (hooks) codex.hooks(new JsonSlurper().parse(hooks))
-if (rules) rules.eachFile { codex.rule(it.name, it.text) }
+if (config) codex.configFrom(config)
+if (hooks) codex.hooksFrom(hooks)
+rule.each { codex.ruleFrom(it) }
