@@ -35,7 +35,7 @@ recipe ownership.
    `arm64` is `linux-arm64`; on `Darwin`, `arm64` is `macos-arm64`. Any other platform is refused, named, with exit
    status 1.
 2. If the package's launcher exists under `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/<platform>/`, launch
-   it: `the-cook/bin/the-cook` on Linux, `the-cook.app/Contents/MacOS/the-cook` on macOS.
+   it: `cook/bin/cook` on Linux, `cook.app/Contents/MacOS/cook` on macOS.
 3. Otherwise download `the-cook-<version>-<platform>.tar.gz` from the release with `curl`, or `wget` when `curl` is
    absent, and compute its sha256 with `sha256sum`, or `shasum -a 256` when `sha256sum` is absent.
 4. Refuse a download whose sha256 differs from the one in the wrapper: print the file and both hashes, exit with
@@ -94,7 +94,7 @@ recipe trust: Groovy recipes are executable code, and batch approval is not a sa
 
 ## Source repository launcher
 
-This repository's [`cook` script](../../cook) runs the local build, `cli/build/install/the-cook/bin/the-cook`, from the
+This repository's [`cook` script](../../cook) runs the local build, `cli/build/install/cook/bin/cook`, from the
 directory it is called in, so that directory is the kitchen. If that local distribution is absent, it prints
 `Build the CLI first: ./gradlew cliBuild`. The root README's [install section](../../README.md#install) describes
 installing a release.

@@ -17,9 +17,9 @@ fail() {
 platform="$(uname -s) $(uname -m)"
 
 case "$platform" in
-  'Linux x86_64' | 'Linux amd64') target=linux-x64 expected=$sha256_linux_x64 image=the-cook/bin/the-cook ;;
-  'Linux aarch64' | 'Linux arm64') target=linux-arm64 expected=$sha256_linux_arm64 image=the-cook/bin/the-cook ;;
-  'Darwin arm64') target=macos-arm64 expected=$sha256_macos_arm64 image=the-cook.app/Contents/MacOS/the-cook ;;
+  'Linux x86_64' | 'Linux amd64') target=linux-x64 expected=$sha256_linux_x64 image=cook/bin/cook ;;
+  'Linux aarch64' | 'Linux arm64') target=linux-arm64 expected=$sha256_linux_arm64 image=cook/bin/cook ;;
+  'Darwin arm64') target=macos-arm64 expected=$sha256_macos_arm64 image=cook.app/Contents/MacOS/cook ;;
   *) fail "the-cook has no package for $platform; it runs on Linux x64 and arm64 and macOS arm64" ;;
 esac
 

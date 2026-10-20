@@ -7,7 +7,8 @@ def mac = System.getProperty('os.name').startsWith('Mac')
 def packageInput = layout.buildDirectory.dir('jpackage-input')
 def packageOutput = layout.buildDirectory.dir('jpackage')
 def imageName = application.applicationName + (mac ? '.app' : '')
-def launcherPath = mac ? 'Contents/MacOS/the-cook' : (windows ? 'the-cook.exe' : 'bin/the-cook')
+def launcher = application.applicationName
+def launcherPath = mac ? "Contents/MacOS/${launcher}" : (windows ? "${launcher}.exe" : "bin/${launcher}")
 def packagedLauncher = packageOutput.map { it.file("${imageName}/${launcherPath}") }
 
 tasks.register('jpackageInput', Sync) {

@@ -158,14 +158,21 @@ in the wrapper, and caches it under `${XDG_CACHE_HOME:-~/.cache}/the-cook`. Late
 upgrade, commit the wrapper of another release ([wrapper](docs/features/wrapper.md)).
 
 To run a package without the wrapper, unpack the **whole** image and run its launcher from the repository you want to
-cook, or name the repository with `-C`. On Linux the launcher is `the-cook/bin/the-cook`, on macOS
-`the-cook.app/Contents/MacOS/the-cook`:
+cook, or name the repository with `-C`. On Linux the launcher is `cook/bin/cook`, on macOS
+`cook.app/Contents/MacOS/cook`:
 
 ```sh
 v=<version>
 curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
 tar -xzf "the-cook-$v-linux-x64.tar.gz"
-the-cook/bin/the-cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#connect" --harness=claude
+cook/bin/cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#connect" --harness=claude
+```
+
+[mise](https://mise.jdx.dev) installs a release package and puts its `cook` launcher on `PATH`:
+
+```sh
+mise use github:lmarqs/the-cook@<version>
+cook --help
 ```
 
 Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven
@@ -179,11 +186,11 @@ in `cli/build/distributions`:
 
 ```sh
 ./gradlew jpackage
-cli/build/jpackage/the-cook/bin/the-cook --help
+cli/build/jpackage/cook/bin/cook --help
 ```
 
-The paths above are for Linux. The build defines `the-cook.app/Contents/MacOS/the-cook` on macOS and
-`the-cook/the-cook.exe` on Windows; releases ship Linux x64 and arm64 and macOS arm64 packages.
+The paths above are for Linux. The build defines `cook.app/Contents/MacOS/cook` on macOS and
+`cook/cook.exe` on Windows; releases ship Linux x64 and arm64 and macOS arm64 packages.
 
 `./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help,
 cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C`

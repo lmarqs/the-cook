@@ -14,7 +14,7 @@ class WrapperTest {
   private static final String OS = System.getProperty('os.name') == 'Linux' ? 'linux' :
   (System.getProperty('os.name').startsWith('Mac') ? 'macos' : null)
   private static final String TARGET = "${OS}-${ARCH}".toString()
-  private static final String IMAGE = OS == 'macos' ? 'the-cook.app/Contents/MacOS/the-cook' : 'the-cook/bin/the-cook'
+  private static final String IMAGE = OS == 'macos' ? 'cook.app/Contents/MacOS/cook' : 'cook/bin/cook'
   private static final String PACKAGE = "/the-cook-1.2.3-${TARGET}.tar.gz"
   private static final List<String> TOOLS = ['uname', 'mkdir', 'mktemp', 'rm', 'rmdir', 'mv', 'tar', 'gzip', 'cut']
 
