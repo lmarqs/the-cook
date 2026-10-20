@@ -18,11 +18,11 @@ other versions, unknown fields, invalid entries and roles that do more than deny
 | Target | Part | When |
 | --- | --- | --- |
 | `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
-| `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
+| `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's `bypass` is `refuse` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |
-| `.agents/adapters/codex/rules/cook.rules` | The section `commands` | `--harness=codex` and the policy has command rules |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, opening with a comment on the runs Codex cannot refuse while `bypass` is `refuse` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
 
 Cooking with fewer harnesses removes the outputs of the ones left out.

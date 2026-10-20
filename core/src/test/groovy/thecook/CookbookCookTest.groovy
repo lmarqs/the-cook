@@ -248,13 +248,14 @@ Run with --force to replace them, or --skip to keep them.'''
     assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
     '../.agents/adapters/claude/settings.json'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
-    [permissions: [allow: [], ask: [], deny: []]]
+    [permissions: [allow: [], ask: [], deny: [], disableBypassPermissionsMode: 'disable']]
     assert new File(kitchen, '.codex/config.toml').text.contains('sandbox_mode = "workspace-write"')
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text == '''{
   "permissions": {
     "allow": [],
     "ask": [],
-    "deny": []
+    "deny": [],
+    "disableBypassPermissionsMode": "disable"
   }
 }
 '''
@@ -382,6 +383,12 @@ bypass allow
     policy.text = policy.text.replaceAll(/(?s)\nroles:.*/, '\n')
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
     assert !roles.exists()
+
+    policy.text = policy.text.replaceFirst('version: 2\n', 'version: 2\nbypass: allow\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
+    def permissions = new groovy.json.JsonSlurper().parse(new File(kitchen, '.agents/adapters/claude/settings.json'))
+        .permissions
+    assert permissions.keySet() == ['allow', 'ask', 'deny'] as Set
   }
 
   @Test void rendersThePolicyIntoCodexRulesAndNamesWhatCodexCannotEnforce() {
@@ -399,6 +406,11 @@ bypass allow
     assert rules[1..-2].join('\n') + '\n' == fixture('codex-commands.rules')
     // A Codex run cannot add a rules file of its own, so roles render nothing for Codex.
     assert !new File(kitchen, '.agents/adapters/codex/roles').exists()
+
+    policy.text = policy.text.replaceFirst('version: 2\n', 'version: 2\nbypass: allow\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['codex']]).commit()
+    def allowed = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
+    assert allowed[1..-2] == rules[2..-2]
   }
 
   @Test void commitsTheHarnessLinksAndKeepsEverythingElseInTheirDirectoriesOutOfGit() {
@@ -498,7 +510,7 @@ CLAUDE.local.md
     again.commit()
     // How a session asks is each person's choice, so the shared settings leave out `defaultMode`.
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions ==
-    [allow: [], ask: [], deny: []]
+    [allow: [], ask: [], deny: [], disableBypassPermissionsMode: 'disable']
   }
 
   @Test void linksTheSharedSkillsAndRemovesWhatALaterVersionNoLongerDeclares() {

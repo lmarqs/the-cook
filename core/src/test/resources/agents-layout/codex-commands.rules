@@ -1,3 +1,4 @@
+# bypass: refuse reaches Claude only: --ignore-rules or an untrusted project skips these rules, --approve-for-me approves prompts
 prefix_rule(pattern = ["git", ["status", "diff", "log", "show", "add", "commit", "switch", "fetch", "pull", "push"]], decision = "allow")
 prefix_rule(pattern = ["gh", "pr", ["view", "list", "diff", "checks", "create", "comment"]], decision = "allow")
 prefix_rule(pattern = ["./gradlew", ["test", "check"]], decision = "allow")

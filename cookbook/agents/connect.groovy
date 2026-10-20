@@ -23,12 +23,12 @@ Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` t
 | --- | --- | --- |
 | `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories, seeded when absent; never owned | Always |
-| `.agents/adapters/claude/settings.json` | `permissions` | `--harness=claude` |
+| `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's `bypass` is `refuse` | `--harness=claude` |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles |
 | `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude finds skills and commands | `--harness=claude` |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |
-| `.agents/adapters/codex/rules/cook.rules` | The section `commands` | `--harness=codex` and the policy has command rules |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, opening with a comment on the runs Codex cannot refuse while `bypass` is `refuse` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
 | `.gitignore` | The section `harnesses`: each selected harness's directory ignored except the links above, which are committed, and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always |
 

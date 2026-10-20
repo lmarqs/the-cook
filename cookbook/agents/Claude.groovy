@@ -7,7 +7,7 @@ package io.github.lmarqs.cookbook.agents
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `allow`, `ask` and `deny` lists of `Bash(<prefix> *)`
- * rules and tool patterns. One file per policy role under `.agents/adapters/claude/roles/`, holding only that role's
+ * rules and tool patterns, and `disableBypassPermissionsMode`. One file per policy role under `.agents/adapters/claude/roles/`, holding only that role's
  * `permissions.deny`, which a run adds with `claude --settings <file>`. Symbolic links from `.claude/skills` and
  * `.claude/commands` to the shared directories complete the project setup: Claude Code finds skills and commands only
  * there. Hooks and memory are reached by their paths from the repository root, so they need no link, and Claude Code
@@ -66,13 +66,15 @@ class Claude implements Harness {
   /**
    * Sets `permissions` from the shared policy: under `allow`, `ask` and `deny`, one `Bash(<words> *)` rule per
    * combination of a command entry's alternatives, `Bash(<pattern>)` for a Claude-only command entry, and each tool
-   * pattern as it is. Writes one deny file per role. Sets no `defaultMode`: how a session asks is each person's choice.
-   * Replaces any permissions supplied by an earlier `settings` call.
+   * pattern as it is, then `disableBypassPermissionsMode: "disable"` while the policy's `bypass` is `refuse`, so no
+   * launch flag starts a run in bypass mode. Writes one deny file per role. Sets no `defaultMode`: how a session asks is
+   * each person's choice. Replaces any permissions supplied by an earlier `settings` call.
    */
   void permit(Policy policy) {
     settings.permissions = ['allow', 'ask', 'deny'].collectEntries { decision ->
       [decision, policy.commands[decision].collectMany { rules(it) } + policy.tools[decision]*.claude]
     }
+    if (policy.bypass == 'refuse') settings.permissions.disableBypassPermissionsMode = 'disable'
     roleDenies = policy.roles.collectEntries { name, denies -> [name, denies.collectMany { rules(it) }] }
   }
 

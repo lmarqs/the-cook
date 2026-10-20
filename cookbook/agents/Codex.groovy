@@ -47,6 +47,10 @@ class Codex implements Harness {
   private Map<String, String> rules = [:]
   private List<String> commands = []
 
+  /** The runs that skip or approve these rules under Codex 0.160.1, which has no setting that refuses them. */
+  private static final String UNREFUSED_RUNS = '# bypass: refuse reaches Claude only: --ignore-rules or an untrusted ' +
+      'project skips these rules, --approve-for-me approves prompts'
+
   /** None: Codex reads no instruction file in place of `AGENTS.md`. */
   final List<String> ignoredFiles = []
 
@@ -56,7 +60,9 @@ class Codex implements Harness {
    * shared policy command entry, alternatives kept as nested lists: `allow` stays `allow`, `ask` becomes `prompt` and
    * `deny` becomes `forbidden`. A Claude-only entry becomes a comment naming it, since Codex cannot enforce it, and
    * tool entries and roles render nothing: tools are named per harness, and a Codex run cannot add a rules file of its
-   * own. These settings keys replace values supplied by an earlier `config` call.
+   * own. While the policy's `bypass` is `refuse`, the rules start with a comment naming the runs that step outside
+   * them, since Codex has no setting that refuses those. These settings keys replace values supplied by an earlier
+   * `config` call.
    */
   void permit(Policy policy) {
     config += [sandbox_mode: 'workspace-write', approval_policy: 'on-request',
@@ -64,6 +70,7 @@ class Codex implements Harness {
     commands = [allow: 'allow', ask: 'prompt', deny: 'forbidden'].collectMany { decision, codexDecision ->
       policy.commands[decision].collect { prefixRule(it, codexDecision) }
     }
+    if (commands && policy.bypass == 'refuse') commands.add(0, UNREFUSED_RUNS)
   }
 
   /** Adds top-level configuration keys; a supplied key replaces its earlier value whole. */
