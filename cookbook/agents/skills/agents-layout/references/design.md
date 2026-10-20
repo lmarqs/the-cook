@@ -93,6 +93,14 @@ Claude's own syntax, and Codex's rules file lists it in a comment as not enforce
 rules are read. Tools other than the shell are named differently by each harness, so `tools` holds only these
 harness entries.
 
+## Cook owns only the keys it renders
+
+The policy covers permissions and nothing else, so Cook owns only what it renders from it: `permissions` for Claude,
+the sandbox and approval keys and `cook.rules` for Codex. Hooks, `env`, MCP servers and every other key stay in the
+harness's own file, in its own format, and cooking keeps them. A shared format for those would need a translation per
+harness for no gain, and an input file per harness would only move the same keys one step further from where the
+harness reads them.
+
 ## Why roles only deny
 
 A role narrows `commands` for one kind of run; it never widens it. So no run, however it was started, gets more than a

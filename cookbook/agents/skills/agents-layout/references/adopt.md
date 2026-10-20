@@ -182,12 +182,17 @@ This belongs to step 6, and the file has to go before step 7: `#connect` refuses
    | `Bash(git push * --force*)`, a wildcard in the middle | `claude: "git push * --force*"`; Codex does not enforce it |
    | `WebFetch(domain:docs.gradle.org)`, `mcp__github__get_*` | `claude: "<rule>"` under `tools` |
 
-2. Move every other key out of the file. `model` and `defaultMode` are each person's choice and leave the
-   repository. Keys the team shares, such as `hooks` or `env`, go in a JSON file cooked with
-   `io.github.lmarqs.cookbook:agents:<version>#claude-settings --settings=<file>`.
-3. `git rm .claude/settings.json`; `#connect` makes it a link to the adapter.
-4. After step 7, compare `.agents/adapters/claude/settings.json` with the removed file: every rule is
-   there, `Bash(<words> *)` in place of `Bash(<words>:*)`.
+2. Move the file to the adapter, which keeps the keys the team shares, such as `hooks` or `env`; `#connect` makes
+   `.claude/settings.json` a link to it and replaces `permissions` from the policy:
+
+   ```sh
+   mkdir -p .agents/adapters/claude
+   git mv .claude/settings.json .agents/adapters/claude/settings.json
+   ```
+
+3. Delete `model` and `defaultMode` from it: they are each person's choice and leave the repository.
+4. After step 7, compare `.agents/adapters/claude/settings.json` with `git show HEAD:.claude/settings.json`: every
+   rule is there, `Bash(<words> *)` in place of `Bash(<words>:*)`.
 
 Before:
 
@@ -241,8 +246,8 @@ holds the same ideas, so the move is mechanical. This belongs to step 6.
    git grep -n -e workflow.rules -e .claude/settings.json
    ```
 
-4. Move the hooks it wrote into a JSON file cooked with `#claude-settings --settings=<file>` (its `hooks` key) or
-   `#codex-settings --hooks=<file>`, with the scripts in `.agents/hooks/`.
+4. Move the hooks it wrote into the `hooks` key of `.agents/adapters/claude/settings.json` and into
+   `.agents/adapters/codex/hooks.json`, with the scripts in `.agents/hooks/`.
 5. Delete the renderer, its outputs and what step 3 found that runs it, before step 7:
 
    ```sh
@@ -347,8 +352,8 @@ Mechanical moves do not cover every existing setup. These fail loudly; each has 
   `.codex/config.toml is a file, and this recipe makes it a link to ../.agents/adapters/codex/config.toml`, and writes
   nothing. Check: `find .claude .codex -mindepth 1 -maxdepth 1 ! -type l` lists what is not a link; a
   `settings.json`, `skills`, `commands`, `config.toml`, `rules` or `hooks.json` among them stops the cook that links
-  it. Move a file's keys into the inputs of `#claude-settings` or `#codex-settings`, a directory's files into
-  `.agents/`, delete it, and cook again.
+  it. Move a file to the adapter of the same name, as `git mv .codex/config.toml .agents/adapters/codex/config.toml`
+  does, a directory's files into `.agents/`, and cook again.
 - **An ignore rule that hides a link.** Cook's `harnesses` section re-includes each harness directory, but a rule after
   it or in a global excludes file still wins. Check: the `git check-ignore --no-index` line of step 9;
   [investigate.md](investigate.md) has the row that finds the rule.

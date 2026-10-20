@@ -15,7 +15,8 @@ investigate an agent that misbehaves, and why it is shaped this way.
 | `hooks/` | Scripts that each harness's hook settings run, by their path from the repository root | The team |
 | `memory/` | Durable facts the code and `README.md` do not show, read when `AGENTS.md` points to them; no secrets | The team |
 | `permission/policy.yaml` | What agents may run: `commands` and `tools` for every session, `roles` that narrow it | The team |
-| `adapters/<harness>/` | The policy in each harness's own format; generated, never edited by hand | Cook |
+| `adapters/<harness>/` | Each harness's settings. Cook renders the policy into `permissions` in `claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `codex/config.toml`, and `codex/rules/cook.rules` | Cook |
+| `adapters/<harness>/`, every other key and file | Settings such as `hooks`, `env` and `[mcp_servers]`, and `codex/hooks.json`, written in the harness's own format | The team |
 | `adapters/claude/roles/` | One file of denies per role, added at launch | Cook |
 | `/.claude/`, `/.codex/` links | Committed, so a fresh clone, a cloud session or CI reads the setup with no cooking | Cook |
 | `/.claude/settings.local.json` | Personal preferences and standing approvals | Each person; Cook never writes it |

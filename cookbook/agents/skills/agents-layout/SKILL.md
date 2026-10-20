@@ -66,9 +66,9 @@ Every file here has one owner. Most surprises come from editing a file someone e
 
 | Owner | Files | Changed by |
 | --- | --- | --- |
-| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/`, `memory/`, `.agents/README.md` | Editing and committing, through review |
+| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/`, `memory/`, `.agents/README.md`, `.agents/adapters/codex/hooks.json`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
-| Cook | `.agents/adapters/`, the links in `.claude/` and `.codex/`, the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
+| Cook | What it renders from the policy: `permissions` in `.agents/adapters/claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `.agents/adapters/codex/config.toml`, `.agents/adapters/codex/rules/cook.rules` and `.agents/adapters/claude/roles/`; the links in `.claude/` and `.codex/`; the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
 | Each person | `.claude/settings.local.json` | Nobody else; Cook never writes it and git ignores it |
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
 
@@ -79,7 +79,7 @@ AGENTS.md                         instructions for every agent; each harness rea
 .agents/
   README.md                       what lives where, and the command line for each kind of run
   permission/policy.yaml          what agents may run; the one file to edit for permissions
-  adapters/<harness>/             the policy in each harness's own format; generated
+  adapters/<harness>/             each harness's settings: the policy as Cook renders it, other keys the team's
   skills/ commands/ hooks/ memory/
 .claude/  .codex/                 committed links into .agents/, plus each person's local files
 ```
@@ -99,7 +99,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | --- | --- | --- | --- |
 | `skills/` | One directory per skill: `SKILL.md`, whose frontmatter `name` and `description` say when to use it, and the files it refers to | Through the `.claude/skills` link | Natively |
 | `commands/` | One Markdown file per slash command; the file name is the command | Through the `.claude/commands` link | Not read; turn a command both need into a skill |
-| `hooks/` | Scripts that hook settings run, by their path from the repository root | Its `hooks` settings, cooked with `#claude-settings` | Its `hooks.json`, cooked with `#codex-settings` |
+| `hooks/` | Scripts that hook settings run, by their path from the repository root | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
 | `memory/` | Durable facts about the repository that the code and `README.md` do not show; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
 
 - **A skill** is for knowledge an agent needs only for some tasks: it loads when its description matches, so it costs
@@ -130,8 +130,8 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
 | Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
 | Share a skill, slash command, hook script or durable fact | `.agents/skills/`, `commands/`, `hooks/` or `memory/` | Commit; the links expose it |
-| Run a shared hook script on a harness event | The `hooks` key of a JSON file cooked with `#claude-settings --settings=<file>`, and a JSON file cooked with `#codex-settings --hooks=<file>` | Cook, review, commit |
-| Change another shared harness setting, such as `env` | A JSON file cooked with `#claude-settings --settings=<file>`, or a TOML file cooked with `#codex-settings --config=<file>` | Cook, review, commit |
+| Run a shared hook script on a harness event | The `hooks` key of `.claude/settings.json`, and `.agents/adapters/codex/hooks.json` | Commit; for Codex hooks, cook `#connect` once, to link it |
+| Change another shared harness setting, such as `env` or an MCP server | That key in `.claude/settings.json` or `.codex/config.toml` | Commit |
 | Change something for yourself | `.claude/settings.local.json` | Nothing to commit |
 | Choose the harness, model, mode or role of one run | The launch command, from Launching in `.agents/README.md` | Nothing to commit |
 
@@ -159,10 +159,12 @@ rules file and its `.codex/rules` link.
 
 ## Guidance
 
-- **Edit the policy, not what is rendered from it.** `.agents/adapters/` and the links come from `policy.yaml`. A hand
-  edit reaches one harness only, and the next cook proposes undoing it.
+- **Edit the policy, not what is rendered from it.** The keys Cook owns come from `policy.yaml`: a hand edit to one
+  reaches one harness only, and the next cook proposes undoing it. Every other key in the harness files is the
+  team's: edit it in place, and cooking keeps it.
 - **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists in
-  the directory of an `AGENTS.md` or one above, Claude stops reading that `AGENTS.md`. `.gitignore` keeps them out of commits; a local one still affects whoever has it.
+  the directory of an `AGENTS.md` or one above, Claude stops reading that `AGENTS.md`. `.gitignore` keeps them out of
+  commits; a local one still affects whoever has it.
 - **Widen in `commands`, narrow in roles.** A role only adds denies, so a worker never gets more than a person at the
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
 - **Use `ask` sparingly.** Nobody answers in an unattended run, so an `ask` refuses there, and every unattended run that
