@@ -157,4 +157,5 @@ adoption uses them.
 
 ## Open Questions
 
-- The upgrade step for a `cook.lock` that lists a deleted recipe (US-002 finds it).
+None. The upgrade step for a `cook.lock` that lists a deleted recipe is: discard those recipes, restore the adapter
+files that held team keys from git (not `cook.rules`), then cook `#seed` and `#connect`; tested and recorded on #41.
