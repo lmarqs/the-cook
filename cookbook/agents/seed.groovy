@@ -17,7 +17,7 @@ hooks and memory, which `.agents/README.md` describes, with the `agents-layout` 
 | `.agents/permission/policy.yaml` | Starter policy, seeded when absent; never owned | Always |
 | `.agents/README.md` | What each shared path holds, seeded when absent; never owned | Always |
 | `.agents/skills/`, `commands/`, `hooks/`, `memory/` | An empty `.gitkeep` each, seeded when absent; never owned | Always |
-| `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout, with the templates of the seeded files under `templates/`, updated each time the recipe is cooked | Always |
+| `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout, with the templates of the seeded files under `templates/` and the layout check `scripts/check.sh`, updated each time the recipe is cooked | Always |
 
 The first time the recipe is cooked, it fails when `AGENTS.md` already exists. Run with `--force` to replace it with
 the template, or with `--skip` to keep it as it is.
