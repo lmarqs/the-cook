@@ -28,7 +28,7 @@ Codex reads the project configuration, hooks and rules; it reads `AGENTS.md` nat
 ## With other recipes
 
 Cook `io.github.lmarqs.cookbook:agents:<version>#permissions` after this recipe with `--harness=codex` to use the shared policy for
-`sandbox_mode`, `approval_policy` and `sandbox_workspace_write`; other configuration keys remain separate
+`sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access`; other configuration keys remain separate
 targets. Use other rule-file names when that recipe owns the `commands` section in `cook.rules`.
 ''')
 @yield('''

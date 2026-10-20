@@ -5,9 +5,10 @@ package io.github.lmarqs.cookbook.agents
  *
  * ## Writes for
  *
- * Top-level TOML keys in `config.toml`, top-level JSON keys in `hooks.json` and rule files under `rules/`, all in
- * `.agents/adapters/codex/` and linked from `.codex/`. Codex reads `AGENTS.md` and `.agents/skills/` natively, and hook
- * settings reach the shared hook scripts by their paths, so no other link is needed. Command rules use the
+ * Top-level TOML keys and `sandbox_workspace_write.network_access` in `config.toml`, top-level JSON keys in
+ * `hooks.json` and rule files under `rules/`, all in `.agents/adapters/codex/` and linked from `.codex/`. Codex reads
+ * `AGENTS.md` and `.agents/skills/` natively, and hook settings reach the shared hook scripts by their paths, so no
+ * other link is needed. Command rules use the
  * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", ["status", "diff"]], decision = "allow")`, where a nested
  * list holds alternatives for one word, with `allow`, `prompt` or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
  *
@@ -47,6 +48,9 @@ class Codex implements Harness {
   private Map<String, String> rules = [:]
   private List<String> commands = []
 
+  /** The key path permissions own in `config.toml`. */
+  private static final List<String> NETWORK_ACCESS = ['sandbox_workspace_write', 'network_access']
+
   /** The runs that skip or approve these rules under Codex 0.160.1, which has no setting that refuses them. */
   private static final String UNREFUSED_RUNS = '# bypass: refuse reaches Claude only: --ignore-rules or an untrusted ' +
       'project skips these rules, --approve-for-me approves prompts'
@@ -56,25 +60,31 @@ class Codex implements Harness {
 
   /**
    * Sets `sandbox_mode` to `workspace-write`, `approval_policy` to `on-request` and
-   * `sandbox_workspace_write.network_access` to false. Replaces the command rules with one `prefix_rule` per
+   * `sandbox_workspace_write.network_access` to false, owning only that key of the `[sandbox_workspace_write]` table,
+   * which Cook adds when absent. Replaces the command rules with one `prefix_rule` per
    * shared policy command entry, alternatives kept as nested lists: `allow` stays `allow`, `ask` becomes `prompt` and
    * `deny` becomes `forbidden`. A Claude-only entry becomes a comment naming it, since Codex cannot enforce it, and
    * tool entries and roles render nothing: tools are named per harness, and a Codex run cannot add a rules file of its
    * own. While the policy's `bypass` is `refuse`, the rules start with a comment naming the runs that step outside
-   * them, since Codex has no setting that refuses those. These settings keys replace values supplied by an earlier
-   * `config` call.
+   * them, since Codex has no setting that refuses those. These settings keys, and a whole `sandbox_workspace_write`,
+   * replace values supplied by an earlier `config` call.
    */
   void permit(Policy policy) {
-    config += [sandbox_mode: 'workspace-write', approval_policy: 'on-request',
-               sandbox_workspace_write: [network_access: false]]
+    config = config.findAll { key, value -> key != 'sandbox_workspace_write' } +
+        [sandbox_mode: 'workspace-write', approval_policy: 'on-request', (NETWORK_ACCESS): false]
     commands = [allow: 'allow', ask: 'prompt', deny: 'forbidden'].collectMany { decision, codexDecision ->
       policy.commands[decision].collect { prefixRule(it, codexDecision) }
     }
     if (commands && policy.bypass == 'refuse') commands.add(0, UNREFUSED_RUNS)
   }
 
-  /** Adds top-level configuration keys; a supplied key replaces its earlier value whole. */
-  void config(Map more) { config += more }
+  /**
+   * Adds top-level configuration keys; a supplied key replaces its earlier value whole, and a supplied
+   * `sandbox_workspace_write` replaces the `network_access` that permissions set.
+   */
+  void config(Map more) {
+    config = config.findAll { key, value -> !(key == NETWORK_ACCESS && 'sandbox_workspace_write' in more) } + more
+  }
 
   /** Adds top-level hooks keys; a supplied key replaces its earlier value whole. */
   void hooks(Map more) { hooks += more }
@@ -101,7 +111,7 @@ class Codex implements Harness {
 
   /**
    * Each supplied top-level key of `.agents/adapters/codex/config.toml`, owned whole, when configuration or permissions
-   * are set.
+   * are set; permissions own `sandbox_workspace_write.network_access` alone, so the table's other keys stay the team's.
    */
   @Keys(path = '.agents/adapters/codex/config.toml')
   Map configKeys() { config ?: null }

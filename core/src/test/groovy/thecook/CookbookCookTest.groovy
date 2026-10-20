@@ -271,6 +271,55 @@ starters.second = 'second'
     assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).changes == []
   }
 
+  @Test void codexOwnsOnlyNetworkAccessInTheSandboxTable() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def config = new File(kitchen, '.agents/adapters/codex/config.toml'); config.parentFile.mkdirs()
+    config.text = '[sandbox_workspace_write]\nnetwork_access = true\nwritable_roots = ["/tmp"]\n'
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+    assert config.text == 'approval_policy = "on-request"\nsandbox_mode = "workspace-write"\n' +
+    '[sandbox_workspace_write]\nnetwork_access = false\nwritable_roots = ["/tmp"]\n'
+    def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
+    assert new KeyTarget('.agents/adapters/codex/config.toml', ['sandbox_workspace_write', 'network_access']) in
+    lock.owned('io.github.lmarqs.cookbook:agents#connect')
+
+    def discarded = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect'])
+    discarded.commit()
+    assert config.text == '[sandbox_workspace_write]\nwritable_roots = ["/tmp"]\n'
+  }
+
+  @Test void codexAddsTheSandboxTableToANewKitchenAndRemovesItWhenDiscarded() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+    def config = new File(kitchen, '.agents/adapters/codex/config.toml')
+    assert config.text == 'approval_policy = "on-request"\nsandbox_mode = "workspace-write"\n\n' +
+    '[sandbox_workspace_write]\nnetwork_access = false\n'
+
+    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect']).commit()
+    assert !config.exists()
+  }
+
+  @Test void codexUpgradesAKitchenThatOwnedTheWholeSandboxKey() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+    def config = new File(kitchen, '.agents/adapters/codex/config.toml')
+    config.text = 'sandbox_workspace_write = { network_access = false }\napproval_policy = "on-request"\n' +
+        'sandbox_mode = "workspace-write"\n'
+    def lock = new File(kitchen, 'cook.lock')
+    lock.text = lock.text.replace('["sandbox_workspace_write","network_access"]', '["sandbox_workspace_write"]')
+    assert lock.text.contains('["sandbox_workspace_write"]')
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+    assert config.text == 'approval_policy = "on-request"\nsandbox_mode = "workspace-write"\n\n' +
+    '[sandbox_workspace_write]\nnetwork_access = false\n'
+    assert lock.text.contains('["sandbox_workspace_write","network_access"]')
+    assert !lock.text.contains('["sandbox_workspace_write"]')
+  }
+
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
     def real = folder.newFolder('real')
     def linked = new File(folder.root, 'linked')

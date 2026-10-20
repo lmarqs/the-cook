@@ -157,9 +157,31 @@ class TomlDocument implements Document {
       int end = text.indexOf('\n', range[1]); end = end < 0 ? text.length() : end + 1
       def suffix = text.substring(range[1], end)
       splice(start, end, suffix.contains('#') ? suffix.substring(suffix.indexOf('#')) : '')
+      removeEmptiedTable(((KeyLocation) location).path.dropRight(1))
     }
 
     cleanupTables()
+  }
+  // A table whose only key was removed is dropped with the blank line before it, so withdrawing the key Cook wrote
+  // into a table it added leaves no header behind, in this document or a later one.
+  private void removeEmptiedTable(List<String> table) {
+    def header = findHeader(table)
+    def remaining = header ? parsed().getTable(table) : null
+
+    if (!remaining?.isEmpty()) {
+      return
+    }
+
+    def following = (text.substring(header[1]) =~ /(?m)^[ \t]*\[/)
+    int end = following.find() ? header[1] + following.start() : text.length()
+
+    if (text.substring(header[1], end).trim()) {
+      return
+    }
+
+    def ending = text.contains('\r\n') ? '\r\n' : '\n'
+    int start = text.substring(0, header[0]).endsWith(ending + ending) ? header[0] - ending.length() : header[0]
+    splice(start, header[1], '')
   }
   private void cleanupTables() {
     createdTables.toList().reverseEach { table ->

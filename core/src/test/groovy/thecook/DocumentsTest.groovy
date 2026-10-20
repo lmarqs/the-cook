@@ -151,6 +151,20 @@ class DocumentsTest {
     assert leaf.text == '[k] # a = b\nx = 2\n'
   }
 
+  @Test void tomlRemovesATableLeftEmptyByRemovingItsLastKeyAndKeepsOneWithOtherContent() {
+    def emptied = open('toml', 'a = 1\n\n[t]\nk = 1\n\n[u]\nx = 1\n')
+    remove(emptied, ['t', 'k'])
+    assert emptied.text == 'a = 1\n\n[u]\nx = 1\n'
+
+    def commented = open('toml', 'a = 1\n\n[t]\n# ours\nk = 1\n')
+    remove(commented, ['t', 'k'])
+    assert commented.text == 'a = 1\n\n[t]\n# ours\n'
+
+    def nested = open('toml', '[t]\nk = 1\n[t.sub]\nx = 1\n')
+    remove(nested, ['t', 'k'])
+    assert nested.text == '[t]\n[t.sub]\nx = 1\n'
+  }
+
   private static Document open(String format, String text) {
     new Documents().open(format, text)
   }
