@@ -10,7 +10,10 @@ investigate an agent that misbehaves, and why it is shaped this way.
 | Path | Holds | Decided by |
 | --- | --- | --- |
 | `/AGENTS.md` | Instructions for every agent, whatever its harness or role. Claude and Codex both read it natively | The team |
-| `skills/`, `commands/`, `hooks/`, `memory/` | Shared skills, slash commands, hook scripts and durable facts | The team |
+| `skills/` | One directory per skill with its `SKILL.md`. Codex reads it natively; Claude through `/.claude/skills` | The team |
+| `commands/` | One Markdown file per slash command. Claude reads it through `/.claude/commands`; Codex does not | The team |
+| `hooks/` | Scripts that each harness's hook settings run, by their path from the repository root | The team |
+| `memory/` | Durable facts the code and `README.md` do not show, read when `AGENTS.md` points to them; no secrets | The team |
 | `permission/policy.yaml` | What agents may run: `commands` and `tools` for every session, `roles` that narrow it | The team |
 | `adapters/<harness>/` | The policy in each harness's own format; generated, never edited by hand | Cook |
 | `adapters/claude/roles/` | One file of denies per role, added at launch | Cook |

@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Explains the shared .agents/ layout that lets several people run Claude Code and Codex in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Not for the repository's own code, and not for a person's own harness settings outside this repository.
+description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Not for the repository's own code, and not for a person's own harness settings outside this repository.
 ---
 
 # Agents layout
@@ -35,6 +35,27 @@ renders the policy and makes the links. Commands here write the recipe version a
 
 The layout cannot decide how people work; anyone can override it on their own machine. It guides: shared changes
 reach every agent when they go where every agent reads them, and personal ones stay out of the team's files.
+
+## Shared directories
+
+Everything the team shares with agents, apart from `AGENTS.md` and the policy, goes in one of four directories under
+`.agents/`. Each harness reaches them in its own way; nothing needs copying per harness.
+
+| Directory | Holds | Claude reaches it | Codex reaches it |
+| --- | --- | --- | --- |
+| `skills/` | One directory per skill: `SKILL.md`, whose frontmatter `name` and `description` say when to use it, and the files it refers to | Through the `.claude/skills` link | Natively |
+| `commands/` | One Markdown file per slash command; the file name is the command | Through the `.claude/commands` link | Not read; turn a command both need into a skill |
+| `hooks/` | Scripts that hook settings run, by their path from the repository root | Its `hooks` settings, cooked with `#claude-settings` | Its `hooks.json`, cooked with `#codex-settings` |
+| `memory/` | Durable facts about the repository that the code and `README.md` do not show; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
+
+- **A skill** is for knowledge an agent needs only for some tasks: it loads when its description matches, so it costs
+  nothing otherwise. A rule every task needs belongs in `AGENTS.md`.
+- **A command** is a prompt a person starts by name, such as `/release`. Keep it short and let it name the skill
+  that holds the detail.
+- **A hook** runs on a harness event, such as before a command or after an edit, with no agent deciding. The script
+  is shared; when it runs is set per harness, because the events and their input differ.
+- **Memory** holds what a past session learned and every later one needs, such as why a dependency is pinned. List
+  each file in `AGENTS.md` with the question it answers, so agents know when to read it.
 
 ## Pick the task
 
