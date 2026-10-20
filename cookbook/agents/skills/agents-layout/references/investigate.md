@@ -1,7 +1,8 @@
 # Investigate
 
 Find the symptom, run its check from the repository root, and apply the fix for the cause the check confirms. Claude
-Code 2.1.303 and Codex 0.160.1 were used to confirm the behavior below, except where a row says it was not tested.
+Code 2.1.303 or 2.1.304, and Codex 0.160.1, were used to confirm the behavior below, except where a row says it was not
+tested.
 
 | Symptom | Likely cause | Check | Fix |
 | --- | --- | --- | --- |

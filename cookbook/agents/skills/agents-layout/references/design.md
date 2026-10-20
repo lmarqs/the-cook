@@ -1,8 +1,8 @@
 # Why the layout is shaped this way
 
 Read this before changing the layout or arguing against one of its rules. Each decision states what it gains and what
-it costs. Where a decision rests on how a harness behaves, the version that was tested is named: Claude Code 2.1.303
-and Codex 0.160.1.
+it costs. Where a decision rests on how a harness behaves, the version that was tested is named: Claude Code
+2.1.303 or 2.1.304, and Codex 0.160.1.
 
 ## Axes
 
@@ -13,10 +13,10 @@ rest to each run.
 | --- | --- | --- | --- |
 | Knowledge | Instructions, skills, slash commands, hook scripts, durable facts | By the team, in review | `AGENTS.md`, `.agents/skills/`, `commands/`, `hooks/`, `memory/` |
 | Policy | What may run without asking, what asks, what never runs | By the team, in review | `.agents/permission/policy.yaml`, rendered to `.agents/adapters/` |
-| Harness | Claude Code, Codex | Per person, or per role in an orchestrator | Which program is started |
+| Harness | Claude Code, Codex | Per person, or per role in a loop runner | Which program is started |
 | Mode | Attended, unattended | Per run | Launch flags |
 | Role | A person at the keyboard, an unattended worker, a reviewer | Per run | Launch flags that add `.agents/adapters/claude/roles/<role>.json` |
-| Model | Any the harness offers | Per person, or per role in an orchestrator | Personal settings, the orchestrator's config or `--model` |
+| Model | Any the harness offers | Per person, or per role in a loop runner | Personal settings, the runner's configuration or `--model` |
 | Environment | Sandbox, machine, network, credentials | Per machine, or by the organization | The harness's sandbox, managed settings, the machine |
 | Person | Theme, default mode, standing approvals, personal notes | Each person | `~/.claude/`, `.claude/settings.local.json`, `~/.codex/` |
 
@@ -116,7 +116,7 @@ a shared value would override everyone's.
 
 ## Why the policy holds no model, and nobody has a personal policy
 
-A model is chosen per person, or per role by an orchestrator, and changes more often than the policy. In shared
+A model is chosen per person, or per role by a loop runner, and changes more often than the policy. In shared
 settings it would override every person's choice. Personal preferences already have a place in each harness, and the
 harnesses merge them with the team's settings, with deny winning over ask and ask over allow. A personal policy in the
 repository would duplicate that, and Cook would have to write files it does not own.
@@ -128,12 +128,73 @@ A section Cook owns is marked `cook:begin <group>:<artifact>#<recipe>/<region>`,
 `#` read as two recipes. The region is part of what the recipe writes, and `/` reads as that: a part inside it. A
 recipe path can hold `/` too, so the region is what follows the last `/`.
 
-## Parallel agents
+## Worktrees and loop runners
 
-Worktrees give each agent its own files, but some state is shared by every worktree of a clone: the stash, local
-branches, an issue tracker kept in the clone, Docker volumes. A worker that stashes or deletes a branch reaches every
-other worker. Such commands belong in a role's deny. Whether Claude reads `.claude/settings.local.json` from the main
-checkout inside a worktree was not tested here.
+A loop runner runs agents over a series of tasks, often several at once, each in its own git worktree. The layout
+names no runner and configures none. It keeps a contract that any runner, script or person can rely on, and `#connect`
+keeps these paths stable:
+
+| What | Where |
+| --- | --- |
+| Instructions | The root `AGENTS.md`, which both harnesses read natively |
+| Skills and commands | The `.claude/skills` and `.claude/commands` links for Claude; `.agents/skills/` for Codex |
+| The policy, for every run | The `.claude/settings.json` link for Claude; the `.codex/config.toml` and `.codex/rules` links for Codex |
+| A Claude role | `--settings .agents/adapters/claude/roles/<role>.json`, for each role `policy.yaml` defines |
+| A Codex role | None: every Codex run gets `commands` |
+| An unattended run | `claude -p --permission-prompts none`, adding a role's `--settings`; `codex exec -c approval_policy=never` |
+
+The runner decides where its worktrees go, what it copies or sets up in each, how branches merge, how many run at
+once and which model each uses. The project decides how a worktree becomes runnable and how one is removed leaving
+nothing behind, in the Worktrees rows of `AGENTS.md`.
+
+Every file of the layout is committed and every link is relative, so a worktree carries the whole setup: the links
+resolve inside it and git reports it clean, with nothing to cook or copy (tested). Trust and personal settings follow
+the clone, not the directory:
+
+- Claude Code 2.1.304 keys trust on the main checkout. In an untrusted worktree its warning names
+  `projects["<main checkout>"]`, and in a worktree of a trusted clone it reads the main checkout's
+  `.claude/settings.local.json` (tested, with a deny, in a worktree that had no local file of its own).
+- Codex 0.160.1 applies `.codex/rules` in a worktree inside the trusted checkout and in one beside it, and skips them
+  in a plain clone nobody trusted (tested).
+
+So trusting the main checkout once covers every worktree of it, wherever the runner puts it; a fresh clone needs its
+own trust.
+
+Where worktrees go is left to the project and its runner, because each location has a cost:
+
+| Location | What follows (Claude Code 2.1.304, tested) |
+| --- | --- |
+| Inside the main checkout | The main checkout's `git status` lists the directory until the project ignores it. Claude reads the worktree's own `AGENTS.md`, not the main checkout's `AGENTS.md` or `CLAUDE.md`. A `CLAUDE.local.md` in the main checkout, or in any directory between it and the worktree, reaches the worktree and turns its `AGENTS.md` off |
+| Beside the repository or elsewhere | Nothing in the main checkout's directory reaches it; trust and Claude's local settings still follow the main checkout |
+
+Some state is shared by every worktree of a clone: git keeps one set of branches and one stash per clone, and an
+issue tracker kept in the clone, Docker volumes and ports are shared too. A worker that stashes or deletes a branch
+reaches every other worker, so such commands belong in a role's deny. So does `git worktree` itself: a runner or a
+person creates and removes worktrees, not the worker inside one.
+
+How common runners place worktrees and launch agents, read from each one's docs or source on 2026-10-20 and not
+tested here. "Not verified" marks what the sources did not show:
+
+| Runner | Worktrees | Copies or setup | Launches by default | Launch configurable through | Source |
+| --- | --- | --- | --- | --- | --- |
+| Claude Code `--worktree` | `.claude/worktrees/<name>/`; a `WorktreeCreate` hook replaces it | `.worktreeinclude` | Itself | Not applicable | [docs](https://code.claude.com/docs/en/worktrees) |
+| Codex `--worktree` | `$CODEX_HOME/worktrees` | `.worktreeinclude` in the app; setup scripts, key not verified | Itself | Not applicable | [docs](https://learn.chatgpt.com/docs/environments/git-worktrees) |
+| ralph-tui 0.12 | `../.ralph-worktrees/<project>/` in its code, `.ralph-tui/worktrees` in its docs; `[parallel].worktreeDir` | Its own configuration only | Claude with `--dangerously-skip-permissions`; `codex exec --full-auto`, an option `codex exec` 0.160.1 rejects (tested) | `command`, `defaultFlags`, `skipPermissions`, `fullAuto` | [docs](https://ralph-tui.com/docs/parallel/configuration) |
+| Conductor | `~/conductor/workspaces/<repo>/<workspace>` | `.worktreeinclude` or `file_include_globs`; `[scripts] setup` | Not verified | Not verified | [docs](https://conductor.build/docs/concepts/git-worktrees) |
+| claude-squad | `~/.claude-squad/worktrees/` | None | `claude` in tmux; `--autoyes` answers prompts | `-p <program>` | [source](https://github.com/smtg-ai/claude-squad) |
+| Gastown | `~/gt/<rig>/polecats/<name>/rig/` | `.runtime/setup-hooks/*` | Claude with `--dangerously-skip-permissions`; Codex with `--dangerously-bypass-approvals-and-sandbox` | `gt config agent set` | [source](https://github.com/gastownhall/gastown) |
+| Scion | `.scion/agents/<name>/workspace`, in a container | `provision.py` | Claude with `--dangerously-skip-permissions`; Codex with `danger-full-access` and the bypass flag | Harness bundles | [source](https://github.com/GoogleCloudPlatform/scion) |
+| Orca | `~/orca/workspaces/<repo>/<name>`, or `workspaceDir` | `.worktreeinclude`, literal paths; `worktree.sharedDirectories` | Bypass flags; "Manual" clears them | An arguments field | [source](https://github.com/stablyai/orca) |
+| paperclip | `.paperclip/worktrees`, or `worktreeParentDir` | `provisionCommand` | Skip permissions and bypass, on by default | Strategy options | [source](https://github.com/paperclipai/paperclip) |
+| vibe-kanban | `vibe-kanban/worktrees` in the system's temporary directory | `copy_files`, `setup_script` | `dangerously_skip_permissions: true`; Codex with `danger-full-access` | Profiles | [source](https://github.com/BloopAI/vibe-kanban) |
+| Crystal | `<repo>/worktrees` | None found | Claude with `--dangerously-skip-permissions` | A mode per project | [source](https://github.com/stravu/crystal) |
+| Symphony | None: one clone per issue under `<tmp>/symphony_workspaces` | `hooks.after_create` and others | `codex app-server`, rejecting approvals by default | Its configuration | [source](https://github.com/openai/symphony) |
+| ForgeCode | `../<name>` | None | Itself | Not applicable | [source](https://github.com/tailcallhq/forgecode) |
+| Cursor | Not verified | `.cursor/worktrees.json`, `setup-worktree` | Not verified | Not verified | [docs](https://cursor.com/docs/configuration/worktrees) |
+
+Most of them launch with flags that skip a harness's asks, and nearly all let the command be changed. Point the
+command at the unattended line of the contract; [A guardrail, not enforcement](#a-guardrail-not-enforcement) says
+what still steps outside the policy.
 
 ## A guardrail, not enforcement
 
