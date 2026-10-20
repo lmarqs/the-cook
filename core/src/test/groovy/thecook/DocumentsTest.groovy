@@ -117,14 +117,29 @@ class DocumentsTest {
       '[[k]]\nx = 1\n': 'key k is written as a [[k]] array of tables',
     ]
     shapes.each { text, what ->
-      def expected = [
+      def table = [
         what,
         '  Cook owns k whole and writes it as one inline table',
         '  replace it with k = { … } above the first [table], then cook again'
       ].join('\n')
-      assert shouldFail { set(open('toml', text), ['k'], [x: 2]) }.message == expected
-      assert shouldFail { open('toml', text).read('k', new KeyLocation(['k'])) }.message == expected
-      assert shouldFail { remove(open('toml', text), ['k']) }.message == expected
+      def line = [
+        what,
+        '  Cook owns k whole and writes it as one line, k = …',
+        '  replace it with k = … above the first [table], then cook again'
+      ].join('\n')
+      def unknown = [
+        what,
+        '  Cook owns k whole as one line, k = …',
+        '  replace it with k = … above the first [table], then cook again'
+      ].join('\n')
+      assert shouldFail { set(open('toml', text), ['k'], [x: 2]) }.message == table
+      assert shouldFail { set(open('toml', text), ['k'], 'on') }.message == line
+      assert shouldFail { set(open('toml', text), ['k'], [1, 2]) }.message == line
+      def document = open('toml', text)
+      assert shouldFail { document.readBefore('k', new KeyLocation(['k']), document.render([x: 2])) }.message == table
+      assert shouldFail { document.readBefore('k', new KeyLocation(['k']), document.render(true)) }.message == line
+      assert shouldFail { open('toml', text).read('k', new KeyLocation(['k'])) }.message == unknown
+      assert shouldFail { remove(open('toml', text), ['k']) }.message == unknown
     }
   }
 
@@ -134,6 +149,12 @@ class DocumentsTest {
       'key a.k is written as a [a.k] table',
       '  Cook owns a.k whole and writes it as one inline table',
       '  replace it with k = { … } in the [a] table, then cook again'
+    ].join('\n')
+    def scalar = shouldFail { set(open('toml', '[a.k]\nx = 1\n'), ['a', 'k'], 2) }
+    assert scalar.message == [
+      'key a.k is written as a [a.k] table',
+      '  Cook owns a.k whole and writes it as one line, k = …',
+      '  replace it with k = … in the [a] table, then cook again'
     ].join('\n')
   }
 

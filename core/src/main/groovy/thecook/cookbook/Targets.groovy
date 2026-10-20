@@ -176,7 +176,7 @@ final class KeyTarget extends Target {
     def location = new KeyLocation(path)
     def rendered = document.render(value)
 
-    if (holds(document.read(identity, location), rendered)) {
+    if (holds(document.readBefore(identity, location, rendered), rendered)) {
       return
     }
 

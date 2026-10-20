@@ -362,6 +362,17 @@ notes.set(features: [hooks: true])
     '  key features is written as a [features] table\n' +
     '    Cook owns features whole and writes it as one inline table\n' +
     '    replace it with features = { … } above the first [table], then cook again'
+
+    def config = new File(kitchen, '.agents/adapters/codex/config.toml'); config.parentFile.mkdirs()
+    config.text = '[approval_policy]\nx = 1\n'
+    def scalar = shouldFail(IllegalArgumentException) {
+      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
+    }
+    assert scalar.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: ' +
+    '.agents/adapters/codex/config.toml key approval_policy\n' +
+    '  key approval_policy is written as a [approval_policy] table\n' +
+    '    Cook owns approval_policy whole and writes it as one line, approval_policy = …\n' +
+    '    replace it with approval_policy = … above the first [table], then cook again'
   }
 
   @Test void aTargetFileThatIsNotARegularFileIsNamedRelativeToTheKitchen() {
@@ -393,9 +404,11 @@ notes.set(features: [hooks: true])
     def withdrawn = shouldFail(IllegalArgumentException) {
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
     }
-    assert withdrawn.message.readLines()[0..1] == [
+    assert withdrawn.message.readLines() == [
       'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/codex/config.toml key approval_policy',
-      '  key approval_policy is written as a [approval_policy] table'
+      '  key approval_policy is written as a [approval_policy] table',
+      '    Cook owns approval_policy whole as one line, approval_policy = …',
+      '    replace it with approval_policy = … above the first [table], then cook again'
     ]
 
     config.text = cooked

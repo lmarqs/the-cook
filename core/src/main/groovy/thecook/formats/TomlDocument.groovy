@@ -33,7 +33,8 @@ class TomlDocument implements Document {
 
     index + position.column() - 1
   }
-  private List<Integer> bounds(List<String> path) {
+  // `content` is the rendered value about to replace the key, or null when none is: reading or removing it.
+  private List<Integer> bounds(List<String> path, String content = null) {
     def result = parsed()
     def position = result.inputPositionOf(path)
 
@@ -45,9 +46,14 @@ class TomlDocument implements Document {
     def shape = tableShape(path, result, start)
 
     if (shape) {
-      throw new IllegalArgumentException(Diagnostic.text("key ${tableName(path)} is written as ${shape}",
-      "Cook owns ${tableName(path)} whole and writes it as one inline table",
-      "replace it with ${inlineForm(path)}, then cook again"))
+      String key = tableName(path)
+      String line = "${keyName(path[-1])} = ${content?.startsWith('{') ? '{ … }' : '…'}"
+      String why = content == null ? "Cook owns ${key} whole as one line, ${line}" :
+          content.startsWith('{') ? "Cook owns ${key} whole and writes it as one inline table" :
+          "Cook owns ${key} whole and writes it as one line, ${line}"
+      String place = path.size() == 1 ? 'above the first [table]' : "in the [${tableName(path.dropRight(1))}] table"
+      throw new IllegalArgumentException(Diagnostic.text("key ${key} is written as ${shape}", why,
+      "replace it with ${line} ${place}, then cook again"))
     }
 
     ValueSpan.afterEquals(text, start)
@@ -66,13 +72,13 @@ class TomlDocument implements Document {
 
     null
   }
-  private static String inlineForm(List<String> path) {
-    path.size() == 1 ? "${keyName(path[0])} = { … } above the first [table]" :
-        "${keyName(path[-1])} = { … } in the [${tableName(path.dropRight(1))}] table"
-  }
   @Override
   String read(String id, RegionLocation location) {
-    def range = bounds(((KeyLocation) location).path)
+    readBefore(id, location, null)
+  }
+  @Override
+  String readBefore(String id, RegionLocation location, String content) {
+    def range = bounds(((KeyLocation) location).path, content)
     range ? text.substring(range[0], range[1]) : null
   }
   String render(Object value) {
@@ -107,7 +113,7 @@ class TomlDocument implements Document {
   }
   @Override
   void write(String id, RegionLocation location, String content) {
-    def range = bounds(((KeyLocation) location).path)
+    def range = bounds(((KeyLocation) location).path, content)
 
     if (range) {
       splice(range[0], range[1], content); return

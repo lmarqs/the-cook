@@ -95,6 +95,11 @@ class YamlDocument implements Document {
     node
   }
   @Override
+  @SuppressWarnings('UnusedMethodParameter')
+  String readBefore(String id, RegionLocation location, String content) {
+    read(id, location)
+  }
+  @Override
   String read(String id, RegionLocation location) {
     def node = at(((KeyLocation) location).path)
 

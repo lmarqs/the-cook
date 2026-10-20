@@ -80,6 +80,11 @@ class BlockDocument implements Document {
     [first.start(), finish < 0 ? text.length() : finish + 1]
   }
   @Override
+  @SuppressWarnings('UnusedMethodParameter')
+  String readBefore(String id, RegionLocation location, String content) {
+    read(id, location)
+  }
+  @Override
   String read(String id, RegionLocation location) {
     def range = bounds(id)
 
