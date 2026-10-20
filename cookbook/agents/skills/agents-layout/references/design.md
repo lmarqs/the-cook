@@ -193,15 +193,56 @@ tested here. "Not verified" marks what the sources did not show:
 | Cursor | Not verified | `.cursor/worktrees.json`, `setup-worktree` | Not verified | Not verified | [docs](https://cursor.com/docs/configuration/worktrees) |
 
 Most of them launch with flags that skip a harness's asks, and nearly all let the command be changed. Point the
-command at the unattended line of the contract; [A guardrail, not enforcement](#a-guardrail-not-enforcement) says
-what still steps outside the policy.
+command at the unattended line of the contract; [Why bypass is refused by default](#why-bypass-is-refused-by-default)
+says what each harness does when a runner keeps its bypass flags.
+
+## Why bypass is refused by default
+
+A harness's bypass mode runs every command that is not denied, without asking. Most loop runners start agents in it
+by default, so a policy that only asks would mean nothing to their workers. While `policy.yaml` says `bypass: refuse`,
+or says nothing, `#connect` writes `permissions.disableBypassPermissionsMode: "disable"` into the shared Claude
+settings. Claude Code 2.1.304, tested in an untrusted workspace, and the first row in a trusted one too:
+
+| Run | Without the key | With it |
+| --- | --- | --- |
+| `claude -p --dangerously-skip-permissions`, a command the policy does not allow | Runs | Refused: it needs approval, and nobody can give it |
+| `--permission-mode bypassPermissions`, or `=bypassPermissions` | Runs | Refused |
+| A command the policy denies, under `--dangerously-skip-permissions` | Refused | Refused |
+| `--setting-sources user --dangerously-skip-permissions` | Runs | Runs: the project's settings, the key included, are skipped |
+
+The key works from a `--settings` layer too (tested), and Claude's docs say it works from any scope
+([permissions](https://code.claude.com/docs/en/permissions)).
+
+It is a policy field, not a fixed rule, because teams differ: a team that runs every agent in a container may want
+its workers in bypass mode, and `bypass: allow` leaves the key out. The choice is made once, in review, like the rest
+of the policy.
+
+Codex has no such setting, and needs one less: its rules hold under `--dangerously-bypass-approvals-and-sandbox`, which
+refuses a `prompt` rule instead of running it (tested, Codex 0.160.1). What does step outside the rules is listed in
+`cook.rules` itself, in a comment, while `bypass` is `refuse`: `--ignore-rules`, an untrusted project and
+`--approve-for-me`.
+
+There is no launcher, a script that would start each harness with the right flags. Claude already refuses bypass
+from its settings, whatever starts it. Codex keeps its rules under its bypass flag, and has no roles for a launcher to
+select. A launcher would reach only the runners already configured to call it, and those can as well be configured with
+the unattended line of the contract.
 
 ## A guardrail, not enforcement
 
-The policy records what the team agreed agents may do, and both harnesses apply it to the commands they run. It
-cannot stop a command it does not recognize: `git -C sub push`, `env X=1 git push`, `bash -c '...'` and a script that
-runs the command all start with other words. It cannot stop a person either: `--dangerously-skip-permissions`,
-`--setting-sources user` and `--ignore-rules` skip it on one machine.
+The policy records what the team agreed agents may do, and both harnesses apply it to the commands they run. These
+step outside it:
+
+| Route | Effect | How it is known |
+| --- | --- | --- |
+| `claude --dangerously-skip-permissions`, `--permission-mode bypassPermissions` | Refused while `bypass` is `refuse`; with `allow`, runs every command not denied | Tested, 2.1.304 |
+| `claude --setting-sources user` | Skips the project's settings: the policy and the bypass refusal | Tested, 2.1.304 |
+| `codex exec --ignore-rules` | Skips `cook.rules` | Tested, 0.160.1 |
+| An untrusted Codex project, including a run with `--ignore-user-config` | Skips `.codex/`, so the rules and the sandbox settings | Tested, 0.160.1 |
+| `codex exec --approve-for-me` | An automatic reviewer approves `prompt` rules; `forbidden` still holds | Tested, 0.160.1 |
+| `codex exec --dangerously-bypass-approvals-and-sandbox`, `--sandbox danger-full-access` | The rules hold; the sandbox is gone | Rules tested, 0.160.1; sandbox from `codex exec --help` |
+| `codex exec -c <key>=<value>` | Sets any configuration key for one run, the sandbox and approval keys included | `codex exec --help`; not tested |
+| `git -C sub push`, `env X=1 git push`, `bash -c '...'`, a script that runs the command | Starts with other words, so no prefix matches | How prefixes match ([policy.md](policy.md#prefix)) |
+| A loop runner's default command | Most pass the bypass flags above | The runner table above, from docs and source |
 
 Containment comes from the harness's sandbox: Cook sets Codex to `workspace-write` with no network, and leaves Claude's
 sandbox to each person. Rules every contribution must obey belong where nobody can skip them: the organization's
