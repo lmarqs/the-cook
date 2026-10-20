@@ -686,7 +686,7 @@ bypass allow
     assert allowed[1..-2] == rules[2..-2]
   }
 
-  @Test void theLayoutCheckFailsOnAFreshSeedAndPassesOnceAgentsMdIsFilledIn() {
+  @Test void theLayoutCheckOnlyRecommendsOnAFreshSeedAndOnAFilledAgentsMdNamingWhatIsNotInTheTree() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     def environment = System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1']
@@ -705,19 +705,24 @@ bypass allow
     def before = run(state)[1]
     def (fresh, freshOutput) = run(check)
 
-    assert fresh == 1
+    assert fresh == 0
     assert run(state)[1] == before
-    def failures = freshOutput.readLines().findAll { it.startsWith('FAIL ') }
-    assert failures.size() == 2
-    assert failures[0].startsWith("FAIL AGENTS.md still has the template's note -- ")
-    assert failures[1].startsWith('FAIL AGENTS.md has 27 lines with [[fill: blanks -- ')
+    def recommendations = freshOutput.readLines().findAll { !it.startsWith('ok ') }
+    assert recommendations.size() == 2
+    assert recommendations[0].startsWith("WARN AGENTS.md still has the template's note -- ")
+    assert recommendations[1].startsWith('WARN AGENTS.md has 27 lines with [[fill: blanks -- ')
 
     new File(kitchen, 'AGENTS.md').text = fixture('filled-agents.md')
     assert run(stage)[0] == 0
     def (filled, filledOutput) = run(check)
 
     assert filled == 0
-    assert filledOutput.readLines().every { it.startsWith('ok ') }
+    def warnings = filledOutput.readLines().findAll { it.startsWith('WARN ') }
+    assert warnings*.takeWhile { it != '-' } == [
+      'WARN AGENTS.md names origin/main, which is not in the tree ',
+      'WARN AGENTS.md names .work/services.lock, which is not in the tree ',
+    ]
+    assert filledOutput.readLines().every { it.startsWith('ok ') || it.startsWith('WARN ') }
     assert filledOutput.contains('ok .claude/settings.json is a tracked link that resolves and is not ignored\n')
     assert filledOutput.contains('ok .codex/config.toml is a tracked link that resolves and is not ignored\n')
   }

@@ -27,7 +27,8 @@ Stack: POSIX sh, pinned by nothing.
 - Keep this file under 800 words; past 1,200, move a section into a skill or memory file before adding. All
   `AGENTS.md` files together stay under 16 KiB.
 
-**Ask first:** pushes and writes outside this machine.
+**Ask first:** pushes to `origin/main` and writes outside this machine. Wait for `.work/services.lock` to clear
+before stopping the services.
 
 **Never**
 

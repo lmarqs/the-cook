@@ -24,9 +24,11 @@ typed (tested).
 ### Review
 
 Run `sh .agents/skills/agents-layout/scripts/check.sh` from the repository root. It writes nothing, prints one line
-per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. It reads
-the links and the tracked `AGENTS.md` files from the index, so stage the layout before running it on uncommitted work.
-Then make the checks a script cannot:
+per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. A `FAIL`
+is a setup a harness cannot read: `AGENTS.md` missing, a `CLAUDE.md` that hides it, or a link missing, broken or
+ignored. A `WARN` is a recommendation to weigh, such as the word budget; a name `AGENTS.md` gives that is not in the
+tree may be a stale path, or a git ref or a file made at run time. It reads the links and the tracked `AGENTS.md`
+files from the index, so stage the layout before running it on uncommitted work. Then make the checks a script cannot:
 
 - Each rule in `AGENTS.md` states what its source states: the code, a config file, the README, CI or the developer.
 - Each command in Quick reference runs here, or is marked `(not run: ask first)`, and no other section repeats one.

@@ -1,7 +1,7 @@
 # Checks the agents layout of the repository it runs in and reports each gap with the step that closes it.
 # Run from the repository root: sh .agents/skills/agents-layout/scripts/check.sh
 # Writes nothing. Prints one line per check: "ok <what>", "WARN <what> -- <next>" or "FAIL <what> -- <next>".
-# Exits 1 when any check fails.
+# A FAIL is a setup a harness cannot read; a WARN is a recommendation. Exits 1 when any check fails.
 
 status=0
 ok() { printf 'ok %s\n' "$1"; }
@@ -19,7 +19,7 @@ newline='
 
 check_agents_md() {
   if grep -q 'This file is an unfilled template' AGENTS.md; then
-    fail "AGENTS.md still has the template's note" \
+    warn "AGENTS.md still has the template's note" \
       'fill the file in as the note says, then delete the note once it is all this script reports'
   else
     ok "AGENTS.md has no template note"
@@ -27,7 +27,7 @@ check_agents_md() {
 
   fills=$(grep -c '\[\[fill:' AGENTS.md)
   if [ "$fills" -gt 0 ]; then
-    fail "AGENTS.md has $fills lines with [[fill: blanks" \
+    warn "AGENTS.md has $fills lines with [[fill: blanks" \
       "grep -n '\\[\\[fill:' AGENTS.md lists them; fill each in, or write none where it does not apply"
   else
     ok 'AGENTS.md has no [[fill: blanks'
@@ -35,7 +35,7 @@ check_agents_md() {
 
   words=$(($(wc -w < AGENTS.md)))
   if [ "$words" -gt 1200 ]; then
-    fail "AGENTS.md has $words words, over 1,200" \
+    warn "AGENTS.md has $words words, over 1,200" \
       'move a section into a skill in .agents/skills/ or a file in .agents/memory/ named under Deep dive'
   elif [ "$words" -gt 800 ]; then
     warn "AGENTS.md has $words words, over 800" \
@@ -44,7 +44,8 @@ check_agents_md() {
     ok "AGENTS.md has $words words"
   fi
 
-  # Inline code outside fenced blocks: every token that holds a slash and only path characters names a path.
+  # Inline code outside fenced blocks: a token that holds a slash and only path characters may name a path. It may
+  # also be a git ref or a file made at run time, so a miss warns and the reader decides.
   paths=$(awk -F'`' '
     /^[[:space:]]*(```|~~~)/ { fenced = !fenced; next }
     !fenced { for (i = 2; i <= NF; i += 2) if ($i ~ /\// && $i ~ /^[A-Za-z0-9._\/-]+$/ && !seen[$i]++) print $i }
@@ -55,7 +56,8 @@ check_agents_md() {
   for path in $paths; do
     relative=${path#/}
     if [ ! -e "$relative" ] && [ -z "$(git ls-files -- "$relative")" ]; then
-      fail "AGENTS.md names $path, which does not exist" 'correct the path, or remove the line that names it'
+      warn "AGENTS.md names $path, which is not in the tree" \
+        'if it is a path, correct it or remove the line; a git ref or a file made at run time is fine'
       missing=1
     fi
   done
@@ -73,7 +75,7 @@ check_agents_bytes() {
   done
   IFS=$saved_ifs
   if [ "$bytes" -gt 16384 ]; then
-    fail "the tracked AGENTS.md files hold $bytes bytes, over 16 KiB" \
+    warn "the tracked AGENTS.md files hold $bytes bytes, over 16 KiB" \
       'move sections into skills or memory files; Codex stops reading the chain at 32 KiB'
   else
     ok "the tracked AGENTS.md files hold $bytes bytes"
