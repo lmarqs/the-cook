@@ -4,6 +4,7 @@ package thecook.cookbook
 import thecook.cookbook.api.recipe.ingredient as Injected
 import thecook.cookbook.api.recipe.param as Param
 import thecook.cookbook.api.recipe.resource as Resource
+import thecook.model.Diagnostic
 
 import java.lang.reflect.Field
 
@@ -33,7 +34,7 @@ final class RecipeRun {
 
     if (unknown) {
       def takes = names ? 'its arguments are ' + names.collect { "--${it}" }.join(', ') : 'it takes no arguments'
-      throw new IllegalArgumentException("Unknown argument --${unknown.first()}; ${takes}")
+      throw new IllegalArgumentException(Diagnostic.text("Unknown argument --${unknown.first()}", takes))
     }
 
     params.each { field -> set(script, field, bind(field, arguments, recipe)) }
@@ -64,12 +65,12 @@ final class RecipeRun {
     def separate = given.find { it.form == Argument.Form.SEPARATE }
 
     if (yesOrNo && separate) {
-      throw new IllegalArgumentException(
-      "--${separate.name} takes no separate value; write --${separate.name}=${separate.value}")
+      throw new IllegalArgumentException(Diagnostic.text("--${separate.name} takes no separate value", null,
+      "write --${separate.name}=${separate.value}"))
     }
 
     if (!yesOrNo && given.any { it.form == Argument.Form.BARE }) {
-      throw new IllegalArgumentException("${name} needs a value: write ${name}=<value>")
+      throw new IllegalArgumentException(Diagnostic.text("${name} needs a value", null, "write ${name}=<value>"))
     }
 
     List<String> values = given.collect { it.form == Argument.Form.BARE ? 'true' : it.value }

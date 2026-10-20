@@ -799,7 +799,7 @@ notes.set(test: 'second')
     def failures = [
       [['acme:notes:1.0.0#first', [:]]]: 'acme:notes:1.0.0#first: Missing --value: The value',
       [['acme:notes:1.0.0#first', [value: ['A'], other: ['x']]]]:
-      'acme:notes:1.0.0#first: Unknown argument --other; its arguments are --value',
+      'acme:notes:1.0.0#first: Unknown argument --other\n  its arguments are --value',
       [['acme:notes:1.0.0#second', [:]], ['acme:notes:1.0.0#second', [:]]]:
       'recipe 2 (acme:notes:1.0.0#second): acme:notes#second is named twice; name it once per invocation',
       [['acme:notes:1.0.0', [:]]]:

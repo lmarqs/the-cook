@@ -290,18 +290,18 @@ notes.add('local')
         [
           ['acme:notes:1.2.3#notes', '--line=a', '--loud', 'false'],
           1,
-          'cook: acme:notes:1.2.3#notes: --loud takes no separate value; write --loud=false'
+          'cook: acme:notes:1.2.3#notes: --loud takes no separate value'
         ],
         [
           ['acme:notes:1.2.3#notes', '--line'],
           1,
-          'cook: acme:notes:1.2.3#notes: --line needs a value: write --line=<value>'
+          'cook: acme:notes:1.2.3#notes: --line needs a value'
         ],
         [['acme:notes:1.2.3#notes', '--line='], 2, 'cook: Missing value for --line'],
         [
           ['acme:notes:1.2.3#notes', '--line=a', '--set=first'],
           1,
-          'cook: acme:notes:1.2.3#notes: Unknown argument --set; its arguments are --line, --loud'
+          'cook: acme:notes:1.2.3#notes: Unknown argument --set'
         ],
         [['acme:notes:1.2.3#notes', 'line=first'], 2, 'cook: Not a recipe: line=first. Recipe arguments start with --'],
         [
