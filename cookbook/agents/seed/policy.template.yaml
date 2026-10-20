@@ -11,6 +11,10 @@
 # an unattended run, ask refuses.
 version: 2
 
+# Whether a Claude run may start in bypass mode, which runs every command that is not denied without asking.
+# allow is for teams that run every agent in a container.
+bypass: refuse
+
 # Commands every session may run, whatever its role.
 commands:
   allow: []

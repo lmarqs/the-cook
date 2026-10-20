@@ -9,6 +9,7 @@ file to edit for permissions.
 | Field | Type | Required | Holds |
 | --- | --- | --- | --- |
 | `version` | `2` | Yes | The schema version this page describes |
+| `bypass` | `refuse` or `allow` | No | Whether a Claude run may start in bypass mode, which runs every command that is not denied without asking; `refuse` when absent |
 | `commands` | [Decisions](#decisions) of [entries](#entries) | No | Shell commands, in every session |
 | `tools` | [Decisions](#decisions) of [harness entries](#harness-entry) | No | Tools other than the shell, such as web fetches or MCP tools |
 | `roles` | Map from a role name to a [role](#role) | No | Denies added for one kind of run |
@@ -140,4 +141,5 @@ Cook stops before writing anything and names the file and the field. Each messag
 | `roles: {worker: {allow: [[git]]}}` | `roles.worker: a role only adds denies; list them under deny, and keep allow and ask under commands` | Add it to `commands.allow` for everyone |
 | `roles: {Worker: ...}` | `roles: Worker is not a role name; use lower-case letters, digits and hyphens, starting with a letter` | `worker` |
 | `model: opus` | `unknown field [model]` | Personal settings, or the orchestrator's config |
+| `bypass: maybe` | `bypass must be refuse or allow` | `refuse`, or `allow` when every agent runs in a container |
 | `version: 1` | `version must be 2` | Move it by [adopt.md](adopt.md#a-version-1-agentspolicyyaml) |

@@ -248,18 +248,23 @@ class Policy {
   /** The command entries each role denies on top of `commands`, by role name. */
   Map<String, List<Command>> roles = [:]
 
+  /** `refuse`, the default, keeps every run within the policy; `allow` lets a run start in a harness's bypass mode. */
+  String bypass = 'refuse'
+
   /**
    * Parses YAML policy text; rejects a version other than 2, unknown fields, decisions other than `allow`, `ask` and
-   * `deny`, invalid entries, tool entries that are not harness entries, and roles that do more than deny.
+   * `deny`, invalid entries, tool entries that are not harness entries, roles that do more than deny, and a `bypass`
+   * other than `refuse` or `allow`.
    */
   static Policy parse(String text) {
     def data = new YamlSlurper().parseText(text)
     if (!(data instanceof Map)) fail('the policy must be a YAML map')
     if (data.version != 2) fail('version must be 2')
-    def unknown = data.keySet() - ['version', 'commands', 'tools', 'roles']
+    def unknown = data.keySet() - ['version', 'bypass', 'commands', 'tools', 'roles']
     if (unknown) fail("unknown field ${unknown}")
+    if (!(data.bypass in [null, 'refuse', 'allow'])) fail('bypass must be refuse or allow')
     new Policy(commands: decisions(data, 'commands', false), tools: decisions(data, 'tools', true),
-    roles: roles(data.roles))
+    roles: roles(data.roles), bypass: data.bypass ?: 'refuse')
   }
 
   private static Map<String, List<Command>> decisions(Map data, String field, boolean toolsOnly) {
