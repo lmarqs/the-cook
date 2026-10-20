@@ -22,6 +22,9 @@ The shape was settled in a grilling session on 2026-10-20. Two alternatives were
 - **A generated launcher:** a stress test showed Claude already refuses bypass from a settings file.
 - **Recommending in-repo worktrees:** Claude's docs say it also loads the parent checkout's `AGENTS.md`.
 
+US-012 to US-015 fix four gaps outside the layout, found while delivering #38. Stale versions in recipe help.
+Compact JSON on later writes. Diagnostics that miss the documented prefix and the reason and next lines.
+
 Tracking issue: #39 (follow-up to #38). The working tree holds uncommitted drafts in
 `cookbook/agents/skills/agents-layout/references/design.md`, `references/investigate.md` and
 `cookbook/agents/seed/README.template.md`. They name ralph-tui as the example, and US-007, US-009 and US-010 rewrite
@@ -51,8 +54,8 @@ Run `./gradlew spotlessApply` first when Groovy or Gradle files changed, and inc
 
 - A commit whose subject follows `<type>(<area>): <sentence>` (see `AGENTS.md`). Commits are signed by default
   (`commit.gpgsign`); do not pass `--no-gpg-sign`. This PRD releases a minor version: use `feat(cookbook)` for a
-  behaviour change, `docs(cookbook)` for skill and seed text, and no `!`. The message ends with the session's
-  `Co-Authored-By` line.
+  behaviour change, `docs(cookbook)` for skill and seed text, `fix(<area>)` for US-012 to US-015, and no `!`. The
+  message ends with the session's `Co-Authored-By` line.
 - `git push` to `main`.
 - A comment on issue #39 naming the story, the commit, what changed and what was verified.
 
@@ -336,12 +339,69 @@ layout and what bypass does.
 - [ ] In the trust state US-001 found effective, `claude -p --dangerously-skip-permissions "Run: touch probe"` in a
   worktree of the kitchen does not create `probe`.
 - [ ] Set `bypass: allow` and re-cook. The key is gone, and the gap comment is gone.
-- [ ] The final comment on #39 lists:
-  - every story's commit;
-  - what was verified;
-  - the out-of-scope gaps: the `cookbook/ralph` sketch ignores `/.ralph-tui/worktrees/` while ralph-tui 0.12's code
-    defaults to `../.ralph-worktrees/<project>/`, and medprev's `worker.py` refusal duplicates what `bypass: refuse`
-    now does for Claude.
+- [ ] The comment on #39 lists every story's commit so far and what was verified.
+
+### US-012: Examples name `<version>`, not 0.1.0
+
+**Description:** As someone copying a command from a recipe's help or after-cooking text, I want it to name a version I
+can use, so I don't cook a release that does not exist.
+
+**Acceptance Criteria:**
+- [ ] Every `./cook io.github.lmarqs.cookbook:<artifact>:0.1.0#...` and `` `...:0.1.0#...` `` in `cookbook/*/*.groovy`
+  names `<version>` instead. `grep -rn ':0\.1\.0' cookbook --include='*.groovy'` finds nothing.
+- [ ] Tests that compare help or after-cooking text are updated in the same commit.
+- [ ] The coordinates error in `core/src/main/groovy/thecook/cookbook/Coordinates.groovy` gives an example that names a
+  recipe that exists (`#seed`), not the removed `#instructions`.
+- [ ] Commits: `fix(cookbook)` for the recipes and `fix(core)` for the coordinates message.
+
+### US-013: A later write keeps a JSON file's indentation
+
+**Description:** As a reviewer of a policy change, I want a re-cook to change only the lines that changed, so the
+rendered settings stay readable in the diff.
+
+Cause (read in the code): `KeyTarget.write` indents a new JSON file, but `JsonDocument.write` splices
+`JsonOutput.toJson(value)` into an existing one, so the key's value becomes one compact line.
+
+**Acceptance Criteria:**
+- [ ] Write the test first: cook a key into a new JSON file, change the value, cook again. The file is indented as a new
+  file with the new value would be, and the other keys keep their text. The test fails.
+- [ ] A value written into an existing JSON file is indented to the depth of its key, using the same two-space form as
+  a new file.
+- [ ] A key that already holds the value is still left as it is.
+- [ ] Commit `fix(core): a cook that changes a JSON key writes its value indented, as the first cook did`.
+
+### US-014: Diagnostics start with `cook: `
+
+**Description:** As someone reading stderr, I want every diagnostic to say it came from Cook, under the name I typed.
+
+**Acceptance Criteria:**
+- [ ] Write the tests first in `cli/src/test/groovy/thecook/cli/CookCommandTest.groovy`: each expected stderr starts
+  with `cook: `; under `discard`, with `cook: discard: `; under `help`, with `cook: help: `. The tests fail.
+- [ ] Every line `CookCommand` writes to stderr as a diagnostic starts with that prefix. The batch diff, prompts and
+  stdout results are unchanged.
+- [ ] `docs/ux/cli-standards.md` and `docs/ux/messages-and-docs.md` say `cook: ` wherever they said `the-cook: `.
+  `grep -rn "the-cook: " docs` finds only the README image's alt text, if anything.
+- [ ] Commit `fix(cli): diagnostics on stderr start with cook: , as the message standard says`.
+
+### US-015: Errors say what failed, why and what to do next
+
+**Description:** As someone whose cook failed, I want the cause and the next step on their own lines, as the message
+standard's examples show.
+
+**Acceptance Criteria:**
+- [ ] List every user-facing error Cook can print (the `throw` sites in `core/src/main`, `cli/src/main` and
+  `infra/src/main` whose message reaches stderr), and record the list in the #39 comment. Internal invariant errors
+  that a user cannot act on are named as such and left alone.
+- [ ] Each user-facing error has its first line naming what failed, then indented lines for why and for next, where
+  the message has them. Wording keeps the facts it has now (found values, lists of recipes).
+- [ ] The discard error for a recipe missing from `cook.lock` reads as the standard's example:
+  `cook: discard: cook.lock lists no recipe <name>; nothing was written`, then `discard removes only what cook.lock
+  records for a recipe`, then the next step naming the recipes the lock does list, or none.
+- [ ] Tests first for each group of messages, one commit per group (`fix(core)` or `fix(cli)`).
+
+### Final comment
+
+- [ ] After US-015, the final comment on #39 lists every story's commit and what was verified.
 
 ## Functional Requirements
 
@@ -365,6 +425,10 @@ layout and what bypass does.
 - FR-6: The skill labels every harness or runner fact it states as tested (with the version), docs (with the page) or
   not tested.
 - FR-7: `references/agents-md.md` is seeded with the skill. No file named `AGENTS.template.design.md` remains.
+- FR-8: Recipe help and after-cooking texts name `<version>` in example coordinates.
+- FR-9: Changing a key in an existing JSON file writes its value indented to the key's depth.
+- FR-10: Every stderr diagnostic starts with `cook: `, plus `discard: ` or `help: ` under those commands, and each
+  user-facing error puts its cause and next step on indented lines.
 
 ## Non-Goals
 
@@ -374,6 +438,9 @@ layout and what bypass does.
 - Codex roles, or any project-level Codex refusal beyond the comment.
 - Changing the `cookbook/ralph` sketch, or anything in medprev-rest-api.
 - Running a release. The release workflow is started by hand.
+- Imports of models across artifacts when cooking by coordinates. Nine artifacts import another's models and fail to
+  compile that way, but nobody uses them; `agents`, the published one, imports nothing.
+- Status icons in place of the prefix on a terminal. The standard allows them; it does not require them.
 
 ## Technical Considerations
 
@@ -384,6 +451,7 @@ layout and what bypass does.
 | `claude -p --permission-prompts none`, `touch probe` | Denied: "requires approval, and this session has no approval surface" |
 | `claude -p --dangerously-skip-permissions`, `touch probe` | Ran; file created |
 | The same plus `--settings '{"permissions":{"disableBypassPermissionsMode":"disable"}}'` | Neutralised: `touch` needed approval; no file |
+| The same key in the untrusted repository's own `.claude/settings.json` instead | Neutralised; a control without it ran `touch`. So US-005 renders the key into the shared settings only |
 | `claude -p --dangerously-skip-permissions`, `git push origin main` with a project deny | Denied: denies hold under bypass |
 | Claude in a sibling worktree with a deny in the main checkout's `.claude/settings.local.json` | Denied: local settings follow the main checkout |
 | Untrusted worktree message | Names `projects["<main checkout>"]`: trust is keyed on the main checkout |
@@ -444,7 +512,5 @@ without editing `~/.claude.json`, because Claude keys trust on the main checkout
 
 ## Open Questions
 
-- If US-001 shows that project settings ignore `disableBypassPermissionsMode` in an untrusted workspace, should US-005
-  also render it into each role file? A `--settings` layer was shown to work untrusted. Decide before US-005.
 - If US-002 shows that `cook.rules` still holds under `--dangerously-bypass-approvals-and-sandbox`, the gap comment
   narrows to the flags that do skip it. US-005 words it from the results.
