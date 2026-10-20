@@ -218,6 +218,51 @@ starters.second = 'second'
     assert Files.isSymbolicLink(new File(kitchen, '.gitignore').toPath())
   }
 
+  @Test void refusesToReplaceAFileOrDirectoryItDoesNotOwnWithALink() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def config = new File(kitchen, '.codex/config.toml'); config.parentFile.mkdirs()
+    config.text = '[features]\nhooks = true\n'
+    def codex = shouldFail(IllegalArgumentException) {
+      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
+    }
+    assert codex.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .codex/config.toml is a file, and this ' +
+    'recipe makes it a link to ../.agents/adapters/codex/config.toml\n  its contents would stop being read\n' +
+    '  move its contents into the inputs of #codex-settings, delete it, and cook again'
+    def forced = shouldFail(IllegalArgumentException) {
+      new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
+          .propose([request('io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])])
+    }
+    assert forced.message == codex.message
+    assert config.text == '[features]\nhooks = true\n'
+
+    config.delete()
+    new File(kitchen, '.claude/skills/ours').mkdirs()
+    new File(kitchen, '.claude/skills/ours/SKILL.md').text = '# Ours\n'
+    def claude = shouldFail(IllegalArgumentException) {
+      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
+    }
+    assert claude.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .claude/skills is a directory, and ' +
+    'this recipe makes it a link to ../.agents/skills\n  its files would stop being read\n' +
+    '  move its files into .agents/skills/, delete it, and cook again'
+    assert new File(kitchen, '.claude/skills/ours/SKILL.md').text == '# Ours\n'
+    assert !new File(kitchen, '.agents').exists()
+    assert !new File(kitchen, 'cook.lock').exists()
+  }
+
+  @Test void replacesALinkThatPointsElsewhereAndKeepsOneItOwns() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def config = new File(kitchen, '.codex/config.toml'); config.parentFile.mkdirs()
+    Files.createSymbolicLink(config.toPath(), java.nio.file.Paths.get('../OURS.toml'))
+
+    def proposal = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
+    assert '.codex/config.toml' in proposal.changes
+    proposal.commit()
+    assert Files.readSymbolicLink(config.toPath()).toString() == '../.agents/adapters/codex/config.toml'
+    assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).changes == []
+  }
+
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
     def real = folder.newFolder('real')
     def linked = new File(folder.root, 'linked')

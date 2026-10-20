@@ -161,6 +161,16 @@ leave the file to whoever edits it.
 ./cook --skip io.github.lmarqs.cookbook:agents:0.0.0#seed
 ```
 
+A recipe that makes a path a symbolic link refuses a file or directory already there, since its contents would stop
+being read, and writes nothing. `--force` does not override the refusal; a link already at the path is replaced and
+shown in the diff:
+
+```text
+cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml is a file, and this recipe makes it a link to ../.agents/adapters/codex/config.toml
+  its contents would stop being read
+  move its contents into the inputs of #codex-settings, delete it, and cook again
+```
+
 ## Batch options and approval
 
 | Option | Used with | Position | Effect |

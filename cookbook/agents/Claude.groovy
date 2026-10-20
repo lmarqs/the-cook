@@ -101,7 +101,7 @@ class Claude implements Harness {
   Map settingsKeys() { settings ?: null }
 
   /** `.claude/settings.json`, a link to the adapter's file, when settings or permissions are set. */
-  @Links(path = '.claude')
+  @Links(path = '.claude', instead = 'a file cooked with #claude-settings')
   Map<String, String> adapterLinks() { settings ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
 
   /**

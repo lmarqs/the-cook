@@ -10,6 +10,10 @@ Reads `.agents/permission/policy.yaml` when present, or seeds the starter, and s
 absent.
 Cook `io.github.lmarqs.cookbook:agents:<version>#seed` first to create `AGENTS.md` too.
 
+A file or directory already at a link's path, such as a committed `.codex/config.toml` or `.claude/skills/`, is
+refused, and nothing is written: move its contents where the message says, delete it, and cook again. A link there is
+replaced.
+
 ## Cook
 
 ```sh

@@ -116,8 +116,9 @@ final class Declarations {
         }
         break
       default:
+        String instead = ((Links) annotation).instead() ?: null
         entries(member, value).each { name, target ->
-          declared.owned << new Declaration(member, new LinkTarget("${base}/${name}"), target.toString())
+          declared.owned << new Declaration(member, new LinkTarget("${base}/${name}", instead), target.toString())
         }
     }
   }

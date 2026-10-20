@@ -54,11 +54,15 @@ import java.lang.annotation.Target
   String mode() default ''
 }
 
-/** One symbolic link per map entry, under `path`, pointing at the value. */
+/**
+ * One symbolic link per map entry, under `path`, pointing at the value. A file or directory already at a link's path is
+ * refused, not replaced; `instead` names where its contents belong, by default the link's target.
+ */
 @Target([ElementType.METHOD, ElementType.FIELD])
 @Retention(RetentionPolicy.RUNTIME)
 @interface Links {
   String path()
+  String instead() default ''
 }
 
 /**

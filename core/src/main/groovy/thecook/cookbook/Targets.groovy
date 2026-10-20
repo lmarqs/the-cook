@@ -11,6 +11,8 @@ import thecook.rendering.KeyLocation
 
 import groovy.json.JsonSlurper
 
+import java.nio.file.Paths
+
 /**
  * A part of a destination file that a recipe owns: it writes the part, withdraws it, and is what `cook.lock` records.
  * Two targets are the same when the lock records them the same.
@@ -252,10 +254,17 @@ class FileTarget extends Target {
   }
 }
 
-/** A symbolic link. */
+/**
+ * A symbolic link. It replaces a link at its path, and refuses a file or directory there, whose contents would stop
+ * being read.
+ */
 final class LinkTarget extends FileTarget {
-  LinkTarget(String file) {
+  // Where the contents of a refused file or directory belong; the lock does not record it.
+  private final String instead
+
+  LinkTarget(String file, String instead = null) {
     super(file)
+    this.instead = instead
   }
 
   @Override
@@ -265,7 +274,29 @@ final class LinkTarget extends FileTarget {
 
   @Override
   void write(Draft draft, Object target) {
+    def existing = draft.kind(file)
+
+    if (existing in ['file', 'directory']) {
+      def contents = existing == 'file' ? 'its contents' : 'its files'
+      throw new IllegalArgumentException(Diagnostic.text(
+      "${file} is a ${existing}, and this recipe makes it a link to ${target}",
+      "${contents} would stop being read",
+      "move ${contents} into ${instead ?: resolved(target.toString(), existing)}, delete it, and cook again"))
+    }
+
     draft.link(file, target.toString())
+  }
+
+  private String resolved(String target, String existing) {
+    def path = Paths.get(file)
+        .resolveSibling(target)
+        .normalize()
+
+    if (path.absolute || path.startsWith('..')) {
+      return target
+    }
+
+    existing == 'directory' ? "${path}/" : path.toString()
   }
 
   @Override

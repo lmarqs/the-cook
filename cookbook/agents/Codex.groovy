@@ -122,7 +122,7 @@ class Codex implements Harness {
   List<String> commandRules() { commands ?: null }
 
   /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json` and `rules`. */
-  @Links(path = '.codex')
+  @Links(path = '.codex', instead = 'the inputs of #codex-settings')
   Map<String, String> links() {
     written().collectEntries { [it, "../.agents/adapters/codex/${it}".toString()] } ?: null
   }

@@ -4,6 +4,9 @@ import thecook.filesystem.AtomicFiles
 import thecook.filesystem.Repository
 import thecook.formats.Document
 
+import java.nio.file.Files
+import java.nio.file.LinkOption
+
 /**
  * The destination as the recipes of one invocation leave it, held in memory. Recipes read and write it in order, so
  * each one sees what the ones before it wrote; nothing reaches the disk until `commit`.
@@ -29,6 +32,16 @@ final class Draft {
   String linkTarget(String path) {
     def current = state(path)
     current.kind == 'symlink' ? current.content : null
+  }
+
+  /** `file`, `symlink` or `directory` as the invocation left `path` so far; `null` when absent. */
+  String kind(String path) {
+    if (!after.containsKey(path) &&
+        Files.isDirectory(repository.target(path, true).toPath(), LinkOption.NOFOLLOW_LINKS)) {
+      return 'directory'
+    }
+
+    state(path).kind
   }
 
   /** Writes `content` to `path`; `mode` replaces the file's permissions, which otherwise stay as they are. */
