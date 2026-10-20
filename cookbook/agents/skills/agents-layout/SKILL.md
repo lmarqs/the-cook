@@ -37,8 +37,8 @@ files from the index, so stage the layout before running it on uncommitted work.
 - `.agents/README.md` and `.agents/permission/policy.yaml` differ from `.agents/skills/agents-layout/templates/` only
   where the team chose to. Seeded files are written once, so a later release's template changes reach them by hand.
 - `git ls-files .claude .codex` lists only links.
-- `./cook --dry-run io.github.lmarqs.cookbook:agents:<version>#connect`, naming every harness the team uses, prints
-  `Already cooked.`; a diff means the adapters or links no longer match `policy.yaml`.
+- `./cook --check io.github.lmarqs.cookbook:agents:<version>#connect`, naming every harness the team uses, exits 0
+  with `Already cooked.`; exit 1 and a diff mean the adapters or links no longer match `policy.yaml`.
 
 Report each finding as the script does: what, where, and the step that closes it.
 
@@ -148,7 +148,9 @@ commands:
 ```sh
 ./cook --dry-run io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
 ./cook --batch-approve io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
-git add AGENTS.md .agents .claude .codex .gitignore cook.lock && git commit
+git status --short
+git add AGENTS.md .agents .claude .codex .gitignore cook.lock
+git commit
 ```
 
 Read the diff the dry run prints before approving: an agent has no terminal to answer Cook's prompt, so without

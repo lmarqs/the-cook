@@ -81,8 +81,8 @@ one person's settings for this project; Claude writes "don't ask again" approval
 override this behavior.
 
 Claude reads an `AGENTS.md` only while no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in its
-directory or one above; any of them makes it skip that `AGENTS.md`. `.gitignore` keeps them out of commits, so none reaches the team, but a local
-one still takes effect for whoever has it. Reading `AGENTS.md` needs Claude Code 2.1.277 or later.
+directory or one above; any of them makes it skip that `AGENTS.md`. `.gitignore` keeps them out of commits, so none
+reaches the team, but a local one still takes effect for whoever has it. Reading `AGENTS.md` needs Claude Code 2.1.277 or later.
 
 This directory sets what the team shares, not what a person may do. A personal `allow` does not outrank a team `ask`
 or `deny`, but anyone can still override the shared setup on their machine: `claude --setting-sources user` skips the

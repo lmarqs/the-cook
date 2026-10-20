@@ -9,14 +9,17 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
 
 ## A new repository
 
-1. **Find Cook.** Use the first that runs: `./cook --help`, `cook --help`, `mise exec -- cook --help`. If none runs,
-   stop and ask the developer how Cook is installed here.
+1. **Find Cook.** Use the first that prints a version: `./cook --version`, then `mise exec -- cook --version` when
+   `mise.toml` pins the-cook, then `cook --version`. If none does, stop and ask the developer how Cook is installed
+   here. The commands below write it as `./cook`.
 2. **Find the version.** `grep 'source: "io.github.lmarqs.cookbook:agents:' cook.lock` shows it when the repository
    already cooks the artifact. Otherwise use the latest release:
    `gh release view -R lmarqs/the-cook --json tagName -q .tagName`, without its `v`. The commands below write it as
    `<version>`.
-3. **Ask which harnesses the team uses.** `#connect` removes what it wrote for a harness left out, so each one the
-   team uses goes in every connect as `--harness=<name>`. The commands below name Claude and Codex.
+3. **Confirm two decisions with the developer.** Which harnesses the team uses: `#connect` removes what it wrote for
+   a harness left out, so each one goes in every connect as `--harness=<name>`; the commands below name Claude and
+   Codex. And `bypass` in the policy: the starter's `refuse` makes Claude refuse its bypass flags, which some loop
+   runners pass by default ([policy.md](policy.md#top-level)).
 4. **Seed.**
 
    ```sh
@@ -38,14 +41,15 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    ./cook --batch-approve io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
    ```
 
-8. **Review.** Stage first with the `git add` line of step 9: `check.sh` reads the links and the size of `AGENTS.md`
-   from the index, so before staging it fails every link. Then run the review in [SKILL.md](../SKILL.md#review) and
-   fix what it finds.
-9. **Commit once.**
+8. **Review.** Stage first as step 9 does: `check.sh` reads the links and the size of `AGENTS.md` from the index, so
+   before staging it fails every link. Then run the review in [SKILL.md](../SKILL.md#review) and fix what it finds.
+9. **Commit once.** Stage every path `git status --short` lists that the adoption changed: the layout's paths below,
+   and what the sections under [An existing setup](#an-existing-setup) moved, removed or rewired.
 
    ```sh
    git status --short
-   git add AGENTS.md .agents .claude .codex .gitignore cook.lock && git commit
+   git add AGENTS.md .agents .claude .codex .gitignore cook.lock
+   git commit
    ```
 
    After the commit, `git ls-files .claude .codex` lists only links, and `git ls-files -s .claude .codex` shows each
@@ -75,6 +79,16 @@ before                     after
 ```
 
 `.codex/rules` and `.agents/adapters/codex/rules/cook.rules` appear once the policy has a command entry.
+
+### A drift check in CI
+
+A CI step fails when someone edits the policy and commits without cooking. In a repository that commits the `./cook`
+launcher:
+
+```yaml
+- name: The agents layout matches its policy
+  run: ./cook --check io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
+```
 
 ## An existing setup
 
@@ -242,17 +256,19 @@ holds the same ideas, so the move is mechanical. This belongs to step 6.
 3. Find the code, tests, docs and CI steps that run the renderer or name its outputs:
 
    ```sh
-   git grep -n render.py
+   git grep -n -e render.py -e 'import render' -e 'from render'
    git grep -n -e workflow.rules -e .claude/settings.json
    ```
 
 4. Move the hooks it wrote into the `hooks` key of `.agents/adapters/claude/settings.json` and into
    `.agents/adapters/codex/hooks.json`, with the scripts in `.agents/hooks/`.
-5. Delete the renderer, its outputs and what step 3 found that runs it, before step 7:
+5. Before step 7, delete the renderer, its tests and its outputs, and rewire what step 3 found that still reads
+   them: a CI drift check becomes [the `--check` step](#a-drift-check-in-ci), and a script that names an output names
+   the adapter or link that replaces it. `-f` replaces the starter policy the seed wrote:
 
    ```sh
    git rm .agents/permissions/render.py .claude/settings.json .codex/rules/workflow.rules
-   git mv .agents/permissions/policy.yaml .agents/permission/policy.yaml
+   git mv -f .agents/permissions/policy.yaml .agents/permission/policy.yaml
    ```
 
    The names are an example; use the repository's own.
@@ -316,7 +332,7 @@ step 4.
 
    ```sh
    mkdir -p .agents/permission
-   git mv .agents/policy.yaml .agents/permission/policy.yaml
+   git mv -f .agents/policy.yaml .agents/permission/policy.yaml
    ```
 
    Change `version: 1` to `version: 2`. Move each line of `instructions` into `AGENTS.md`, then delete the field.

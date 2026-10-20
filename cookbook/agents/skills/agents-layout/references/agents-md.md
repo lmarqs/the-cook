@@ -18,8 +18,8 @@ list is at the end. Tested with Claude Code 2.1.304.
   almost never pruned. Testing is their most common topic, present in three files out of four; security appears in
   one out of seven ([2], tables 3 and 5).
 - Files that work are specific: exact commands with their flags, examples rather than descriptions, a stack with
-  versions, and boundaries in three tiers: always, ask before acting, and never. The constraint teams most often wish they had
-  written is that the agent never deletes a failing test ([3]).
+  versions, and boundaries in three tiers: always, ask before acting, and never. The constraint teams most often
+  wish they had written is that the agent never deletes a failing test ([3]).
 - A long file makes the agent ignore its rules. Each line stays only while removing it would cause mistakes; what the
   agent can read from the code, standard conventions and "write clean code" do not belong ([4]).
 - The nearest `AGENTS.md` to the edited file wins, so rules for one package go in a file in that package; Codex stops
@@ -43,10 +43,11 @@ list is at the end. Tested with Claude Code 2.1.304.
 - **Rules are written out; overviews are not.** Boundaries and Rules state what holds in any repository, such as never
   weakening a check to make it pass ([3]) and comments only for what the code cannot show. Boundaries has the three
   tiers: Always, Stop and ask, and Never ([3]). Stop and ask covers decisions an agent leaves to the developer; a
-  command that needs approval every time is an `ask` entry in the policy, which the harness enforces.
+  command that needs approval every time is an `ask` entry in the policy, which the harness enforces. The stack is
+  one line with major versions ([3]). Tests get a place and a rule, because testing is the most common topic in real
+  files ([2]).
 - **One marker in Quick reference.** A command its writer could not run is marked `(unverified)`, and the next agent
-  to run it removes the mark, so a command is either verified here or flagged as not yet. The stack is one line with major versions ([3]). Tests get a place and a
-  rule, because testing is the most common topic in real files ([2]).
+  to run it removes the mark, so a command is either verified here or flagged as not yet.
 - **The README is linked, not restated.** An overview does not help an agent reach the right files, and LLM-written
   files mostly repeat the README ([1], §1, §4.3). The note asks for a link to the README section, and a fix to the
   README in the same change when it is wrong, so the fact lives in one place.
