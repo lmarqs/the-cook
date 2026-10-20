@@ -4,6 +4,7 @@ import thecook.rendering.RegionLocation
 import thecook.rendering.KeyLocation
 
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 class JsonDocument implements Document {
   String text
@@ -42,6 +43,22 @@ class JsonDocument implements Document {
   String render(Object value) {
     JsonOutput.toJson(value)
   }
+  /** `value` as JSON, each object member and array item on its own line, two spaces deeper than `indent`. */
+  static String indented(Object value, String indent) {
+    def inner = indent + '  '
+
+    if (value instanceof Map && value) {
+      return '{\n' + value.collect { key, item ->
+        inner + JsonOutput.toJson(key.toString()) + ': ' + indented(item, inner)
+      }.join(',\n') + '\n' + indent + '}'
+    }
+
+    if (value instanceof List && value) {
+      return '[\n' + value.collect { inner + indented(it, inner) }.join(',\n') + '\n' + indent + ']'
+    }
+
+    JsonOutput.toJson(value)
+  }
   @Override
   void write(String id, RegionLocation location, String content) {
     def path = ((KeyLocation) location).path
@@ -49,7 +66,9 @@ class JsonDocument implements Document {
     def node = at(path)
 
     if (node) {
-      splice(node.start, node.end, content); return
+      def indent = lineIndent(at(path.dropRight(1)).members[path[-1]].keyStart)
+      splice(node.start, node.end, indent == null ? content : indented(new JsonSlurper().parseText(content), indent))
+      return
     }
 
     insert(path, content)
@@ -71,8 +90,15 @@ class JsonDocument implements Document {
     def parent = at(path.dropRight(1))
     def members = parent.members.values().toList()
     int offset = members ? members[-1].value.end : parent.start + 1
-    def entry = (members ? ', ' : '') + JsonOutput.toJson(path[-1]) + ':' + content
+    def indent = members ? lineIndent(members[-1].keyStart) : null
+    def entry = indent == null ? (members ? ', ' : '') + JsonOutput.toJson(path[-1]) + ':' + content :
+        ',\n' + indent + JsonOutput.toJson(path[-1]) + ': ' + indented(new JsonSlurper().parseText(content), indent)
     splice(offset, offset, entry)
+  }
+  // The whitespace before `offset` on its line, or null when other text precedes it there, as in a one-line file.
+  private String lineIndent(int offset) {
+    def before = text.substring(text.lastIndexOf('\n', offset - 1) + 1, offset)
+    before.trim() ? null : before
   }
   @Override
   void remove(String id, RegionLocation location) {

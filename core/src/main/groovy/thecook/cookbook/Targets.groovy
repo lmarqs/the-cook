@@ -3,11 +3,11 @@ package thecook.cookbook
 import thecook.formats.BlockDocument
 import thecook.formats.Document
 import thecook.formats.Documents
+import thecook.formats.JsonDocument
 import thecook.reconciliation.Permissions
 import thecook.rendering.BlockLocation
 import thecook.rendering.KeyLocation
 
-import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 /**
@@ -155,7 +155,8 @@ final class KeyTarget extends Target {
   }
 
   /**
-   * Leaves a key that already holds `value` as it is, so the file keeps its formatting; a new JSON file is indented.
+   * Leaves a key that already holds `value` as it is, so the file keeps its formatting; a new JSON file is indented,
+   * and a value written into an indented one is indented to the depth of its key.
    */
   void write(Draft draft, Object value) {
     String text = editable(draft)
@@ -170,7 +171,7 @@ final class KeyTarget extends Target {
     document.write(identity, location, rendered)
 
     if (text == null && format(file) == 'json') {
-      draft.write(file, indented(new JsonSlurper().parseText(document.text), '') + '\n')
+      draft.write(file, JsonDocument.indented(new JsonSlurper().parseText(document.text), '') + '\n')
     } else {
       draft.replace(file, document)
     }
@@ -210,22 +211,6 @@ final class KeyTarget extends Target {
     format(file) == 'json' ?
         new JsonSlurper().parseText(existing) == new JsonSlurper().parseText(rendered) :
         existing == rendered
-  }
-
-  private static String indented(Object value, String indent) {
-    def inner = indent + '  '
-
-    if (value instanceof Map && value) {
-      return '{\n' + value.collect { key, item ->
-        inner + JsonOutput.toJson(key.toString()) + ': ' + indented(item, inner)
-      }.join(',\n') + '\n' + indent + '}'
-    }
-
-    if (value instanceof List && value) {
-      return '[\n' + value.collect { inner + indented(it, inner) }.join(',\n') + '\n' + indent + ']'
-    }
-
-    JsonOutput.toJson(value)
   }
 }
 

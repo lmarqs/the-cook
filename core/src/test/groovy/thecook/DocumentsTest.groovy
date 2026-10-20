@@ -47,6 +47,36 @@ class DocumentsTest {
     assert new JsonSlurper().parseText(document.text) == ['a/b': null, a: [b: [true, false, 'quote"']]]
   }
 
+  @Test void jsonWritesAValueIntoAnIndentedFileAtTheDepthOfItsKey() {
+    def document = open('json', '{\n  "permissions": {\n    "allow": [\n      "a"\n    ]\n  },\n  "other": 1\n}\n')
+    set(document, ['permissions'], [allow: ['a', 'b'], deny: []])
+    set(document, ['hooks'], [stop: ['x']])
+    assert document.text == '''\
+{
+  "permissions": {
+    "allow": [
+      "a",
+      "b"
+    ],
+    "deny": []
+  },
+  "other": 1,
+  "hooks": {
+    "stop": [
+      "x"
+    ]
+  }
+}
+'''
+  }
+
+  @Test void jsonKeepsAOneLineFileOnOneLine() {
+    def document = open('json', '{"a": {"b": 1}, "c": 2}\n')
+    set(document, ['a'], [b: 2])
+    set(document, ['d'], [3])
+    assert document.text == '{"a": {"b":2}, "c": 2, "d":[3]}\n'
+  }
+
   @Test void jsonRefusesDuplicateKeys() {
     def error = shouldFail { open('json', '{"x":1,"x":2}') }
     assert error.message.contains('Duplicate JSON key')

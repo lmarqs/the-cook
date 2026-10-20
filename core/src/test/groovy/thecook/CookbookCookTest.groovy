@@ -388,9 +388,9 @@ bypass allow
 
     policy.text = policy.text.replaceFirst('version: 2\n', 'version: 2\nbypass: allow\n')
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']]).commit()
-    def permissions = new groovy.json.JsonSlurper().parse(new File(kitchen, '.agents/adapters/claude/settings.json'))
-        .permissions
-    assert permissions.keySet() == ['allow', 'ask', 'deny'] as Set
+    // A later cook lays the changed value out as the first cook did.
+    assert new File(kitchen, '.agents/adapters/claude/settings.json').text ==
+    fixture('claude-settings.json').replace('],\n    "disableBypassPermissionsMode": "disable"', ']')
   }
 
   @Test void rendersThePolicyIntoCodexRulesAndNamesWhatCodexCannotEnforce() {
