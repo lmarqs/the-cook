@@ -66,6 +66,7 @@ diff shows that removal. A recipe that `cook.lock` does not list is refused, and
 ```text
 /build/
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+!/.claude/
 /.claude/*
 !/.claude/settings.json
 !/.claude/skills
@@ -82,9 +83,10 @@ CLAUDE.local.md
 ```diff
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,11 +1,1 @@
+@@ -1,12 +1,1 @@
  /build/
 -# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+-!/.claude/
 -/.claude/*
 -!/.claude/settings.json
 -!/.claude/skills

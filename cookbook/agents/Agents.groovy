@@ -168,15 +168,16 @@ class Agents {
   List<String> instructionsSection() { instructions ?: null }
 
   /**
-   * The `harnesses` section of `.gitignore`: for each harness `ignoreLocalDirectories` was given, its local directory's
-   * contents, such as `/.claude/*`, then a negation per link Cook makes there, such as `!/.claude/skills`; then the
-   * files each harness would read in place of the shared setup.
+   * The `harnesses` section of `.gitignore`: for each harness `ignoreLocalDirectories` was given, its local directory
+   * re-included, such as `!/.claude/`, since Git cannot re-include a file whose parent directory an earlier rule
+   * excludes; then the directory's contents, such as `/.claude/*`, and a negation per link Cook makes there, such as
+   * `!/.claude/skills`; then the files each harness would read in place of the shared setup.
    */
   @Section(path = '.gitignore', id = 'harnesses')
   List<String> ignoredDirectories() {
     def lines = ignoredHarnesses.collectMany { harness ->
       def local = ignored(harness)
-      ["${local}*"] + harness.linkNames.collect { "!${local}${it}" }
+      ["!${local}", "${local}*"] + harness.linkNames.collect { "!${local}${it}" }
     } + ignoredHarnesses.collectMany { it.ignoredFiles }
     lines*.toString() ?: null
   }

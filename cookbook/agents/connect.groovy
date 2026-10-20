@@ -34,7 +34,7 @@ replaced.
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write` | `--harness=codex` |
 | `.agents/adapters/codex/rules/cook.rules` | The section `commands`, opening with a comment on the runs Codex cannot refuse while `bypass` is `refuse` | `--harness=codex` and the policy has command rules |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` |
-| `.gitignore` | The section `harnesses`: each selected harness's directory ignored except the links above, which are committed, and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always |
+| `.gitignore` | The section `harnesses`: each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above, which are committed, and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always |
 
 Cooking with fewer harnesses removes the outputs of the ones left out.
 

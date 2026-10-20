@@ -15,6 +15,8 @@ git add AGENTS.md .agents .claude .codex .gitignore cook.lock && git commit
 
 Name every harness the team uses: `#connect` removes what it wrote for a harness left out. After the commit,
 `git ls-files .claude .codex` lists only links, and `git ls-files -s .claude .codex` shows each with mode `120000`.
+`git check-ignore --no-index $(find .claude .codex -maxdepth 1 -type l)` prints nothing; a link it prints is hidden
+by an ignore rule, which [investigate.md](investigate.md) shows how to find.
 
 ## A new repository
 

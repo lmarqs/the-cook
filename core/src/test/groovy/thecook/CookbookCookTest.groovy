@@ -492,16 +492,22 @@ bypass allow
     assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
     new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
     new File(kitchen, '.agents/permission/policy.yaml').text = fixture('policy.yaml')
+    // A team's own rule ignoring a whole harness directory would hide the links, unless the section re-includes it.
+    new File(kitchen, '.gitignore').text = '.claude/\n.codex/\n'
 
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
 
     assert new File(kitchen, '.claude/skills/agents-layout/SKILL.md').isFile()
     assert new File(kitchen, '.gitignore').text == '''\
+.claude/
+.codex/
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+!/.claude/
 /.claude/*
 !/.claude/settings.json
 !/.claude/skills
 !/.claude/commands
+!/.codex/
 /.codex/*
 !/.codex/config.toml
 !/.codex/rules

@@ -60,7 +60,9 @@ The cost: generated files can drift from the policy and can conflict in a merge.
 
 The rest of `.claude/` and `.codex/` stays ignored: `/.claude/*` plus one `!` line per link. The harnesses write
 personal and per-machine files there, and ignoring the directory by default keeps them out of commits whatever their
-names become.
+names become. The section opens each harness with `!/.claude/`, because git cannot re-include a file whose parent
+directory a rule above excludes, such as a team's own `.claude/`. A rule below the section or in a global excludes
+file still wins; [investigate.md](investigate.md) shows how to find it.
 
 ## Seed files and the skill have different owners
 
