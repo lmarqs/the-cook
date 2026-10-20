@@ -108,6 +108,49 @@ class DocumentsTest {
     assert !document.text.contains('[env._.python]')
   }
 
+  @Test void tomlRefusesAnOwnedKeyWrittenAsATableNamingTheShapeAndTheInlineForm() {
+    def shapes = [
+      '[k]\nx = 1\n': 'key k is written as a [k] table',
+      '[k] # a = b\nx = 1\n': 'key k is written as a [k] table',
+      '[k.sub]\nx = 1\n': 'key k is written as a [k.sub] table',
+      'k.x = 1\n': 'key k is written as a dotted key k.x',
+      '[[k]]\nx = 1\n': 'key k is written as a [[k]] array of tables',
+    ]
+    shapes.each { text, what ->
+      def expected = [
+        what,
+        '  Cook owns k whole and writes it as one inline table',
+        '  replace it with k = { … } above the first [table], then cook again'
+      ].join('\n')
+      assert shouldFail { set(open('toml', text), ['k'], [x: 2]) }.message == expected
+      assert shouldFail { open('toml', text).read('k', new KeyLocation(['k'])) }.message == expected
+      assert shouldFail { remove(open('toml', text), ['k']) }.message == expected
+    }
+  }
+
+  @Test void tomlRefusesANestedOwnedKeyWrittenAsATableNamingItsTable() {
+    def error = shouldFail { set(open('toml', '[a.k]\nx = 1\n'), ['a', 'k'], [x: 2]) }
+    assert error.message == [
+      'key a.k is written as a [a.k] table',
+      '  Cook owns a.k whole and writes it as one inline table',
+      '  replace it with k = { … } in the [a] table, then cook again'
+    ].join('\n')
+  }
+
+  @Test void tomlStillWritesAnInlineTableAPlainKeyAndALeafInsideATable() {
+    def inline = open('toml', 'k = { x = 1 } # keep\n')
+    set(inline, ['k'], [x: 2])
+    assert inline.text == 'k = { x = 2 } # keep\n'
+
+    def plain = open('toml', 'k = 1\n[t]\ny = 2\n')
+    set(plain, ['k'], 3)
+    assert plain.text == 'k = 3\n[t]\ny = 2\n'
+
+    def leaf = open('toml', '[k] # a = b\nx = 1\n')
+    set(leaf, ['k', 'x'], 2)
+    assert leaf.text == '[k] # a = b\nx = 2\n'
+  }
+
   private static Document open(String format, String text) {
     new Documents().open(format, text)
   }

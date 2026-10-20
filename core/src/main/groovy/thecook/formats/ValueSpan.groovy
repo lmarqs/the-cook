@@ -7,7 +7,7 @@ class ValueSpan {
     int lineEnd = text.indexOf('\n', start)
 
     if (equals < 0 || (lineEnd >= 0 && equals > lineEnd)) {
-      throw new IllegalArgumentException('TOML table ownership requires named leaves')
+      throw new IllegalArgumentException('Malformed TOML key: no = follows it on its line')
     }
 
     int first = equals + 1
@@ -99,7 +99,7 @@ class ValueSpan {
         return cursor
       }
 
-      if (character in ['\n', '\r']) {
+      if (character in ['#', '\n', '\r']) {
         return -1
       }
     }

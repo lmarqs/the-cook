@@ -1,5 +1,6 @@
 package thecook.formats
 
+import thecook.model.Diagnostic
 import thecook.rendering.RegionLocation
 import thecook.rendering.KeyLocation
 
@@ -40,7 +41,34 @@ class TomlDocument implements Document {
       return null
     }
 
-    ValueSpan.afterEquals(text, offset(position))
+    int start = offset(position)
+    def shape = tableShape(path, result, start)
+
+    if (shape) {
+      throw new IllegalArgumentException(Diagnostic.text("key ${tableName(path)} is written as ${shape}",
+      "Cook owns ${tableName(path)} whole and writes it as one inline table",
+      "replace it with ${inlineForm(path)}, then cook again"))
+    }
+
+    ValueSpan.afterEquals(text, start)
+  }
+  // A key Cook owns whole is one value it replaces; a header or dotted keys spread it over lines it cannot replace.
+  private String tableShape(List<String> path, def result, int start) {
+    def header = text.substring(text.lastIndexOf('\n', start - 1) + 1) =~ /^[ \t]*(\[\[[^\]\r\n]*]]|\[[^\]\r\n]*])/
+
+    if (header.find()) {
+      return header.group(1).startsWith('[[') ? "a ${header.group(1)} array of tables" : "a ${header.group(1)} table"
+    }
+
+    if (result.isTable(path) && text.charAt(ValueSpan.afterEquals(text, start)[0]) != '{' as char) {
+      return "a dotted key ${text.substring(start, text.indexOf('=', start)).trim()}"
+    }
+
+    null
+  }
+  private static String inlineForm(List<String> path) {
+    path.size() == 1 ? "${keyName(path[0])} = { … } above the first [table]" :
+        "${keyName(path[-1])} = { … } in the [${tableName(path.dropRight(1))}] table"
   }
   @Override
   String read(String id, RegionLocation location) {
