@@ -723,6 +723,7 @@ bypass allow
       'WARN AGENTS.md names .work/services.lock, which is not in the tree ',
     ]
     assert filledOutput.readLines().every { it.startsWith('ok ') || it.startsWith('WARN ') }
+    assert filledOutput.contains('ok no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md in the repository\n')
     assert filledOutput.contains('ok .claude/settings.json is a tracked link that resolves and is not ignored\n')
     assert filledOutput.contains('ok .codex/config.toml is a tracked link that resolves and is not ignored\n')
   }

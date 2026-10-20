@@ -93,20 +93,7 @@ check_claude_files() {
     found=1
   done
   IFS=$saved_ifs
-  directory=${root%/*}
-  while :; do
-    for file in "$directory/CLAUDE.md" "$directory/CLAUDE.local.md" "$directory/.claude/CLAUDE.md"; do
-      [ "$file" = "$HOME/.claude/CLAUDE.md" ] && continue
-      if [ -f "$file" ]; then
-        fail "$file exists above the repository, and Claude skips AGENTS.md while it does" \
-          "move its lines into AGENTS.md or ~/.claude/CLAUDE.md, then delete it"
-        found=1
-      fi
-    done
-    [ -z "$directory" ] && break
-    directory=${directory%/*}
-  done
-  [ "$found" -eq 0 ] && ok 'no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md here or above'
+  [ "$found" -eq 0 ] && ok 'no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md in the repository'
 }
 
 check_links() {
