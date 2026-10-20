@@ -218,7 +218,7 @@ interface Harness {
   /** Renders the shared policy into the harness's own permission model. */
   void permit(Policy policy)
 
-  /** The names of the links Cook makes in the local directory, such as `settings.json`, which stay in Git. */
+  /** The names of the links Cook can make in the local directory, such as `settings.json`, which stay in Git. */
   List<String> getLinkNames()
 
   /**

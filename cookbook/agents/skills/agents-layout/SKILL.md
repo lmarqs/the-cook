@@ -151,7 +151,7 @@ Read the diff the dry run prints before approving: an agent has no terminal to a
 
 The diff adds `Bash(./gradlew test *)` to `.agents/adapters/claude/settings.json` and a `prefix_rule` to
 `.agents/adapters/codex/rules/cook.rules`, and `cook.lock` records them. The first command entry also creates that
-rules file, its `.codex/rules` link and the `.gitignore` line that commits the link.
+rules file and its `.codex/rules` link.
 
 ## Guidance
 

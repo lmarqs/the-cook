@@ -454,6 +454,25 @@ notes.set(features: [hooks: true])
     assert new File(kitchen, '.codex/rules/npm.rules').text == 'prefix_rule(pattern = ["npm"])\n'
   }
 
+  @Test void connectKeepsInGitEveryLinkCodexSettingsMakes() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    assert ['git', 'init', '-q', kitchen.path].execute().waitFor() == 0
+    new File(kitchen, 'setup').mkdirs()
+    new File(kitchen, 'setup/codex-hooks.json').text = '{"hooks": {}}\n'
+    new File(kitchen, 'setup/git.rules').text = 'prefix_rule(pattern = ["git"])\n'
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#codex-settings', [
+      hooks: ['setup/codex-hooks.json'], rule: ['setup/git.rules'],
+    ]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+
+    ['.codex/config.toml', '.codex/hooks.json', '.codex/rules'].each {
+      assert Files.isSymbolicLink(new File(kitchen, it).toPath())
+      assert ['git', '-C', kitchen.path, 'check-ignore', '-q', '--no-index', it].execute().waitFor() == 1
+    }
+  }
+
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
     def real = folder.newFolder('real')
     def linked = new File(folder.root, 'linked')
@@ -730,6 +749,7 @@ bypass allow
 !/.codex/
 /.codex/*
 !/.codex/config.toml
+!/.codex/hooks.json
 !/.codex/rules
 # Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
 CLAUDE.md

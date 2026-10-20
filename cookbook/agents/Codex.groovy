@@ -118,8 +118,11 @@ class Codex implements Harness {
     if (paths.skills) readsNatively(paths.skills, '.agents/skills')
   }
 
-  /** `config.toml`, `hooks.json` and `rules`, each when written. */
-  List<String> getLinkNames() { written() }
+  /**
+   * `config.toml`, `hooks.json` and `rules`, whether or not this instance writes them, since `#codex-settings` makes
+   * these links in a recipe of its own and the `.gitignore` section that keeps them in Git belongs to `#connect`.
+   */
+  final List<String> linkNames = ['config.toml', 'hooks.json', 'rules']
 
   /**
    * Each supplied top-level key of `.agents/adapters/codex/config.toml`, owned whole, when configuration or permissions
