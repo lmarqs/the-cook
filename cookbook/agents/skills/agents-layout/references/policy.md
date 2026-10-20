@@ -2,7 +2,7 @@
 
 `.agents/permission/policy.yaml` says which commands and tools coding agents may use in this repository. Cooking
 `io.github.lmarqs.cookbook:agents#connect` renders it into each harness's own settings under `.agents/adapters/`. It is the only
-file to edit for permissions.
+file to edit for permissions. Tested with Claude Code 2.1.303 and Codex 0.160.1.
 
 ## Top level
 
@@ -74,9 +74,9 @@ role's files. A role only adds denies, so a run in a role does at most what any 
 | Harness | Renders | Run in the role |
 | --- | --- | --- |
 | Claude | `.agents/adapters/claude/roles/<role>.json`, holding only `permissions.deny` | `claude --settings .agents/adapters/claude/roles/<role>.json` |
-| Codex | Nothing | Not possible: Codex 0.160.1 has no option that adds a rules file to one run, so a Codex run gets `commands` only |
+| Codex | Nothing | Not possible: Codex has no option that adds a rules file to one run, so a Codex run gets `commands` only |
 
-A deny from `--settings` wins over an allow in the project settings: tested with Claude Code 2.1.303.
+A deny from `--settings` wins over an allow in the project settings (tested).
 
 ## Examples
 

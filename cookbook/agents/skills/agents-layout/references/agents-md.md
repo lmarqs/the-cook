@@ -4,7 +4,7 @@ Read this when filling in `AGENTS.md` from the template `#seed` writes,
 [templates/AGENTS.template.md](../templates/AGENTS.template.md), or when deciding what to add to it or cut.
 Every agent session reads `AGENTS.md`, so each line costs every session: the template holds what the evidence says
 agents use from such a file, and nothing the repository already shows. The reasons below name their sources; the full
-list is at the end.
+list is at the end. Tested with Claude Code 2.1.304.
 
 ## What the evidence says
 
@@ -52,8 +52,7 @@ list is at the end.
 - **Worktrees stay explicit**, with a line for creating one ready to run and removing one with its data, because
   removal is the step agents skip. The line is the project's, whatever creates the worktrees: a person, a script or
   any loop runner. A worktree inside the repository reads its own `AGENTS.md`, not the main checkout's, but a
-  `CLAUDE.local.md` in a directory above it still turns Claude's reading of `AGENTS.md` off (tested, Claude Code
-  2.1.304).
+  `CLAUDE.local.md` in a directory above it still turns Claude's reading of `AGENTS.md` off (tested).
 - **The note speaks only when asked.** The file is loaded every session, so a note addressed to every session
   interrupts every task until someone fills the file in, and an instruction to fill it in would make the first agent
   rewrite it during an unrelated task. The note says the file is unfilled only when the developer asks for other work

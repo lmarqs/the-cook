@@ -1,8 +1,8 @@
 # Why the layout is shaped this way
 
 Read this before changing the layout or arguing against one of its rules. Each decision states what it gains and what
-it costs. Where a decision rests on how a harness behaves, the version that was tested is named: Claude Code
-2.1.303 or 2.1.304, and Codex 0.160.1.
+it costs. Tested with Claude Code 2.1.303 or 2.1.304 (2.1.304 for skill arguments, worktrees, bypass flags and
+`--setting-sources`) and Codex 0.160.1.
 
 ## Axes
 
@@ -28,8 +28,8 @@ setting is the same: if two people in the team could reasonably want different v
 Both harnesses read the root `AGENTS.md` natively, so one file reaches every agent. Claude Code reads it from 2.1.277,
 when no `CLAUDE.md` takes its place.
 
-Notes for one harness would split the knowledge: what Claude is told, Codex is not. Codex has no file of its own to
-hold them (it ignores `.codex/AGENTS.md`, tested), and Claude's `.claude/rules/` would put team files into a
+Notes for one harness would split the knowledge: what one harness is told, another is not. Codex has no file of its
+own to hold them (it ignores `.codex/AGENTS.md`, tested), and Claude's `.claude/rules/` would put team files into a
 directory that otherwise holds only links. A rule worth writing is worth giving to every agent; a rule that matters
 only for some tasks fits a skill, which both harnesses load on demand.
 
@@ -76,10 +76,10 @@ the next cook, so propose it upstream instead.
 
 The layout's procedures, `adopt` and `review`, ship as the `agents-layout` skill rather than as a plugin. Codex reads
 `.agents/skills/` natively and Claude through the `.claude/skills` link, so one committed copy reaches both, and both
-invoke it by name and pass the words after the name as text (tested, Claude Code 2.1.304 and Codex 0.160.1). It needs
-no install per person: every clone carries it, and `cook.lock` records the release that wrote it. A Claude or Codex
-plugin is installed by each person, and neither harness reads the other's, so the same procedure would need two
-packages and an install step any teammate could skip.
+invoke it by name and pass the words after the name as text (tested). It needs no install per person: every clone
+carries it, and `cook.lock` records the release that wrote it. A harness's plugin is installed by each person, and
+neither harness reads the other's, so the same procedure would need two packages and an install step any teammate could
+skip.
 
 ## One policy file, rendered per harness
 
@@ -104,7 +104,7 @@ role file holds only `permissions.deny`, so it cannot loosen anything else.
 
 ## Why Codex has no roles
 
-A role needs a way for one run to add rules that another run does not get. Codex 0.160.1 has none:
+A role needs a way for one run to add rules that another run does not get. Codex, in the version above, has none:
 
 - `CODEX_PERMISSION_PROFILE` is a variable Codex sets for the commands it runs, not one that selects a profile.
 - `prefix_rules` in configuration exist only in `requirements.toml`, which an administrator controls.
@@ -162,10 +162,10 @@ Every file of the layout is committed and every link is relative, so a worktree 
 resolve inside it and git reports it clean, with nothing to cook or copy (tested). Trust and personal settings follow
 the clone, not the directory:
 
-- Claude Code 2.1.304 keys trust on the main checkout. In an untrusted worktree its warning names
+- Claude Code keys trust on the main checkout. In an untrusted worktree its warning names
   `projects["<main checkout>"]`, and in a worktree of a trusted clone it reads the main checkout's
   `.claude/settings.local.json` (tested, with a deny, in a worktree that had no local file of its own).
-- Codex 0.160.1 applies `.codex/rules` in a worktree inside the trusted checkout and in one beside it, and skips them
+- Codex applies `.codex/rules` in a worktree inside the trusted checkout and in one beside it, and skips them
   in a plain clone nobody trusted (tested).
 
 So trusting the main checkout once covers every worktree of it, wherever the runner puts it; a fresh clone needs its
@@ -173,7 +173,7 @@ own trust.
 
 Where worktrees go is left to the project and its runner, because each location has a cost:
 
-| Location | What follows (Claude Code 2.1.304, tested) |
+| Location | What follows (Claude Code, tested) |
 | --- | --- |
 | Inside the main checkout | The main checkout's `git status` lists the directory until the project ignores it. Claude reads the worktree's own `AGENTS.md`, not the main checkout's `AGENTS.md` or `CLAUDE.md`. A `CLAUDE.local.md` in the main checkout, or in any directory between it and the worktree, reaches the worktree and turns its `AGENTS.md` off |
 | Beside the repository or elsewhere | Nothing in the main checkout's directory reaches it; trust and Claude's local settings still follow the main checkout |
@@ -190,7 +190,7 @@ tested here. "Not verified" marks what the sources did not show:
 | --- | --- | --- | --- | --- | --- |
 | Claude Code `--worktree` | `.claude/worktrees/<name>/`; a `WorktreeCreate` hook replaces it | `.worktreeinclude` | Itself | Not applicable | [docs](https://code.claude.com/docs/en/worktrees) |
 | Codex `--worktree` | `$CODEX_HOME/worktrees` | `.worktreeinclude` in the app; setup scripts, key not verified | Itself | Not applicable | [docs](https://learn.chatgpt.com/docs/environments/git-worktrees) |
-| ralph-tui 0.12 | `../.ralph-worktrees/<project>/` in its code, `.ralph-tui/worktrees` in its docs; `[parallel].worktreeDir` | Its own configuration only | Claude with `--dangerously-skip-permissions`; `codex exec --full-auto`, an option `codex exec` 0.160.1 rejects (tested) | `command`, `defaultFlags`, `skipPermissions`, `fullAuto` | [docs](https://ralph-tui.com/docs/parallel/configuration) |
+| ralph-tui 0.12 | `../.ralph-worktrees/<project>/` in its code, `.ralph-tui/worktrees` in its docs; `[parallel].worktreeDir` | Its own configuration only | Claude with `--dangerously-skip-permissions`; `codex exec --full-auto`, an option `codex exec` rejects (tested) | `command`, `defaultFlags`, `skipPermissions`, `fullAuto` | [docs](https://ralph-tui.com/docs/parallel/configuration) |
 | Conductor | `~/conductor/workspaces/<repo>/<workspace>` | `.worktreeinclude` or `file_include_globs`; `[scripts] setup` | Not verified | Not verified | [docs](https://conductor.build/docs/concepts/git-worktrees) |
 | claude-squad | `~/.claude-squad/worktrees/` | None | `claude` in tmux; `--autoyes` answers prompts | `-p <program>` | [source](https://github.com/smtg-ai/claude-squad) |
 | Gastown | `~/gt/<rig>/polecats/<name>/rig/` | `.runtime/setup-hooks/*` | Claude with `--dangerously-skip-permissions`; Codex with `--dangerously-bypass-approvals-and-sandbox` | `gt config agent set` | [source](https://github.com/gastownhall/gastown) |
@@ -212,7 +212,7 @@ says what each harness does when a runner keeps its bypass flags.
 A harness's bypass mode runs every command that is not denied, without asking. Most loop runners start agents in it
 by default, so a policy that only asks would mean nothing to their workers. While `policy.yaml` says `bypass: refuse`,
 or says nothing, `#connect` writes `permissions.disableBypassPermissionsMode: "disable"` into the shared Claude
-settings. Claude Code 2.1.304, tested in an untrusted workspace, and the first row in a trusted one too:
+settings. Claude Code, tested in an untrusted workspace, and the first row in a trusted one too:
 
 | Run | Without the key | With it |
 | --- | --- | --- |
@@ -229,7 +229,7 @@ its workers in bypass mode, and `bypass: allow` leaves the key out. The choice i
 of the policy.
 
 Codex has no such setting, and needs one less: its rules hold under `--dangerously-bypass-approvals-and-sandbox`, which
-refuses a `prompt` rule instead of running it (tested, Codex 0.160.1). What does step outside the rules is listed in
+refuses a `prompt` rule instead of running it (tested). What does step outside the rules is listed in
 `cook.rules` itself, in a comment, while `bypass` is `refuse`: `--ignore-rules`, an untrusted project and
 `--approve-for-me`.
 
@@ -245,12 +245,12 @@ step outside it:
 
 | Route | Effect | How it is known |
 | --- | --- | --- |
-| `claude --dangerously-skip-permissions`, `--permission-mode bypassPermissions` | Refused while `bypass` is `refuse`; with `allow`, runs every command not denied | Tested, 2.1.304 |
-| `claude --setting-sources user` | Skips the project's settings: the policy and the bypass refusal | Tested, 2.1.304 |
-| `codex exec --ignore-rules` | Skips `cook.rules` | Tested, 0.160.1 |
-| An untrusted Codex project, including a run with `--ignore-user-config` | Skips `.codex/`, so the rules and the sandbox settings | Tested, 0.160.1 |
-| `codex exec --approve-for-me` | An automatic reviewer approves `prompt` rules; `forbidden` still holds | Tested, 0.160.1 |
-| `codex exec --dangerously-bypass-approvals-and-sandbox`, `--sandbox danger-full-access` | The rules hold; the sandbox is gone | Rules tested, 0.160.1; sandbox from `codex exec --help` |
+| `claude --dangerously-skip-permissions`, `--permission-mode bypassPermissions` | Refused while `bypass` is `refuse`; with `allow`, runs every command not denied | Tested |
+| `claude --setting-sources user` | Skips the project's settings: the policy and the bypass refusal | Tested |
+| `codex exec --ignore-rules` | Skips `cook.rules` | Tested |
+| An untrusted Codex project, including a run with `--ignore-user-config` | Skips `.codex/`, so the rules and the sandbox settings | Tested |
+| `codex exec --approve-for-me` | An automatic reviewer approves `prompt` rules; `forbidden` still holds | Tested |
+| `codex exec --dangerously-bypass-approvals-and-sandbox`, `--sandbox danger-full-access` | The rules hold; the sandbox is gone | Rules tested; sandbox from `codex exec --help` |
 | `codex exec -c <key>=<value>` | Sets any configuration key for one run, the sandbox and approval keys included | `codex exec --help`; not tested |
 | `git -C sub push`, `env X=1 git push`, `bash -c '...'`, a script that runs the command | Starts with other words, so no prefix matches | How prefixes match ([policy.md](policy.md#prefix)) |
 | A loop runner's default command | Most pass the bypass flags above | The runner table above, from docs and source |

@@ -6,11 +6,13 @@ argument-hint: "[adopt | review [--fix]]"
 
 # Agents layout
 
+Tested with Claude Code 2.1.304 and Codex 0.160.1.
+
 ## Invoked with arguments
 
 The words after the skill's name choose a procedure. Claude Code takes them as `/agents-layout review --fix` and adds
 them below this file as `ARGUMENTS: review --fix`; Codex takes `$agents-layout review --fix` and passes the prompt as
-typed (tested, Claude Code 2.1.304 and Codex 0.160.1).
+typed (tested).
 
 | Arguments | Do |
 | --- | --- |
@@ -50,9 +52,10 @@ source does not state.
 
 ## The layout
 
-One repository, many ways of working: one person runs Claude at the keyboard, another leaves Codex working alone,
-a third has Claude coordinate Codex workers through a loop runner. The layout gives all of them the same knowledge
-and the same agreed permissions, and leaves each run free to pick its harness, model, mode and role.
+One repository, many ways of working: one person runs a harness at the keyboard, another leaves a different one
+working alone, a third has one harness coordinate another's workers through a loop runner. The layout gives all of
+them the same knowledge and the same agreed permissions, and leaves each run free to pick its harness, model, mode
+and role.
 
 ## Four owners
 
@@ -67,7 +70,7 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
 
 ```text
-AGENTS.md                         instructions for every agent; Claude and Codex read it directly
+AGENTS.md                         instructions for every agent; each harness reads it directly
 .agents/
   README.md                       what lives where, and the command line for each kind of run
   permission/policy.yaml          what agents may run; the one file to edit for permissions

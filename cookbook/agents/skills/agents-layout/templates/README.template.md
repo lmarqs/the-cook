@@ -9,7 +9,7 @@ investigate an agent that misbehaves, and why it is shaped this way.
 
 | Path | Holds | Decided by |
 | --- | --- | --- |
-| `/AGENTS.md` | Instructions for every agent, whatever its harness or role. Claude and Codex both read it natively | The team |
+| `/AGENTS.md` | Instructions for every agent, whatever its harness or role. Each harness reads it natively | The team |
 | `skills/` | One directory per skill with its `SKILL.md`. Codex reads it natively; Claude through `/.claude/skills` | The team |
 | `commands/` | One Markdown file per slash command. Claude reads it through `/.claude/commands`; Codex does not | The team |
 | `hooks/` | Scripts that each harness's hook settings run, by their path from the repository root | The team |
