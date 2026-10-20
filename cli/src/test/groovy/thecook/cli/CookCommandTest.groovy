@@ -307,13 +307,12 @@ notes.add('local')
         [
           ['../outside.groovy'],
           1,
-          'cook: ../outside.groovy: the recipe is outside the kitchen; move it into the kitchen'
+          'cook: ../outside.groovy: the recipe is outside the kitchen'
         ],
         [
           ['https://example.com/notes.groovy'],
           1,
-          'cook: https://example.com/notes.groovy: a URL is not a recipe; ' +
-          'list its repository in cook.toml and cook the recipe by its coordinates'
+          'cook: https://example.com/notes.groovy: a URL is not a recipe'
         ],
         [['acme:notes:1.2.3#notes', '--line=a', '--dry-run'], 2, 'cook: --dry-run goes before the first recipe'],
         [
@@ -428,14 +427,12 @@ notes.add('local')
         [
           ['help', 'https://example.com/notes.groovy'],
           1,
-          'cook: help: a URL is not a recipe; ' +
-          'list its repository in cook.toml and cook the recipe by its coordinates'
+          'cook: help: a URL is not a recipe'
         ],
         [
           ['discard', 'https://example.com/notes.groovy'],
           1,
-          'cook: discard: a URL is not a recipe; ' +
-          'list its repository in cook.toml and cook the recipe by its coordinates'
+          'cook: discard: a URL is not a recipe'
         ],
       ].each { arguments, status, message ->
         stderr.reset()

@@ -1,6 +1,7 @@
 package thecook.cookbook
 
 import thecook.filesystem.Repository
+import thecook.model.Diagnostic
 
 import java.util.zip.ZipInputStream
 
@@ -54,7 +55,8 @@ final class CookbookArtifact {
   String recipeSource(String name) {
     if (!(name in recipes)) {
       throw new IllegalArgumentException(
-      "No recipe ${name} in ${coordinates.artifactAddress}; its recipes are: ${recipes.join(', ') ?: 'none'}")
+      Diagnostic.text("No recipe ${name} in ${coordinates.artifactAddress}",
+      "its recipes are: ${recipes.join(', ') ?: 'none'}"))
     }
 
     text("${name}.groovy")

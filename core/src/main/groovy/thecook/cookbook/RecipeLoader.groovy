@@ -1,5 +1,7 @@
 package thecook.cookbook
 
+import thecook.model.Diagnostic
+
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -56,8 +58,8 @@ final class RecipeLoader {
     def recipe = coordinates.recipe
 
     if (!recipe) {
-      throw new IllegalArgumentException("${coordinates} names an artifact, not a recipe; name one: " +
-      artifact.recipes.collect { coordinates.recipeAddress(it) }.join(', '))
+      throw new IllegalArgumentException(Diagnostic.text("${coordinates} names an artifact, not a recipe", null,
+      'name one: ' + artifact.recipes.collect { coordinates.recipeAddress(it) }.join(', ')))
     }
 
     def source = artifact.recipeSource(recipe)
@@ -84,7 +86,7 @@ final class RecipeLoader {
     }
 
     if (!path.toRealPath().startsWith(kitchen)) {
-      throw new IllegalArgumentException('the recipe is outside the kitchen; move it into the kitchen')
+      throw outsideTheKitchen('recipe')
     }
 
     def bytes = Files.readAllBytes(path)
@@ -110,7 +112,7 @@ final class RecipeLoader {
     }
     files.collectEntries { model ->
       if (!model.toRealPath().startsWith(kitchen)) {
-        throw new IllegalArgumentException('the model is outside the kitchen; move it into the kitchen')
+        throw outsideTheKitchen('model')
       }
 
       [(kitchen.relativize(model).join('/')): Files.readAllBytes(model)]
@@ -127,7 +129,7 @@ final class RecipeLoader {
     def path = directory.resolve(declared).normalize()
 
     if (!path.startsWith(kitchen)) {
-      throw new IllegalArgumentException('the resource is outside the kitchen; move it into the kitchen')
+      throw outsideTheKitchen('resource')
     }
 
     if (!Files.isRegularFile(path)) {
@@ -135,7 +137,7 @@ final class RecipeLoader {
     }
 
     if (!path.toRealPath().startsWith(kitchen)) {
-      throw new IllegalArgumentException('the resource is outside the kitchen; move it into the kitchen')
+      throw outsideTheKitchen('resource')
     }
 
     path
@@ -144,13 +146,14 @@ final class RecipeLoader {
   private static String relative(Path kitchen, String operand) {
     if (operand.contains('://')) {
       throw new IllegalArgumentException(
-      'a URL is not a recipe; list its repository in cook.toml and cook the recipe by its coordinates')
+      Diagnostic.text('a URL is not a recipe', null,
+      'list its repository in cook.toml and cook the recipe by its coordinates'))
     }
 
     def path = kitchen.resolve(operand).normalize()
 
     if (!path.startsWith(kitchen)) {
-      throw new IllegalArgumentException('the recipe is outside the kitchen; move it into the kitchen')
+      throw outsideTheKitchen('recipe')
     }
 
     kitchen.relativize(path)
@@ -199,9 +202,14 @@ final class RecipeLoader {
     files.collectEntries { [(root.relativize(it).join('/')): kitchenText(it)] }.sort()
   }
 
+  private static IllegalArgumentException outsideTheKitchen(String what) {
+    def message = Diagnostic.text("the ${what} is outside the kitchen", null, 'move it into the kitchen')
+    new IllegalArgumentException(message)
+  }
+
   private String kitchenText(Path file) {
     if (!file.toRealPath().startsWith(kitchen)) {
-      throw new IllegalArgumentException('the model\'s file is outside the kitchen; move it into the kitchen')
+      throw outsideTheKitchen('model\'s file')
     }
 
     new String(Files.readAllBytes(file), 'UTF-8')

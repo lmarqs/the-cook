@@ -653,7 +653,7 @@ text.text = template
   @Test void refusesAResourceOutsideTheKitchenMissingOrMistyped() {
     def kitchen = kitchen()
     recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
-    def outside = 'the resource is outside the kitchen; move it into the kitchen'
+    def outside = 'the resource is outside the kitchen\n  move it into the kitchen'
     new File(kitchen.parentFile, 'outside.md').text = 'outside\n'
     recipe(kitchen, 'recipes/outside.md', 'outside\n')
     Files.createSymbolicLink(new File(kitchen, 'recipes/linked.md').toPath(),
@@ -745,12 +745,12 @@ notes.add(line)
     recipe(kitchen, 'models/inside.groovy', "@help('Inside.')\nimport java.util.List\n")
     Files.createSymbolicLink(new File(kitchen, 'models/Linked.groovy').toPath(), outside.toPath())
     [
-      '../outside.groovy': '../outside.groovy: the recipe is outside the kitchen; move it into the kitchen',
-      'linked.groovy': 'linked.groovy: the recipe is outside the kitchen; move it into the kitchen',
+      '../outside.groovy': '../outside.groovy: the recipe is outside the kitchen\n  move it into the kitchen',
+      'linked.groovy': 'linked.groovy: the recipe is outside the kitchen\n  move it into the kitchen',
       'missing.groovy': 'missing.groovy: Recipe file not found: missing.groovy',
-      'https://example.com/notes.groovy': 'https://example.com/notes.groovy: a URL is not a recipe; list its ' +
+      'https://example.com/notes.groovy': 'https://example.com/notes.groovy: a URL is not a recipe\n  list its ' +
       'repository in cook.toml and cook the recipe by its coordinates',
-      'models/inside.groovy': 'models/inside.groovy: the model is outside the kitchen; move it into the kitchen',
+      'models/inside.groovy': 'models/inside.groovy: the model is outside the kitchen\n  move it into the kitchen',
     ].each { operand, message ->
       def error = shouldFail(IllegalArgumentException) { cook(kitchen, operand, [:]) }
       assert error.message == message
@@ -803,7 +803,7 @@ notes.set(test: 'second')
       [['acme:notes:1.0.0#second', [:]], ['acme:notes:1.0.0#second', [:]]]:
       'recipe 2 (acme:notes:1.0.0#second): acme:notes#second is named twice; name it once per invocation',
       [['acme:notes:1.0.0', [:]]]:
-      'acme:notes:1.0.0: acme:notes:1.0.0 names an artifact, not a recipe; name one: ' +
+      'acme:notes:1.0.0: acme:notes:1.0.0 names an artifact, not a recipe\n  name one: ' +
       'acme:notes:1.0.0#first, acme:notes:1.0.0#second',
     ]
     failures.each { requests, message ->
@@ -980,10 +980,10 @@ notes.set('kept')
         ['io.github.lmarqs.cookbook:agents:0.1.0#seed', 'io.github.lmarqs.cookbook:agents:0.2.0#seed'],
         'io.github.lmarqs.cookbook:agents#seed is discarded twice; discard it once per invocation'
       ],
-      [['../outside.groovy'], 'the recipe is outside the kitchen; move it into the kitchen'],
+      [['../outside.groovy'], 'the recipe is outside the kitchen\n  move it into the kitchen'],
       [
         ['https://example.com/notes.groovy'],
-        'a URL is not a recipe; list its repository in cook.toml and cook the recipe by its coordinates'
+        'a URL is not a recipe\n  list its repository in cook.toml and cook the recipe by its coordinates'
       ],
     ].each { operands, message ->
       assert shouldFail(IllegalArgumentException) { new CookbookDiscard(kitchen).propose(operands) }.message == message

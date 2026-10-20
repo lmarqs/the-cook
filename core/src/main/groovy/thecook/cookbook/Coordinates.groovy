@@ -1,5 +1,7 @@
 package thecook.cookbook
 
+import thecook.model.Diagnostic
+
 import groovy.transform.EqualsAndHashCode
 
 import java.util.regex.Matcher
@@ -36,9 +38,9 @@ final class Coordinates {
     Matcher match = text =~ "^${PATTERN}\$"
 
     if (!match.matches()) {
-      throw new IllegalArgumentException(
-      "Invalid recipe coordinates: ${text}; expected group:artifact:version[#recipe] with an exact release " +
-      'version, such as io.github.lmarqs.cookbook:agents:1.2.3#seed')
+      throw new IllegalArgumentException(Diagnostic.text("Invalid recipe coordinates: ${text}",
+      'expected group:artifact:version[#recipe] with an exact release version, such as ' +
+      'io.github.lmarqs.cookbook:agents:1.2.3#seed'))
     }
 
     new Coordinates(match.group(1), match.group(2), match.group(3), match.group(4))
@@ -52,7 +54,8 @@ final class Coordinates {
   /** The short name of the recipe this address names: `group:artifact#recipe`, the address without its version. */
   String getRecipeName() {
     if (!recipe) {
-      throw new IllegalArgumentException("${this} names an artifact, not a recipe; write ${this}#<recipe>")
+      throw new IllegalArgumentException(
+      Diagnostic.text("${this} names an artifact, not a recipe", null, "write ${this}#<recipe>"))
     }
 
     "${group}:${artifact}#${recipe}"

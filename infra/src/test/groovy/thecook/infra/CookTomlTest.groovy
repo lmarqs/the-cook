@@ -33,7 +33,7 @@ class CookTomlTest {
     assert artifact.models == ['Notes']
     assert artifact.recipeSource('notes') == 'second notes'
     def error = shouldFail(IllegalArgumentException) { artifact.recipeSource('other') }
-    assert error.message == 'No recipe other in acme:notes:1.2.3; its recipes are: notes, review'
+    assert error.message == 'No recipe other in acme:notes:1.2.3\n  its recipes are: notes, review'
   }
 
   @Test void hashesTheArtifactsSourcesWhateverTheJarsEntryOrder() {

@@ -1,5 +1,7 @@
 package thecook.cookbook
 
+import thecook.model.Diagnostic
+
 /**
  * The repositories that cookbook artifacts resolve from, in the order they are tried: the first that holds an artifact
  * supplies it. `origin` names where the list came from in messages.
@@ -24,7 +26,8 @@ final class CookbookRepositories {
     }
 
     throw new IllegalArgumentException(
-    "${coordinates.artifactAddress} not found in ${origin}; publish it there, or list its repository in cook.toml")
+    Diagnostic.text("${coordinates.artifactAddress} not found in ${origin}", null,
+    'publish it there, or list its repository in cook.toml'))
   }
 }
 

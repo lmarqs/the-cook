@@ -14,7 +14,7 @@ class CoordinatesTest {
     def artifact = Coordinates.parse('io.github.lmarqs.cookbook:agents:0.1.0')
     assert artifact.recipe == null
     assert shouldFail(IllegalArgumentException) { artifact.recipeName }.message ==
-    'io.github.lmarqs.cookbook:agents:0.1.0 names an artifact, not a recipe; write ' +
+    'io.github.lmarqs.cookbook:agents:0.1.0 names an artifact, not a recipe\n  write ' +
     'io.github.lmarqs.cookbook:agents:0.1.0#<recipe>'
     assert artifact.recipeAddress('permissions') == 'io.github.lmarqs.cookbook:agents:0.1.0#permissions'
     [
