@@ -116,7 +116,7 @@ as `recipe 2 (io.github.lmarqs.cookbook:agents:0.0.0#connect)`.
 
 Before writing, Cook shows each recipe's `@confirm` text under the heading `Confirm <address>`, then a unified diff of
 every changed path, `cook.lock` included, and asks `Write these changes? [y/N]`. Any answer other than `y` or `yes`
-writes nothing, prints `Nothing written.` and exits with status 1. `--batch-approve` shows the same texts and diff and
+writes nothing, prints `cook: Nothing written.` and exits with status 1. `--batch-approve` shows the same texts and diff and
 writes without asking. Without a terminal to ask in, Cook writes only with `--batch-approve`; otherwise it exits with
 status 1 and writes nothing.
 

@@ -33,6 +33,8 @@ final class CookCommand {
   private final PrintWriter stderr
   private final Function<File, CookbookRepositories> repositories
   private final BufferedReader stdin
+  // `help` or `discard` once the invocation names one; null while cooking or before parsing.
+  private String commandName
 
   CookCommand(PrintWriter stdout, PrintWriter stderr, Function<File, CookbookRepositories> repositories,
   BufferedReader stdin = null) {
@@ -44,17 +46,15 @@ final class CookCommand {
 
   int execute(String[] args) {
     Closure<Boolean> command
+    commandName = null
 
     try {
       command = parse(args)
     } catch (UsageError error) {
-      stderr.println(error.message)
-      stderr.println('Run ./cook help for usage.')
-      stderr.flush()
+      diagnose(error.message + '\n  run: ./cook help')
       return 2
     } catch (IllegalArgumentException error) {
-      stderr.println(error.message)
-      stderr.flush()
+      diagnose(error.message)
       return 1
     }
 
@@ -66,10 +66,15 @@ final class CookCommand {
       stdout.flush()
       return 0
     } catch (Exception error) {
-      stderr.println(error.message ?: error.class.simpleName)
-      stderr.flush()
+      diagnose(error.message ?: error.class.simpleName)
       return 1
     }
+  }
+
+  // A diagnostic on stderr names its source, as the message standard asks: `cook: `, then the command under one.
+  private void diagnose(String message) {
+    stderr.println("cook: ${commandName ? commandName + ': ' : ''}${message}")
+    stderr.flush()
   }
 
   // The command the invocation names, as an action that returns false when it declines to write.
@@ -94,6 +99,7 @@ final class CookCommand {
     RootArgs root = line.command
     def chosen = parsed.subcommand()
     def command = chosen?.commandSpec()?.userObject()
+    commandName = chosen?.commandSpec()?.name()
 
     if (command != null && (root.dryRun || root.batchApprove || root.force || root.skip)) {
       throw new UsageError('--dry-run, --batch-approve, --force and --skip go before a recipe, not before a command')
@@ -352,8 +358,7 @@ final class CookCommand {
     review(proposal, proposal.changes)
 
     if (!dryRun && !batchApprove && !approved()) {
-      stderr.println('Nothing written.')
-      stderr.flush()
+      diagnose('Nothing written.')
       return false
     }
 

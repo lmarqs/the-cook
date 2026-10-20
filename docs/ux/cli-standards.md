@@ -103,7 +103,7 @@ The prefix of a human message depends on its stream:
 
 | Stream | Terminal conditions met | Otherwise |
 | --- | --- | --- |
-| stderr | `the-cook: `, or one status icon and one space in its place | `the-cook: ` |
+| stderr | `cook: `, or one status icon and one space in its place | `cook: ` |
 | stdout | No prefix, or one status icon and one space | No prefix |
 
 Icons never appear in generated file content or replace the diff itself. See
