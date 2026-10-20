@@ -9,7 +9,7 @@ each top-level key becomes one owned setting.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:agents:0.1.0#claude-settings --settings=setup/claude.json
+./cook io.github.lmarqs.cookbook:agents:<version>#claude-settings --settings=setup/claude.json
 ```
 
 ## Writes
@@ -23,7 +23,7 @@ Claude Code reads the project settings; it reads `AGENTS.md` natively.
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:agents:0.1.0#permissions` after this recipe to use the shared policy for
+Cook `io.github.lmarqs.cookbook:agents:<version>#permissions` after this recipe to use the shared policy for
 `permissions`; other settings keys remain separate targets. Select `--harness=claude` for that recipe.
 ''')
 @yield('''

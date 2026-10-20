@@ -12,8 +12,8 @@ from.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui
-./cook io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui --tracker=beads --mode=mise --issue-prefix=cook
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --tracker=beads --mode=mise --issue-prefix=cook
 ```
 
 ## Writes
@@ -33,9 +33,9 @@ Ralph's worktrees, iterations, reports and session files stay out of version con
 
 ## With other recipes
 
-- `io.github.lmarqs.cookbook:ralph:0.1.0#prd-story` writes a PRD reduced to one story. Cook it before
-  `io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui`, with `--prd` pointing at the same path.
-- `io.github.lmarqs.cookbook:ralph:0.1.0#bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
+- `io.github.lmarqs.cookbook:ralph:<version>#prd-story` writes a PRD reduced to one story. Cook it before
+  `io.github.lmarqs.cookbook:ralph:<version>#ralph-tui`, with `--prd` pointing at the same path.
+- `io.github.lmarqs.cookbook:ralph:<version>#bead-task` adds the task `ralph:bead`, which runs Ralph on one Beads issue.
   It needs `--tracker=beads` and `--mode=mise`.
 ''')
 @yield('''

@@ -8,13 +8,13 @@ committed, so a fresh clone needs no cooking; everything else in the harness dir
 
 Reads `.agents/permission/policy.yaml` when present, or seeds the starter, and seeds the shared directories that are
 absent.
-Cook `io.github.lmarqs.cookbook:agents:0.1.0#seed` first to create `AGENTS.md` too.
+Cook `io.github.lmarqs.cookbook:agents:<version>#seed` first to create `AGENTS.md` too.
 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:agents:0.1.0#connect --harness=claude
-./cook io.github.lmarqs.cookbook:agents:0.1.0#connect --harness=claude --harness=codex
+./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
 ```
 
 ## Writes
@@ -36,7 +36,7 @@ Cooking with fewer harnesses removes the outputs of the ones left out.
 
 ## With other recipes
 
-`io.github.lmarqs.cookbook:agents:0.1.0#seed` creates the layout this recipe connects. `#claude-settings` and
+`io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects. `#claude-settings` and
 `#codex-settings` write further keys into the same adapter files.
 ''')
 @yield('''

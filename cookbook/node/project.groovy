@@ -10,8 +10,8 @@ lock file; use the lock task to create or refresh it.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:node:0.1.0#project --manager=yarn
-./cook io.github.lmarqs.cookbook:node:0.1.0#project --node=22 --manager=npm --manager-version=10.9.8
+./cook io.github.lmarqs.cookbook:node:<version>#project --manager=yarn
+./cook io.github.lmarqs.cookbook:node:<version>#project --node=22 --manager=npm --manager-version=10.9.8
 ```
 
 ## Writes
@@ -27,7 +27,7 @@ lock file; use the lock task to create or refresh it.
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:node:0.1.0#dependency` with the same manager and `--dir=.` to add a dependency to this
+Cook `io.github.lmarqs.cookbook:node:<version>#dependency` with the same manager and `--dir=.` to add a dependency to this
 project. Its dependency keys compose with the engine and manager keys; refresh the lock file after changes.
 Other recipes can add distinct tool pins and tasks in the same `mise.toml`.
 ''')

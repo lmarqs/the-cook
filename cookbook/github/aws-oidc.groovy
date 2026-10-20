@@ -10,7 +10,7 @@ The AWS role must trust the workflow's OIDC identity for the credentials step to
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:github:0.1.0#aws-oidc --workflow=.github/workflows/deploy.yml --job=deploy \\
+./cook io.github.lmarqs.cookbook:github:<version>#aws-oidc --workflow=.github/workflows/deploy.yml --job=deploy \\
        --region=us-east-1 --role=arn:aws:iam::123456789012:role/deploy --placement=after:checkout
 ```
 
@@ -27,7 +27,7 @@ the same arguments again leaves the declared step and grants unchanged.
 
 ## With other recipes
 
-`io.github.lmarqs.cookbook:github:0.1.0#cache-key` changes a separate step input in the same workflow. Distinct jobs,
+`io.github.lmarqs.cookbook:github:<version>#cache-key` changes a separate step input in the same workflow. Distinct jobs,
 step ids and permission grants compose independently; the last recipe declaring the same target supplies it.
 ''')
 @confirm('''

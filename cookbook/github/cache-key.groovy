@@ -9,7 +9,7 @@ accept a `key` input, and the supplied expression must describe the cache key th
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:github:0.1.0#cache-key --workflow=.github/workflows/ci.yml --job=build \\
+./cook io.github.lmarqs.cookbook:github:<version>#cache-key --workflow=.github/workflows/ci.yml --job=build \\
        --key='gradle-v2-${{ hashFiles("build.gradle", "settings.gradle") }}'
 ```
 
@@ -25,7 +25,7 @@ own the step's other inputs. Cooking the same arguments again leaves the key unc
 ## With other recipes
 
 Cook a recipe that supplies the cache step first, so this recipe can select its existing id. Distinct step
-inputs compose independently; the last recipe declaring this key supplies it. `io.github.lmarqs.cookbook:github:0.1.0#aws-oidc`
+inputs compose independently; the last recipe declaring this key supplies it. `io.github.lmarqs.cookbook:github:<version>#aws-oidc`
 declares the separate AWS credentials step and permission grants.
 ''')
 import io.github.lmarqs.cookbook.github.Workflow

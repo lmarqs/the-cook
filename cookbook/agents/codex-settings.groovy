@@ -11,7 +11,7 @@ and hyphens, and may not be `.` or `..`.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:agents:0.1.0#codex-settings --config=setup/codex.toml --rules=setup/codex-rules
+./cook io.github.lmarqs.cookbook:agents:<version>#codex-settings --config=setup/codex.toml --rules=setup/codex-rules
 ```
 
 ## Writes
@@ -27,7 +27,7 @@ Codex reads the project configuration, hooks and rules; it reads `AGENTS.md` nat
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:agents:0.1.0#permissions` after this recipe with `--harness=codex` to use the shared policy for
+Cook `io.github.lmarqs.cookbook:agents:<version>#permissions` after this recipe with `--harness=codex` to use the shared policy for
 `sandbox_mode`, `approval_policy` and `sandbox_workspace_write`; other configuration keys remain separate
 targets. Use other rule-file names when that recipe owns the `commands` section in `cook.rules`.
 ''')
