@@ -13,11 +13,13 @@ see the root README's [current implementation](../../README.md#current-implement
 ./cook discard [-C <dir>] [batch-options] <recipe>...
 ./cook help [-C <dir>] [<recipe>]...
 ./cook --help
+./cook --version
 ```
 
 `./cook` is the release's [wrapper](wrapper.md), committed in the repository; it runs the engine version it pins.
 Without a command word, `./cook` cooks the recipes it is given. Running `./cook` with no arguments, `./cook help` or
-`./cook --help` shows the usage. `--help` takes no other arguments.
+`./cook --help` shows the usage. `--help` takes no other arguments. `./cook --version` prints `cook <version>`, the
+version the build wrote into the engine, and takes no other arguments either.
 
 ## Commands
 
@@ -178,6 +180,7 @@ cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
 | --- | --- | --- | --- |
 | `--batch-approve` | Cooking and `discard` | Before the first recipe operand | Displays the final diff and proceeds without prompting; approval covers the whole batch |
 | `--dry-run` | Cooking and `discard` | Before the first recipe operand | Displays the final diff and writes nothing |
+| `--check` | Cooking | Before the first recipe operand | Displays what `--dry-run` displays, writes nothing, and exits 1 when anything would change; `Already cooked.` exits 0. It excludes `--batch-approve` |
 
 `--batch-approve` is the batch option and the only preapproval spelling. Without it, Cook asks before changing target
 files. Noninteractive execution without this flag does not silently authorize writes.
@@ -190,6 +193,15 @@ follows shows what the changed sources write.
 ./cook --batch-approve ./recipe.groovy
 ./cook --batch-approve ./a.groovy ./b.groovy
 ./cook discard --batch-approve ./recipe.groovy
+```
+
+`--check` is for CI: a step that cooks the kitchen's recipes with it fails when someone changed a recipe's input, such
+as a policy file, and did not cook and commit the result. It ends with this diagnostic on stderr:
+
+```text
+cook: the recipes would change 2 files; nothing was written
+  --check reports what a cook would change
+  cook the same recipes without --check, review the diff and commit it
 ```
 
 A batch option after a recipe receives the normal unknown-option error. This invocation fails:

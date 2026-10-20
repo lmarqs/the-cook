@@ -92,6 +92,7 @@ tasks.register('jpackageTest', Test) {
   useJUnit()
   inputs.dir(packageOutput)
   systemProperty 'cook.packagedLauncher', packagedLauncher.get().asFile.absolutePath
+  systemProperty 'cook.version', version
 
   if (archivePlatform) {
     inputs.file(packageArchive.flatMap { it.archiveFile })

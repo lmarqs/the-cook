@@ -20,10 +20,17 @@ application {
   applicationName = 'cook'
   mainClass = 'thecook.cli.run.Main'
 }
+// The version `cook --version` prints, written into the CLI when it is built.
+tasks.named('processResources') {
+  def cookVersion = version
+  inputs.property('version', cookVersion)
+  filesMatching('thecook/cli/terminal/version.txt') { expand(version: cookVersion) }
+}
 tasks.named('test') {
   exclude '**/JpackageTest*'
   inputs.file('src/wrapper/cook')
   systemProperty 'cook.wrapper', file('src/wrapper/cook').absolutePath
+  systemProperty 'cook.version', version
   useJUnit(); testLogging {
     events 'failed'
   }

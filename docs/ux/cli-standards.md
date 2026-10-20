@@ -41,8 +41,8 @@ examples follow that grammar, because callers predict what a command does from i
 
 Each argument has one spelling and one position, and an action other than cooking is a command, not an option. A
 second accepted form for the same meaning is refused with a message naming the one form, because every alternative is
-another reading a caller, a document and a test must account for; `--help` therefore stands alone, and reading a
-recipe is `help <recipe>`.
+another reading a caller, a document and a test must account for; `--help` and `--version` therefore stand alone, and
+reading a recipe is `help <recipe>`.
 
 Recipe arguments take two forms, `--name value` and `--name=value`, with one meaning. Callers type the space form in
 every other command-line tool, and a refusal of it is an error they meet on their first invocation; the `=` form
@@ -64,6 +64,12 @@ When the result is unchanged, report that there are no proposed changes rather t
 because evaluation always runs.
 
 Cooking works without `cook.lock`; discard needs it, because the lock is its only record of what a recipe owns.
+
+### Checking for drift
+
+`--check` reports what a cook would change and exits 1 when anything would, so a CI step can fail on a kitchen whose
+committed files no longer match its recipes. It writes nothing, and it refuses `--batch-approve`, because a check that
+could write would make a CI step's result depend on its own side effect.
 
 ## Batch review and approval
 

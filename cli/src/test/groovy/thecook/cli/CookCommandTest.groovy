@@ -41,6 +41,41 @@ class CookCommandTest {
     'cook: Not a recipe: init\n  a recipe is coordinates or a .groovy path\n  run: ./cook help\n'
   }
 
+  @Test void versionPrintsTheVersionTheBuildWroteAndTakesNoOtherArguments() {
+    def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+    def cli = command(stdout, stderr)
+    assert cli.execute(['--version'] as String[]) == 0
+    assert stdout.toString('UTF-8') == "cook ${System.getProperty('cook.version')}\n"
+    assert cli.execute(['--version', 'x.groovy'] as String[]) == 2
+    assert stderr.toString('UTF-8') == 'cook: --version takes no other arguments\n  run: ./cook help\n'
+  }
+
+  @Test void checkPrintsTheDryRunAndExitsOneUntilTheRecipesAreCooked() {
+    workspace { root, repo ->
+      Fixtures.notesCookbook(repo)
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      def check = ['-C', repo.path, '--check', 'acme:notes:1.2.3#notes', '--line=first'] as String[]
+
+      assert cli.execute(check) == 1
+      assert stdout.toString('UTF-8').endsWith('\n\nWould create NOTES.md\nWould create cook.lock\n')
+      assert stderr.toString('UTF-8') == 'cook: the recipes would change 2 files; nothing was written\n' +
+      '  --check reports what a cook would change\n' +
+      '  cook the same recipes without --check, review the diff and commit it\n'
+      assert !new File(repo, 'NOTES.md').exists()
+
+      def cooked = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes', '--line=first'] as String[]
+      assert cli.execute(cooked) == 0
+      stdout.reset(); stderr.reset()
+      assert cli.execute(check) == 0
+      assert stdout.toString('UTF-8') == 'Already cooked.\n'
+      assert stderr.toString('UTF-8') == ''
+
+      assert cli.execute(['-C', repo.path, '--check', '--batch-approve', 'acme:notes:1.2.3#notes'] as String[]) == 2
+      assert stderr.toString('UTF-8') == 'cook: --check and --batch-approve exclude each other\n  run: ./cook help\n'
+    }
+  }
+
   @Test void kitchenOptionCooksAsIfStartedThereAndGoesBeforeTheRecipe() {
     workspace { root, repo ->
       Fixtures.notesCookbook(repo)
@@ -421,7 +456,8 @@ notes.add('local')
         [
           ['--dry-run', 'discard', 'acme:notes:1.2.3#notes'],
           2,
-          'cook: discard: --dry-run, --batch-approve, --force and --skip go before a recipe, not before a command'
+          'cook: discard: --dry-run, --check, --batch-approve, --force and --skip go before a recipe, ' +
+          'not before a command'
         ],
         [
           ['discard', 'acme:notes:1.2.3#notes'],

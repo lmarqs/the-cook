@@ -54,6 +54,14 @@ class RootArgs extends KitchenScoped {
   description = ["Show the recipes' confirm texts and the diff, then write without asking."])
   boolean batchApprove
 
+  @Option(names = ['--check'], description = [
+    'Report the proposed changes without writing, and exit 1 when there are any.'
+  ])
+  boolean check
+
+  @Option(names = ['--version'], description = ["Print Cook's version; takes no other arguments."])
+  boolean version
+
   @Option(names = ['--force'], description = [
     'Replace a file that a recipe writes from a template the first time it is cooked, instead of refusing.'
   ])

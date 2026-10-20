@@ -12,6 +12,7 @@ class JpackageTest {
 
     try {
       assert run(root, '--help').contains('Usage:')
+      assert run(root, '--version') == "cook ${System.getProperty('cook.version')}\n"
       Fixtures.notesCookbook(root)
       new File(root, 'Notes.groovy').text = Fixtures.NOTES_MODEL
       new File(root, 'local.groovy').text = """@help('Adds a local line.')
