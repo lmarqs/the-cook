@@ -24,8 +24,9 @@ typed (tested).
 ### Review
 
 Run `sh .agents/skills/agents-layout/scripts/check.sh` from the repository root. It writes nothing, prints one line
-per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. Then
-make the checks a script cannot:
+per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. It reads
+the links and the tracked `AGENTS.md` files from the index, so stage the layout before running it on uncommitted work.
+Then make the checks a script cannot:
 
 - Each rule in `AGENTS.md` states what its source states: the code, a config file, the README, CI or the developer.
 - Each command in Quick reference runs here, or is marked `(not run: ask first)`, and no other section repeats one.

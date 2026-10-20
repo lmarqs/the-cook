@@ -38,7 +38,9 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    ./cook --batch-approve io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
    ```
 
-8. **Review.** Run the review in [SKILL.md](../SKILL.md#review) and fix what it finds.
+8. **Review.** Stage first with the `git add` line of step 9: `check.sh` reads the links and the size of `AGENTS.md`
+   from the index, so before staging it fails every link. Then run the review in [SKILL.md](../SKILL.md#review) and
+   fix what it finds.
 9. **Commit once.**
 
    ```sh
