@@ -246,8 +246,9 @@ build.gradle            applies the io.github.lmarqs.cookbook plugin at the cook
 ```
 
 Each topic directory is one artifact. Skill content lives under `<dir>/skills/<name>/`, with `SKILL.md` and its
-supporting files together. The templates for seeded files live under `<dir>/seed/`, apart from the artifact's models
-and recipes, each named `<name>.template.<ext>`, as in `agents/seed/AGENTS.template.md`: under the file's own name,
+supporting files together. The templates for seeded files live in the `templates/` directory of the skill that
+explains them, so a seeded skill can compare a repository's files with the release's templates. Each is named
+`<name>.template.<ext>`, as in `agents/skills/agents-layout/templates/AGENTS.template.md`: under the file's own name,
 agents working in the cookbook would read it as instructions, since Codex reads every `AGENTS.md` between the
 repository root and its working directory.
 
