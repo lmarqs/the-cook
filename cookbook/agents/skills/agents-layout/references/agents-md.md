@@ -1,6 +1,7 @@
 # Why `AGENTS.md` holds what it holds
 
-Read this when filling in `AGENTS.md` from the template `#seed` writes, or when deciding what to add to it or cut.
+Read this when filling in `AGENTS.md` from the template `#seed` writes,
+[templates/AGENTS.template.md](../templates/AGENTS.template.md), or when deciding what to add to it or cut.
 Every agent session reads `AGENTS.md`, so each line costs every session: the template holds what the evidence says
 agents use from such a file, and nothing the repository already shows. The reasons below name their sources; the full
 list is at the end.
@@ -26,26 +27,41 @@ list is at the end.
 
 ## What follows for the template
 
-- **One command table.** Quick reference holds every daily command, including installing and adding a dependency and
-  the Done check with how long it takes. No other section repeats a command.
-- **Rules are written out; overviews are not.** Boundaries and Conventions state the rules that hold in any
-  repository, such as never weakening a check to make it pass, one change per commit, comments only for what the code
-  cannot show. Architecture keeps only what the code cannot show: where new code goes, related repositories and a
-  link to the design document. There is no component table.
-- **A budget and a pruning rule** sit in Boundaries, because real files only grow. The budget is set per repository
-  from the filled file; the median real file and the 32 KiB cap are the reference points.
-- **Tests is its own section**, covering where a test goes, naming, fixtures and which kind a change needs, because
-  testing is the most common topic in real files and the one a command table cannot carry.
-- **Agent behavior lives in Boundaries only.** Running the quick check, reporting what ran, reading and adding
-  Gotchas, updating the file: each rule is stated once, under Always, not repeated where it applies.
-- **Worktrees stay explicit**, with a row for removing one and what that removal cleans up, because removal is the
-  step agents skip. The rows are the project's, whatever creates the worktrees: a person, a script or any loop
-  runner. A worktree inside the repository reads its own `AGENTS.md`, not the main checkout's, but a `CLAUDE.local.md`
-  in a directory above it still turns Claude's reading of `AGENTS.md` off (tested, Claude Code 2.1.304).
-- **The template is filled only when asked.** The file is loaded every session, so an unconditional instruction
-  would make the first agent rewrite it during an unrelated task. Placeholders are `[bracketed]`, because GitHub
-  renders `<angle brackets>` as HTML tags and hides them. No sample values appear, because agents copy them into
-  repositories where they are wrong.
+- **Budgets as numbers.** Real files only grow ([2]), and a long file makes the agent ignore its rules ([4]), so
+  Boundaries states the limits. 800 words is one and a half times the top of the 335 to 535-word median ([2]), room
+  for a repository's own commands and rules. Past 1,200 words, a section moves into a skill, which loads only when its
+  description matches the task, or into a memory file that Deep dive names. All `AGENTS.md` files together stay under
+  16 KiB, half of the 32 KiB at which Codex stops reading the chain ([5], [6]); at about seven bytes a word, a root
+  file at 1,200 words leaves half of that for files nested in packages. The numbers are this layout's choices within
+  those sources, not findings of their own.
+- **The template's own text is small.** Its fixed text, outside the blanks and the note, is 300 words or fewer, so a
+  file within 800 words gives most of them to the repository.
+- **Commands in one place.** Quick reference holds every command, including installing and adding a dependency, and
+  defines the Quick check and the Done check. Agents use the tools a file names ([1], §4.3), and files that work give
+  exact commands with their flags ([3]), so each command is written once, where an agent looks for it; the other
+  sections state rules and places, and none repeats a command.
+- **Rules are written out; overviews are not.** Boundaries and Rules state what holds in any repository, such as never
+  weakening a check to make it pass ([3]) and comments only for what the code cannot show. Boundaries has the three
+  tiers, always, ask first and never ([3]). The stack is one line with major versions ([3]). Tests get a place and a
+  rule, because testing is the most common topic in real files ([2]).
+- **The README is linked, not restated.** An overview does not help an agent reach the right files, and LLM-written
+  files mostly repeat the README ([1], §1, §4.3). The note asks for a link to the README section, and a fix to the
+  README in the same change when it is wrong, so the fact lives in one place.
+- **Gotchas is capped at five.** Every session reads `AGENTS.md`, so it keeps only the traps any task can hit. A trap
+  in one area goes to `.agents/memory/`, named under Deep dive, and costs nothing until a task touches that area.
+- **Worktrees stay explicit**, with a line for creating one ready to run and removing one with its data, because
+  removal is the step agents skip. The line is the project's, whatever creates the worktrees: a person, a script or
+  any loop runner. A worktree inside the repository reads its own `AGENTS.md`, not the main checkout's, but a
+  `CLAUDE.local.md` in a directory above it still turns Claude's reading of `AGENTS.md` off (tested, Claude Code
+  2.1.304).
+- **The note speaks only when asked.** The file is loaded every session, so a note addressed to every session
+  interrupts every task until someone fills the file in, and an instruction to fill it in would make the first agent
+  rewrite it during an unrelated task. The note says the file is unfilled only when the developer asks for other work
+  in an interactive session, and is deleted once `scripts/check.sh` reports nothing else.
+- **One kind of blank.** Every blank is `[[fill: …]]`, on its own line, so
+  `grep -n '\[\[fill:' AGENTS.md` finds them all; a single bracket collides with real content such as `[-D]`, an empty
+  cell is a blank no search finds, and GitHub renders `<angle brackets>` as HTML tags and hides them. No sample values
+  appear, because agents copy them into repositories where they are wrong.
 
 Not established: whether a repository's filled template improves what agents produce there. That needs the setup in
 [1], a fixed task set across several agents and models, with and without the file. The check within reach is
