@@ -36,9 +36,10 @@ dependencies {
 tasks.named('test') {
   useJUnit()
   systemProperty 'cook.cookbook', file('../cookbook').absolutePath
-  // The tests cook the cookbook's recipes, so a cookbook change must rerun them.
-  inputs.dir('../cookbook')
-      .withPathSensitivity(PathSensitivity.RELATIVE)
-      .withPropertyName('cookbook')
+  // The tests cook the cookbook's recipes, so a cookbook change must rerun them. Its build outputs are left out:
+  // the cookbook's publish tasks rewrite them during the same build.
+  inputs.files(fileTree('../cookbook') { exclude 'build/**', '.gradle/**' })
+  .withPathSensitivity(PathSensitivity.RELATIVE)
+  .withPropertyName('cookbook')
   testLogging { events 'failed' }
 }
