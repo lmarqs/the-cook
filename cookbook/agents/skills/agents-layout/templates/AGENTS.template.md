@@ -4,7 +4,7 @@
 > - Replace every `[[fill: …]]`, table cells included; `grep -n '\[\[fill:' AGENTS.md` finds them all. Write `none`
 >   in a row that does not apply. Delete a section only when nothing else in this file points to it.
 > - Link the README section instead of restating it, and fix the README in the same change when it is wrong.
-> - Run every command you write that runs locally. Mark the others `(not run: ask first)`.
+> - Run every command you write. Mark one you could not run `(unverified)`; the next agent to run it removes the mark.
 > - Never write a rule its source does not state: the code, a config file, the README, CI or the developer.
 > - When replacing an existing `AGENTS.md`, follow `.agents/skills/agents-layout/references/adopt.md`.
 > - `.agents/skills/agents-layout/references/agents-md.md` says why the fixed text is here; keep it unless it is
@@ -41,15 +41,14 @@ Stack: [[fill: each language, framework and service with its major version and t
   `AGENTS.md` files together stay under 16 KiB.
 - [[fill: another rule for every change here, or none]]
 
-**Ask first:** [[fill: such as new dependencies, schema changes, rewriting pushed history, writes outside this machine]]
-
 **Never**
 
 - Commit secrets or credentials, or put personal data in logs, fixtures or commits.
 - Edit generated files by hand: [[fill: paths, or none]]
 - Make a check pass by weakening it: skipping a test, suppressing a warning, loosening an assertion.
 
-**Stop and ask** when a check fails again after a fix, a command is refused, or a decision is left open.
+**Stop and ask** before [[fill: such as new dependencies, schema changes, rewriting pushed history]], and when a
+check fails again after a fix, a command is refused, or a decision is left open.
 
 Enforced by [[fill: the file that makes agent tools refuse these, or none]]. A refusal is the rule working.
 

@@ -105,6 +105,11 @@ recipes:
     def words = fixed.collectMany { it.split(/\s+/).findAll() }
     assert words.size() <= 300
     assert !fixed.any { it.contains('[') || it =~ /\|\s*\|/ }
+    // One marker, for a command its writer could not run; approval is the policy's `ask`, never a marker.
+    assert lines.any { it.contains('`(unverified)`') }
+    def files = []
+    new File(COOKBOOK, 'agents').eachFileRecurse(groovy.io.FileType.FILES) { files << it }
+    assert files && !files.any { it.text.toLowerCase().contains('ask first') }
   }
 
   @Test void refusesToSeedOverAnExistingAgentsFile() {

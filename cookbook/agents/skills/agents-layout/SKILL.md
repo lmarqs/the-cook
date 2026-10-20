@@ -31,7 +31,8 @@ tree may be a stale path, or a git ref or a file made at run time. It reads the 
 files from the index, so stage the layout before running it on uncommitted work. Then make the checks a script cannot:
 
 - Each rule in `AGENTS.md` states what its source states: the code, a config file, the README, CI or the developer.
-- Each command in Quick reference runs here, or is marked `(not run: ask first)`, and no other section repeats one.
+- Each command in Quick reference runs here; run each one marked `(unverified)` and remove the mark when it passes.
+  No other section repeats a command.
 - `AGENTS.md` links the README instead of restating it, and Gotchas holds at most five traps any task can hit.
 - `.agents/README.md` and `.agents/permission/policy.yaml` differ from `.agents/skills/agents-layout/templates/` only
   where the team chose to. Seeded files are written once, so a later release's template changes reach them by hand.

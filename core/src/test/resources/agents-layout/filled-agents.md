@@ -27,15 +27,14 @@ Stack: POSIX sh, pinned by nothing.
 - Keep this file under 800 words; past 1,200, move a section into a skill or memory file before adding. All
   `AGENTS.md` files together stay under 16 KiB.
 
-**Ask first:** pushes to `origin/main` and writes outside this machine. Wait for `.work/services.lock` to clear
-before stopping the services.
-
 **Never**
 
 - Commit secrets or credentials, or put personal data in logs, fixtures or commits.
 - Make a check pass by weakening it: skipping a test, suppressing a warning, loosening an assertion.
 
-**Stop and ask** when a check fails again after a fix, a command is refused, or a decision is left open.
+**Stop and ask** before pushes to `origin/main` and writes outside this machine, and when a check fails again after
+a fix, a command is refused, or a decision is left open. Wait for `.work/services.lock` to clear before stopping the
+services.
 
 Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 
