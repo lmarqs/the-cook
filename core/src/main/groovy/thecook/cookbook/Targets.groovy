@@ -4,6 +4,7 @@ import thecook.formats.BlockDocument
 import thecook.formats.Document
 import thecook.formats.Documents
 import thecook.formats.JsonDocument
+import thecook.model.Diagnostic
 import thecook.reconciliation.Permissions
 import thecook.rendering.BlockLocation
 import thecook.rendering.KeyLocation
@@ -54,8 +55,8 @@ abstract class Target {
     def target = draft.linkTarget(file)
 
     if (target != null) {
-      throw new IllegalArgumentException(
-      "${file} is a symbolic link to ${target}; Cook writes sections and keys only into regular files")
+      throw new IllegalArgumentException(Diagnostic.text("${file} is a symbolic link to ${target}",
+      'Cook writes sections and keys only into regular files'))
     }
 
     draft.read(file)

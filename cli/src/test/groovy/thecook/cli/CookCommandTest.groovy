@@ -326,7 +326,7 @@ notes.add('local')
         [
           ['acme:notes:1.2.3#more', 'acme:notes:1.2.3#more'],
           1,
-          'cook: recipe 2 (acme:notes:1.2.3#more): acme:notes#more is named twice; name it once per invocation'
+          'cook: recipe 2 (acme:notes:1.2.3#more): acme:notes#more is named twice'
         ],
         [['acme:notes:1.2.3#notes'], 1, 'cook: acme:notes:1.2.3#notes: Missing --line: The line to add'],
       ].each { arguments, status, message ->
@@ -422,7 +422,7 @@ notes.add('local')
         [
           ['discard', 'acme:notes:1.2.3#notes'],
           1,
-          'cook: discard: acme:notes#notes is not in cook.lock, which lists no recipe'
+          'cook: discard: cook.lock lists no recipe acme:notes#notes; nothing was written'
         ],
         [
           ['help', 'https://example.com/notes.groovy'],
@@ -442,6 +442,14 @@ notes.add('local')
         .readLines()
         .first() == message
       }
+      // The message standard's example for discard, line for line.
+      stderr.reset()
+      assert cli.execute(['discard', '-C', repo.path, 'acme:notes:1.2.3#notes'] as String[]) == 1
+      assert stderr.toString('UTF-8') == '''\
+cook: discard: cook.lock lists no recipe acme:notes#notes; nothing was written
+  discard removes only what cook.lock records for a recipe
+  check the recipe's name; cook.lock lists none
+'''
     }
   }
 

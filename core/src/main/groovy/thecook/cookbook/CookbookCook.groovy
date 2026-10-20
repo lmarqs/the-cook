@@ -2,6 +2,7 @@ package thecook.cookbook
 
 import thecook.cookbook.api.ingredient.Ingredient
 import thecook.filesystem.TargetPath
+import thecook.model.Diagnostic
 
 import java.lang.reflect.InvocationTargetException
 
@@ -42,7 +43,8 @@ final class CookbookCook {
         String name = recipe.name
 
         if (!named.add(name)) {
-          throw new IllegalArgumentException("${name} is named twice; name it once per invocation")
+          throw new IllegalArgumentException(
+          Diagnostic.text("${name} is named twice", null, 'name it once per invocation'))
         }
 
         def compiled = CookbookCompiler.recipe(recipe.source, recipe.fileName, recipe.models)
@@ -75,7 +77,8 @@ final class CookbookCook {
 
   private static CookbookModel model(Class type, String at, ModelReads reads) {
     if (!type.getAnnotation(Ingredient) || !CookbookModel.isAssignableFrom(type)) {
-      throw new IllegalArgumentException("${type.simpleName} is not a model; a model class is marked @Ingredient")
+      throw new IllegalArgumentException(
+      Diagnostic.text("${type.simpleName} is not a model", 'a model class is marked @Ingredient'))
     }
 
     if (at != '.') {
@@ -91,8 +94,8 @@ final class CookbookCook {
     def declared = Declarations.of([model(type, '.', reads)], name).all
 
     if (declared) {
-      throw new IllegalArgumentException(
-      "${declared.first()} on a new instance; a model declares only what a recipe asks for")
+      throw new IllegalArgumentException(Diagnostic.text("${declared.first()} on a new instance",
+      'a model declares only what a recipe asks for'))
     }
   }
 
@@ -201,15 +204,16 @@ final class SeedOutcomes {
   void refuse() {
     if (refused.size() == 1) {
       def only = refused.entrySet().first()
-      throw new IllegalArgumentException("${only.key} already exists; ${only.value} writes it from a template " +
-      'the first time it is cooked. Run with --force to replace it, or --skip to keep it.')
+      throw new IllegalArgumentException(Diagnostic.text("${only.key} already exists",
+      "${only.value} writes it from a template the first time it is cooked",
+      'run with --force to replace it, or --skip to keep it'))
     }
 
     if (refused) {
       def header = 'These files already exist, and their recipes write them from a template ' +
           'the first time they are cooked:'
       def files = refused.collect { file, recipe -> "  ${file} (${recipe})" }
-      def footer = 'Run with --force to replace them, or --skip to keep them.'
+      def footer = '  run with --force to replace them, or --skip to keep them'
       throw new IllegalArgumentException(([header] + files + [footer]).join('\n'))
     }
   }

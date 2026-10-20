@@ -1,5 +1,7 @@
 package thecook.cookbook
 
+import thecook.model.Diagnostic
+
 /**
  * Discards recipes without evaluating them: withdraws everything `cook.lock` lists for each one, a marked section with
  * its markers, a key, a whole file or a link, and drops its entry. A file left empty is deleted, and so is the lock
@@ -22,12 +24,15 @@ final class CookbookDiscard {
       def name = RecipeLoader.name(kitchen, operand)
 
       if (!discarded.add(name)) {
-        throw new IllegalArgumentException("${name} is discarded twice; discard it once per invocation")
+        throw new IllegalArgumentException(
+        Diagnostic.text("${name} is discarded twice", null, 'discard it once per invocation'))
       }
 
       if (!(name in lock.names)) {
-        throw new IllegalArgumentException("${name} is not in ${CookLock.PATH}, " +
-        (lock.names ? "which lists ${lock.names.join(', ')}" : 'which lists no recipe'))
+        throw new IllegalArgumentException(Diagnostic.text(
+        "${CookLock.PATH} lists no recipe ${name}; nothing was written",
+        "discard removes only what ${CookLock.PATH} records for a recipe",
+        "check the recipe's name; ${CookLock.PATH} lists ${lock.names ? lock.names.join(', ') : 'none'}"))
       }
 
       lock.forget(name).each { it.withdraw(draft) }

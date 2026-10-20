@@ -92,8 +92,8 @@ recipes:
     def error = shouldFail(IllegalArgumentException) {
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:])
     }
-    assert error.message == 'AGENTS.md already exists; io.github.lmarqs.cookbook:agents#seed writes it from a ' +
-    'template the first time it is cooked. Run with --force to replace it, or --skip to keep it.'
+    assert error.message == 'AGENTS.md already exists\n  io.github.lmarqs.cookbook:agents#seed writes it from a ' +
+    'template the first time it is cooked\n  run with --force to replace it, or --skip to keep it'
     assert !new File(kitchen, 'cook.lock').exists()
 
     new File(kitchen, 'AGENTS.md').delete()
@@ -175,7 +175,7 @@ starters.second = 'second'
     '''the first time they are cooked:
   FIRST.md (acme:starters#one)
   SECOND.md (acme:starters#two)
-Run with --force to replace them, or --skip to keep them.'''
+  run with --force to replace them, or --skip to keep them'''
     assert !new File(kitchen, 'cook.lock').exists()
   }
 
@@ -191,7 +191,7 @@ Run with --force to replace them, or --skip to keep them.'''
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
     }
     assert section.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .gitignore is a symbolic link to ' +
-    'OURS; Cook writes sections and keys only into regular files'
+    'OURS\n  Cook writes sections and keys only into regular files'
 
     new File(kitchen, '.agents/adapters/claude').mkdirs()
     new File(kitchen, '.agents/adapters/claude/shared.json').text = '{}\n'
@@ -200,7 +200,7 @@ Run with --force to replace them, or --skip to keep them.'''
       cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#permissions', [harness: ['claude']])
     }
     assert key.message == 'io.github.lmarqs.cookbook:agents:0.1.0#permissions: .agents/adapters/claude/settings.json ' +
-    'is a symbolic link to shared.json; Cook writes sections and keys only into regular files'
+    'is a symbolic link to shared.json\n  Cook writes sections and keys only into regular files'
     assert new File(kitchen, '.agents/adapters/claude/shared.json').text == '{}\n'
     assert !new File(kitchen, 'cook.lock').exists()
     assert Files.isSymbolicLink(new File(kitchen, '.gitignore').toPath())
@@ -801,7 +801,7 @@ notes.set(test: 'second')
       [['acme:notes:1.0.0#first', [value: ['A'], other: ['x']]]]:
       'acme:notes:1.0.0#first: Unknown argument --other\n  its arguments are --value',
       [['acme:notes:1.0.0#second', [:]], ['acme:notes:1.0.0#second', [:]]]:
-      'recipe 2 (acme:notes:1.0.0#second): acme:notes#second is named twice; name it once per invocation',
+      'recipe 2 (acme:notes:1.0.0#second): acme:notes#second is named twice\n  name it once per invocation',
       [['acme:notes:1.0.0', [:]]]:
       'acme:notes:1.0.0: acme:notes:1.0.0 names an artifact, not a recipe\n  name one: ' +
       'acme:notes:1.0.0#first, acme:notes:1.0.0#second',
@@ -973,12 +973,13 @@ notes.set('kept')
     [
       [
         ['io.github.lmarqs.cookbook:agents:0.1.0#permissions'],
-        'io.github.lmarqs.cookbook:agents#permissions is not in cook.lock, which lists ' +
-        'io.github.lmarqs.cookbook:agents#seed'
+        'cook.lock lists no recipe io.github.lmarqs.cookbook:agents#permissions; nothing was written\n' +
+        '  discard removes only what cook.lock records for a recipe\n' +
+        '  check the recipe\'s name; cook.lock lists io.github.lmarqs.cookbook:agents#seed'
       ],
       [
         ['io.github.lmarqs.cookbook:agents:0.1.0#seed', 'io.github.lmarqs.cookbook:agents:0.2.0#seed'],
-        'io.github.lmarqs.cookbook:agents#seed is discarded twice; discard it once per invocation'
+        'io.github.lmarqs.cookbook:agents#seed is discarded twice\n  discard it once per invocation'
       ],
       [['../outside.groovy'], 'the recipe is outside the kitchen\n  move it into the kitchen'],
       [
@@ -990,7 +991,9 @@ notes.set('kept')
     }
     new File(kitchen, 'cook.lock').delete()
     assert shouldFail(IllegalArgumentException) { new CookbookDiscard(kitchen).propose(['notes.groovy']) }.message ==
-    'notes is not in cook.lock, which lists no recipe'
+    'cook.lock lists no recipe notes; nothing was written\n' +
+    '  discard removes only what cook.lock records for a recipe\n' +
+    '  check the recipe\'s name; cook.lock lists none'
   }
 
   @Test void aFailedWriteLeavesTheFilesAsTheyWere() {
@@ -1047,8 +1050,8 @@ import acme.noisy.Noisy
 ''',
     ])
     def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:noisy:1.0.0#noisy', [:]) }
-    assert error.message == 'acme:noisy:1.0.0#noisy: Noisy.notes() declares a seed of NOTES.md on a new instance; ' +
-    'a model declares only what a recipe asks for'
+    assert error.message == 'acme:noisy:1.0.0#noisy: Noisy.notes() declares a seed of NOTES.md on a new instance\n' +
+    '  a model declares only what a recipe asks for'
   }
 
   // The policy and the output the layout's mock-up was written with, copied from it.
