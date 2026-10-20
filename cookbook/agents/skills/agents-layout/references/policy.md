@@ -103,7 +103,7 @@ The last entry catches the flag written after the branch, which no prefix can ma
 
 ### Unattended workers
 
-Workers run alone in a worktree, and an orchestrator verifies and merges their result after they exit, so nothing
+Workers run alone in a worktree, and a loop runner verifies and merges their result after they exit, so nothing
 may leave the worktree before then.
 
 ```yaml
@@ -140,6 +140,6 @@ Cook stops before writing anything and names the file and the field. Each messag
 | `commands: {maybe: []}` | `commands has unknown decision [maybe]; use allow, ask or deny` | `allow`, `ask` or `deny` |
 | `roles: {worker: {allow: [[git]]}}` | `roles.worker: a role only adds denies; list them under deny, and keep allow and ask under commands` | Add it to `commands.allow` for everyone |
 | `roles: {Worker: ...}` | `roles: Worker is not a role name; use lower-case letters, digits and hyphens, starting with a letter` | `worker` |
-| `model: opus` | `unknown field [model]` | Personal settings, or the orchestrator's config |
+| `model: opus` | `unknown field [model]` | Personal settings, or the loop runner's configuration |
 | `bypass: maybe` | `bypass must be refuse or allow` | `refuse`, or `allow` when every agent runs in a container |
 | `version: 1` | `version must be 2` | Move it by [adopt.md](adopt.md#a-version-1-agentspolicyyaml) |

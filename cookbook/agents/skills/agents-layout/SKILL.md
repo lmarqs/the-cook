@@ -6,10 +6,10 @@ description: Explains the shared .agents/ layout that lets several people run AI
 # Agents layout
 
 One repository, many ways of working: one person runs Claude at the keyboard, another leaves Codex working alone,
-a third has Claude coordinate Codex workers through an orchestrator. The layout gives all of them the same knowledge
+a third has Claude coordinate Codex workers through a loop runner. The layout gives all of them the same knowledge
 and the same agreed permissions, and leaves each run free to pick its harness, model, mode and role.
 
-## Three owners
+## Four owners
 
 Every file here has one owner. Most surprises come from editing a file someone else owns.
 
@@ -19,6 +19,7 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
 | Cook | `.agents/adapters/`, the links in `.claude/` and `.codex/`, the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
 | Each person | `~/.claude/`, `.claude/settings.local.json`, `~/.codex/` | Nobody else; Cook never writes them and git ignores them |
+| A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
 
 ```text
 AGENTS.md                         instructions for every agent; Claude and Codex read it directly
@@ -65,6 +66,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Fill in or review `AGENTS.md` | [references/agents-md.md](references/agents-md.md) |
 | Write or review `policy.yaml` | [references/policy.md](references/policy.md) |
 | An agent ignores the instructions, asks when it should not, or runs what it should not | [references/investigate.md](references/investigate.md) |
+| Set up a loop runner, or decide where worktrees go | [references/design.md](references/design.md#worktrees-and-loop-runners) |
 | Understand why the layout is shaped this way, or argue for changing it | [references/design.md](references/design.md) |
 
 ## Where a change goes
@@ -107,11 +109,11 @@ rules file, its `.codex/rules` link and the `.gitignore` line that commits the l
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
 - **Use `ask` sparingly.** Nobody answers in an unattended run, so an `ask` refuses there, and every unattended run that
   reaches it stops.
-- **Leave models out of shared files.** A model is a person's or an orchestrator's choice; a model in the shared
+- **Leave models out of shared files.** A model is a person's or a loop runner's choice; a model in the shared
   settings overrides everyone's.
 - **Cook every harness the team uses.** `#connect` removes what it wrote for harnesses left out, and those files are
   committed, so cooking only your own harness removes a teammate's.
 - **Keep secrets out of `.agents/`.** Everything there is committed and read by every agent.
-- **Treat the policy as an agreement, not a lock.** `claude --dangerously-skip-permissions` or `codex exec
-  --ignore-rules` skips it on one machine. A rule every machine must obey belongs in the organization's managed
-  settings.
+- **Treat the policy as an agreement, not a lock.** While `bypass` is `refuse`, Claude refuses its bypass flags, but
+  `claude --setting-sources user` or `codex exec --ignore-rules` still skips the policy on one machine. A rule every
+  machine must obey belongs in the organization's managed settings.
