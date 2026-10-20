@@ -72,6 +72,15 @@ whole each time `#seed` is cooked, so the skill arrives with the layout it expla
 its corrections. Edit a seeded file freely; an edit to this skill is undone by
 the next cook, so propose it upstream instead.
 
+## Why a skill and not a plugin
+
+The layout's procedures, `adopt` and `review`, ship as the `agents-layout` skill rather than as a plugin. Codex reads
+`.agents/skills/` natively and Claude through the `.claude/skills` link, so one committed copy reaches both, and both
+invoke it by name and pass the words after the name as text (tested, Claude Code 2.1.304 and Codex 0.160.1). It needs
+no install per person: every clone carries it, and `cook.lock` records the release that wrote it. A Claude or Codex
+plugin is installed by each person, and neither harness reads the other's, so the same procedure would need two
+packages and an install step any teammate could skip.
+
 ## One policy file, rendered per harness
 
 Writing permissions once for both harnesses means writing them in a form both can enforce. A prefix of literal words
