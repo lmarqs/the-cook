@@ -1,217 +1,82 @@
-> **This file is an unfilled template.** When the developer asks you to fill it in, replace each [placeholder] and
-> empty table cell with what this repository shows, and run every command you write down. Text outside square brackets
-> holds for any repository: keep it unless it is wrong here; `.agents/skills/agents-layout/references/agents-md.md`
-> says why it is there. Fill only what you can verify now, and delete the rows, sections and groups that do not apply.
-> Keep the line under each heading, link to details instead of copying them, and delete this note when you are done.
-> Until then, tell the developer that this file is unfilled before you start other work.
+> **This file is an unfilled template.** Fill it in only when the developer asks. If they ask for other work in an
+> interactive session, say once that it is unfilled, then do that work. To fill it in:
+>
+> - Replace every `[[fill: …]]`, table cells included; `grep -n '\[\[fill:' AGENTS.md` finds them all. Write `none`
+>   in a row that does not apply. Delete a section only when nothing else in this file points to it.
+> - Link the README section instead of restating it, and fix the README in the same change when it is wrong.
+> - Run every command you write that runs locally. Mark the others `(not run: ask first)`.
+> - Never write a rule its source does not state: the code, a config file, the README, CI or the developer.
+> - When replacing an existing `AGENTS.md`, follow `.agents/skills/agents-layout/references/adopt.md`.
+> - `.agents/skills/agents-layout/references/agents-md.md` says why the fixed text is here; keep it unless it is
+>   wrong for this repository.
+> - Run `sh .agents/skills/agents-layout/scripts/check.sh`; when this note is all it reports, delete the note.
 
-# [Project name]
+# [[fill: project name]]
 
-[What this repository is and who uses it, in one paragraph.]
+[[fill: what this repository is and who uses it, in one or two sentences, with a link to the README]]
+
+Stack: [[fill: each language, framework and service with its major version and the file that pins it]]
 
 ## Quick reference
 
-The commands for daily work, each verified here, with the flags that matter.
-
-| Need | Command |
-| --- | --- |
-| Run the application | |
-| Build | |
-| Test one file or path | |
-| Lint or format one file | |
-| Install dependencies | |
-| Add a dependency | |
-| Generate code | |
-| Run a migration or a one-off admin task | |
-| Done check: all that must pass before a change is done, in order; takes [time], needs [services or none] | |
+- Install or add a dependency: [[fill: both commands]]
+- Run: [[fill: command]]
+- Build: [[fill: command]]
+- Test one file: [[fill: command]]
+- Lint or format one file: [[fill: command]]
+- Generate code: [[fill: command, or none]]
+- Local services: [[fill: start and stop commands, or none]]
+- Worktrees: [[fill: where they go, how to create one ready to run and remove one with its data, or none]]
+- Quick check, seconds on what changed: [[fill: command]]
+- Done check, all that must pass before a change is done: [[fill: commands in order, time taken, services needed]]
 
 ## Boundaries
 
-What an agent always does here, what it asks before doing, what it never does, and when it stops to ask.
-
 **Always**
 
-- Run the quick check, the Quick reference test and lint commands on what changed, before moving on. A change is
-  done only when the Done check passes.
-- Report what you ran and what it returned. A check you did not run is reported as not run.
-- Read an area's Gotchas entry before changing it; add one when you get something wrong.
-- Update this file in the same change that alters a command, path or rule it names.
-- Keep this file near [N] words: a line stays while removing it would cause mistakes, a check that catches a rule
-  replaces it, and other knowledge goes where Documentation says.
-- [What else an agent does on every change here]
+- Run the Quick check before moving on. A change is done when the Done check passes.
+- Report each check's result, or that it did not run.
+- Update this file in the change that alters a command, path or rule it names.
+- Keep this file under 800 words; past 1,200, move a section into a skill or memory file before adding. All
+  `AGENTS.md` files together stay under 16 KiB.
+- [[fill: another rule for every change here, or none]]
 
-**Ask first**
-
-- [What needs the developer's request, such as new dependencies, schema changes, rewriting pushed history, and
-  pushes and writes outside this machine]
+**Ask first:** [[fill: such as new dependencies, schema changes, rewriting pushed history, writes outside this machine]]
 
 **Never**
 
-- Commit secrets, credentials or tokens.
-- Put personal data ([the fields that count as personal here]) in logs, fixtures, documents, issues or commits.
-- Edit generated files ([paths]) by hand. Change their source and run the generator.
-- Make a check pass by weakening it: deleting or skipping a test, suppressing a warning, loosening a type or an
-  assertion.
+- Commit secrets or credentials, or put personal data in logs, fixtures or commits.
+- Edit generated files by hand: [[fill: paths, or none]]
+- Make a check pass by weakening it: skipping a test, suppressing a warning, loosening an assertion.
 
-**Stop and ask** when a check keeps failing after you fixed what it reported, when a command is refused, or when the
-request leaves a decision open.
+**Stop and ask** when a check fails again after a fix, a command is refused, or a decision is left open.
 
-Enforced by [the file that makes agent tools refuse these], where one exists. A refusal from it is the rule working,
-not a failure to retry.
+Enforced by [[fill: the file that makes agent tools refuse these, or none]]. A refusal is the rule working.
 
-## Understand
+## Where things go
 
-### Stack
+- New code: [[fill: the directory for each kind of code, related repositories, and the design document]]
+- Tests: [[fill: directory and naming, with an example file]]
+- Settings: [[fill: the file a new setting goes in, where secrets live (names only), and which source wins]]
+- Decisions and domain rules: [[fill: directory or document]]
+- A procedure an agent repeats: a skill in `.agents/skills/`.
+- A trap in one area: `.agents/memory/`, listed under Deep dive.
 
-The main languages, frameworks and services, each with its major version and the file that pins it.
+## Rules
 
-| Part | Technology and major version | Pinned in |
-| --- | --- | --- |
-| Language | | |
-| Framework | | |
-| Data store | | |
-| Build and task tools | | |
-| Test tools | | |
-
-### Architecture
-
-What the code cannot show: where new code goes, related repositories, and where the design is written down.
-
-| New code | Goes in |
-| --- | --- |
-| [A module, a test, a migration, a script] | |
-
-Other repositories: [each one and how this repository depends on it, or is deployed by it].
-
-Full document: [path or link].
-
-### Configuration
-
-Where settings come from, which source wins, and where a new setting goes.
-
-| Source | Where | Holds |
-| --- | --- | --- |
-| Committed defaults | | |
-| Local overrides | | |
-| Environment variables | | |
-| Secret store | | Names only, never values |
-
-[Which source wins when two set the same value.] A new setting goes in [file].
-
-## Develop
-
-### Environment
-
-How a fresh checkout becomes runnable, where it differs from production, and how to take it apart again.
-
-| Step | Command |
-| --- | --- |
-| Set up: log in to what the other steps need | |
-| Start: run the local services | |
-| Stop: halt the local services, keeping their data | |
-| Tear down: remove the local services and their data | |
-| Clean up: delete generated files and installed dependencies | |
-
-Differs from production: [emulated services, seeded data, missing integrations].
-
-### Worktrees
-
-Where extra checkouts go, how one runs beside the main one, and how one is removed leaving nothing behind.
-
-| Need | Command or place |
-| --- | --- |
-| Where worktrees are created | |
-| Create one ready to run, with its own ports, container and database names | |
-| Remove one, with its local services, their data and its generated files | |
-
-### Tests
-
-How a test is written here, each rule with a file that follows it. A behavior change ships with a test; a bug fix
-with one that failed before the fix.
-
-| Need | Rule |
-| --- | --- |
-| Where a test goes | |
-| Naming of files and cases | |
-| Fixtures and test data | |
-| Which kind (unit, integration, end-to-end) a change needs | |
-
-### Conventions
-
-Rules the checks do not catch: code that breaks them fails review. Each rule added here points to a file that
-follows it or shows a short good and bad pair.
-
-- Code explains itself through names and structure; where it needs a comment to be understood, rename or extract.
-- A comment records only a reason the code cannot show, such as a workaround or an outside constraint. API doc
-  comments, license headers and tool directives follow the language's standard.
-- Names and comments describe the code as it is, never the change that made it ("new", "now uses X"). The change
-  goes in the commit message.
-- Dead code is deleted, not commented out.
-- Change only what the task needs: no unrequested options, abstractions, renames or reformatting of untouched lines,
-  and no debug output or scratch files left behind.
-- New code matches the code around it in naming, error handling and idiom, and uses the libraries and patterns the
-  repository already has before adding one.
-- Errors surface; none is caught only to be ignored.
-- [Rule], as in [path to a file that follows it].
-
-## Ship
-
-### Workflow
-
-How a change moves from a branch to the main branch, and who may do which step. A commit holds one change, passes
-the quick check and says why; only the files the change touches are staged.
-
-| Step | Rule |
-| --- | --- |
-| Tracker, and how a commit references it | |
-| Branch | |
-| Commit message | |
-| Pull request | |
-| CI | |
-| Merge | |
-
-### Deploy and monitor
-
-What puts a change in production, how to tell it worked, and where the running system reports. Write "none" where
-there is none.
-
-| Need | Command, trigger or place |
-| --- | --- |
-| Deploy | |
-| Check a deploy, and see what production runs | |
-| Roll back | |
-| Logs | |
-| Metrics and dashboards | |
-
-Full procedure: [path or link].
+- A behavior change ships with a test; a bug fix with one that failed before the fix.
+- Comments record only reasons the code cannot show.
+- Change only what the task needs, matching the surrounding code.
+- [[fill: a convention review enforces, with a file that follows it, or none]]
+- Commits: [[fill: one change per commit; branch, message, pull request and tracker rules]]
+- Deploy: [[fill: what triggers a deploy, where to see it worked, and the rollback runbook, or none]]
 
 ## Gotchas
 
-Behavior that surprises newcomers or fails silently, one entry per area.
+At most five traps any task can hit.
 
-- [What goes wrong] when [what you do]: [what to do instead].
+- [[fill: what goes wrong when you do what, and what to do instead]]
 
-## Documentation
+## Deep dive (read on demand)
 
-### Where a document goes
-
-Where each kind of written knowledge belongs.
-
-| Kind | Where it goes |
-| --- | --- |
-| A decision that binds code not yet written | |
-| A business rule the code cannot show | |
-| A domain term | |
-| A runbook | |
-| A procedure an agent repeats | |
-| Setup and commands | |
-| Rules for one package or directory | |
-| A trap that costs time and reports nothing | Gotchas, in this file |
-| Why a change was made | The commit message |
-| What the code already says | Nowhere |
-
-### Deep dive (read on demand)
-
-Documents and skills for specific topics. Read one when the task touches its topic, not before.
-
-- [Topic]: [document or skill].
+- [[fill: topic, and the document, skill or memory file that covers it]]

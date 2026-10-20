@@ -97,6 +97,14 @@ recipes:
     assert !new File(kitchen, 'cook.lock').text.contains('.claude/')
   }
 
+  @Test void theAgentsTemplateKeepsItsFixedTextWithinBudgetAndMarksEveryBlankTheSameWay() {
+    def lines = new File(TEMPLATES, 'AGENTS.template.md').readLines()
+    def fixed = lines.findAll { !it.startsWith('>') }*.replaceAll(/\[\[fill:[^\]]*\]\]/, '')
+    def words = fixed.collectMany { it.split(/\s+/).findAll() }
+    assert words.size() <= 300
+    assert !fixed.any { it.contains('[') || it =~ /\|\s*\|/ }
+  }
+
   @Test void refusesToSeedOverAnExistingAgentsFile() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')

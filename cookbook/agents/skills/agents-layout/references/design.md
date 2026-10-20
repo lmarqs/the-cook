@@ -145,7 +145,7 @@ keeps these paths stable:
 
 The runner decides where its worktrees go, what it copies or sets up in each, how branches merge, how many run at
 once and which model each uses. The project decides how a worktree becomes runnable and how one is removed leaving
-nothing behind, in the Worktrees rows of `AGENTS.md`.
+nothing behind, in the Worktrees line of the Quick reference in `AGENTS.md`.
 
 Every file of the layout is committed and every link is relative, so a worktree carries the whole setup: the links
 resolve inside it and git reports it clean, with nothing to cook or copy (tested). Trust and personal settings follow

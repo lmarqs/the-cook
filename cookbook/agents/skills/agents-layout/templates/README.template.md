@@ -70,7 +70,8 @@ are.
   `--permission-mode bypassPermissions`, which many runners pass by default. Codex keeps its rules under its bypass
   flag, but `--ignore-rules`, `--ignore-user-config` and a clone nobody trusted skip them, and `--approve-for-me` lets
   a reviewer approve the asks; configure Codex runners without them.
-- Where worktrees go, how one becomes runnable and how one is removed are in the Worktrees section of `/AGENTS.md`.
+- How a worktree becomes runnable and how one is removed are in the Worktrees line of `/AGENTS.md`'s Quick
+  reference.
 
 ## Personal settings
 
