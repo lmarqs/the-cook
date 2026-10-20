@@ -36,6 +36,15 @@ abstract class Target {
   /** Removes this part from the draft. */
   abstract void withdraw(Draft draft)
 
+  /**
+   * `error` with this target named on the first line: a one-line cause follows as the reason, and a cause already laid
+   * out as what, why and next follows unchanged.
+   */
+  final IllegalArgumentException failed(Exception error) {
+    String cause = error.message ?: error.class.simpleName
+    new IllegalArgumentException(cause.contains('\n') ? "${this}\n${cause}" : Diagnostic.text(toString(), cause), error)
+  }
+
   /** Whether writing this target changes `other`: the same section, overlapping keys, or a whole file or link. */
   final boolean overlaps(Target other) {
     file == other.file && (whole || other.whole || other.getClass() == getClass() && sharesPart(other))

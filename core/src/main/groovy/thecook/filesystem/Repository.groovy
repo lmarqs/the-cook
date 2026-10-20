@@ -40,7 +40,7 @@ class Repository {
   Map snapshot(File file, boolean allowLink = false) {
     if (Files.isSymbolicLink(file.toPath())) {
       if (!allowLink) {
-        throw new IllegalArgumentException("Symlink target: ${file}")
+        throw new IllegalArgumentException("Symlink target: ${relative(file)}")
       }
 
       String target = Files.readSymbolicLink(file.toPath()).toString()
@@ -52,7 +52,7 @@ class Repository {
     }
 
     if (!Files.isRegularFile(file.toPath(), LinkOption.NOFOLLOW_LINKS)) {
-      throw new IllegalArgumentException("Not a regular file: ${file}")
+      throw new IllegalArgumentException("Not a regular file: ${relative(file)}")
     }
 
     def bytes = file.bytes
@@ -63,10 +63,15 @@ class Repository {
       text = decoder.decode(ByteBuffer.wrap(bytes)).toString()
     }
     catch (java.nio.charset.CharacterCodingException error) {
-      throw new IllegalArgumentException("Invalid UTF-8 file: ${file}", error)
+      throw new IllegalArgumentException("Invalid UTF-8 file: ${relative(file)}", error)
     }
 
     [exists: true, hash: digest(bytes), content: text, mode: permissions(file)]
+  }
+  private String relative(File file) {
+    def root = directory.toPath()
+    def path = file.toPath()
+    (path.startsWith(root) ? root.relativize(path) : path).toString()
   }
   static String digest(byte[] bytes) {
     MessageDigest.getInstance('SHA-256')

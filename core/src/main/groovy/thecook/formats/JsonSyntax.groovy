@@ -1,5 +1,7 @@
 package thecook.formats
 
+import thecook.model.Diagnostic
+
 import groovy.json.JsonSlurper
 
 // A source index, not a serializer: ranges let edits leave unrelated bytes untouched.
@@ -141,6 +143,7 @@ class JsonSyntax {
     cursor++
   }
   private void fail(String message) {
-    throw new IllegalArgumentException("JSON: ${message} at ${cursor}")
+    throw new IllegalArgumentException(Diagnostic.text("JSON: ${message} at ${cursor}", null,
+    'settings files are strict JSON: remove comments and trailing commas'))
   }
 }

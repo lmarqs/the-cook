@@ -96,6 +96,16 @@ cook: cannot write .codex/config.toml: permission denied
   rolled back the files the batch already wrote
 ```
 
+When a target cannot be written or withdrawn, the first line names it as `cook.lock` records it, relative to the
+invocation directory: `<file> key <path>`, `<file> section <id>`, `<file>` or `<file> link`. A one-line cause follows
+on an indented line; a cause already laid out as what, why and next follows unchanged. For example:
+
+```text
+cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .agents/adapters/claude/settings.json key permissions
+JSON: Expected " at 4
+  settings files are strict JSON: remove comments and trailing commas
+```
+
 ## Output for automation and coding agents
 
 Human prose is for readers; scripts must not treat its wording as a stable data format

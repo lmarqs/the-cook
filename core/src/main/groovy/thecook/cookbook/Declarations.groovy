@@ -193,7 +193,11 @@ final class Declaration {
   }
 
   void write(Draft draft) {
-    target.write(draft, value)
+    try {
+      target.write(draft, value)
+    } catch (RuntimeException error) {
+      throw target.failed(error)
+    }
   }
 
   @Override

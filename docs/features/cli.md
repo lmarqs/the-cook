@@ -166,7 +166,8 @@ being read, and writes nothing. `--force` does not override the refusal; a link 
 shown in the diff:
 
 ```text
-cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml is a file, and this recipe makes it a link to ../.agents/adapters/codex/config.toml
+cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
+.codex/config.toml is a file, and this recipe makes it a link to ../.agents/adapters/codex/config.toml
   its contents would stop being read
   move its contents into the inputs of #codex-settings, delete it, and cook again
 ```

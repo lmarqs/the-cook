@@ -35,7 +35,13 @@ final class CookbookDiscard {
         "check the recipe's name; ${CookLock.PATH} lists ${lock.names ? lock.names.join(', ') : 'none'}"))
       }
 
-      lock.forget(name).each { it.withdraw(draft) }
+      lock.forget(name).each { target ->
+        try {
+          target.withdraw(draft)
+        } catch (RuntimeException error) {
+          throw target.failed(error)
+        }
+      }
     }
 
     if (lock.names) {
