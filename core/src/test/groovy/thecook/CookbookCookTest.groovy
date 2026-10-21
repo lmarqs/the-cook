@@ -863,6 +863,37 @@ bypass allow
     ]
   }
 
+  @Test void theLayoutCheckRecommendsMovingATrackedEntryBesideTheSharedDirectories() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def environment = System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1']
+    def run = { List<String> command ->
+      def process = command.execute(environment.collect { name, value -> "${name}=${value}" }, kitchen)
+      def output = process.text
+      [process.waitFor(), output]
+    }
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    def check = ['sh', '.agents/skills/agents-layout/scripts/check.sh']
+    assert run(['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock'])[0] == 0
+    new File(kitchen, '.agents/hook-config.json').text = '{}\n'
+    // A file only one machine has is not the team's layout.
+    def (local, localOutput) = run(check)
+
+    assert local == 0
+    assert localOutput.contains('ok every tracked entry in .agents/ belongs to the layout\n')
+
+    assert run(['git', 'add', '.agents/hook-config.json'])[0] == 0
+    def (tracked, trackedOutput) = run(check)
+
+    assert tracked == 0
+    assert trackedOutput.readLines().findAll { it.contains('hook-config') } == [
+      'WARN .agents/hook-config.json is outside the shared directories -- move it into skills/, commands/, hooks/ ' +
+      'or memory/, beside what uses it, or out of .agents/ when no agent reads it; then update the paths that name it'
+    ]
+  }
+
   @Test void commitsTheHarnessLinksAndKeepsEverythingElseInTheirDirectoriesOutOfGit() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
