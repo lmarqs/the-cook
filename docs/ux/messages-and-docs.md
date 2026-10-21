@@ -190,6 +190,25 @@ A recipe documents itself in the `@help`, `@confirm` and `@yield` annotations th
 and member doc comments.
 A directory README is the artifact's front page. The shape is defined in [cookbook/README.md](../../cookbook/README.md).
 
+A recipe's `@help` describes it by what it provides, consumes and connects to, because a reader composes recipes from
+`./cook help` without their source. It holds these sections in order, and omits a section that does not apply:
+
+1. **Lead:** what the destination gets, in one or two sentences.
+2. **API:** the invocations, one per situation; the stable paths, scripts, commands and naming rules the recipe
+   publishes.
+3. **Consumes:** the tools that run at run time, with the versions written for; what it reads in the draft and what each
+   read triggers; other artifacts' paths it names; what the person does by hand first.
+4. **Produces:** `Target`, `Part`, `When` and `Kind` (`owned`, `seed` or `link`), closing with `Never touches:`.
+5. **Connections:** each contact point and who makes it: Cook, the person, the team or the session; the order and the
+   arguments that must agree.
+6. **Run-time effects:** what the scripts it installs do when run.
+7. **Re-cooking:** the arguments to repeat, what cooking a newer version changes, and how conditional parts behave under
+   `--check`.
+8. **Traps:** known faults of the versions written for.
+
+What to do after cooking belongs in `@yield`, which `help` prints as "After cooking".
+[Recipe texts](../../cookbook/README.md#recipe-texts) gives the content of each section.
+
 ### Writing rules for all documentation
 
 - Use present tense for the intended design. In implementation guides, describe what actually runs and identify relevant

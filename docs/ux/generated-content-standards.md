@@ -70,6 +70,23 @@ in `recipes/setup/commands`, the recipe is `recipes/setup` and the region is `co
 therefore keep separate sections in one file. `cook.lock` lists each recipe's sections by file and
 `<recipe>/<region>`. Recipes declare the sections they address.
 
+### The argument line
+
+Every section a recipe owns opens with a comment line naming the recipe, without its version, and the arguments it was
+cooked with, because `cook.lock` records no arguments: the line is what a person, a re-cook or a `--check` step reads
+to cook the section again. A recipe with several values for one param writes them in a fixed order, so the line does
+not change with the order they were given in:
+
+```gitignore
+# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex
+!/.claude/
+# cook:end io.github.lmarqs.cookbook:agents#connect/harnesses
+```
+
+The line uses the file's comment syntax, after the begin marker. Keys carry no argument line, since a format such as
+JSON has no comment syntax.
+
 ### Instruction files and conventions
 
 Keep shared instructions concise, avoid duplicating existing guidance, and link to detail when useful. Why: programs
@@ -114,6 +131,19 @@ setting has the scope the recipe declares. A program enforces its own native set
 Recipes and their operations compose left to right against current content, and the last write to a section, key, or
 file wins; [ordered composition](../architecture.md#ordered-composition-and-declared-targets) works through an example.
 Every run evaluates the supplied recipes again, so a manual edit appears in the next diff like any other difference.
+
+## Refused connections
+
+A recipe that connects to something another recipe or the team provides, such as a file it names by a parameter,
+refuses to cook when that is missing from the draft, and writes nothing. The refusal names what to define and what to
+cook, in the [error message](messages-and-docs.md#error-messages) order, because the person can then make the
+connection without reading the recipe. For example, the intended wording for a role file a recipe names:
+
+```text
+cook: io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui: --role=worker needs .agents/adapters/claude/roles/worker.json
+  the role file is not in the draft
+  define roles.worker in .agents/permission/policy.yaml, then cook io.github.lmarqs.cookbook:agents#connect --harness=claude
+```
 
 ## Stable output
 
