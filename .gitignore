@@ -1,25 +1,6 @@
-/.gradle/
-/build/
-/core/.gradle/
-/core/build/
-/infra/.gradle/
-/infra/build/
-/cli/.gradle/
-/cli/build/
-/docs/.gradle/
-/docs/build/
-/plugin/.gradle/
-/plugin/build/
-/cookbook/.gradle/
-/cookbook/build/
-/cookbook/ingredients/*/.gradle/
-/cookbook/ingredients/*/build/
-/cookbook/recipes/**/.gradle/
-/cookbook/recipes/**/build/
-/cookbook/targets/*/.gradle/
-/cookbook/targets/*/build/
+**/.gradle/
+**/build/
 /.worktrees/
-/tasks/prd.json
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
 # io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex
 !/.claude/
