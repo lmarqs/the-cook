@@ -137,13 +137,13 @@ recipes:
     def kitchen = kitchen()
     write(kitchen, '.agents/adapters/claude/roles/worker.json', '{"permissions":{"deny":["Bash(git push *)"]}}\n')
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex'], role: ['worker']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-role': ['worker']]).commit()
 
     def config = new File(kitchen, '.ralph-tui/config.toml').text
     assert config == CONFIG.replace(CLAUDE_FLAGS, CLAUDE_FLAGS.replace(']',
     ', "--settings", ".agents/adapters/claude/roles/worker.json"]'))
     assert new File(kitchen, '.gitignore').readLines()[1] ==
-    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --role=worker'
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worker-role=worker'
     assert new File(kitchen, '.agents/adapters/claude/roles/worker.json').text ==
     '{"permissions":{"deny":["Bash(git push *)"]}}\n'
   }
@@ -152,11 +152,12 @@ recipes:
     def kitchen = kitchen()
 
     def error = shouldFail(IllegalArgumentException) {
-      cook(kitchen, RALPH, [harness: ['claude'], role: ['worker']])
+      cook(kitchen, RALPH, [harness: ['claude'], 'worker-role': ['worker']])
     }
 
     assert error.message.readLines() == [
-      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --role=worker needs .agents/adapters/claude/roles/worker.json',
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-role=worker needs ' +
+      '.agents/adapters/claude/roles/worker.json',
       '  the role file is not in the draft',
       '  define roles.worker in .agents/permission/policy.yaml, then cook ' +
       'io.github.lmarqs.cookbook:agents#connect --harness=claude',
@@ -177,7 +178,7 @@ roles:
 
     cook(kitchen, [
       'io.github.lmarqs.cookbook:agents:0.1.0#connect': [harness: ['claude']],
-      (RALPH): [harness: ['claude'], role: ['worker']],
+      (RALPH): [harness: ['claude'], 'worker-role': ['worker']],
     ]).commit()
 
     assert new File(kitchen, '.agents/adapters/claude/roles/worker.json').text.contains('Bash(git push *)')
@@ -188,13 +189,13 @@ roles:
   @Test void aSettingsFileIsPassedAsGivenAndNeverWritten() {
     def kitchen = kitchen()
 
-    cook(kitchen, RALPH, [harness: ['claude'], settings: ['x.json']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worker-settings': ['x.json']]).commit()
 
     assert new File(kitchen, '.ralph-tui/config.toml').text.contains(
     CLAUDE_FLAGS.replace(']', ', "--settings", "x.json"]\n'))
     assert !new File(kitchen, 'x.json').exists()
     assert new File(kitchen, '.gitignore').readLines()[1] ==
-    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --settings=x.json'
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worker-settings=x.json'
   }
 
   @Test void refusesARoleAndASettingsFileTogether() {
@@ -202,22 +203,22 @@ roles:
     write(kitchen, '.agents/adapters/claude/roles/worker.json', '{}\n')
 
     def error = shouldFail(IllegalArgumentException) {
-      cook(kitchen, RALPH, [harness: ['claude'], role: ['worker'], settings: ['x.json']])
+      cook(kitchen, RALPH, [harness: ['claude'], 'worker-role': ['worker'], 'worker-settings': ['x.json']])
     }
 
     assert error.message.readLines()[0] ==
-    'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --role and --settings are both given'
+    'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-role and --worker-settings are both given'
   }
 
   @Test void refusesARoleOrSettingsFileWithoutAClaudeEntry() {
     def kitchen = kitchen()
 
     def error = shouldFail(IllegalArgumentException) {
-      cook(kitchen, RALPH, [harness: ['codex'], settings: ['x.json']])
+      cook(kitchen, RALPH, [harness: ['codex'], 'worker-settings': ['x.json']])
     }
 
     assert error.message.readLines()[0..1] == [
-      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --settings=x.json applies to the claude entry',
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-settings=x.json applies to the claude entry',
       '  no --harness=claude is given',
     ]
   }
@@ -302,7 +303,7 @@ roles:
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
-    assert texts.params*.names == [['harness'], ['role'], ['settings'], ['worktree-setup']]
+    assert texts.params*.names == [['harness'], ['worker-role'], ['worker-settings'], ['worktree-setup']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
     assert texts.help.readLines().findAll { it.startsWith('## ') } == [
       '## API',
@@ -314,7 +315,7 @@ roles:
       '## Traps',
     ]
     assert texts.help.contains('Never touches')
-    assert texts.yieldText.contains('bun install -g ralph-tui@0.12.0')
+    assert texts.yieldText.contains('mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0')
   }
 
   @Test void theModelDocumentsTheEntriesToAddAndTheKnownLimits() {

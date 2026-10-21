@@ -42,9 +42,9 @@ package io.github.lmarqs.cookbook.ralph
  * than three tasks; Codex runs no project hooks in a worktree, because it trusts hooks per checkout path, unless
  * started with `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor write the Beads
  * database, nor write `.git`, so it cannot commit; Claude Code ignores the project's `permissions.allow` in a workspace
- * nobody has trusted, so an unattended Claude worker's allows come through `--role` or `--settings`; deny rules are
- * prefix rules that `git -C . push` gets past, a guardrail, and the structural limit is a worker without push
- * credentials.
+ * nobody has trusted, so an unattended Claude worker's allows come through `--worker-role` or `--worker-settings`;
+ * deny rules are prefix rules that `git -C . push` gets past, a guardrail, and the structural limit is a worker without
+ * push credentials.
  *
  * ## Instances
  *
@@ -59,9 +59,9 @@ package io.github.lmarqs.cookbook.ralph
  * @ingredient(RalphTui) def ralph
  *
  * ralph.harnesses(['claude', 'codex'])
- * ralph.role('worker')
+ * ralph.workerRole('worker')
  * ralph.worktreeSetup('.worktrees/setup')
- * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --role=worker ' +
+ * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worker-role=worker ' +
  *     '--worktree-setup=.worktrees/setup')
  * ```
  *
@@ -69,7 +69,7 @@ package io.github.lmarqs.cookbook.ralph
  *
  * None: ralph-tui names the other tools only by path. Run worktrees follow `io.github.lmarqs.cookbook:git#worktrees`'s
  * rule `.worktrees/<branch>`, and the launcher runs a setup file only when `setup` names one, such as that recipe's
- * `.worktrees/setup`; `--role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders.
+ * `.worktrees/setup`; `--worker-role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders.
  */
 @Ingredient
 class RalphTui {
@@ -89,8 +89,8 @@ class RalphTui {
   ]
 
   private List<String> harnesses = []
-  private String role
-  private String settings
+  private String workerRole
+  private String workerSettings
   private String worktreeSetup
   private String cookedWith
 
@@ -114,49 +114,49 @@ class RalphTui {
 
   /**
    * Adds `"--settings", ".agents/adapters/claude/roles/<name>.json"` to the Claude entry's `defaultFlags`. Refused when
-   * that file is not in the draft, naming the policy role to define and the recipe to cook; when `settings` was called;
-   * and when no Claude entry is requested. Call after `harnesses`.
+   * that file is not in the draft, naming the policy role to define and the recipe to cook; when `workerSettings` was
+   * called; and when no Claude entry is requested. Call after `harnesses`.
    */
-  void role(String name) {
+  void workerRole(String name) {
     if (!(name ==~ /[a-z][a-z0-9-]*/)) {
-      throw new IllegalArgumentException("--role=${name} is not a role name\n  a role is a key under roles in " +
+      throw new IllegalArgumentException("--worker-role=${name} is not a role name\n  a role is a key under roles in " +
       '.agents/permission/policy.yaml: lower-case letters, digits and hyphens, starting with a letter')
     }
 
-    claudeOnly("--role=${name}")
+    claudeOnly("--worker-role=${name}")
 
-    if (settings) {
+    if (workerSettings) {
       throw exclusive()
     }
 
     def file = "${ROLES}/${name}.json"
 
     if (current(file) == null) {
-      throw new IllegalArgumentException("--role=${name} needs ${file}\n  the role file is not in the draft\n" +
+      throw new IllegalArgumentException("--worker-role=${name} needs ${file}\n  the role file is not in the draft\n" +
       "  define roles.${name} in .agents/permission/policy.yaml, then cook " +
       'io.github.lmarqs.cookbook:agents#connect --harness=claude')
     }
 
-    role = name
+    workerRole = name
   }
 
   /**
    * Adds `"--settings", "<path>"` to the Claude entry's `defaultFlags`; the file is the team's, and nothing reads or
-   * writes it at cook time. Refused when `role` was called, and when no Claude entry is requested. Call after
+   * writes it at cook time. Refused when `workerRole` was called, and when no Claude entry is requested. Call after
    * `harnesses`.
    */
-  void settings(String path) {
+  void workerSettings(String path) {
     if (!path?.trim()) {
-      throw new IllegalArgumentException('--settings needs a path')
+      throw new IllegalArgumentException('--worker-settings needs a path')
     }
 
-    claudeOnly("--settings=${path}")
+    claudeOnly("--worker-settings=${path}")
 
-    if (role) {
+    if (workerRole) {
       throw exclusive()
     }
 
-    settings = path
+    workerSettings = path
   }
 
   /**
@@ -190,7 +190,7 @@ class RalphTui {
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `role`, `settings` and `worktreeSetup`.
+   * `harnesses`, `workerRole`, `workerSettings` and `worktreeSetup`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -299,8 +299,8 @@ class RalphTui {
   }
 
   private List<String> flags(String harness) {
-    def extra = harness == 'claude' && role ? ['--settings', "${ROLES}/${role}.json".toString()] :
-    harness == 'claude' && settings ? ['--settings', settings] : []
+    def extra = harness == 'claude' && workerRole ? ['--settings', "${ROLES}/${workerRole}.json".toString()] :
+    harness == 'claude' && workerSettings ? ['--settings', workerSettings] : []
     FLAGS[harness] + extra
   }
 
@@ -312,8 +312,9 @@ class RalphTui {
   }
 
   private static IllegalArgumentException exclusive() {
-    new IllegalArgumentException('--role and --settings are both given\n  each sets the one --settings file of the ' +
-        'claude entry\n  give one of them; to combine a role with more settings, write a settings file that holds both')
+    new IllegalArgumentException('--worker-role and --worker-settings are both given\n  each sets the one --settings ' +
+        'file of the claude entry\n  give one of them; to combine a role with more settings, write a settings file ' +
+        'that holds both')
   }
 
   private static String shellQuoted(String value) {

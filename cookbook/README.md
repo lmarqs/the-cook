@@ -252,16 +252,16 @@ sets up and cleans the run's worktree.
 # Claude Code and Codex workers, Claude by default
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
 # Claude workers bound to the agents layout's role worker
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --role=worker
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=worker
 # Claude workers with a settings file the team writes
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --settings=ralph-worker.json
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-settings=ralph-worker.json
 # Claude workers in run worktrees the launcher sets up with the team's script
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup
 ```
 
-The first `--harness` is the default agent. `--role` and `--settings` reach only the Claude entry, and only one of them
-is given. `--worktree-setup` names a committed executable by its path from the repository root, outside `.ralph-tui/`;
-without it, `bin/run` runs no setup. What it publishes for people, sessions and other recipes:
+The first `--harness` is the default agent. `--worker-role` and `--worker-settings` reach only the Claude entry, and
+only one of them is given. `--worktree-setup` names a committed executable by its path from the repository root,
+outside `.ralph-tui/`; without it, `bin/run` runs no setup. What it publishes for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -274,15 +274,16 @@ without it, `bin/run` runs no setup. What it publishes for people, sessions and 
 
 - ralph-tui 0.12.0 and Git at run time; Claude Code 2.1.306 and codex-cli 0.160.1 as workers. `bd` 1.3.1 only for a
   run with `--epic`, which reads the Beads database; a run with `--prd` needs no `bd`.
-- `.agents/adapters/claude/roles/<name>.json` in the draft, with `--role=<name>`: written by
+- `.agents/adapters/claude/roles/<name>.json` in the draft, with `--worker-role=<name>`: written by
   `io.github.lmarqs.cookbook:agents#connect --harness=claude` from `roles.<name>` in `.agents/permission/policy.yaml`.
   Without it, cooking is refused and names both.
-- The `--settings` path as given: written into the configuration, never read or written at cook time. Workers
+- The `--worker-settings` path as given: written into the configuration, never read or written at cook time. Workers
   resolve it in the run worktree, so it names a committed file by its path from the repository root, outside
   `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
 - The `--worktree-setup` file, at run time, only with `--worktree-setup`: `bin/run` runs it in each run worktree it
   creates and fails the run when it is missing there, not executable or fails. Never read or written at cook time.
-- By hand first: `bun install -g ralph-tui@0.12.0`, and for `--epic`, a Beads database with the epic.
+- By hand first: nothing. By hand after: installing ralph-tui and the runtimes it needs, and for `--epic`, a Beads
+  database with the epic, as After cooking says.
 
 ## Produces
 
@@ -294,8 +295,8 @@ without it, `bin/run` runs no setup. What it publishes for people, sessions and 
 | `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/.worktrees/ralph/` | Always | owned |
 
 The Claude entry runs `claude --permission-prompts none --permission-mode acceptEdits --print`: edits are accepted, and
-any command the settings do not allow is refused rather than asked, with `skipPermissions = false`. `--role` or
-`--settings` adds `--settings <file>` to it. The Codex entry runs `codex -c approval_policy=never -c
+any command the settings do not allow is refused rather than asked, with `skipPermissions = false`. `--worker-role` or
+`--worker-settings` adds `--settings <file>` to it. The Codex entry runs `codex -c approval_policy=never -c
 sandbox_workspace_write.network_access=false exec --sandbox workspace-write`: no approvals, no network, writes only in
 the worktree. Neither sets a model or an effort.
 
@@ -306,8 +307,8 @@ requests, and the tracker's state.
 
 | Contact | Made by |
 | --- | --- |
-| What a Claude worker may do | The person, by `--role` or `--settings`; the team, by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
-| What a Codex worker may do | Codex's `workspace-write` sandbox, in the seeded entry |
+| What a Claude worker may do | The person, by `--worker-role` or `--worker-settings`; the team, by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
+| What a Codex worker may do | The team, in the seeded entry, which sets Codex's `workspace-write` sandbox |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
 | The run worktree's setup | The person, by `--worktree-setup`; the team writes the file |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
@@ -316,9 +317,9 @@ requests, and the tracker's state.
 | Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
 
 `io.github.lmarqs.cookbook:git#worktrees` ignores and documents `.worktrees/`; cook the two in either order.
-`io.github.lmarqs.cookbook:beads#tracker` gives the Beads side; cook the two in either order. With `--role`, cook
-`io.github.lmarqs.cookbook:agents#connect --harness=claude` first, or before this recipe in the same invocation, with
-the role defined in the policy.
+`io.github.lmarqs.cookbook:beads#tracker` gives the Beads side; cook the two in either order. With `--worker-role`,
+cook `io.github.lmarqs.cookbook:agents#connect --harness=claude` first, or before this recipe in the same invocation,
+with the role defined in the policy.
 
 ## Run-time effects
 
@@ -340,13 +341,13 @@ on a `ralph-parallel/*` branch with that branch, then the branch `ralph/<name>`.
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as `#
 io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup`. Cooking
 with another `--worktree-setup`, or without it, rewrites the launcher. The seeds are never rewritten: to take other
-harnesses, a role or a newer version's configuration or prompts, edit them or delete them and cook again. A newer
+harnesses, a worker role or a newer version's configuration or prompts, edit them or delete them and cook again. A newer
 version rewrites the launcher and the section.
 
 ## Traps
 
 - Claude Code ignores the project's `permissions.allow` in a workspace nobody has trusted, and a fresh clone or a new
-  worktree may be one: an unattended Claude worker's allows come through `--role` or `--settings`.
+  worktree may be one: an unattended Claude worker's allows come through `--worker-role` or `--worker-settings`.
 - Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a
   worker without push credentials.
 - A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
@@ -361,9 +362,9 @@ version rewrites the launcher and the section.
 Parameters
   --harness=<String[]>
       Harnesses ralph-tui drives, one agent entry each; the first is the default; required; choices: claude, codex; repeatable
-  --role=<String>
+  --worker-role=<String>
       A role of the agents layout whose rendered Claude settings the claude entry passes with --settings; optional
-  --settings=<String>
+  --worker-settings=<String>
       A Claude settings file the claude entry passes with --settings; optional
   --worktree-setup=<String>
       An executable, by its path from the repository root, that bin/run runs in each run worktree it creates; optional
@@ -372,10 +373,12 @@ Ingredients
   io.github.lmarqs.cookbook.ralph.RalphTui
 
 After cooking
-  Install ralph-tui with `bun install -g ralph-tui@0.12.0`, review `.ralph-tui/config.toml` and the prompts, and commit
-  `.gitignore` and `.ralph-tui/`: `bin/run` refuses while `.ralph-tui` has uncommitted changes. Then run
-  `.ralph-tui/bin/run <name> --epic <id>` or `.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>`
-  once the branch `ralph/<name>` is delivered. With an `AGENTS.md`, add these commands to it, and with the agents layout,
+  Install ralph-tui and the runtimes it needs with `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`: npm needs node to
+  install it, and its launcher runs on bun. Without `-g`, mise pins them in the project's `mise.toml` instead, which is
+  the team's choice. Review `.ralph-tui/config.toml` and the prompts, and commit `.gitignore` and `.ralph-tui/`:
+  `bin/run` refuses while `.ralph-tui` has uncommitted changes. Then run `.ralph-tui/bin/run <name> --epic <id>`, with a
+  Beads database holding the epic, or `.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>` once
+  the branch `ralph/<name>` is delivered. With an `AGENTS.md`, add these commands to it, and with the agents layout,
   to the Launching table in `.agents/README.md`.
 ````
 

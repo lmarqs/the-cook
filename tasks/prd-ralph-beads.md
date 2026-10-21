@@ -32,7 +32,7 @@ means. Connections are made at three times by three actors, and every recipe's h
 | When | Who | What | Examples |
 | --- | --- | --- | --- |
 | Cook time | Cook, automatically | Mechanical wiring with one correct form, cheap to undo | a hook script in `session-start.d/`, an ignore line |
-| Cook time | The person, by parameter | Naming the other side of a connection | `--harness`, `--role`, `--settings`, `--share` |
+| Cook time | The person, by parameter | Naming the other side of a connection | `--harness`, `--worker-role`, `--worker-settings`, `--share` |
 | Commit time | The team, in seeds it owns | Anything that expresses a policy | what a worker may do, which agent entries exist, how a worktree is set up |
 | Launch time | The session | Run-time choices | which agent entry, which epic or PRD, model, headless, serial or parallel, delivery |
 
@@ -90,9 +90,9 @@ answer for someone who never cooked `agents`.
 
 | | |
 | --- | --- |
-| API | `--harness=claude\|codex...` (required, many; the first is `defaultAgent`); `--role=<name>` or `--settings=<path>` (optional, exclusive, Claude entries only); `--worktree-setup=<path>` (optional, a committed executable by its path from the repository root; absolute, `..` and `.ralph-tui/` paths refused); `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run args…]`; `.ralph-tui/bin/clean <name> [--force]`; the rule `.worktrees/ralph/<name>` on `ralph/<name>` |
+| API | `--harness=claude\|codex...` (required, many; the first is `defaultAgent`); `--worker-role=<name>` or `--worker-settings=<path>` (optional, exclusive, Claude entries only); `--worktree-setup=<path>` (optional, a committed executable by its path from the repository root; absolute, `..` and `.ralph-tui/` paths refused); `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run args…]`; `.ralph-tui/bin/clean <name> [--force]`; the rule `.worktrees/ralph/<name>` on `ralph/<name>` |
 | Produces | seeds: `config.toml` (one `[[agents]]` per harness, `tracker = "beads"`), `templates/beads.hbs`, `templates/json.hbs`; owned: `bin/run`, `bin/clean`, `.gitignore` section `ralph-tui` |
-| Consumes | `ralph-tui` and `git` at run time; `bd` only when a run passes `--epic`; the `--worktree-setup` file at run time, only with `--worktree-setup`; `--role`: `.agents/adapters/claude/roles/<name>.json` must be in the draft, refused otherwise; `--settings`: the path as given, never written |
+| Consumes | `ralph-tui` and `git` at run time; `bd` only when a run passes `--epic`; the `--worktree-setup` file at run time, only with `--worktree-setup`; `--worker-role`: `.agents/adapters/claude/roles/<name>.json` must be in the draft, refused otherwise; `--worker-settings`: the path as given, never written |
 | Never touches | `AGENTS.md`, `policy.yaml`, any settings or role file, version pins, remotes, pull requests, the tracker's state |
 
 ### Contact points
@@ -100,7 +100,7 @@ answer for someone who never cooked `agents`.
 | Contact | Connected by |
 | --- | --- |
 | beads → session context | Cook (`session-start.d/`), or the person (`--harness`) |
-| ralph → worker limits | the person (`--role` or `--settings`); the session (`--agent <entry>`); Codex workers by the sandbox |
+| ralph → worker limits | the person (`--worker-role` or `--worker-settings`); the session (`--agent <entry>`); Codex workers by the sandbox |
 | ralph → tracker | the session (`--epic` or `--prd`) |
 | ralph → worktree setup | the person (`--worktree-setup`); the team writes the file |
 | ralph → base branch | the session (`--base`, default `HEAD`) |
@@ -246,17 +246,18 @@ prime text and, when I name a harness or have the layout, the session hook, so t
 try and connect to worker limits only when I name them.
 
 **Acceptance Criteria:**
-- [ ] `--harness` is many and required, with choices `claude` and `codex`; `defaultAgent` is the first. `--role=<name>`
-  and `--settings=<path>` are optional and exclusive; both together are refused. `--role` is refused when
-  `.agents/adapters/claude/roles/<name>.json` is not in the draft, naming `roles.<name>` in
-  `.agents/permission/policy.yaml` and `agents#connect` as the fix. `--settings` names a file the recipe never writes.
+- [ ] `--harness` is many and required, with choices `claude` and `codex`; `defaultAgent` is the first.
+  `--worker-role=<name>` and `--worker-settings=<path>` are optional and exclusive; both together are refused.
+  `--worker-role` is refused when `.agents/adapters/claude/roles/<name>.json` is not in the draft, naming
+  `roles.<name>` in `.agents/permission/policy.yaml` and `agents#connect` as the fix. `--worker-settings` names a file
+  the recipe never writes.
 - [ ] Seeds `.ralph-tui/config.toml` with `configVersion = "2.1"`, `tracker = "beads"`, `defaultAgent`,
   `maxIterations = 10` with a comment stating what ralph-tui counts, `autoCommit = true`,
   `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true` and one `[[agents]]` per harness, named after it.
   `defaultFlags` sits at the top of the entry and plugin settings under `[agents.options]`: ralph-tui 0.12 replaces a
   `defaultFlags` under options and drops unknown top-level agent keys, silently (US-002). Claude:
   `defaultFlags = ["--permission-prompts", "none", "--permission-mode", "acceptEdits"]` plus
-  `"--settings", "<file>"` from `--role` or `--settings`; `skipPermissions = false`. Codex:
+  `"--settings", "<file>"` from `--worker-role` or `--worker-settings`; `skipPermissions = false`. Codex:
   `defaultFlags = ["-c", "approval_policy=never", "-c", "sandbox_workspace_write.network_access=false"]`,
   `fullAuto = false`, `sandbox = "workspace-write"`. No model, no effort.
 - [ ] Seeds `.ralph-tui/templates/beads.hbs` and `json.hbs`; ralph-tui loads `<tracker>.hbs` for the tracker a run
@@ -273,10 +274,11 @@ try and connect to worker limits only when I name them.
   `haiku`; its parallel mode starts blocked children and refuses fewer than three tasks; Codex workers in worktrees run
   no project hooks without `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor
   write the Beads database nor `.git` (US-002); Claude ignores the project's `permissions.allow` in a workspace it has
-  not trusted, so an unattended worker's allows come through `--role` or `--settings`; denies are prefix rules, a guardrail, and the structural limit is a worker without push
+  not trusted, so an unattended worker's allows come through `--worker-role` or `--worker-settings`; denies are prefix rules, a guardrail, and the structural limit is a worker without push
   credentials.
-- [ ] Tests: both harnesses on an empty kitchen (exact seed text, exact `cook.lock`); `--role=worker` with the role
-  file present and absent (refusal text); `--settings=x.json` (flag written, file untouched); both together refused;
+- [ ] Tests: both harnesses on an empty kitchen (exact seed text, exact `cook.lock`); `--worker-role=worker` with the
+  role file present and absent (refusal text); `--worker-settings=x.json` (flag written, file untouched); both together
+  refused;
   with `git#worktrees` in both orders; with `beads#tracker` in one invocation.
 - [ ] `prd-story.groovy` and `bead-task.groovy` are deleted.
 
@@ -300,7 +302,9 @@ names the worktree after the branch, so that every session finds, sets up and cl
   worktree, every worktree whose branch is `ralph-parallel/*` found through `git worktree list --porcelain`, those
   branches, and the run branch.
 - [ ] Writes nothing for mise or another task runner, `mise.toml` or not; the team exposes the scripts as tasks in
-  files it owns. The after-text gives `bun install -g ralph-tui@0.12.0`.
+  files it owns. The after-text first installs ralph-tui and its runtimes with
+  `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`, and says that without `-g` mise pins them in the project's
+  `mise.toml`.
 - [ ] Tests: a `mise.toml` in the draft gets no `.mise/` and stays unchanged. The scripts are executable in the
   kitchen and pass `sh -n`. Without `--worktree-setup`, an executable `.worktrees/setup` is not run; with it, the file runs once
   in a new worktree and not on reuse, and a missing, non-executable or failing file fails the run.
@@ -363,8 +367,8 @@ pointed at the new interface.
 - FR-4: `beads#tracker` cooks with no layout and no harness, and writes a hook only where the person or the draft names
   one.
 - FR-5: `ralph#ralph-tui` never writes outside `.ralph-tui/` and `.gitignore`, and never writes for a task runner such as mise.
-- FR-6: `ralph#ralph-tui` writes no deny, settings, role or pin. Worker limits enter only through `--role`,
-  `--settings` or an entry the team adds.
+- FR-6: `ralph#ralph-tui` writes no deny, settings, role or pin. Worker limits enter only through `--worker-role`,
+  `--worker-settings` or an entry the team adds.
 - FR-7: Run worktrees live at `.worktrees/ralph/<name>` on branch `ralph/<name>`, based on `HEAD` unless `--base`.
 - FR-8: No recipe pushes, opens a pull request or runs `bd`.
 - FR-9: Every owned section opens with a comment line naming the recipe and its arguments.
