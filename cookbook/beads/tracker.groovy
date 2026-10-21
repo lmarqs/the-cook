@@ -103,11 +103,11 @@ For `--share=team`, then run `bd config set sync.remote <url>`, `bd config set e
 per clone, so each teammate runs that last command, and it replaces any hooks path the project already uses.
 
 Without `--session-start`, give sessions the prime text from the repository's own session-start hook, running
-`command -v bd >/dev/null && bd prime`, or from bd's own adapters: `bd setup claude` installs Claude Code
-SessionStart hooks, and `bd setup codex` a Codex skill, `AGENTS.md` guidance and native hooks;
-`bd setup <agent> --check` shows what is installed, and `--remove` removes it. With the agents layout, cook with
-`--session-start` instead: `io.github.lmarqs.cookbook:agents:<version>#connect` owns `hooks.SessionStart` in both
-harnesses, so a hook written there is replaced on its next cook.
+`if command -v bd >/dev/null; then bd prime; fi`, which exits 0 in a clone without bd, or from bd's own adapters:
+`bd setup claude` installs Claude Code SessionStart hooks, and `bd setup codex` a Codex skill, `AGENTS.md` guidance
+and native hooks; `bd setup <agent> --check` shows what is installed, and `--remove` removes it. With the agents
+layout, cook with `--session-start` instead: `io.github.lmarqs.cookbook:agents:<version>#connect` owns
+`hooks.SessionStart` in both harnesses, so a hook written there is replaced on its next cook.
 
 Add to `AGENTS.md`: "Beads tracks this project's work; its rules arrive from `bd prime` at session start. If they are
 missing, run `bd prime`."

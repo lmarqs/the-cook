@@ -260,7 +260,7 @@ class BeadsTrackerCookTest {
       'bd config set export.auto true',
       'bd hooks install --beads',
       'git config core.hooksPath .beads/hooks',
-      'command -v bd >/dev/null && bd prime',
+      'if command -v bd >/dev/null; then bd prime; fi',
       'bd setup claude',
       'bd setup codex',
       'run `bd prime`',
