@@ -67,9 +67,10 @@ Every file here has one owner. Most surprises come from editing a file someone e
 
 | Owner | Files | Changed by |
 | --- | --- | --- |
-| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/`, `memory/`, `.agents/README.md`, `.agents/adapters/codex/hooks.json`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
+| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/` with its own session-start scripts in `hooks/session-start.d/`, `memory/`, `.agents/README.md`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
-| Cook | What it renders from the policy: `permissions` in `.agents/adapters/claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `.agents/adapters/codex/config.toml`, `.agents/adapters/codex/rules/cook.rules` and `.agents/adapters/claude/roles/`; the links in `.claude/` and `.codex/`; the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
+| A tool's recipe | Its own script in `.agents/hooks/session-start.d/`, such as `beads.sh` | Cooking that recipe |
+| Cook | What it renders from the policy: `permissions` in `.agents/adapters/claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `.agents/adapters/codex/config.toml`, `.agents/adapters/codex/rules/cook.rules` and `.agents/adapters/claude/roles/`; the session start: `.agents/hooks/session-start` and `hooks.SessionStart` in `.agents/adapters/claude/settings.json` and `.agents/adapters/codex/hooks.json`; the links in `.claude/` and `.codex/`; the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
 | Each person | `.claude/settings.local.json` | Nobody else; Cook never writes it and git ignores it |
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
 
@@ -108,7 +109,9 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 - **A command** is a prompt a person starts by name, such as `/release`. Keep it short and let it name the skill
   that holds the detail.
 - **A hook** runs on a harness event, such as before a command or after an edit, with no agent deciding. The script
-  is shared; when it runs is set per harness, because the events and their input differ.
+  is shared; when it runs is set per harness, because the events and their input differ. Session start is the
+  exception: a script in `hooks/session-start.d/` that prints text reaches every connected harness as session
+  context, and gets the harness name as `$1`.
 - **Memory** holds what a past session learned and every later one needs, such as why a dependency is pinned. List
   each file in `AGENTS.md` with the question it answers, so agents know when to read it.
 
@@ -131,7 +134,8 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
 | Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
 | Share a skill, slash command, hook script or durable fact | `.agents/skills/`, `commands/`, `hooks/` or `memory/` | Commit; the links expose it |
-| Run a shared hook script on a harness event | The `hooks` key of `.claude/settings.json`, and `.agents/adapters/codex/hooks.json` | Commit; for Codex hooks, cook `#connect` once, to link it |
+| Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; a Codex worktree runs it only with `--dangerously-bypass-hook-trust`, [design.md](references/design.md#tools-that-add-session-context) |
+| Run a shared hook script on another harness event | The `hooks` key of `.claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |
 | Change another shared harness setting, such as `env` or an MCP server | That key in `.claude/settings.json` or `.codex/config.toml` | Commit |
 | Change something for yourself | `.claude/settings.local.json` | Nothing to commit |
 | Choose the harness, model, mode or role of one run | The launch command, from Launching in `.agents/README.md` | Nothing to commit |

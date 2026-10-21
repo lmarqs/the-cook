@@ -11,5 +11,17 @@
     "deny": [
       "Bash(git reset --hard *)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.agents/hooks/session-start claude"
+          }
+        ]
+      }
+    ]
   }
 }

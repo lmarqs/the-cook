@@ -261,7 +261,8 @@ holds the same ideas, so the move is mechanical. This belongs to step 6.
    ```
 
 4. Move the hooks it wrote into the `hooks` key of `.agents/adapters/claude/settings.json` and into
-   `.agents/adapters/codex/hooks.json`, with the scripts in `.agents/hooks/`.
+   `.agents/adapters/codex/hooks.json`, with the scripts in `.agents/hooks/`. A session-start hook that prints context
+   becomes a script in `.agents/hooks/session-start.d/`, since `#connect` owns `hooks.SessionStart`.
 5. Before step 7, delete the renderer, its tests and its outputs, and rewire what step 3 found that still reads
    them: a CI drift check becomes [the `--check` step](#a-drift-check-in-ci), and a script that names an output names
    the adapter or link that replaces it. `-f` replaces the starter policy the seed wrote:
