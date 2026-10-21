@@ -156,9 +156,10 @@ that a run is unattended and safe on the first try.
   `skipPermissions = false`. Codex:
   `defaultFlags = ["-c", "approval_policy=never", "-c", "sandbox_workspace_write.network_access=false"]`,
   `fullAuto = false`, `sandbox = "workspace-write"`.
-- [ ] Seeds `.ralph-tui/templates/beads.hbs` or `json.hbs`, by `--tracker`. The prompt says: stay in this worktree,
-  commit small, never push, never close the bead, print `<promise>COMPLETE</promise>` only after the checks pass,
-  print `BLOCKED:` otherwise.
+- [ ] Seeds `.ralph-tui/templates/beads.hbs` or `json.hbs`, by `--tracker`. Both prompts say: stay in this worktree,
+  commit small, never push, print `<promise>COMPLETE</promise>` only after the checks pass, print `BLOCKED:`
+  otherwise. `beads.hbs` adds "never close the bead"; `json.hbs` adds "never edit the PRD file", because ralph-tui
+  marks the story done.
 - [ ] With `--agent=claude`, owns `.ralph-tui/worker/claude.json` with `permissions.deny` for `git push`,
   `bd close`, `bd create`, `bd delete`, `bd reopen`, `bd dolt push`, `git worktree`, `ralph-tui` and
   `.ralph-tui/bin/*`.
@@ -176,7 +177,8 @@ names the worktree after the branch, so that every session finds and cleans runs
 
 **Acceptance Criteria:**
 - [ ] Owns `.ralph-tui/bin/run` (0755). `run <epic|prd.json> [ralph-tui run args...]` creates or reuses
-  `.worktrees/ralph/<name>` on `ralph/<name>` from `origin/<default branch>`. It runs
+  `.worktrees/ralph/<name>` on `ralph/<name>` from `origin/<default branch>`, where `<name>` is the epic id, or the
+  file name without `.json` for a file argument. The argument is a file when it ends in `.json`. It runs
   `exec ralph-tui run --epic <id>` (or `--prd <absolute path>`) there, passing the remaining arguments through, and
   first prints the path and branch.
 - [ ] Owns `.ralph-tui/bin/clean` (0755). `clean <name> [--force]` refuses when the run branch has unmerged commits or
@@ -218,6 +220,9 @@ names the worktree after the branch, so that every session finds and cleans runs
 - [ ] A Claude session's context contains `bd prime` output.
 - [ ] `.ralph-tui/bin/run <epic> --headless` with the fake agent completes one bead in `.worktrees/ralph/<epic>`, and
   `.ralph-tui/bin/clean <epic>` removes it after merge.
+- [ ] In a second fresh scratch repository, with no Beads and no layout: cook only
+  `ralph#ralph-tui --tracker=json --agent=claude`. `.ralph-tui/bin/run tasks/prd.json --headless` with the fake agent
+  completes one story in `.worktrees/ralph/prd`, and nothing under `.beads/` is created.
 - [ ] Results go on #42. A defect gets a `fix` commit with a test that failed before it.
 
 ### US-010: Release and follow-up
