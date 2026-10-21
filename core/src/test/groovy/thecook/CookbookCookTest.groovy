@@ -477,12 +477,12 @@ notes.set(features: [hooks: true])
     def claudeSettings = new File(kitchen, '.agents/adapters/claude/settings.json')
     def codexHooks = new File(kitchen, '.agents/adapters/codex/hooks.json')
     def slurp = { File file -> new groovy.json.JsonSlurper().parse(file) }
-    assert slurp(claudeSettings).hooks == [SessionStart: [[hooks: [[type: 'command',
-            command: '"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude']]]]]
+    def claudeCommand = [type: 'command', command: '"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude']
+    assert slurp(claudeSettings).hooks == [SessionStart: [[hooks: [claudeCommand]]]]
     // Codex runs a relative hook path from the session's directory, so the command starts from the repository root.
-    assert slurp(codexHooks) == [hooks: [SessionStart: [[matcher: 'startup|resume|clear', hooks: [[type: 'command',
-            command: 'sh -c \'exec "$(git rev-parse --show-toplevel)/.agents/hooks/session-start" codex\'',
-            statusMessage: 'Loading session context']]]]]]
+    def codexCommand = [type: 'command', statusMessage: 'Loading session context',
+      command: 'sh -c \'exec "$(git rev-parse --show-toplevel)/.agents/hooks/session-start" codex\'']
+    assert slurp(codexHooks) == [hooks: [SessionStart: [[matcher: 'startup|resume|clear', hooks: [codexCommand]]]]]
     assert Files.readSymbolicLink(new File(kitchen, '.codex/hooks.json').toPath()).toString() ==
     '../.agents/adapters/codex/hooks.json'
     def owned = CookLock.parse(new File(kitchen, 'cook.lock').text).owned('io.github.lmarqs.cookbook:agents#connect')
@@ -527,7 +527,7 @@ notes.set(features: [hooks: true])
 
     assert status == 0
     assert new groovy.json.JsonSlurper().parseText(output) == [hookSpecificOutput: [hookEventName: 'SessionStart',
-          additionalContext: 'harness codex\nquote " backslash \\ tab \t end\nsecond line']]
+        additionalContext: 'harness codex\nquote " backslash \\ tab \t end\nsecond line']]
   }
 
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
@@ -614,8 +614,14 @@ notes.set(features: [hooks: true])
     assert same.changes == []
 
     def withoutCodex = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    assert withoutCodex.changes == ['.agents/adapters/codex/config.toml', '.agents/adapters/codex/hooks.json',
-      '.codex/config.toml', '.codex/hooks.json', '.gitignore', 'cook.lock']
+    assert withoutCodex.changes == [
+      '.agents/adapters/codex/config.toml',
+      '.agents/adapters/codex/hooks.json',
+      '.codex/config.toml',
+      '.codex/hooks.json',
+      '.gitignore',
+      'cook.lock'
+    ]
     withoutCodex.commit()
     assert !new File(kitchen, '.codex').exists()
     assert !new File(kitchen, '.agents/adapters/codex').exists()
