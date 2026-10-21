@@ -61,6 +61,15 @@ Recipe names are noun phrases naming the state the destination gets, without rep
 `node/project.groovy`, `docker/base-image.groovy` and `agents/connect.groovy`. A recipe that configures one of
 several programs in its directory names the program first: `ralph/ralph-tui.groovy`.
 
+Params are kebab-case and name the value's role in what the recipe sets up, as the recipe sees it:
+`--worktree-setup`, `--share`. A param that applies to one party of a run names that party first: `--worker-role` and
+`--worker-settings` limit the workers a loop runner starts, not whoever launches it. One concept keeps one name across
+artifacts: `--harness` names the coding agents a recipe connects, with the programs' own names, `claude` and `codex`,
+as values. A param avoids a word the configured program uses for something else, as ralph-tui 0.12 has a `setup`
+command, and a word this repository uses for something else, as `hook` names harness and Git hooks. A param that
+names another recipe's or the team's file takes its path from the repository root, and is refused when absolute or
+holding a `..` segment ([0030](../docs/adrs/0030-recipe-connections.md)).
+
 The engine imports its own annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and `java.nio.file` into every
 unit, as the Groovy shell imports `java.util`. A unit imports nothing from the engine and nothing for JSON, YAML,
 TOML or paths. The annotations come first, so `File` and `Files` name them; write `java.io.File` and
@@ -170,7 +179,7 @@ apply is omitted: a recipe that installs no script has no Run-time effects.
 | API | The invocations, one per situation, each under a comment naming it; the params are not repeated. Then the stable paths, scripts, commands and naming rules the recipe publishes for people and other recipes to rely on |
 | Consumes | The tools that run at run time, with the versions the recipe is written for; what it reads in the draft and what each read triggers; the paths of other artifacts it names; what the person does by hand first |
 | Produces | A table of `Target`, `Part`, `When` and `Kind`. `When` is the argument value or draft condition that triggers the row, or `Always`. `Kind` is `owned`, rewritten on every cook and removed by discard; `seed`, written when absent and never owned; or `link`, an owned symbolic link. Then how the written setup behaves, closing with `Never touches:` and the files in its topic it leaves to others |
-| Connections | Each contact point with another recipe, tool or person, and who makes it: Cook, automatically; the person, by a parameter; the team, in seeds it owns; the session, at launch. Then the order and the arguments that must agree |
+| Connections | Each contact point with another recipe, tool or person, and who makes it: Cook, automatically, only between the recipe's own files; the person, by a parameter, for every contact with another recipe's or the team's files ([0030](../docs/adrs/0030-recipe-connections.md)); the team, in seeds it owns; the session, at launch. Then the order and the arguments that must agree |
 | Run-time effects | What the scripts the recipe installs do when run |
 | Re-cooking | The arguments to repeat, as the opening line of its owned sections names them; what cooking a newer version changes; how its conditional parts behave under `--check` |
 | Traps | Known faults of the versions written for, each with its workaround |
@@ -182,7 +191,10 @@ repository. It is displayed above the diff, under the recipe's address, and the 
 `--batch-approve` displays it and proceeds. A recipe whose effects are all in the diff has no `@confirm`.
 
 `@yield` states what to do next, such as a command to run. It is printed under the recipe's address after the writes
-succeed, and not when the batch is declined or fails.
+succeed, and not when the batch is declined or fails. It installs each program the written files need at run time
+first, at the version the recipe is written for, with a mise command that also names the runtimes the program needs,
+since mise installs from npm, GitHub releases and the aqua registry alike: `mise use -g aqua:steveyegge/beads@1.3.1`.
+Without `-g`, mise pins the programs in the project's `mise.toml` instead, which is the team's choice.
 
 ### Model class doc comment
 

@@ -199,8 +199,9 @@ A recipe's `@help` describes it by what it provides, consumes and connects to, b
 3. **Consumes:** the tools that run at run time, with the versions written for; what it reads in the draft and what each
    read triggers; other artifacts' paths it names; what the person does by hand first.
 4. **Produces:** `Target`, `Part`, `When` and `Kind` (`owned`, `seed` or `link`), closing with `Never touches:`.
-5. **Connections:** each contact point and who makes it: Cook, the person, the team or the session; the order and the
-   arguments that must agree.
+5. **Connections:** each contact point and who makes it: Cook, between the recipe's own files; the person, by a
+   parameter, for another recipe's or the team's files; the team; or the session. Then the order and the arguments
+   that must agree.
 6. **Run-time effects:** what the scripts it installs do when run.
 7. **Re-cooking:** the arguments to repeat, what cooking a newer version changes, and how conditional parts behave under
    `--check`.
