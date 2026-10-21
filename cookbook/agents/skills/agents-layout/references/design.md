@@ -96,10 +96,38 @@ harness entries.
 ## Cook owns only the keys it renders
 
 The policy covers permissions and nothing else, so Cook owns only what it renders from it: `permissions` for Claude,
-the sandbox and approval keys and `cook.rules` for Codex. Hooks, `env`, MCP servers and every other key stay in the
-harness's own file, in its own format, and cooking keeps them. A shared format for those would need a translation per
-harness for no gain, and an input file per harness would only move the same keys one step further from where the
-harness reads them.
+the sandbox and approval keys and `cook.rules` for Codex. The one other key it owns is the session-start hook,
+`hooks.SessionStart` in both harnesses, which runs the dispatcher `.agents/hooks/session-start` (see
+[the next section](#tools-that-add-session-context)). The other hook events, `env`, MCP servers and every other key
+stay in the harness's own file, in its own format, and cooking keeps them. A shared format for those would need a
+translation per harness for no gain, and an input file per harness would only move the same keys one step further
+from where the harness reads them.
+
+## Tools that add session context
+
+Tools such as an issue tracker want to tell every agent something as its session starts. Each harness takes that
+context from a session-start hook, and each keeps those hooks in one key: Claude in `hooks.SessionStart` of its
+settings, Codex in `hooks.SessionStart` of `hooks.json`. Cook owns a key whole, so if every tool's recipe wrote that
+key, the last one cooked would remove the others, and each tool would need to know both harnesses' formats.
+
+So `#connect` owns the key in each harness and points it at one dispatcher, `.agents/hooks/session-start`. The
+dispatcher runs every `.agents/hooks/session-start.d/*.sh` in name order, with the harness name as `$1`, and prints
+their joined output once, as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<text>"}}`,
+which Claude Code 2.1.306 and Codex 0.160.1 both add to the session (tested). A tool's recipe owns one script there,
+and the team writes its own beside them; none of them learns a harness format, and none collides with another. The
+dispatcher encodes the JSON with `sh` and `awk` alone, so the layout adds no dependency such as `jq` or Python; the
+encoding round-trips quotes, backslashes, control characters and UTF-8 under dash and bash, with gawk and mawk
+(tested).
+
+Codex runs a relative hook command from the session's directory, so a session started in a subdirectory fails to find
+`.agents/hooks/session-start` (tested). Its command starts from `git rev-parse --show-toplevel` instead. Claude's
+command starts from `$CLAUDE_PROJECT_DIR`.
+
+Codex trusts hooks per absolute path of `.codex/hooks.json`, recorded in `~/.codex/config.toml`, not per clone. A
+repository at a new path runs none of its hooks until they are trusted there, and `codex exec` skips them without a
+warning; `--dangerously-bypass-hook-trust` runs them for one run (tested in a new repository). A worktree has a path
+of its own, so the same holds there. Claude runs the project's hooks even in a workspace nobody trusted (tested with
+`claude --print`).
 
 ## Why roles only deny
 
@@ -175,9 +203,12 @@ the clone, not the directory:
   `.claude/settings.local.json` (tested, with a deny, in a worktree that had no local file of its own).
 - Codex applies `.codex/rules` in a worktree inside the trusted checkout and in one beside it, and skips them
   in a plain clone nobody trusted (tested).
+- Codex hooks are the exception: Codex trusts them per absolute path of `.codex/hooks.json`, so a worktree runs none
+  of them, the session start included, without `--dangerously-bypass-hook-trust`
+  ([why](#tools-that-add-session-context)).
 
-So trusting the main checkout once covers every worktree of it, wherever the runner puts it; a fresh clone needs its
-own trust.
+So trusting the main checkout once covers every worktree of it, wherever the runner puts it, except for Codex hooks;
+a fresh clone needs its own trust.
 
 Where worktrees go is left to the project and its runner, because each location has a cost:
 
