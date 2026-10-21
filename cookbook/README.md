@@ -160,15 +160,22 @@ A recipe file opens with its texts, annotations on its first import, in this ord
 Each holds Markdown in a `'''` string. An annotation value is a constant, so the texts do not change with the
 arguments; what the recipe actually wrote is in the diff and in the engine's report.
 
-`@help` holds these sections in order; empty sections are omitted.
+`@help` describes the recipe by what it provides, consumes and connects to, so a reader composes recipes without its
+source. It holds these sections in order, each after a `## <Section>` heading except the Lead. A section that does not
+apply is omitted: a recipe that installs no script has no Run-time effects.
 
 | Section | Content |
 | --- | --- |
 | Lead | One or two sentences: what the destination gets |
-| Before cooking | What must exist or be installed, and what the recipe reads |
-| Cook | One to three invocations showing the choices that matter; the params are not repeated |
-| Writes | `Target`, `Part` and `When`: the argument value that triggers the row, or `Always`; then how the written setup behaves |
-| With other recipes | What it composes with, in which order, and which arguments must agree |
+| API | The invocations, one per situation, each under a comment naming it; the params are not repeated. Then the stable paths, scripts, commands and naming rules the recipe publishes for people and other recipes to rely on |
+| Consumes | The tools that run at run time, with the versions the recipe is written for; what it reads in the draft and what each read triggers; the paths of other artifacts it names; what the person does by hand first |
+| Produces | A table of `Target`, `Part`, `When` and `Kind`. `When` is the argument value or draft condition that triggers the row, or `Always`. `Kind` is `owned`, rewritten on every cook and removed by discard; `seed`, written when absent and never owned; or `link`, an owned symbolic link. Then how the written setup behaves, closing with `Never touches:` and the files in its topic it leaves to others |
+| Connections | Each contact point with another recipe, tool or person, and who makes it: Cook, automatically; the person, by a parameter; the team, in seeds it owns; the session, at launch. Then the order and the arguments that must agree |
+| Run-time effects | What the scripts the recipe installs do when run |
+| Re-cooking | The arguments to repeat, as the opening line of its owned sections names them; what cooking a newer version changes; how its conditional parts behave under `--check` |
+| Traps | Known faults of the versions written for, each with its workaround |
+
+What to do after cooking is not a section of `@help`: it belongs in `@yield`, which `help` prints as "After cooking".
 
 `@confirm` states a consequence of approving that the diff cannot show, such as access granted outside the
 repository. It is displayed above the diff, under the recipe's address, and the one approval question covers both.
@@ -197,42 +204,141 @@ A model's class doc comment holds these sections in order.
 | A public method or property | What it means for the destination, what its arguments accept and what is rejected |
 | An annotated member | The part written and when, as one row of the rendered writes: `` `engines.node`, a caret range on the major, when a version is set. `` |
 
-Rendered help for an artifact and a recipe, as the design intends it:
+Rendered help for an artifact and a recipe, as `./cook help` prints them:
 
-```text
-$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0
-Ralph TUI configuration and runners for recipe-driven development loops.
-```
+````text
+$ ./cook help io.github.lmarqs.cookbook:agents:0.0.0
+io.github.lmarqs.cookbook:agents:0.0.0
+
+Shared setup for the coding agents in one repository, so project guidance, permissions and skills stay the same
+across every agent program the team uses. The artifact also models the programs it drives, Claude Code and Codex,
+and ships the `agents-layout` skill, which explains the layout to the people and agents working in it.
+Its `references/design.md` gives the reason behind each decision of the layout, such as committed links, deny-only
+roles and no Codex roles. To set the layout up in a repository, cook `#seed`, whose help says how to go on.
+
+Recipes
+  io.github.lmarqs.cookbook:agents:0.0.0#connect
+  io.github.lmarqs.cookbook:agents:0.0.0#seed
+
+Models
+  io.github.lmarqs.cookbook.agents.Agents
+  io.github.lmarqs.cookbook.agents.Claude
+  io.github.lmarqs.cookbook.agents.Codex
+````
 
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
-```text
-$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
-ralph-tui
+````text
+$ ./cook help io.github.lmarqs.cookbook:agents:0.0.0#connect
+io.github.lmarqs.cookbook:agents:0.0.0#connect
 
-Sets up Ralph TUI as the repository's loop runner: its configuration, a runner and the tracker it takes stories
-from.
-...
+Connects each selected harness to the shared agent layout: renders the shared policy into its settings under
+`.agents/adapters/<harness>/` and links its own directory, `.claude/` or `.codex/`, to those files and to the shared
+directories. Each harness reads `AGENTS.md` natively, and hooks and memory are reached by their paths. The links are
+committed, so a fresh clone needs no cooking; everything else in the harness directories is ignored in Git.
+
+## API
+
+```sh
+# A team that uses Claude Code only
+./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+# A team that uses Claude Code and Codex
+./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
+# A new repository: the layout and its connection in one invocation
+./cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+```
+
+Paths other recipes, launchers and people rely on:
+
+| Path | What it is |
+| --- | --- |
+| `.agents/adapters/<harness>/` | Each harness's settings; Cook owns only the keys it renders, and the team writes the rest |
+| `.agents/adapters/claude/roles/<role>.json` | A role's denies, added to one Claude run with `claude --settings <file>` |
+| `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
+| `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
+
+## Consumes
+
+- Claude Code and Codex read what it writes; written for Claude Code 2.1.304 and Codex 0.160.1.
+- `.agents/permission/policy.yaml` in the draft, the team's: its `commands` render into each harness's settings, its
+  `tools` and `roles` into Claude's, and its `bypass` decides whether Claude's bypass mode is refused. When absent, the
+  starter is seeded, which grants nothing.
+- `.agents/adapters/codex/hooks.json` in the draft, the team's: when present, `.codex/hooks.json` links to it.
+- A file or directory already at a link's path, such as a committed `.codex/config.toml` or `.claude/skills/`, is
+  refused, and nothing is written: move its contents where the message says, delete it, and cook again. A link there
+  is replaced.
+- By hand first: cook `io.github.lmarqs.cookbook:agents:<version>#seed` to create `AGENTS.md` and the policy, and
+  edit the policy.
+
+## Produces
+
+| Target | Part | When | Kind |
+| --- | --- | --- | --- |
+| `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
+| `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories | Always, when absent | seed |
+| `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's `bypass` is `refuse` | `--harness=claude` | owned |
+| `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` | link |
+| `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles | owned |
+| `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude finds skills and commands | `--harness=claude` | link |
+| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | `--harness=codex` | owned |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, opening with a comment on the runs Codex cannot refuse while `bypass` is `refuse` | `--harness=codex` and the policy has command rules | owned |
+| `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` | link |
+| `.codex/hooks.json` | A link to `../.agents/adapters/codex/hooks.json` | `--harness=codex` and that file exists | link |
+| `.gitignore` | The section `harnesses`: the argument line; each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
+
+Cooking with fewer harnesses removes the outputs of the ones left out.
+
+Never touches: `AGENTS.md`; every other key in the adapter files, such as `hooks`, `env` or `[mcp_servers]`, which the
+team writes in the file and cooking keeps; `.agents/adapters/codex/hooks.json`; `.claude/settings.local.json` and
+anything else a harness writes in its own directory.
+
+## Connections
+
+| Contact | Made by |
+| --- | --- |
+| The layout to each harness | The person, by `--harness` |
+| The policy to each harness's settings | Cook, rendering the team's policy |
+| A role to a Claude run | The session, launching `claude --settings .agents/adapters/claude/roles/<role>.json`; the Launching table in `.agents/README.md` lists the commands |
+| The team's Codex hooks to Codex | The team, writing `.agents/adapters/codex/hooks.json`; Cook links it |
+| Shared skills and commands to Claude | Cook, by the `.claude/skills` and `.claude/commands` links |
+
+`io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects: cook it first, or before
+this recipe in the same invocation. Every cook names every harness the team uses.
+
+## Re-cooking
+
+Repeat the arguments on the opening line of the `harnesses` section in `.gitignore`, such as
+`# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex`. Cook again after editing the policy, and
+after deleting `.claude/` or `.codex/` to recreate the links. A newer version rewrites the keys, links and section it
+owns; the team's keys and the seeded files stay as they are. Under `--check`, a role file, `cook.rules` or the
+`.codex/hooks.json` link shows as a change once the policy gains roles or command rules, or the team writes
+`.agents/adapters/codex/hooks.json`, until the recipe is cooked again.
+
+## Traps
+
+- Claude Code applies the project's allow rules only in a workspace someone has trusted, and Codex loads `.codex/rules`
+  only in a trusted project: start each once, interactively, in the main checkout.
+- A `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the directory of an `AGENTS.md` or one above makes Claude
+  Code skip that `AGENTS.md`. Claude Code older than 2.1.277 reads no `AGENTS.md`.
+- Codex has no roles: a role's denies reach only Claude runs. `codex exec --ignore-rules`, `--approve-for-me` or an
+  untrusted project skip or approve the Codex rules, and no setting refuses them.
+- With `core.symlinks` off, as is common on Windows, Git checks the links out as text files.
+
+The `agents-layout` skill's `references/investigate.md` lists more symptoms, with their checks and fixes.
 
 Parameters
-  --agent=<String>          The agent Ralph drives, by its Ralph plugin name          default: codex
-  --tracker=<String>        Where Ralph takes its stories from                       default: json
-                            choices: json, beads
-  --mode=<String>           Run Ralph through its own runner at .ralph-tui/run, or    default: standalone
-                            through the mise task ralph:run; choices: standalone, mise
-  ...
-  --issue-prefix=<String>   The Beads issue prefix, for the beads tracker             default: none
+  --harness=<String[]>
+      Harnesses to connect to the shared layout; required; choices: claude, codex; repeatable
 
 Ingredients
-  io.github.lmarqs.cookbook.beads.Beads
-  io.github.lmarqs.cookbook.git.Git
-  io.github.lmarqs.cookbook.mise.Mise
-  io.github.lmarqs.cookbook.ralph.RalphTui
+  io.github.lmarqs.cookbook.agents.Agents
+  io.github.lmarqs.cookbook.agents.Claude
+  io.github.lmarqs.cookbook.agents.Codex
 
 After cooking
-  - `--mode=standalone`: run `.ralph-tui/run`, with a PRD path or a Beads epic id as its argument.
-  ...
-```
+  Review the rendered permissions against each harness's permission model. Edit `.agents/permission/policy.yaml` and
+  cook again to update them; after deleting `.claude/` or `.codex/`, cook again to recreate the links.
+````
 
 ## Layout
 

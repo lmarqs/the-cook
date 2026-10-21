@@ -225,9 +225,10 @@ owns, discarding that recipe proposes, besides removing the links and files it o
 ```diff
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,12 +1,1 @@
+@@ -1,13 +1,1 @@
  /build/
 -# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+-# io.github.lmarqs.cookbook:agents#connect --harness=claude
 -!/.claude/
 -/.claude/*
 -!/.claude/settings.json

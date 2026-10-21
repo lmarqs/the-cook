@@ -21,6 +21,7 @@
 /.worktrees/
 /tasks/prd.json
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex
 !/.claude/
 /.claude/*
 !/.claude/settings.json

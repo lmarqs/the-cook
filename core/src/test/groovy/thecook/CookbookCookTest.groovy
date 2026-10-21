@@ -94,8 +94,16 @@ recipes:
 """
     assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).changes == []
 
+    // cook.lock records no arguments, so the section's first line says how to cook it again.
+    assert new File(kitchen, '.gitignore').readLines()[0..1] == [
+      '# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses',
+      '# io.github.lmarqs.cookbook:agents#connect --harness=claude'
+    ]
+
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
     assert !new File(kitchen, '.claude').exists()
+    assert new File(kitchen, '.gitignore').readLines()[1] ==
+    '# io.github.lmarqs.cookbook:agents#connect --harness=codex'
     assert !new File(kitchen, 'cook.lock').text.contains('.claude/')
   }
 
@@ -788,6 +796,7 @@ bypass allow
 .claude/
 .codex/
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
+# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex
 !/.claude/
 /.claude/*
 !/.claude/settings.json

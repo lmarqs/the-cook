@@ -51,6 +51,7 @@ class Agents {
   private boolean policyUsed = false
   private boolean layoutUsed = false
   private List<Harness> ignoredHarnesses = []
+  private String ignoredBy
 
   /**
    * Requests the seeds of `AGENTS.md`, `.agents/permission/policy.yaml` and the shared layout, written only when absent
@@ -118,10 +119,14 @@ class Agents {
   /**
    * Keeps each harness's local directory, such as `.claude/`, out of Git except for the links Cook makes there, so a
    * fresh clone reads the shared setup with no cooking while the files the harness writes locally stay out of commits.
-   * Also keeps out the files that would make a harness skip the shared setup.
+   * Also keeps out the files that would make a harness skip the shared setup. `cookedWith`, when given, names the
+   * recipe and the arguments that cook the section again, such as
+   * `io.github.lmarqs.cookbook:agents#connect --harness=claude`; it opens the section as a comment, because `cook.lock`
+   * records no arguments.
    */
-  void ignoreLocalDirectories(Collection<Harness> harnesses) {
+  void ignoreLocalDirectories(Collection<Harness> harnesses, String cookedWith = null) {
     ignoredHarnesses = (ignoredHarnesses + harnesses).unique()
+    ignoredBy = cookedWith
   }
 
   /**
@@ -168,10 +173,11 @@ class Agents {
   List<String> instructionsSection() { instructions ?: null }
 
   /**
-   * The `harnesses` section of `.gitignore`: for each harness `ignoreLocalDirectories` was given, its local directory
-   * re-included, such as `!/.claude/`, since Git cannot re-include a file whose parent directory an earlier rule
-   * excludes; then the directory's contents, such as `/.claude/*`, and a negation per link Cook makes there, such as
-   * `!/.claude/skills`; then the files each harness would read in place of the shared setup.
+   * The `harnesses` section of `.gitignore`: the comment naming the recipe and arguments that cook it, when given; then,
+   * for each harness `ignoreLocalDirectories` was given, its local directory re-included, such as `!/.claude/`, since
+   * Git cannot re-include a file whose parent directory an earlier rule excludes; then the directory's contents, such
+   * as `/.claude/*`, and a negation per link Cook makes there, such as `!/.claude/skills`; then the files each harness
+   * would read in place of the shared setup.
    */
   @Section(path = '.gitignore', id = 'harnesses')
   List<String> ignoredDirectories() {
@@ -179,7 +185,8 @@ class Agents {
       def local = ignored(harness)
       ["!${local}", "${local}*"] + harness.linkNames.collect { "!${local}${it}" }
     } + ignoredHarnesses.collectMany { it.ignoredFiles }
-    lines*.toString() ?: null
+    if (!lines) return null
+    ((ignoredBy ? ["# ${ignoredBy}"] : []) + lines)*.toString()
   }
 
   /** Whole files under `.agents/skills/<name>/`, when skills are added. */
