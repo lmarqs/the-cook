@@ -212,8 +212,8 @@ io.github.lmarqs.cookbook:ralph:0.0.0
 
 ralph-tui works through a tracker's tasks, a Beads epic or a JSON PRD, by running coding agents in a loop. This artifact
 sets it up so each run works unattended in a worktree of its own, `.worktrees/ralph/<name>` on the branch
-`ralph/<name>`, and connects to worker limits, worktree setup and mise only where the team names them. To set it up,
-cook `#ralph-tui`, whose help says what it writes and how to launch a run.
+`ralph/<name>`, and connects to worker limits and worktree setup only where the team names them. To set it up, cook
+`#ralph-tui`, whose help says what it writes and how to launch a run.
 
 Recipes
   io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
@@ -253,7 +253,6 @@ is given. What it publishes for people, sessions and other recipes:
 | `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | Runs ralph-tui in the run's worktree, as Run-time effects says |
 | `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and every `ralph-parallel/*` worktree and branch |
 | `.worktrees/ralph/<name>` on branch `ralph/<name>` | The rule for a run's worktree, following `.worktrees/<branch>` |
-| `mise run ralph:run …`, `mise run ralph:clean …` | The same scripts as mise tasks, with the same arguments, when the repository has a `mise.toml` |
 | `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` and with `--prd` |
 
 ## Consumes
@@ -266,7 +265,6 @@ is given. What it publishes for people, sessions and other recipes:
 - The `--settings` path as given: written into the configuration, never read or written at cook time. Workers
   resolve it in the run worktree, so it names a committed file by its path from the repository root, outside
   `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
-- `mise.toml` in the draft: when present, the mise wrappers are written. `mise.toml` itself is never changed.
 - `.worktrees/setup`, at run time, when it is executable in a new run worktree.
 - By hand first: `bun install -g ralph-tui@0.12.0`, and for `--epic`, a Beads database with the epic.
 
@@ -278,7 +276,6 @@ is given. What it publishes for people, sessions and other recipes:
 | `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
 | `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/.worktrees/ralph/` | Always | owned |
-| `.mise/tasks/ralph/run`, `.mise/tasks/ralph/clean` | Executable wrappers running `.ralph-tui/bin/run` and `clean` with their arguments | `mise.toml` in the draft | owned |
 
 The Claude entry runs `claude --permission-prompts none --permission-mode acceptEdits --print`: edits are accepted, and
 any command the settings do not allow is refused rather than asked, with `skipPermissions = false`. `--role` or
@@ -286,8 +283,8 @@ any command the settings do not allow is refused rather than asked, with `skipPe
 sandbox_workspace_write.network_access=false exec --sandbox workspace-write`: no approvals, no network, writes only in
 the worktree. Neither sets a model or an effort.
 
-Never touches: `AGENTS.md`, `.agents/permission/policy.yaml`, any settings or role file, version pins, `mise.toml`,
-remotes, pull requests, and the tracker's state.
+Never touches: `AGENTS.md`, `.agents/permission/policy.yaml`, any settings or role file, version pins, remotes, pull
+requests, and the tracker's state.
 
 ## Connections
 
@@ -298,7 +295,6 @@ remotes, pull requests, and the tracker's state.
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
 | The run worktree's setup | The team, in `.worktrees/setup`, which `bin/run` runs in each worktree it creates |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
-| The mise tasks | Cook, when `mise.toml` is in the draft |
 | Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry |
 | A line in `AGENTS.md` and the agents layout's Launching table | The team, from After cooking |
 | Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
@@ -327,8 +323,7 @@ on a `ralph-parallel/*` branch with that branch, then the branch `ralph/<name>`.
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as
 `# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex`. The seeds are never rewritten: to take
 other harnesses, a role or a newer version's configuration or prompts, edit them or delete them and cook again. A newer
-version rewrites the launcher, the section and the wrappers. Under `--check`, the wrappers show as a change once a
-`mise.toml` appears, until the recipe is cooked again.
+version rewrites the launcher and the section.
 
 ## Traps
 

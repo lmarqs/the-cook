@@ -230,25 +230,15 @@ roles:
     assert error.message.startsWith("${RALPH}: Missing --harness")
   }
 
-  @Test void writesTheMiseWrappersOnlyBesideAMiseFileAndLeavesItUntouched() {
+  @Test void writesNothingForMiseBesideAMiseFile() {
     def kitchen = kitchen()
-    cook(kitchen, RALPH, [harness: ['claude']]).commit()
-    assert !new File(kitchen, '.mise').exists()
-
     write(kitchen, 'mise.toml', '[tools]\njava = "17"\n')
+
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
 
     assert new File(kitchen, 'mise.toml').text == '[tools]\njava = "17"\n'
-    ['run', 'clean'].each {
-      def wrapper = new File(kitchen, ".mise/tasks/ralph/${it}")
-      assert Files.isExecutable(wrapper.toPath())
-      assert wrapper.readLines()[0] == '#!/bin/sh'
-      assert wrapper.readLines()[1].startsWith('#MISE description="')
-      assert wrapper.readLines()[2] == "exec .ralph-tui/bin/${it} \"\$@\""
-      assert launch(kitchen, 'sh', '-n', ".mise/tasks/ralph/${it}").exit == 0
-    }
-    assert new File(kitchen, 'cook.lock').text.contains('        - ".mise/tasks/ralph/clean"\n' +
-    '        - ".mise/tasks/ralph/run"\n')
+    assert !new File(kitchen, '.mise').exists()
+    assert !new File(kitchen, 'cook.lock').text.contains('mise')
   }
 
   @Test void theLauncherScriptsAreExecutableAndPassShellSyntaxChecks() {

@@ -10,8 +10,7 @@ package io.github.lmarqs.cookbook.ralph
  * from the directory it runs in, with Claude Code 2.1.306 and codex-cli 0.160.1 as its workers. The configuration has
  * one `[[agents]]` entry per harness: `defaultFlags` sits at the top of the entry and the plugin's settings under
  * `[agents.options]`, because ralph-tui 0.12 replaces a `defaultFlags` it finds under the options and silently drops
- * keys it does not know at the top of an entry. The launcher scripts are POSIX `sh`, and the mise wrappers are mise
- * file tasks.
+ * keys it does not know at the top of an entry. The launcher scripts are POSIX `sh`.
  *
  * Model, effort and further entries are the team's, in the seeded configuration. A model goes per run
  * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`); ralph-tui 0.12's Claude plugin accepts
@@ -68,7 +67,7 @@ package io.github.lmarqs.cookbook.ralph
  *
  * None: ralph-tui names the other tools only by path. Run worktrees follow `io.github.lmarqs.cookbook:git#worktrees`'s
  * rule `.worktrees/<branch>` and run its `.worktrees/setup`; `--role` reads the role files
- * `io.github.lmarqs.cookbook:agents#connect` renders; the mise wrappers need only a `mise.toml` in the draft.
+ * `io.github.lmarqs.cookbook:agents#connect` renders.
  */
 @Ingredient
 class RalphTui {
@@ -91,7 +90,6 @@ class RalphTui {
   private String role
   private String settings
   private String cookedWith
-  private boolean miseTasks
 
   /**
    * Sets the `[[agents]]` entries the seeded configuration gets, one per harness in the order given, the first as
@@ -159,9 +157,9 @@ class RalphTui {
   }
 
   /**
-   * Requests the owned launcher, `bin/run` and `bin/clean`, the `ralph-tui` section of `.gitignore`, and, while
-   * `mise.toml` is in the draft, the mise wrappers. `cookedWith` names the recipe and its arguments, which the
-   * section's first line records; it must not be blank. Call after `harnesses`, `role` and `settings`.
+   * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
+   * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
+   * `harnesses`, `role` and `settings`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -169,7 +167,6 @@ class RalphTui {
     }
 
     this.cookedWith = cookedWith
-    miseTasks = current('mise.toml') != null
   }
 
   /**
@@ -262,22 +259,6 @@ class RalphTui {
     ]
   }
 
-  /**
-   * The mise file tasks `ralph:run` and `ralph:clean`, each handing its arguments to the launcher script of its name.
-   */
-  @Files(path = '.mise/tasks/ralph', mode = '0755')
-  Map<String, String> miseWrappers() {
-    if (!(cookedWith && miseTasks)) {
-      return null
-    }
-
-    [
-      run: wrapper('run',
-      'Run ralph-tui in .worktrees/ralph/<name>: <name> (--epic <id> | --prd <file>) [--base <ref>]'),
-      clean: wrapper('clean', "Remove a ralph-tui run's worktrees and branches: <name> [--force]"),
-    ]
-  }
-
   private List<String> flags(String harness) {
     def extra = harness == 'claude' && role ? ['--settings', "${ROLES}/${role}.json".toString()] :
     harness == 'claude' && settings ? ['--settings', settings] : []
@@ -298,9 +279,5 @@ class RalphTui {
 
   private static String quoted(String value) {
     groovy.json.JsonOutput.toJson(value)
-  }
-
-  private static String wrapper(String script, String description) {
-    "#!/bin/sh\n#MISE description=${quoted(description)}\nexec .ralph-tui/bin/${script} \"\$@\"\n"
   }
 }

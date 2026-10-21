@@ -31,7 +31,7 @@ means. Connections are made at three times by three actors, and every recipe's h
 
 | When | Who | What | Examples |
 | --- | --- | --- | --- |
-| Cook time | Cook, automatically | Mechanical wiring with one correct form, cheap to undo | a hook script in `session-start.d/`, an ignore line, a mise wrapper |
+| Cook time | Cook, automatically | Mechanical wiring with one correct form, cheap to undo | a hook script in `session-start.d/`, an ignore line |
 | Cook time | The person, by parameter | Naming the other side of a connection | `--harness`, `--role`, `--settings`, `--share` |
 | Commit time | The team, in seeds it owns | Anything that expresses a policy | what a worker may do, which agent entries exist, how a worktree is set up |
 | Launch time | The session | Run-time choices | which agent entry, which epic or PRD, model, headless, serial or parallel, delivery |
@@ -90,9 +90,9 @@ answer for someone who never cooked `agents`.
 
 | | |
 | --- | --- |
-| API | `--harness=claude\|codex...` (required, many; the first is `defaultAgent`); `--role=<name>` or `--settings=<path>` (optional, exclusive, Claude entries only); `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run args…]`; `.ralph-tui/bin/clean <name> [--force]`; the rule `.worktrees/ralph/<name>` on `ralph/<name>`; `mise run ralph:run`, `ralph:clean` when `mise.toml` exists |
-| Produces | seeds: `config.toml` (one `[[agents]]` per harness, `tracker = "beads"`), `templates/beads.hbs`, `templates/json.hbs`; owned: `bin/run`, `bin/clean`, `.gitignore` section `ralph-tui`, mise task wrappers |
-| Consumes | `ralph-tui` and `git` at run time; `bd` only when a run passes `--epic`; `.worktrees/setup` when it exists; `--role`: `.agents/adapters/claude/roles/<name>.json` must be in the draft, refused otherwise; `--settings`: the path as given, never written; `mise.toml`, detected, for the wrappers only |
+| API | `--harness=claude\|codex...` (required, many; the first is `defaultAgent`); `--role=<name>` or `--settings=<path>` (optional, exclusive, Claude entries only); `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run args…]`; `.ralph-tui/bin/clean <name> [--force]`; the rule `.worktrees/ralph/<name>` on `ralph/<name>` |
+| Produces | seeds: `config.toml` (one `[[agents]]` per harness, `tracker = "beads"`), `templates/beads.hbs`, `templates/json.hbs`; owned: `bin/run`, `bin/clean`, `.gitignore` section `ralph-tui` |
+| Consumes | `ralph-tui` and `git` at run time; `bd` only when a run passes `--epic`; `.worktrees/setup` when it exists; `--role`: `.agents/adapters/claude/roles/<name>.json` must be in the draft, refused otherwise; `--settings`: the path as given, never written |
 | Never touches | `AGENTS.md`, `policy.yaml`, any settings or role file, version pins, remotes, pull requests, the tracker's state |
 
 ### Contact points
@@ -104,7 +104,6 @@ answer for someone who never cooked `agents`.
 | ralph → tracker | the session (`--epic` or `--prd`) |
 | ralph → worktree setup | the team (`.worktrees/setup`) |
 | ralph → base branch | the session (`--base`, default `HEAD`) |
-| ralph → mise | Cook (wrappers only) |
 | anything → `AGENTS.md` | the team, from each after-text |
 | anything → delivery | the session |
 
@@ -281,7 +280,7 @@ try and connect to worker limits only when I name them.
   with `git#worktrees` in both orders; with `beads#tracker` in one invocation.
 - [ ] `prd-story.groovy` and `bead-task.groovy` are deleted.
 
-### US-007: ralph#ralph-tui launcher, clean and mise tasks
+### US-007: ralph#ralph-tui launcher and clean
 **Description:** As whoever launches ralph (a person, a coordinating agent or a schedule), I want one launcher that
 names the worktree after the branch, so that every session finds, sets up and cleans runs the same way.
 
@@ -296,10 +295,10 @@ names the worktree after the branch, so that every session finds, sets up and cl
   or the worktree is dirty, unless `--force`; the message says a squash merge needs `--force`. It removes the run
   worktree, every worktree whose branch is `ralph-parallel/*` found through `git worktree list --porcelain`, those
   branches, and the run branch.
-- [ ] When `mise.toml` is in the draft: owns `.mise/tasks/ralph/run` and `clean` (0755, each
-  `exec .ralph-tui/bin/<name> "$@"`). No keys in `mise.toml`. The after-text gives `bun install -g ralph-tui@0.12.0`.
-- [ ] Tests: no mise files without `mise.toml`; with it, the wrappers, and `mise.toml` unchanged. The scripts are
-  executable in the kitchen and pass `sh -n`.
+- [ ] Writes nothing for mise or another task runner, `mise.toml` or not; the team exposes the scripts as tasks in
+  files it owns. The after-text gives `bun install -g ralph-tui@0.12.0`.
+- [ ] Tests: a `mise.toml` in the draft gets no `.mise/` and stays unchanged. The scripts are executable in the
+  kitchen and pass `sh -n`.
 - [ ] `cookbook/ralph/run.sh` is deleted.
 
 ### US-008: Publish the four cookbook artifacts
@@ -358,7 +357,7 @@ pointed at the new interface.
 - FR-3: `git#worktrees` takes no arguments and owns only its `.gitignore` section and a seeded README.
 - FR-4: `beads#tracker` cooks with no layout and no harness, and writes a hook only where the person or the draft names
   one.
-- FR-5: `ralph#ralph-tui` never writes outside `.ralph-tui/`, `.gitignore` and, with `mise.toml`, `.mise/tasks/ralph/`.
+- FR-5: `ralph#ralph-tui` never writes outside `.ralph-tui/` and `.gitignore`, and never writes for a task runner such as mise.
 - FR-6: `ralph#ralph-tui` writes no deny, settings, role or pin. Worker limits enter only through `--role`,
   `--settings` or an entry the team adds.
 - FR-7: Run worktrees live at `.worktrees/ralph/<name>` on branch `ralph/<name>`, based on `HEAD` unless `--base`.
@@ -386,7 +385,7 @@ pointed at the new interface.
   refuses to write through symlinks, which is what makes `beads --harness` safe beside the layout.
 - `cook.lock` records no arguments; the argument line in each owned section (FR-9) is what re-cooks and `--check` read.
 - A section that appears once its condition holds is drift under `--check`, by design; the Re-cooking help section
-  says so for `beads.sh` and the mise wrappers.
+  says so for `beads.sh`.
 - ralph-tui 0.12.0 verified: `--prd` without `--tracker` switches to `json`; `parallel.mode` defaults to `never`;
   `--variant` reaches neither Claude nor Codex; the worker environment loses only `*_API_KEY`, `*_SECRET_KEY`,
   `*_SECRET`; worker branches are `ralph-parallel/...`; `bd close <id> --force` is run by ralph-tui's own process.
