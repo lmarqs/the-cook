@@ -7,8 +7,8 @@ checkout's `git status`.
 ## The rule
 
 A worktree's path is its branch: branch `<branch>` is checked out at `.worktrees/<branch>`. People, agents and loop
-runners all follow it, so anyone can find a branch's worktree, and a branch with a `/`, such as `ralph/<name>`, sits
-in a subdirectory.
+runners all follow it, so anyone can find a branch's worktree, and a branch with a `/`, such as `fix/login`, sits in
+a subdirectory.
 
 ```sh
 git worktree add .worktrees/<branch> -b <branch>   # a new branch, from the current commit
@@ -20,9 +20,9 @@ git worktree prune                                 # forgets worktrees whose dir
 ## Setup
 
 A new worktree holds only the committed files. When a checkout needs more to run, the team writes `.worktrees/setup`,
-an executable that makes the worktree it runs in ready: it installs dependencies, runs `mise trust` when the project
-uses mise, and copies or creates the local files the checkout needs, such as an untracked `.env`. Everything here but
-this file is ignored, so commit it with `git add -f .worktrees/setup`; each worktree then carries its own copy:
+an executable that makes the worktree it runs in ready: it installs dependencies and tools, and copies or creates the
+local files the checkout needs, such as an untracked `.env`. Everything here but this file is ignored, so commit it
+with `git add -f .worktrees/setup`; each worktree then carries its own copy:
 
 ```sh
 git worktree add .worktrees/<branch> -b <branch>

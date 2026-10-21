@@ -27,7 +27,7 @@ rest |
 <file>` |
 | `.agents/hooks/session-start.d/<name>.sh` | Session context: each script's standard output reaches every connected \
 harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe owns \
-its own script there, such as `beads.sh`; the team writes its own beside them |
+its own script there, named after the tool; the team writes its own beside them |
 | `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
 | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
 
@@ -105,7 +105,7 @@ read when a session starts, so a recipe that writes one can be cooked before or 
 the harness name as `$1`, no standard input, and standard error discarded. It joins their standard output and prints
 it once as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<text>"}}`, which both
 harnesses add to the session. It prints nothing when the directory is missing or the scripts print nothing, and
-always exits 0. Name a script with a number first, such as `20-beads.sh`, to place it in the order.
+always exits 0. Name a script with a number first, such as `20-<tool>.sh`, to place it in the order.
 
 ## Re-cooking
 

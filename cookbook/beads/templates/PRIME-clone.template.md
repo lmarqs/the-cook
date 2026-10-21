@@ -16,6 +16,6 @@ cleared.
 
 ## Rules
 
-- A worker never closes its bead or pushes. A loop runner, such as ralph-tui, runs workers unattended and closes the
-  bead itself once the worker reports the task complete; delivery is the choice of the person who started the session.
+- A worker never closes its bead or pushes. A loop runner runs workers unattended and closes the bead itself once
+  the worker reports the task complete; delivery is the choice of the person who started the session.
 - The issues have no remote: never run `bd sync`, `bd dolt push` or `bd dolt pull`.

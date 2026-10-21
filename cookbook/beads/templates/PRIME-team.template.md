@@ -17,7 +17,7 @@ file at session start; run it again after the context is compacted or cleared.
 
 ## Rules
 
-- A worker never closes its bead or pushes. A loop runner, such as ralph-tui, runs workers unattended and closes the
-  bead itself once the worker reports the task complete; delivery is the choice of the person who started the session.
+- A worker never closes its bead or pushes. A loop runner runs workers unattended and closes the bead itself once
+  the worker reports the task complete; delivery is the choice of the person who started the session.
 - `bd sync` pulls the team's changes to the issues, resolves conflicts and pushes; only the person who started the
   session runs it, never a worker.

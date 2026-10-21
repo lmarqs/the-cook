@@ -75,7 +75,7 @@ recipes:
       'git worktree remove .worktrees/<branch>',
       'git worktree prune',
       '`.worktrees/setup`',
-      'mise trust',
+      'installs dependencies',
       'the stash',
     ].each { assert text.contains(it) }
   }
