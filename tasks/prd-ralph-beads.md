@@ -78,6 +78,10 @@ so that the recipes encode what the tools do rather than what their docs say.
   project's `.claude/settings.json` stays in effect.
 - [ ] A Claude `hooks.SessionStart` hook and a Codex session-start hook that run one dispatcher script both add its
   plain-text output to the session context. The exact Codex `hooks.json` shape is recorded.
+- [ ] With `tracker = "beads"` in the config and no `bd` on `PATH`, `ralph-tui run --prd ./prd.json` completes one
+  story with the fake agent.
+- [ ] `claude --print --settings .ralph-tui/worker/claude.json` refuses `bd update <id> --status closed`, and the
+  deny rule that does it is recorded.
 - [ ] Recorded: whether `bd update` from a Codex `workspace-write` worker with network off reaches the database
   through git's common directory, outside the worktree.
 - [ ] Recorded: the exact lines bd 1.3.1 writes to ignore files on `bd init`, for `beads#tracker --share=team`.
@@ -146,29 +150,30 @@ prime text and the agent hook, so that `bd init` is the only manual step.
 that a run is unattended and safe on the first try.
 
 **Acceptance Criteria:**
-- [ ] `--tracker` has choices `beads` and `json`, default `beads`. `--agent` is many and required, with choices
-  `claude` and `codex`; `defaultAgent` is the first.
-- [ ] Seeds `.ralph-tui/config.toml` with `configVersion = "2.1"`, `tracker`, `defaultAgent`, `maxIterations = 10`,
-  `autoCommit = true`, `[trackerOptions] beadsDir = ".beads"` (beads only), `[errorHandling] strategy = "skip"`,
+- [ ] `--agent` is the only parameter: many and required, with choices `claude` and `codex`; `defaultAgent` is the
+  first. There is no tracker parameter: `bin/run` passes `--epic` or `--prd` per run, and ralph-tui switches to the
+  json tracker when given `--prd` without `--tracker`.
+- [ ] Seeds `.ralph-tui/config.toml` with `configVersion = "2.1"`, `tracker = "beads"`, `defaultAgent`,
+  `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`,
   `[parallel] directMerge = true` and one `[[agents]]` per agent. Plugin settings sit under `[agents.options]`,
   because ralph-tui 0.12 drops unknown top-level agent keys. Claude:
   `defaultFlags = ["--permission-prompts", "none", "--settings", ".ralph-tui/worker/claude.json"]`,
   `skipPermissions = false`. Codex:
   `defaultFlags = ["-c", "approval_policy=never", "-c", "sandbox_workspace_write.network_access=false"]`,
   `fullAuto = false`, `sandbox = "workspace-write"`.
-- [ ] Seeds `.ralph-tui/templates/beads.hbs` or `json.hbs`, by `--tracker`. Both prompts say: stay in this worktree,
-  commit small, never push, print `<promise>COMPLETE</promise>` only after the checks pass, print `BLOCKED:`
+- [ ] Seeds both `.ralph-tui/templates/beads.hbs` and `json.hbs`; ralph-tui loads `<tracker>.hbs` for the tracker
+  a run uses. Both prompts say: stay in this worktree, commit small, never push, print `<promise>COMPLETE</promise>` only after the checks pass, print `BLOCKED:`
   otherwise. `beads.hbs` adds "never close the bead"; `json.hbs` adds "never edit the PRD file", because ralph-tui
   marks the story done.
 - [ ] With `--agent=claude`, owns `.ralph-tui/worker/claude.json` with `permissions.deny` for `git push`,
-  `bd close`, `bd create`, `bd delete`, `bd reopen`, `bd dolt push`, `git worktree`, `ralph-tui` and
-  `.ralph-tui/bin/*`.
+  `bd close`, `bd update` setting status `closed` (in the form US-001 proved), `bd create`, `bd delete`,
+  `bd reopen`, `bd dolt push`, `git worktree`, `ralph-tui` and `.ralph-tui/bin/*`. ralph-tui closes the bead itself,
+  from its own process (`bd close <id> --force`), so the denies never block it.
 - [ ] Owns `.gitignore` section `ralph-tui`: `/.ralph-tui/*`, `!/.ralph-tui/config.toml`, `!/.ralph-tui/templates/`,
   `!/.ralph-tui/worker/`, `!/.ralph-tui/bin/`, `/.worktrees/*`, `!/.worktrees/README.md`.
 - [ ] No `AGENTS.md` section. `RalphTui`'s class doc, rendered by `./cook help`, names the ralph-tui 0.12 and bd 1.3
   traps and Codex's per-path hook trust.
-- [ ] Tests: both agents on an empty kitchen (exact seed text, worker file, exact `cook.lock`); `--tracker=json`;
-  with `git#worktrees` in both orders, `.worktrees/README.md` stays tracked; with `beads#tracker` in one invocation.
+- [ ] Tests: both agents on an empty kitchen (exact seed text, worker file, exact `cook.lock`); with `git#worktrees` in both orders, `.worktrees/README.md` stays tracked; with `beads#tracker` in one invocation.
 - [ ] `prd-story.groovy` and `bead-task.groovy` are deleted.
 
 ### US-006: ralph#ralph-tui launcher, clean and mise tasks
@@ -221,7 +226,7 @@ names the worktree after the branch, so that every session finds and cleans runs
 - [ ] `.ralph-tui/bin/run <epic> --headless` with the fake agent completes one bead in `.worktrees/ralph/<epic>`, and
   `.ralph-tui/bin/clean <epic>` removes it after merge.
 - [ ] In a second fresh scratch repository, with no Beads and no layout: cook only
-  `ralph#ralph-tui --tracker=json --agent=claude`. `.ralph-tui/bin/run tasks/prd.json --headless` with the fake agent
+  `ralph#ralph-tui --agent=claude`, and `bd` is not on `PATH`. `.ralph-tui/bin/run tasks/prd.json --headless` with the fake agent
   completes one story in `.worktrees/ralph/prd`, and nothing under `.beads/` is created.
 - [ ] Results go on #42. A defect gets a `fix` commit with a test that failed before it.
 
