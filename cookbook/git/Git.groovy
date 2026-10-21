@@ -97,10 +97,10 @@ class Git {
 
   /**
    * `.worktrees/README.md`, seeded when absent and never owned: the rule, the `git worktree` commands, the setup
-   * script and the traps of worktrees inside the repository, when the worktree root is requested.
+   * script and the state every worktree shares, when the worktree root is requested.
    */
   @Seed(path = '.worktrees/README.md')
   String worktreesReadme() {
-    worktreesCookedWith ? resource('templates/worktrees-README.template.md') : null
+    worktreesCookedWith ? resource('templates/README.template.md') : null
   }
 }

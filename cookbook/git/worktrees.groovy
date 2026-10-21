@@ -54,8 +54,6 @@ edited by hand or the README deleted.
 - Tools that walk the directory without reading `.gitignore`, such as a linter given a glob, see every worktree's copy
   of the sources: exclude `.worktrees/` in their own settings.
 - `/.worktrees/*` ignores `.worktrees/setup` too: commit it with `git add -f`.
-- Claude Code in a worktree reads that worktree's `AGENTS.md`, and a `CLAUDE.local.md` in the main checkout reaches it
-  and turns that `AGENTS.md` off.
 ''')
 @yield('''
 Commit `.gitignore` and `.worktrees/README.md`. When a new worktree needs more than a checkout to run, write

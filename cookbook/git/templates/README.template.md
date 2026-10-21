@@ -34,10 +34,5 @@ worktree is used as checked out.
 
 ## Traps
 
-- Claude Code started in a worktree reads that worktree's own `AGENTS.md`, not the main checkout's. Commit a change
-  to `AGENTS.md` before creating the worktrees that should see it.
-- A `CLAUDE.local.md` in the main checkout, or in any directory between it and a worktree, reaches every worktree
-  here, and while it exists Claude Code skips the worktree's `AGENTS.md`. Keep `CLAUDE.local.md` out of the main
-  checkout.
 - Branches, the stash and anything else kept in the clone are shared by every worktree: stashing or deleting a
   branch in one reaches all of them.

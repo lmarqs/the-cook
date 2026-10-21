@@ -203,8 +203,8 @@ make them runnable the same way.
 - [ ] It seeds `.worktrees/README.md`: what the directory is; the rule `.worktrees/<branch>`;
   `git worktree add .worktrees/<branch> -b <branch>`, `git worktree remove .worktrees/<branch>` and
   `git worktree prune`; `.worktrees/setup`, an optional executable the team writes and runs in a new worktree
-  (dependencies, `mise trust`, local files), which runners run too; the in-repo traps from `design.md` (Claude loads
-  the worktree's own `AGENTS.md`; a `CLAUDE.local.md` in the main checkout reaches the worktree and turns it off).
+  (dependencies, `mise trust`, local files), which runners run too; the state every worktree shares (branches, the
+  stash). It names no harness: how a harness reads a worktree is the agents layout's, in its `design.md`.
 - [ ] Tests: exact files and `cook.lock` on an empty kitchen; a second cook prints `Already cooked.`; a hand-edited
   README is kept; `git check-ignore` passes on `.worktrees/x/a` and not on `.worktrees/README.md`.
 - [ ] `./cook help io.github.lmarqs.cookbook:git#worktrees` renders the standard's sections.

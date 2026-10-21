@@ -13,7 +13,7 @@ import thecook.cookbook.RecipeSource
 
 class GitWorktreesCookTest {
   private static final String WORKTREES = 'io.github.lmarqs.cookbook:git:0.1.0#worktrees'
-  private static final File README = new File(COOKBOOK, 'git/templates/worktrees-README.template.md')
+  private static final File README = new File(COOKBOOK, 'git/templates/README.template.md')
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
@@ -76,8 +76,7 @@ recipes:
       'git worktree prune',
       '`.worktrees/setup`',
       'mise trust',
-      '`AGENTS.md`',
-      '`CLAUDE.local.md`',
+      'the stash',
     ].each { assert text.contains(it) }
   }
 
