@@ -92,6 +92,27 @@ recipes:
     assert texts.yieldText
   }
 
+  @Test void theIgnoreSectionOpensWithTheArgumentLineItIsGiven() {
+    def kitchen = folder.newFolder('kitchen')
+    publishDirectory(kitchen, 'git', ['patterns.groovy': '''@help('Ignores build output.')
+import io.github.lmarqs.cookbook.git.Git
+
+@ingredient(Git) def git
+
+git.ignoredBy('io.github.lmarqs.cookbook:git#patterns')
+git.ignore('/build/', '/build/')
+'''])
+
+    cook(kitchen, 'io.github.lmarqs.cookbook:git:0.1.0#patterns').commit()
+
+    assert new File(kitchen, '.gitignore').text == '''\
+# cook:begin io.github.lmarqs.cookbook:git#patterns/ignore
+# io.github.lmarqs.cookbook:git#patterns
+/build/
+# cook:end io.github.lmarqs.cookbook:git#patterns/ignore
+'''
+  }
+
   private File kitchen() {
     def kitchen = folder.newFolder('kitchen')
     publishDirectory(kitchen, 'git')

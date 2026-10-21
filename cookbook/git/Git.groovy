@@ -39,6 +39,7 @@ class Git {
 
   private List<String> patterns = []
   private String worktreesCookedWith
+  private String ignoreCookedWith
 
   /** Adds Git ignore patterns as individual strings, relative to this instance's directory. */
   void ignore(String... values) { patterns += values.toList() }
@@ -56,9 +57,20 @@ class Git {
     worktreesCookedWith = cookedWith
   }
 
-  /** The `ignore` section of `.gitignore`, with duplicate patterns removed, when patterns are added. */
+  /** Names the recipe and its arguments, which the `ignore` section opens with as a comment. */
+  void ignoredBy(String cookedWith) { ignoreCookedWith = cookedWith }
+
+  /**
+   * The `ignore` section of `.gitignore`, with duplicate patterns removed, when patterns are added; it opens with the
+   * line `ignoredBy` names, when given.
+   */
   @Section(path = '.gitignore', id = 'ignore')
-  List<String> ignoreSection() { patterns.unique() ?: null }
+  List<String> ignoreSection() {
+    if (!patterns) {
+      return null
+    }
+    (ignoreCookedWith ? ["# ${ignoreCookedWith}".toString()] : []) + patterns.unique()
+  }
 
   /**
    * The `worktrees` section of `.gitignore`: a comment naming the recipe, then `/.worktrees/*` and

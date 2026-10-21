@@ -52,7 +52,9 @@ agents.instruct(
   '',
   'Core, infra, the CLI, and cookbook ingredients and recipes are Groovy.',
   'Build and verify changes with ./gradlew check cliBuild.')
-agents.permit(harnesses)
+def cookedWith = 'io.github.lmarqs.cookbook:cook#setup'
+agents.permit(harnesses, cookedWith)
 agents.connect(harnesses)
 
+git.ignoredBy(cookedWith)
 git.ignore(claude.localFiles)
