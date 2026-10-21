@@ -31,6 +31,9 @@ tasks.named('test') {
   inputs.file('src/wrapper/cook')
   systemProperty 'cook.wrapper', file('src/wrapper/cook').absolutePath
   systemProperty 'cook.version', version
+  // The cookbook README's rendered help is checked against the help of the repository's own cookbook.
+  inputs.files(fileTree('../cookbook') { exclude 'build/**', '.gradle/**' })
+  systemProperty 'cook.repository', file('..').absolutePath
   useJUnit(); testLogging {
     events 'failed'
   }

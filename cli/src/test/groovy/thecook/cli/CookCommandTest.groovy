@@ -183,6 +183,20 @@ After cooking
     }
   }
 
+  @Test void theCookbookReadmesRenderedHelpIsWhatHelpPrints() {
+    def repository = new File(System.getProperty('cook.repository'))
+    def readme = new File(repository, 'cookbook/README.md').getText('UTF-8')
+    def examples = (readme =~ /(?s)````text\n\$ \.\/cook help (\S+)\n(.*?)````\n/).collect { [it[1], it[2]] }
+    assert examples
+
+    examples.each { address, rendered ->
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      assert command(stdout, stderr).execute(['-C', repository.path, 'help', address] as String[]) == 0 :
+      stderr.toString('UTF-8')
+      assert stdout.toString('UTF-8') == rendered
+    }
+  }
+
   @Test void helpReadsRecipesAndFrontPagesFromTheKitchensRepositories() {
     workspace { root, repo ->
       def jar = new File(repo, 'repository/acme/notes/1.2.3/notes-1.2.3.jar'); jar.parentFile.mkdirs()
