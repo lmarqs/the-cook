@@ -29,8 +29,8 @@ git worktree add .worktrees/<branch> -b <branch>
 cd .worktrees/<branch> && .worktrees/setup
 ```
 
-Loop runners that follow the rule run it too, in each worktree they create, when it is executable. Without it, a
-worktree is used as checked out.
+A loop runner runs it in each worktree it creates when its own configuration names the file. Without it, a worktree
+is used as checked out.
 
 ## Traps
 
