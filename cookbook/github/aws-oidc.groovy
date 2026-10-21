@@ -27,7 +27,8 @@ the same arguments again leaves the declared step and grants unchanged.
 
 ## With other recipes
 
-`io.github.lmarqs.cookbook:github:<version>#cache-key` changes a separate step input in the same workflow. Distinct jobs,
+`io.github.lmarqs.cookbook:github:<version>#cache-key` changes a separate step input in the same workflow. Distinct \
+jobs,
 step ids and permission grants compose independently; the last recipe declaring the same target supplies it.
 ''')
 @confirm('''
@@ -36,11 +37,15 @@ The selected job's next run assumes the selected IAM role in AWS, with whatever 
 import io.github.lmarqs.cookbook.aws.Aws
 import io.github.lmarqs.cookbook.github.Workflow
 
-@param(value = ['workflow'], doc = 'Workflow path relative to the instance directory, such as .github/workflows/ci.yml') String workflow
+@param(value = ['workflow'],
+    doc = 'Workflow path relative to the instance directory, such as .github/workflows/ci.yml')
+    String workflow
 @param(value = ['job'], doc = 'The job to change') String jobName
 @param(value = ['region'], doc = 'AWS region') String region
 @param(value = ['role'], doc = 'IAM role to assume') String role
-@param(value = ['placement'], default = 'start', doc = 'start, end, before:<step id> or after:<step id>') String placement
+@param(value = ['placement'], default = 'start',
+    doc = 'start, end, before:<step id> or after:<step id>')
+    String placement
 
 @ingredient(Workflow) def ci
 @ingredient(Aws) def aws

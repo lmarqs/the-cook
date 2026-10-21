@@ -27,7 +27,8 @@ lock file; use the lock task to create or refresh it.
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:node:<version>#dependency` with the same manager and `--dir=.` to add a dependency to this
+Cook `io.github.lmarqs.cookbook:node:<version>#dependency` with the same manager and `--dir=.` to add a dependency to \
+this
 project. Its dependency keys compose with the engine and manager keys; refresh the lock file after changes.
 Other recipes can add distinct tool pins and tasks in the same `mise.toml`.
 ''')
@@ -40,8 +41,12 @@ import io.github.lmarqs.cookbook.mise.Mise
 import io.github.lmarqs.cookbook.git.Git
 
 @param(value = ['node'], default = '22', doc = 'The Node version') String nodeVersion
-@param(value = ['manager'], choices = ['npm', 'yarn'], default = 'npm', doc = 'The package manager for the project tools and tasks') String manager
-@param(value = ['manager-version'], default = [], doc = 'The package manager version to pin, or its default when unset') String managerVersion
+@param(value = ['manager'], choices = ['npm', 'yarn'], default = 'npm',
+    doc = 'The package manager for the project tools and tasks')
+    String manager
+@param(value = ['manager-version'], default = [],
+    doc = 'The package manager version to pin, or its default when unset')
+    String managerVersion
 
 @ingredient(Node) def node
 @ingredient(Mise) def mise

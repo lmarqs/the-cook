@@ -13,16 +13,21 @@ no cooking; everything else in the harness directories is ignored in Git.
 # A team that uses Claude Code and Codex
 ./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
 # A new repository: the layout and its connection in one invocation
-./cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+./cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect \
+--harness=claude
 ```
 
 Paths other recipes, launchers and people rely on:
 
 | Path | What it is |
 | --- | --- |
-| `.agents/adapters/<harness>/` | Each harness's settings; Cook owns only the keys it renders, and the team writes the rest |
-| `.agents/adapters/claude/roles/<role>.json` | A role's denies, added to one Claude run with `claude --settings <file>` |
-| `.agents/hooks/session-start.d/<name>.sh` | Session context: each script's standard output reaches every connected harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe owns its own script there, such as `beads.sh`; the team writes its own beside them |
+| `.agents/adapters/<harness>/` | Each harness's settings; Cook owns only the keys it renders, and the team writes the \
+rest |
+| `.agents/adapters/claude/roles/<role>.json` | A role's denies, added to one Claude run with `claude --settings \
+<file>` |
+| `.agents/hooks/session-start.d/<name>.sh` | Session context: each script's standard output reaches every connected \
+harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe owns \
+its own script there, such as `beads.sh`; the team writes its own beside them |
 | `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
 | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
 
@@ -48,16 +53,27 @@ Paths other recipes, launchers and people rely on:
 | `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
 | `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories | Always, when absent | seed |
 | `.agents/hooks/session-start` | The session-start dispatcher, mode 0755 | Always | owned |
-| `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's `bypass` is `refuse` | `--harness=claude` | owned |
-| `.agents/adapters/claude/settings.json` | `hooks.SessionStart`, running `"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude` | `--harness=claude` | owned |
+| `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's \
+`bypass` is `refuse` | `--harness=claude` | owned |
+| `.agents/adapters/claude/settings.json` | `hooks.SessionStart`, running \
+`"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude` | `--harness=claude` | owned |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` | link |
-| `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles | owned |
-| `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude finds skills and commands | `--harness=claude` | link |
-| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | `--harness=codex` | owned |
-| `.agents/adapters/codex/hooks.json` | `hooks.SessionStart`: one entry for `startup\\|resume\\|clear` running the dispatcher with `codex`, found from the root that `git rev-parse --show-toplevel` prints | `--harness=codex` | owned |
-| `.agents/adapters/codex/rules/cook.rules` | The section `commands`: the argument line, a comment on the runs Codex cannot refuse while `bypass` is `refuse`, then one rule per command entry | `--harness=codex` and the policy has command rules | owned |
-| `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` | link |
-| `.gitignore` | The section `harnesses`: the argument line; each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
+| `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings \
+<file>` | `--harness=claude` and the policy has roles | owned |
+| `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude \
+finds skills and commands | `--harness=claude` | link |
+| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | \
+`--harness=codex` | owned |
+| `.agents/adapters/codex/hooks.json` | `hooks.SessionStart`: one entry for `startup\\|resume\\|clear` running the \
+dispatcher with `codex`, found from the root that `git rev-parse --show-toplevel` prints | `--harness=codex` | owned |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`: the argument line, a comment on the runs Codex \
+cannot refuse while `bypass` is `refuse`, then one rule per command entry | `--harness=codex` and the policy has \
+command rules | owned |
+| `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in \
+`../.agents/adapters/codex/` | `--harness=codex` | link |
+| `.gitignore` | The section `harnesses`: the argument line; each selected harness's directory re-included over an \
+earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and \
+`**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
 
 Cooking with fewer harnesses removes the outputs of the ones left out.
 
@@ -71,9 +87,12 @@ Never touches: `AGENTS.md`; every other key in the adapter files, such as the ot
 | --- | --- |
 | The layout to each harness | The person, by `--harness` |
 | The policy to each harness's settings | Cook, rendering the team's policy |
-| A tool's session context to every harness | Cook, when the tool's recipe writes its script into `.agents/hooks/session-start.d/`; the team, writing its own there |
-| A role to a Claude run | The session, launching `claude --settings .agents/adapters/claude/roles/<role>.json`; the Launching table in `.agents/README.md` lists the commands |
-| The team's other hooks to each harness | The team, under `hooks` in `.claude/settings.json` and `.agents/adapters/codex/hooks.json` |
+| A tool's session context to every harness | Cook, when the tool's recipe writes its script into \
+`.agents/hooks/session-start.d/`; the team, writing its own there |
+| A role to a Claude run | The session, launching `claude --settings .agents/adapters/claude/roles/<role>.json`; the \
+Launching table in `.agents/README.md` lists the commands |
+| The team's other hooks to each harness | The team, under `hooks` in `.claude/settings.json` and \
+`.agents/adapters/codex/hooks.json` |
 | Shared skills and commands to Claude | Cook, by the `.claude/skills` and `.claude/commands` links |
 
 `io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects: cook it first, or before
@@ -122,8 +141,9 @@ import io.github.lmarqs.cookbook.agents.Agents
 import io.github.lmarqs.cookbook.agents.Claude
 import io.github.lmarqs.cookbook.agents.Codex
 
-@param(value = ['harness'], choices = ['claude', 'codex'], many = true, doc = 'Harnesses to connect to the shared layout')
-String[] harness
+@param(value = ['harness'], choices = ['claude', 'codex'], many = true,
+    doc = 'Harnesses to connect to the shared layout')
+    String[] harness
 
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude

@@ -36,7 +36,9 @@ package io.github.lmarqs.cookbook.beads
  */
 @Ingredient
 class Beads {
-  /** Who shares the issues: `team` commits bd's configuration and syncs through a Dolt remote; `clone` keeps them local. */
+  /**
+   * Who shares the issues: `team` commits bd's configuration and syncs through a Dolt remote; `clone` keeps them local.
+   */
   static final List<String> SHARES = ['team', 'clone']
 
   /** The harnesses whose own hook file can run `bd prime`, in the order the argument line names them. */
@@ -61,8 +63,14 @@ class Beads {
    * first line records; it must not be blank. Rejects any other share.
    */
   void track(String share, String cookedWith) {
-    if (!(share in SHARES)) throw new IllegalArgumentException("Beads is shared by ${SHARES.join(' or ')}, not ${share}")
-    if (!cookedWith?.trim()) throw new IllegalArgumentException('track needs the recipe it is cooked with')
+    if (!(share in SHARES)) {
+      throw new IllegalArgumentException("Beads is shared by ${SHARES.join(' or ')}, not ${share}")
+    }
+
+    if (!cookedWith?.trim()) {
+      throw new IllegalArgumentException('track needs the recipe it is cooked with')
+    }
+
     this.share = share
     this.cookedWith = cookedWith
     layout = LAYOUT_HOOKS.any { current(it) != null }
@@ -75,14 +83,20 @@ class Beads {
    */
   void prime(Collection<String> names) {
     def unknown = names - HARNESSES
-    if (unknown) throw new IllegalArgumentException("Beads primes ${HARNESSES.join(' or ')}, not ${unknown.join(', ')}")
+
+    if (unknown) {
+      throw new IllegalArgumentException("Beads primes ${HARNESSES.join(' or ')}, not ${unknown.join(', ')}")
+    }
+
     def selected = HARNESSES.findAll { it in names }
+
     if (selected && layout) {
       def flags = selected.collect { "--harness=${it}" }.join(' ')
       throw new IllegalArgumentException("${flags} writes the harness's own hook file, which the agents layout " +
-          "connects\n  the agents layout is in the draft, and ${SESSION_START_SCRIPT} gives bd prime to every harness " +
-          "it connects\n  leave out --harness, and cook ${CONNECT} ${flags}")
+      "connects\n  the agents layout is in the draft, and ${SESSION_START_SCRIPT} gives bd prime to every harness " +
+      "it connects\n  leave out --harness, and cook ${CONNECT} ${flags}")
     }
+
     harnesses = selected
   }
 
@@ -92,14 +106,22 @@ class Beads {
    */
   @Section(path = '.gitignore', id = 'beads')
   List<String> ignoreSection() {
-    if (!cookedWith) return null
+    if (!cookedWith) {
+      return null
+    }
+
     def rules = share == 'clone' ? ['/.beads/*', '!/.beads/PRIME.md'] : ['/.beads/issues.jsonl']
     (["# ${cookedWith}"] + rules)*.toString()
   }
 
-  /** `.beads/PRIME.md`, seeded when absent and never owned: the workflow and rules for the share, which `bd prime` prints. */
+  /**
+   * `.beads/PRIME.md`, seeded when absent and never owned: the workflow and rules for the share, which `bd prime`
+   * prints.
+   */
   @Seed(path = '.beads/PRIME.md')
-  String primeText() { share ? resource("templates/PRIME-${share}.template.md") : null }
+  String primeText() {
+    share ? resource("templates/PRIME-${share}.template.md") : null
+  }
 
   /** `hooks.SessionStart` in `.claude/settings.json`, one command hook running `bd prime`, when `claude` is primed. */
   @Key(path = '.claude/settings.json', segments = ['hooks', 'SessionStart'])
@@ -122,5 +144,7 @@ class Beads {
    * missing, when the tracker is requested and `.agents/hooks/` is in the draft.
    */
   @File(path = '.agents/hooks/session-start.d/beads.sh', mode = '0755')
-  String sessionStartScript() { cookedWith && layout ? resource('hooks/beads.sh') : null }
+  String sessionStartScript() {
+    cookedWith && layout ? resource('hooks/beads.sh') : null
+  }
 }

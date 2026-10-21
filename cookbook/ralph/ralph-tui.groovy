@@ -21,11 +21,15 @@ is given. What it publishes for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
-| `.ralph-tui/bin/run <name> (--epic <id> \\| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | Runs ralph-tui in the run's worktree, as Run-time effects says |
-| `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and every `ralph-parallel/*` worktree and branch |
+| `.ralph-tui/bin/run <name> (--epic <id> \\| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | \
+Runs ralph-tui in the run's worktree, as Run-time effects says |
+| `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and every \
+`ralph-parallel/*` worktree and branch |
 | `.worktrees/ralph/<name>` on branch `ralph/<name>` | The rule for a run's worktree, following `.worktrees/<branch>` |
-| `mise run ralph:run …`, `mise run ralph:clean …` | The same scripts as mise tasks, with the same arguments, when the repository has a `mise.toml` |
-| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` and with `--prd` |
+| `mise run ralph:run …`, `mise run ralph:clean …` | The same scripts as mise tasks, with the same arguments, \
+when the repository has a `mise.toml` |
+| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` and \
+with `--prd` |
 
 ## Consumes
 
@@ -45,11 +49,18 @@ is given. What it publishes for people, sessions and other recipes:
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"`, the first harness as `defaultAgent`, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness | Always, when absent | seed |
-| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"`, the first harness as `defaultAgent`, \
+`maxIterations = 10`, `autoCommit = true`, \
+`[errorHandling] strategy = "skip"`, `[parallel] directMerge = true`, \
+and one `[[agents]]` entry per harness | Always, when absent | seed |
+| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts: stay in this worktree, \
+leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and \
+`BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
-| `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/.worktrees/ralph/` | Always | owned |
-| `.mise/tasks/ralph/run`, `.mise/tasks/ralph/clean` | Executable wrappers running `.ralph-tui/bin/run` and `clean` with their arguments | `mise.toml` in the draft | owned |
+| `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, \
+prompts and launcher, and `/.worktrees/ralph/` | Always | owned |
+| `.mise/tasks/ralph/run`, `.mise/tasks/ralph/clean` | \
+Executable wrappers running `.ralph-tui/bin/run` and `clean` with their arguments | `mise.toml` in the draft | owned |
 
 The Claude entry runs `claude --permission-prompts none --permission-mode acceptEdits --print`: edits are accepted, and
 any command the settings do not allow is refused rather than asked, with `skipPermissions = false`. `--role` or
@@ -64,7 +75,8 @@ remotes, pull requests, and the tracker's state.
 
 | Contact | Made by |
 | --- | --- |
-| What a Claude worker may do | The person, by `--role` or `--settings`; the team, by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
+| What a Claude worker may do | The person, by `--role` or `--settings`; the team, \
+by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
 | What a Codex worker may do | Codex's `workspace-write` sandbox, in the seeded entry |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
 | The run worktree's setup | The team, in `.worktrees/setup`, which `bin/run` runs in each worktree it creates |
@@ -125,19 +137,28 @@ to the Launching table in `.agents/README.md`.
 ''')
 import io.github.lmarqs.cookbook.ralph.RalphTui
 
-@param(value = ['harness'], choices = ['claude', 'codex'], many = true, doc = 'Harnesses ralph-tui drives, one agent entry each; the first is the default')
-String[] harness
-@param(value = ['role'], default = [], doc = 'A role of the agents layout whose rendered Claude settings the claude entry passes with --settings')
-String role
+@param(value = ['harness'], choices = ['claude', 'codex'], many = true,
+    doc = 'Harnesses ralph-tui drives, one agent entry each; the first is the default')
+    String[] harness
+@param(value = ['role'], default = [],
+    doc = 'A role of the agents layout whose rendered Claude settings the claude entry passes with --settings')
+    String role
 @param(value = ['settings'], default = [], doc = 'A Claude settings file the claude entry passes with --settings')
-String settings
+    String settings
 
 @ingredient(RalphTui) def ralph
 
 List<String> harnesses = (harness as List<String>).unique(false)
 ralph.harnesses(harnesses)
-if (settings != null) ralph.settings(settings)
-if (role != null) ralph.role(role)
+
+if (settings != null) {
+  ralph.settings(settings)
+}
+
+if (role != null) {
+  ralph.role(role)
+}
+
 def arguments = harnesses.collect { "--harness=${it}" } +
-    (role != null ? ["--role=${role}"] : []) + (settings != null ? ["--settings=${settings}"] : [])
+(role != null ? ["--role=${role}"] : []) + (settings != null ? ["--settings=${settings}"] : [])
 ralph.install((['io.github.lmarqs.cookbook:ralph#ralph-tui'] + arguments).join(' '))

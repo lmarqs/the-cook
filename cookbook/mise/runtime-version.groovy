@@ -35,7 +35,9 @@ import io.github.lmarqs.cookbook.mise.Mise
 import io.github.lmarqs.cookbook.node.Node
 import io.github.lmarqs.cookbook.python.Python
 
-@param(value = ['runtime'], choices = ['node', 'python'], doc = 'The runtime whose version moves to mise') String runtime
+@param(value = ['runtime'], choices = ['node', 'python'],
+    doc = 'The runtime whose version moves to mise')
+    String runtime
 @param(value = ['version'], doc = 'The version mise pins') String version
 
 @ingredient(Mise) def mise

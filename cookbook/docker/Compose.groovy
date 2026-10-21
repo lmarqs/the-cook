@@ -39,14 +39,21 @@ class Compose {
 
   /** Adds or replaces a service's whole definition map; an empty or null definition is rejected. */
   void service(String name, Map definition) {
-    if (!definition) throw new IllegalArgumentException("Service ${name} needs a definition")
+    if (!definition) {
+      throw new IllegalArgumentException("Service ${name} needs a definition")
+    }
+
     services[name] = definition
   }
 
   /** Supplies a command to check the selected Compose file with `docker compose config` in the instance's directory. */
-  Map validateCommand() { [run: [['docker', 'compose', '-f', file, 'config']], dir: directory] }
+  Map validateCommand() {
+    [run: [['docker', 'compose', '-f', file, 'config']], dir: directory]
+  }
 
   /** Each `services.<name>` key in the selected Compose file, owned whole, when service definitions are supplied. */
   @Keys(path = '${file}', under = ['services'])
-  Map serviceKeys() { services ?: null }
+  Map serviceKeys() {
+    services ?: null
+  }
 }

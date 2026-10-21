@@ -13,7 +13,8 @@ session-start hook that gives each agent session that text, so `bd init` is the 
 # Without the agents layout: Claude Code and Codex run bd prime from their own hook files
 ./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone --harness=claude --harness=codex
 # With the agents layout: leave out --harness, and the layout's session-start hook runs bd prime
-./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone \
+io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
 ```
 
 Paths other recipes, runners and people rely on:
@@ -21,7 +22,8 @@ Paths other recipes, runners and people rely on:
 | Path | What it is |
 | --- | --- |
 | `.beads/PRIME.md` | The team's workflow text, which `bd prime` prints in place of bd's own |
-| `.agents/hooks/session-start.d/beads.sh` | The layout's session-start script for Beads, when the layout is in the draft |
+| `.agents/hooks/session-start.d/beads.sh` | The layout's session-start script for Beads, \
+when the layout is in the draft |
 
 ## Consumes
 
@@ -36,12 +38,19 @@ Paths other recipes, runners and people rely on:
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.gitignore` | The section `beads`: the argument line, then `/.beads/*` and `!/.beads/PRIME.md` | `--share=clone` | owned |
-| `.gitignore` | The section `beads`: the argument line, then `/.beads/issues.jsonl`, the export that carries whatever people paste into issues; bd's own `.beads/.gitignore` covers its other files | `--share=team` | owned |
-| `.beads/PRIME.md` | The workflow and rules for that share, including that a worker never closes its bead or pushes | Always, when absent | seed |
-| `.claude/settings.json` | The key `hooks.SessionStart`: one command hook running `bd prime` | `--harness=claude` | owned |
-| `.codex/hooks.json` | The key `hooks.SessionStart`: one entry matching `startup\\|resume\\|clear` running `bd codex-hook SessionStart` | `--harness=codex` | owned |
-| `.agents/hooks/session-start.d/beads.sh` | Mode 0755: prints `bd prime`, and nothing when bd or its database is missing | The agents layout is in the draft | owned |
+| `.gitignore` | The section `beads`: the argument line, then `/.beads/*` and `!/.beads/PRIME.md` | \
+`--share=clone` | owned |
+| `.gitignore` | The section `beads`: the argument line, then `/.beads/issues.jsonl`, \
+the export that carries whatever people paste into issues; bd's own `.beads/.gitignore` covers its other files | \
+`--share=team` | owned |
+| `.beads/PRIME.md` | The workflow and rules for that share, \
+including that a worker never closes its bead or pushes | Always, when absent | seed |
+| `.claude/settings.json` | The key `hooks.SessionStart`: one command hook running `bd prime` | \
+`--harness=claude` | owned |
+| `.codex/hooks.json` | The key `hooks.SessionStart`: one entry matching `startup\\|resume\\|clear` \
+running `bd codex-hook SessionStart` | `--harness=codex` | owned |
+| `.agents/hooks/session-start.d/beads.sh` | Mode 0755: prints `bd prime`, \
+and nothing when bd or its database is missing | The agents layout is in the draft | owned |
 
 The hook keys hold one command each, so the team's own session-start hooks go in another file or in the layout's
 `session-start.d/`. `bd prime` prints `.beads/PRIME.md` and bd's stored memories, about 5.5 KB with bd's default text,
@@ -55,7 +64,9 @@ database, the Dolt remote, `core.hooksPath`, the other keys of the harnesses' fi
 | Contact | Made by |
 | --- | --- |
 | The prime text to Claude Code or Codex, without the agents layout | The person, by `--harness` |
-| The prime text to every harness the agents layout connects | Cook, writing `beads.sh` once `.agents/hooks/` is in the draft; `io.github.lmarqs.cookbook:agents:<version>#connect` runs it |
+| The prime text to every harness the agents layout connects | \
+Cook, writing `beads.sh` once `.agents/hooks/` is in the draft; \
+`io.github.lmarqs.cookbook:agents:<version>#connect` runs it |
 | What agents and workers do with the issues | The team, in the seeded `.beads/PRIME.md` |
 | Where the issues sync | The team, with `bd config set sync.remote <url>`, for `--share=team` |
 | The line on Beads in `AGENTS.md` | The team, from After cooking |
@@ -106,16 +117,17 @@ team's harnesses so `beads.sh` runs at session start.
 ''')
 import io.github.lmarqs.cookbook.beads.Beads
 
-@param(value = ['share'], choices = ['team', 'clone'], doc = 'Who shares the issues: team syncs them through a Dolt remote; clone keeps them in this clone')
-String share
+@param(value = ['share'], choices = ['team', 'clone'],
+    doc = 'Who shares the issues: team syncs them through a Dolt remote; clone keeps them in this clone')
+    String share
 
-@param(value = ['harness'], choices = ['claude', 'codex'], many = true, default = [], doc = 'Harnesses whose own hook file runs bd prime at session start; leave it out with the agents layout')
-String[] harness
+@param(value = ['harness'], choices = ['claude', 'codex'], many = true, default = [],
+    doc = 'Harnesses whose own hook file runs bd prime at session start; leave it out with the agents layout')
+    String[] harness
 
 @ingredient(Beads) def beads
 
 def harnesses = Beads.HARNESSES.findAll { it in harness }
-def cookedWith = (["io.github.lmarqs.cookbook:beads#tracker --share=${share}"] + harnesses.collect { "--harness=${it}" })
-    .join(' ')
-beads.track(share, cookedWith)
+def arguments = ["io.github.lmarqs.cookbook:beads#tracker --share=${share}"] + harnesses.collect { "--harness=${it}" }
+beads.track(share, arguments.join(' '))
 beads.prime(harnesses)

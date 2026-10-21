@@ -12,7 +12,8 @@ The Terraform configuration must use the supplied AWS endpoint and test credenti
 
 ```sh
 ./cook io.github.lmarqs.cookbook:aws:<version>#local-resource --path=infra/local/queue.tf --from=setup/queue.tf
-./cook io.github.lmarqs.cookbook:aws:<version>#local-resource --path=infra/local/queue.tf --from=setup/queue.tf --endpoint=http://localstack:4566
+./cook io.github.lmarqs.cookbook:aws:<version>#local-resource --path=infra/local/queue.tf --from=setup/queue.tf \
+--endpoint=http://localstack:4566
 ```
 
 ## Writes

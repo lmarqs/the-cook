@@ -42,10 +42,14 @@ class Git {
   private String ignoreCookedWith
 
   /** Adds Git ignore patterns as individual strings, relative to this instance's directory. */
-  void ignore(String... values) { patterns += values.toList() }
+  void ignore(String... values) {
+    patterns += values.toList()
+  }
 
   /** Adds a collection of Git ignore patterns, relative to this instance's directory. */
-  void ignore(Collection<String> values) { patterns += values }
+  void ignore(Collection<String> values) {
+    patterns += values
+  }
 
   /**
    * Requests the worktree root: Git ignores everything under `.worktrees/` except the README, seeded to state the
@@ -53,12 +57,17 @@ class Git {
    * which the section's first line records; it must not be blank.
    */
   void worktrees(String cookedWith) {
-    if (!cookedWith?.trim()) throw new IllegalArgumentException('worktrees needs the recipe it is cooked with')
+    if (!cookedWith?.trim()) {
+      throw new IllegalArgumentException('worktrees needs the recipe it is cooked with')
+    }
+
     worktreesCookedWith = cookedWith
   }
 
   /** Names the recipe and its arguments, which the `ignore` section opens with as a comment. */
-  void ignoredBy(String cookedWith) { ignoreCookedWith = cookedWith }
+  void ignoredBy(String cookedWith) {
+    ignoreCookedWith = cookedWith
+  }
 
   /**
    * The `ignore` section of `.gitignore`, with duplicate patterns removed, when patterns are added; it opens with the
@@ -69,6 +78,7 @@ class Git {
     if (!patterns) {
       return null
     }
+
     (ignoreCookedWith ? ["# ${ignoreCookedWith}".toString()] : []) + patterns.unique()
   }
 
@@ -78,7 +88,10 @@ class Git {
    */
   @Section(path = '.gitignore', id = 'worktrees')
   List<String> worktreesSection() {
-    if (!worktreesCookedWith) return null
+    if (!worktreesCookedWith) {
+      return null
+    }
+
     ["# ${worktreesCookedWith}".toString(), "/${WORKTREES}/*".toString(), "!/${WORKTREES}/README.md".toString()]
   }
 
@@ -87,5 +100,7 @@ class Git {
    * script and the traps of worktrees inside the repository, when the worktree root is requested.
    */
   @Seed(path = '.worktrees/README.md')
-  String worktreesReadme() { worktreesCookedWith ? resource('templates/worktrees-README.template.md') : null }
+  String worktreesReadme() {
+    worktreesCookedWith ? resource('templates/worktrees-README.template.md') : null
+  }
 }

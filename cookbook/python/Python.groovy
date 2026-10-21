@@ -63,30 +63,48 @@ class Python {
    * different specification for the same normalized package name already present in that group.
    */
   void dependency(String requirement, String group = '') {
-    if (requirement.contains('\n')) throw new IllegalArgumentException('One requirement per call')
+    if (requirement.contains('\n')) {
+      throw new IllegalArgumentException('One requirement per call')
+    }
+
     def name = packageName(requirement)
-    if (declared(group).any { it != requirement && packageName(it) == name })
+
+    if (declared(group).any { it != requirement && packageName(it) == name }) {
       throw new IllegalArgumentException("${name} already present with another specification")
+    }
+
     added.get(group, []) << requirement
   }
 
   /** Adds a line as supplied to the managed `dependencies` section of `requirements.txt`. */
-  void requirement(String line) { requirements << line }
+  void requirement(String line) {
+    requirements << line
+  }
 
   /** Removes `.python-version`, for a project whose interpreter version mise owns. */
-  void dropVersionFile() { keepVersionFile = false }
+  void dropVersionFile() {
+    keepVersionFile = false
+  }
 
   /** The `python` tool pin for mise when an interpreter version is set; otherwise an empty map. */
-  Map<String, String> tools() { version ? [python: version] : [:] }
+  Map<String, String> tools() {
+    version ? [python: version] : [:]
+  }
 
   /** mise environment configuration selecting `venv` and creating that virtual environment when absent. */
-  Map env() { [_: [python: [venv: [path: venv, create: true]]]] }
+  Map env() {
+    [_: [python: [venv: [path: venv, create: true]]]]
+  }
 
   /** Git ignore patterns for Python bytecode and cache directories. */
-  List<String> ephemeralFiles() { ['__pycache__/', '*.py[cod]'] }
+  List<String> ephemeralFiles() {
+    ['__pycache__/', '*.py[cod]']
+  }
 
   /** A Git ignore pattern for the virtual environment, rooted in this instance's directory. */
-  List<String> localFiles() { ["/${venv}/"] }
+  List<String> localFiles() {
+    ["/${venv}/"]
+  }
 
   /**
    * The install command, run in this instance's directory, using the selected installer and virtual environment.
@@ -96,7 +114,9 @@ class Python {
   Map installCommand() {
     def groups = added.keySet().findAll { it }
     def target = requirements ? ['-r', 'requirements.txt'] : ['-e', groups ? ".[${groups.join(',')}]" : '.']
-    def install = installer == 'uv' ? ['uv', 'pip', 'install', '--python', venv] : ["${venv}/bin/python", '-m', 'pip', 'install']
+    def install = installer == 'uv' ?
+        ['uv', 'pip', 'install', '--python', venv] :
+        ["${venv}/bin/python", '-m', 'pip', 'install']
     [run: [install + target], dir: directory]
   }
 
@@ -114,27 +134,45 @@ class Python {
 
   /** The `dependencies` section of `requirements.txt`, when requirement lines are supplied. */
   @Section(path = 'requirements.txt', id = 'dependencies')
-  List<String> requirementsSection() { requirements ?: null }
+  List<String> requirementsSection() {
+    requirements ?: null
+  }
 
   /** Deletes `.python-version` when `dropVersionFile()` is called. */
   @Delete(path = '.python-version')
-  boolean pythonVersionFile() { !keepVersionFile }
+  boolean pythonVersionFile() {
+    !keepVersionFile
+  }
 
   private List<String> declared(String group) {
     def text = current('pyproject.toml')
-    if (text == null) return []
+
+    if (text == null) {
+      return []
+    }
+
     def project = new TomlSlurper().parseText(text).project
     (group ? project?.'optional-dependencies'?.get(group) : project?.dependencies) ?: []
   }
 
   private static String packageName(String requirement) {
     def match = requirement =~ /^([A-Za-z0-9_.-]+)/
-    if (!match.find()) throw new IllegalArgumentException("Requirement must start with a package name: ${requirement}")
-    match.group(1).toLowerCase().replaceAll(/[-_.]+/, '-')
+
+    if (!match.find()) {
+      throw new IllegalArgumentException("Requirement must start with a package name: ${requirement}")
+    }
+
+    match.group(1)
+        .toLowerCase()
+        .replaceAll(/[-_.]+/, '-')
   }
 
   /** Matches a requirement string for the same package, whatever its separators and case. */
   private static String namePattern(String requirement) {
-    "(?i)^${packageName(requirement).split('-').collect { Pattern.quote(it) }.join('[-_.]+')}(?![A-Za-z0-9_.-])"
+    def name = packageName(requirement)
+        .split('-')
+        .collect { Pattern.quote(it) }
+        .join('[-_.]+')
+    "(?i)^${name}(?![A-Za-z0-9_.-])"
   }
 }

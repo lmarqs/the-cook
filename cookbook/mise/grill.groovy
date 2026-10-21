@@ -20,7 +20,8 @@ stored as written; quote it for the shell when passing `--script`.
 
 ## With other recipes
 
-Cook `io.github.lmarqs.cookbook:mise:<version>#runtime-version` alongside this recipe when the command needs a pinned runtime.
+Cook `io.github.lmarqs.cookbook:mise:<version>#runtime-version` alongside this recipe when the command needs a pinned \
+runtime.
 Its tool pin and this task are separate targets. Other recipes can add tasks under different names; the last
 recipe to declare `tasks.grill` owns that task whole.
 ''')

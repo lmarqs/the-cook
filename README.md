@@ -122,8 +122,9 @@ plugin, built from [`plugin`](plugin) apart from the engine: a jar and a POM per
 body has braces, and Groovy-Eclipse moves braced bodies onto their own line. A statement with a block, such as `if`,
 `for` or `try`, has a blank line before and after it, except at the start or end of its own block
 ([rule](gradle/lint/BlankLinesAroundBlocksRule.groovy)). A chain of more than two method calls puts each call on its own
-line ([rule](gradle/lint/ChainedCallsRule.groovy)). Spotless's Groovy step and CodeNarc skip `cookbook/`, most of which
-is a design sketch that has not been compiled.
+line ([rule](gradle/lint/ChainedCallsRule.groovy)). Both cover `cookbook/`, the uncompiled sketches included. A line
+over 120 characters inside a `'''` string, such as a Markdown table row in `@help`, continues on the next source line
+after a trailing `\`, which leaves the string's value unchanged.
 
 `docs/` is its own build. `./gradlew -p docs check`, which `./gradlew check` includes, fails on a relative link in
 `docs/` that points to a missing file or heading anchor; [`docs/build.gradle`](docs/build.gradle) defines the check.

@@ -19,7 +19,8 @@ Paths, scripts and commands other recipes, launchers and people rely on:
 | --- | --- |
 | `AGENTS.md` | The instructions every harness reads |
 | `.agents/permission/policy.yaml` | The shared policy, which `#connect` renders into each harness's settings |
-| `.agents/skills/`, `.agents/commands/`, `.agents/hooks/`, `.agents/memory/` | The shared directories, each described in `.agents/README.md` |
+| `.agents/skills/`, `.agents/commands/`, `.agents/hooks/`, `.agents/memory/` | The shared directories, each described \
+in `.agents/README.md` |
 | The Launching table in `.agents/README.md` | The launch command for each harness, mode and role |
 | `sh .agents/skills/agents-layout/scripts/check.sh` | The layout check |
 | `/agents-layout` in Claude Code, `$agents-layout` in Codex | The skill, taking `adopt`, `review` or `review --fix` |
@@ -40,7 +41,8 @@ Paths, scripts and commands other recipes, launchers and people rely on:
 | `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
 | `.agents/README.md` | What each shared path holds | Always, when absent | seed |
 | `.agents/skills/`, `commands/`, `hooks/`, `memory/` | An empty `.gitkeep` each | Always, when absent | seed |
-| `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout, with the templates of the seeded files under `templates/` and the layout check `scripts/check.sh` | Always | owned |
+| `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout, with the templates of the \
+seeded files under `templates/` and the layout check `scripts/check.sh` | Always | owned |
 
 Never touches: `.claude/`, `.codex/`, `.agents/adapters/`, `.gitignore`, and a seeded file once it exists.
 
@@ -48,9 +50,11 @@ Never touches: `.claude/`, `.codex/`, `.agents/adapters/`, `.gitignore`, and a s
 
 | Contact | Made by |
 | --- | --- |
-| The layout to each harness | The person, cooking `io.github.lmarqs.cookbook:agents:<version>#connect` with the harnesses to use |
+| The layout to each harness | The person, cooking `io.github.lmarqs.cookbook:agents:<version>#connect` with the \
+harnesses to use |
 | What the instructions and the policy say | The team, in the seeded `AGENTS.md` and `.agents/permission/policy.yaml` |
-| The skill to Claude Code | Cook, once `#connect --harness=claude` links `.claude/skills`; Codex reads `.agents/skills/` natively |
+| The skill to Claude Code | Cook, once `#connect --harness=claude` links `.claude/skills`; Codex reads \
+`.agents/skills/` natively |
 
 Cook this recipe before `#connect`, or before it in the same invocation.
 

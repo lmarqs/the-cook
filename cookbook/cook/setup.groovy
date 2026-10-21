@@ -23,8 +23,10 @@ The policy supplies command permissions for both harnesses.
 | `.agents/skills/agents-layout/` | Whole files of the skill that explains the shared layout | Always |
 | `.agents/adapters/claude/settings.json` | `permissions`, linked from `.claude/settings.json` | Always |
 | `.claude/skills` | A relative link to `../.agents/skills` | Always |
-| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access`, linked from `.codex/config.toml` | Always |
-| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, linked through `.codex/rules` | The policy has command rules |
+| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access`, \
+linked from `.codex/config.toml` | Always |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, linked through `.codex/rules` | \
+The policy has command rules |
 | `.gitignore` | The section `ignore`: `/.claude/settings.local.json` | Always |
 
 Claude reads `AGENTS.md` natively and skills through `.claude/skills`.
@@ -48,10 +50,10 @@ def harnesses = [claude, codex]
 
 agents.skills('agents-layout')
 agents.instruct(
-  '# Working on the-cook',
-  '',
-  'Core, infra, the CLI, and cookbook ingredients and recipes are Groovy.',
-  'Build and verify changes with ./gradlew check cliBuild.')
+    '# Working on the-cook',
+    '',
+    'Core, infra, the CLI, and cookbook ingredients and recipes are Groovy.',
+    'Build and verify changes with ./gradlew check cliBuild.')
 def cookedWith = 'io.github.lmarqs.cookbook:cook#setup'
 agents.permit(harnesses, cookedWith)
 agents.connect(harnesses)

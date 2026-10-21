@@ -73,16 +73,23 @@ class Claude implements Harness {
    * is each person's choice. Replaces any permissions supplied by an earlier `settings` call. `cookedWith` is unused:
    * Claude's settings are JSON keys, which have no comment syntax.
    */
+  @Override
   void permit(Policy policy, String cookedWith = null) {
     settings.permissions = ['allow', 'ask', 'deny'].collectEntries { decision ->
       [decision, policy.commands[decision].collectMany { rules(it) } + policy.tools[decision]*.claude]
     }
-    if (policy.bypass == 'refuse') settings.permissions.disableBypassPermissionsMode = 'disable'
+
+    if (policy.bypass == 'refuse') {
+      settings.permissions.disableBypassPermissionsMode = 'disable'
+    }
+
     roleDenies = policy.roles.collectEntries { name, denies -> [name, denies.collectMany { rules(it) }] }
   }
 
   /** Adds top-level settings keys, hooks included; a supplied key replaces its earlier value whole. */
-  void settings(Map more) { settings += more }
+  void settings(Map more) {
+    settings += more
+  }
 
   /**
    * Links `.claude/skills` and `.claude/commands` to the shared directories of those names, the only ones Claude Code
@@ -103,22 +110,28 @@ class Claude implements Harness {
   }
 
   /** `settings.json` when settings are set, then each shared directory linked. */
-  List<String> getLinkNames() { (written() ? ['settings.json'] : []) + directoryLinks.keySet() }
+  List<String> getLinkNames() {
+    (written() ? ['settings.json'] : []) + directoryLinks.keySet()
+  }
 
   /**
    * Each supplied top-level key of `.agents/adapters/claude/settings.json`, owned whole, when settings or permissions
    * are set, and `hooks.SessionStart` alone once a session-start dispatcher is set.
    */
   @Keys(path = '.agents/adapters/claude/settings.json')
-  Map settingsKeys() { written() ?: null }
+  Map settingsKeys() {
+    written() ?: null
+  }
 
   /** `.claude/settings.json`, a link to the adapter's file, when settings, permissions or the session start are set. */
   @Links(path = '.claude')
-  Map<String, String> adapterLinks() { written() ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
+  Map<String, String> adapterLinks() {
+    written() ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null
+  }
 
   /**
-   * `.agents/adapters/claude/roles/<role>.json` per policy role, holding the role's `permissions.deny`; Claude merges it
-   * over the project settings when a run passes it with `--settings`.
+   * `.agents/adapters/claude/roles/<role>.json` per policy role, holding the role's `permissions.deny`; Claude merges
+   * it over the project settings when a run passes it with `--settings`.
    */
   @Files(path = '.agents/adapters/claude/roles')
   Map<String, String> roleFiles() {
@@ -127,23 +140,35 @@ class Claude implements Harness {
 
   /** One relative link in `.claude/` per shared directory, such as `skills`, when the directories are connected. */
   @Links(path = '.claude')
-  Map<String, String> links() { directoryLinks ?: null }
+  Map<String, String> links() {
+    directoryLinks ?: null
+  }
 
-  private Map written() { settings + (sessionStart ? [(['hooks', 'SessionStart']): sessionStart] : [:]) }
+  private Map written() {
+    settings + (sessionStart ? [(['hooks', 'SessionStart']): sessionStart] : [:])
+  }
 
   private static List<String> rules(Command command) {
-    if (command.claude) return ["Bash(${command.claude})".toString()]
+    if (command.claude) {
+      return ["Bash(${command.claude})".toString()]
+    }
+
     combinations(command.prefix).collect { "Bash(${it.join(' ')} *)".toString() }
   }
 
   private static List<List<String>> combinations(List prefix) {
     prefix.inject([[]]) { List<List<String>> heads, item ->
-      heads.collectMany { head -> (item instanceof List ? item : [item]).collect { head + it } }
+      heads.collectMany { head ->
+        (item instanceof List ? item : [item]).collect {
+          head + it
+        }
+      }
     }
   }
 
   private static String denyFile(List<String> denies) {
-    def list = denies ? '[\n' + denies.collect { "      ${groovy.json.JsonOutput.toJson(it)}" }.join(',\n') + '\n    ]' : '[]'
+    def items = denies.collect { "      ${groovy.json.JsonOutput.toJson(it)}" }.join(',\n')
+    def list = denies ? '[\n' + items + '\n    ]' : '[]'
     "{\n  \"permissions\": {\n    \"deny\": ${list}\n  }\n}\n"
   }
 }

@@ -18,12 +18,10 @@ dependencies {
 
 spotless {
   def generated = ['**/build/**', '**/.gradle/**', '.worktrees/**']
-  // Most of the cookbook is a design sketch that has not been compiled.
-  def sketch = ['cookbook/**']
   groovy {
     target '**/*.groovy'
     // The formatter cannot parse the quoted `default` member that recipes write as `@param(default = ...)`.
-    targetExclude generated + sketch +
+    targetExclude generated +
         ['core/src/main/groovy/thecook/cookbook/api/recipe/RecipeAnnotations.groovy']
     greclipse().configFile('gradle/spotless/greclipse.properties')
   }
@@ -44,7 +42,7 @@ def codenarcArgs = { String report ->
   [
     '-basedir=.',
     '-includes=**/*.groovy,**/*.gradle',
-    '-excludes=**/build/**,**/.gradle/**,.worktrees/**,cookbook/**',
+    '-excludes=**/build/**,**/.gradle/**,.worktrees/**',
     '-rulesetfiles=file:' + file('gradle/lint/codenarc.groovy'),
     '-failOnError=true',
     report,

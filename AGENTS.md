@@ -83,7 +83,7 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 ## Gotchas
 
 - The Quick check skips Spotless and CodeNarc, which only the root build runs; the Done check catches them.
-- The Groovy formatter rejects some syntax, and Spotless's Groovy step and CodeNarc skip `cookbook/`; see
+- The Groovy formatter rejects some syntax, and a long line in a recipe's `@help` continues after a trailing `\`; see
   [Development tooling](README.md#development-tooling).
 
 ## Deep dive (read on demand)

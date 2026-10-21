@@ -35,12 +35,17 @@ package io.github.lmarqs.cookbook.github
  */
 @Ingredient
 class Workflow {
-  /** The workflow path relative to the instance's directory, such as `.github/workflows/ci.yml`; set before declaring writes. */
+  /**
+   * The workflow path relative to the instance's directory, such as `.github/workflows/ci.yml`; set before declaring
+   * writes.
+   */
   String file
   private Map<List, Object> changes = [:]
 
   /** Selects a job by its workflow key; selecting it alone declares nothing. */
-  Job job(String name) { new Job(name) }
+  Job job(String name) {
+    new Job(name)
+  }
 
   /** A job selected by name in this Workflow instance; its calls accumulate independent workflow declarations. */
   class Job {
@@ -48,17 +53,26 @@ class Workflow {
     final String name
 
     /** Selects the given job key within the enclosing Workflow instance without declaring any writes. */
-    Job(String name) { this.name = name }
+    Job(String name) {
+      this.name = name
+    }
 
     /** Declares each permission grant separately, using permission names as keys and grant levels as values. */
-    void permissions(Map grants) { grants.each { key, value -> changes[['jobs', name, 'permissions', key]] = value } }
+    void permissions(Map grants) {
+      grants.each { key, value ->
+        changes[['jobs', name, 'permissions', key]] = value
+      }
+    }
 
     /**
      * Declares one whole step identified by its `id`; rejects a step without an id. An existing step is replaced.
      * An absent step is inserted at `start`, `end` (the default), `before:<id>` or `after:<id>`.
      */
     void step(Map step, String placement = 'end') {
-      if (!step.id) throw new IllegalArgumentException("${file}: a declared step needs an id")
+      if (!step.id) {
+        throw new IllegalArgumentException("${file}: a declared step needs an id")
+      }
+
       changes[['jobs', name, 'steps', [id: step.id, place: placement]]] = step
     }
 
@@ -77,5 +91,7 @@ class Workflow {
    * Declares nothing when no changes are requested.
    */
   @Keys(path = '${file}')
-  Map keys() { changes ?: null }
+  Map keys() {
+    changes ?: null
+  }
 }

@@ -48,7 +48,9 @@ class Aws {
   }
 
   /** Supplies job permissions to read repository contents and request an OIDC token for role assumption. */
-  Map oidcPermissions() { [contents: 'read', 'id-token': 'write'] }
+  Map oidcPermissions() {
+    [contents: 'read', 'id-token': 'write']
+  }
 
   /**
    * Supplies test access and secret keys and `AWS_ENDPOINT_URL` for the given local endpoint. Accepts only
@@ -56,10 +58,15 @@ class Aws {
    * rejects every other endpoint.
    */
   Map<String, String> localEnvironment(String endpoint) {
-    if (!(endpoint ==~ /http:\/\/(localhost|127\.0\.0\.1|localstack)(:[0-9]+)?/)) throw new IllegalArgumentException("Endpoint must be local: ${endpoint}")
+    if (!(endpoint ==~ /http:\/\/(localhost|127\.0\.0\.1|localstack)(:[0-9]+)?/)) {
+      throw new IllegalArgumentException("Endpoint must be local: ${endpoint}")
+    }
+
     [AWS_ACCESS_KEY_ID: 'test', AWS_SECRET_ACCESS_KEY: 'test', AWS_ENDPOINT_URL: endpoint]
   }
 
   /** Supplies the packaged Bash mise task that prints the current AWS identity; requires the AWS CLI. */
-  String sessionCheckScript() { resource('check.sh') }
+  String sessionCheckScript() {
+    resource('check.sh')
+  }
 }

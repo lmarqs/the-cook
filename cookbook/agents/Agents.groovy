@@ -78,13 +78,19 @@ class Agents {
    * Requests the seeds of the shared directories, each kept in Git by an empty `.gitkeep`, and of `.agents/README.md`,
    * which says what each holds; `connect` then links every harness to all of them.
    */
-  void seedLayout() { layoutUsed = true }
+  void seedLayout() {
+    layoutUsed = true
+  }
 
   /** Requests the seed of `AGENTS.md`, written from the template only when absent and never owned. */
-  void seedInstructions() { instructionsUsed = true }
+  void seedInstructions() {
+    instructionsUsed = true
+  }
 
   /** Adds individual Markdown lines to the shared instructions and requests the instruction file's seed. */
-  void instruct(String... lines) { instruct(lines as List) }
+  void instruct(String... lines) {
+    instruct(lines as List)
+  }
 
   /** Adds a collection of Markdown lines to the shared instructions and requests the instruction file's seed. */
   void instruct(Collection<String> lines) {
@@ -98,7 +104,11 @@ class Agents {
    * before calling `connect`.
    */
   void skills(String... names) {
-    names.each { if (!resources("skills/${it}")) throw new IllegalArgumentException("No packaged skill named ${it}") }
+    names.each {
+      if (!resources("skills/${it}")) {
+        throw new IllegalArgumentException("No packaged skill named ${it}")
+      }
+    }
     skills += names.toList()
   }
 
@@ -127,11 +137,19 @@ class Agents {
    */
   void connect(Collection<Harness> harnesses) {
     def shared = layoutUsed ? DIRECTORIES : skills ? ['skills'] : []
-    if (!shared) return
+
+    if (!shared) {
+      return
+    }
+
     harnesses.each { harness ->
       harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] })
     }
-    if (!layoutUsed || !harnesses) return
+
+    if (!layoutUsed || !harnesses) {
+      return
+    }
+
     sessionStarted = true
     harnesses.each { it.startSession(reach(it, SESSION_START)) }
   }
@@ -158,7 +176,9 @@ class Agents {
    * the first time fails unless Cook runs with `--force`, which replaces it, or `--skip`, which keeps it; never owned.
    */
   @Seed(path = 'AGENTS.md', existing = 'fail')
-  String starter() { instructionsUsed ? resource("${TEMPLATES}/AGENTS.template.md") : null }
+  String starter() {
+    instructionsUsed ? resource("${TEMPLATES}/AGENTS.template.md") : null
+  }
 
   /**
    * Seeds `.agents/permission/policy.yaml` with the `agents-layout` skill's `templates/policy.template.yaml` when
@@ -166,38 +186,52 @@ class Agents {
    * example; never owned.
    */
   @Seed(path = '.agents/permission/policy.yaml')
-  String starterPolicy() { policyUsed ? resource("${TEMPLATES}/policy.template.yaml") : null }
+  String starterPolicy() {
+    policyUsed ? resource("${TEMPLATES}/policy.template.yaml") : null
+  }
 
   /** Seeds `.agents/README.md`, which says what each shared directory holds, once the layout is seeded. */
   @Seed(path = '.agents/README.md')
-  String layoutReadme() { layoutUsed ? resource("${TEMPLATES}/README.template.md") : null }
+  String layoutReadme() {
+    layoutUsed ? resource("${TEMPLATES}/README.template.md") : null
+  }
 
   /** Seeds `.agents/skills/.gitkeep` so Git keeps the directory, once the layout is seeded. */
   @Seed(path = '.agents/skills/.gitkeep')
-  String keepSkills() { keep() }
+  String keepSkills() {
+    keep()
+  }
 
   /** Seeds `.agents/commands/.gitkeep` so Git keeps the directory, once the layout is seeded. */
   @Seed(path = '.agents/commands/.gitkeep')
-  String keepCommands() { keep() }
+  String keepCommands() {
+    keep()
+  }
 
   /** Seeds `.agents/hooks/.gitkeep` so Git keeps the directory, once the layout is seeded. */
   @Seed(path = '.agents/hooks/.gitkeep')
-  String keepHooks() { keep() }
+  String keepHooks() {
+    keep()
+  }
 
   /** Seeds `.agents/memory/.gitkeep` so Git keeps the directory, once the layout is seeded. */
   @Seed(path = '.agents/memory/.gitkeep')
-  String keepMemory() { keep() }
+  String keepMemory() {
+    keep()
+  }
 
   /** The `instructions` section of `AGENTS.md`, when instruction lines are added. */
   @Section(path = 'AGENTS.md', id = 'instructions')
-  List<String> instructionsSection() { instructions ?: null }
+  List<String> instructionsSection() {
+    instructions ?: null
+  }
 
   /**
-   * The `harnesses` section of `.gitignore`: the comment naming the recipe and arguments that cook it, when given; then,
-   * for each harness `ignoreLocalDirectories` was given, its local directory re-included, such as `!/.claude/`, since
-   * Git cannot re-include a file whose parent directory an earlier rule excludes; then the directory's contents, such
-   * as `/.claude/*`, and a negation per link Cook makes there, such as `!/.claude/skills`; then the files each harness
-   * would read in place of the shared setup.
+   * The `harnesses` section of `.gitignore`: the comment naming the recipe and arguments that cook it, when given;
+   * then, for each harness `ignoreLocalDirectories` was given, its local directory re-included, such as
+   * `!/.claude/`, since Git cannot re-include a file whose parent directory an earlier rule excludes; then the
+   * directory's contents, such as `/.claude/*`, and a negation per link Cook makes there, such as `!/.claude/skills`;
+   * then the files each harness would read in place of the shared setup.
    */
   @Section(path = '.gitignore', id = 'harnesses')
   List<String> ignoredDirectories() {
@@ -205,7 +239,11 @@ class Agents {
       def local = ignored(harness)
       ["!${local}", "${local}*"] + harness.linkNames.collect { "!${local}${it}" }
     } + ignoredHarnesses.collectMany { it.ignoredFiles }
-    if (!lines) return null
+
+    if (!lines) {
+      return null
+    }
+
     ((ignoredBy ? ["# ${ignoredBy}"] : []) + lines)*.toString()
   }
 
@@ -216,7 +254,9 @@ class Agents {
    * context both Claude Code and Codex take; it needs only `sh` and `awk`, and prints nothing for no output.
    */
   @File(path = '.agents/hooks/session-start', mode = '0755')
-  String sessionStartDispatcher() { sessionStarted ? resource('hooks/session-start') : null }
+  String sessionStartDispatcher() {
+    sessionStarted ? resource('hooks/session-start') : null
+  }
 
   /** Whole files under `.agents/skills/<name>/`, when skills are added. */
   @Files(path = '.agents/skills')
@@ -226,14 +266,22 @@ class Agents {
     } ?: null
   }
 
-  private String keep() { layoutUsed ? '' : null }
+  private String keep() {
+    layoutUsed ? '' : null
+  }
 
   private String ignored(Harness harness) {
-    "/${Path.of(directory).normalize().relativize(Path.of(harness.directory, harness.localDirectory).normalize())}/"
+    def relative = Path.of(directory)
+        .normalize()
+        .relativize(Path.of(harness.directory, harness.localDirectory).normalize())
+    "/${relative}/"
   }
 
   private String reach(Harness harness, String path) {
-    Path.of(harness.directory).normalize().relativize(Path.of(directory, path).normalize()).toString()
+    Path.of(harness.directory)
+        .normalize()
+        .relativize(Path.of(directory, path).normalize())
+        .toString()
   }
 }
 
@@ -308,52 +356,95 @@ class Policy {
    */
   static Policy parse(String text) {
     def data = new YamlSlurper().parseText(text)
-    if (!(data instanceof Map)) fail('the policy must be a YAML map')
-    if (data.version != 2) fail('version must be 2')
+
+    if (!(data instanceof Map)) {
+      fail('the policy must be a YAML map')
+    }
+
+    if (data.version != 2) {
+      fail('version must be 2')
+    }
+
     def unknown = data.keySet() - ['version', 'bypass', 'commands', 'tools', 'roles']
-    if (unknown) fail("unknown field ${unknown}")
-    if (!(data.bypass in [null, 'refuse', 'allow'])) fail('bypass must be refuse or allow')
+
+    if (unknown) {
+      fail("unknown field ${unknown}")
+    }
+
+    if (!(data.bypass in [null, 'refuse', 'allow'])) {
+      fail('bypass must be refuse or allow')
+    }
+
     new Policy(commands: decisions(data, 'commands', false), tools: decisions(data, 'tools', true),
     roles: roles(data.roles), bypass: data.bypass ?: 'refuse')
   }
 
   private static Map<String, List<Command>> decisions(Map data, String field, boolean toolsOnly) {
     def value = data[field] ?: [:]
-    if (!(value instanceof Map)) fail("${field} must map allow, ask and deny to lists of entries")
+
+    if (!(value instanceof Map)) {
+      fail("${field} must map allow, ask and deny to lists of entries")
+    }
+
     def unknown = value.keySet() - DECISIONS
-    if (unknown) fail("${field} has unknown decision ${unknown}; use allow, ask or deny")
+
+    if (unknown) {
+      fail("${field} has unknown decision ${unknown}; use allow, ask or deny")
+    }
+
     DECISIONS.collectEntries { decision -> [decision, entries(value[decision], "${field}.${decision}", toolsOnly)] }
   }
 
   private static List<Command> entries(Object value, String field, boolean toolsOnly) {
-    if (value == null) return []
-    if (!(value instanceof List)) fail("${field} must be a list of entries")
+    if (value == null) {
+      return []
+    }
+
+    if (!(value instanceof List)) {
+      fail("${field} must be a list of entries")
+    }
+
     value.collect { entry ->
       def command = Command.of(entry)
+
       if (!command) {
         fail("${field}: ${entry} is not an entry; write the literal words a command starts with, a nested list for " +
             'alternatives of one word, or {claude: "<pattern>"}')
       }
-      if (toolsOnly && !command.claude) fail("${field}: ${entry} is not a tool entry; write {claude: \"<pattern>\"}")
+
+      if (toolsOnly && !command.claude) {
+        fail("${field}: ${entry} is not a tool entry; write {claude: \"<pattern>\"}")
+      }
+
       command
     }
   }
 
   private static Map<String, List<Command>> roles(Object value) {
-    if (value == null) return [:]
-    if (!(value instanceof Map)) fail('roles must map each role name to its deny entries')
+    if (value == null) {
+      return [:]
+    }
+
+    if (!(value instanceof Map)) {
+      fail('roles must map each role name to its deny entries')
+    }
+
     value.collectEntries { name, role ->
       if (!(name ==~ /[a-z][a-z0-9-]*/)) {
         fail("roles: ${name} is not a role name; use lower-case letters, digits and hyphens, starting with a letter")
       }
+
       if (!(role instanceof Map) || role.keySet() != ['deny'] as Set) {
         fail("roles.${name}: a role only adds denies; list them under deny, and keep allow and ask under commands")
       }
+
       [name, entries(role.deny, "roles.${name}.deny", false)]
     }
   }
 
-  private static void fail(String message) { throw new IllegalArgumentException("${PATH}: ${message}") }
+  private static void fail(String message) {
+    throw new IllegalArgumentException("${PATH}: ${message}")
+  }
 }
 
 /**
@@ -374,6 +465,7 @@ class Command {
       boolean harness = value.keySet() == ['claude'] as Set && value.claude instanceof String && value.claude
       return harness ? new Command(claude: value.claude) : null
     }
+
     boolean prefix = value instanceof List && value && value.every { item ->
       item instanceof List ? item && item.every { word(it) } : word(item)
     }
@@ -381,5 +473,7 @@ class Command {
   }
 
   // Letters, digits, underscore, dot, slash, colon, equals, at sign, plus and hyphen: no shell syntax or wildcards.
-  private static boolean word(Object value) { value instanceof String && value ==~ /[a-zA-Z0-9_.\/:=@+-]+/ }
+  private static boolean word(Object value) {
+    value instanceof String && value ==~ /[a-zA-Z0-9_.\/:=@+-]+/
+  }
 }

@@ -11,7 +11,8 @@ package io.github.lmarqs.cookbook.agents
  * Codex reads `AGENTS.md` and `.agents/skills/` natively, and hook settings reach the shared hook scripts by their
  * paths, so no other link is needed. Command rules use the
  * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", ["status", "diff"]], decision = "allow")`, where a nested
- * list holds alternatives for one word, with `allow`, `prompt` or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
+ * list holds alternatives for one word, with `allow`, `prompt` or `forbidden` decisions. `.codex/` holds only links,
+ * so it can be deleted and cooked again.
  *
  * ## Instances
  *
@@ -61,7 +62,7 @@ class Codex implements Harness {
 
   /** The runs that skip or approve these rules under Codex 0.160.1, which has no setting that refuses them. */
   private static final String UNREFUSED_RUNS = '# bypass: refuse reaches Claude only: --ignore-rules or an untrusted ' +
-      'project skips these rules, --approve-for-me approves prompts'
+  'project skips these rules, --approve-for-me approves prompts'
 
   /** None: Codex reads no instruction file in place of `AGENTS.md`. */
   final List<String> ignoredFiles = []
@@ -80,12 +81,18 @@ class Codex implements Harness {
    */
   void permit(Policy policy, String cookedWith = null) {
     config = config.findAll { key, value -> key != 'sandbox_workspace_write' } +
-        [sandbox_mode: 'workspace-write', approval_policy: 'on-request', (NETWORK_ACCESS): false]
+    [sandbox_mode: 'workspace-write', approval_policy: 'on-request', (NETWORK_ACCESS): false]
     commands = [allow: 'allow', ask: 'prompt', deny: 'forbidden'].collectMany { decision, codexDecision ->
       policy.commands[decision].collect { prefixRule(it, codexDecision) }
     }
-    if (commands && policy.bypass == 'refuse') commands.add(0, UNREFUSED_RUNS)
-    if (commands && cookedWith) commands.add(0, "# ${cookedWith}".toString())
+
+    if (commands && policy.bypass == 'refuse') {
+      commands.add(0, UNREFUSED_RUNS)
+    }
+
+    if (commands && cookedWith) {
+      commands.add(0, "# ${cookedWith}".toString())
+    }
   }
 
   /**
@@ -97,7 +104,9 @@ class Codex implements Harness {
   }
 
   /** Adds top-level hooks keys; a supplied key replaces its earlier value whole. */
-  void hooks(Map more) { hooks += more }
+  void hooks(Map more) {
+    hooks += more
+  }
 
   /**
    * Sets `hooks.SessionStart` in `hooks.json` to one entry for `startup|resume|clear` that runs `dispatcher`, a path
@@ -107,17 +116,24 @@ class Codex implements Harness {
    */
   void startSession(String dispatcher) {
     def path = Path.of(directory, dispatcher).normalize()
-    hooks[SESSION_START] = [[matcher: 'startup|resume|clear', hooks: [[type: 'command',
+    hooks[SESSION_START] = [
+      [matcher: 'startup|resume|clear', hooks: [
+          [type: 'command',
             command: "sh -c 'exec \"\$(git rev-parse --show-toplevel)/${path}\" codex'".toString(),
-            statusMessage: 'Loading session context']]]]
+            statusMessage: 'Loading session context']
+        ]]
+    ]
   }
 
   /**
-   * Adds a whole rule file with `body` under `.agents/adapters/codex/rules/`, replacing an earlier rule with the same name.
-   * The name accepts letters, digits, underscores, dots and hyphens; empty names, `.` and `..` are rejected.
+   * Adds a whole rule file with `body` under `.agents/adapters/codex/rules/`, replacing an earlier rule with the same
+   * name. The name accepts letters, digits, underscores, dots and hyphens; empty names, `.` and `..` are rejected.
    */
   void rule(String name, String body) {
-    if (!(name ==~ /[A-Za-z0-9_.-]+/) || name in ['.', '..']) throw new IllegalArgumentException("Rule file needs a simple name: ${name}")
+    if (!(name ==~ /[A-Za-z0-9_.-]+/) || name in ['.', '..']) {
+      throw new IllegalArgumentException("Rule file needs a simple name: ${name}")
+    }
+
     rules[name] = body
   }
 
@@ -126,7 +142,10 @@ class Codex implements Harness {
    * links no shared directory. Links `.codex/hooks.json` when the team wrote `.agents/adapters/codex/hooks.json`.
    */
   void readDirectories(Map<String, String> paths) {
-    if (paths.skills) readsNatively(paths.skills, '.agents/skills')
+    if (paths.skills) {
+      readsNatively(paths.skills, '.agents/skills')
+    }
+
     hooksWritten = current(HOOKS_FILE) != null
   }
 
@@ -138,25 +157,33 @@ class Codex implements Harness {
    * are set; permissions own `sandbox_workspace_write.network_access` alone, so the table's other keys stay the team's.
    */
   @Keys(path = '.agents/adapters/codex/config.toml')
-  Map configKeys() { config ?: null }
+  Map configKeys() {
+    config ?: null
+  }
 
   /**
    * Each supplied top-level key of `.agents/adapters/codex/hooks.json`, owned whole, when hooks keys are added, and
    * `hooks.SessionStart` alone once a session-start dispatcher is set.
    */
   @Keys(path = '.agents/adapters/codex/hooks.json')
-  Map hookKeys() { hooks ?: null }
+  Map hookKeys() {
+    hooks ?: null
+  }
 
   /** One whole file under `.agents/adapters/codex/rules/` per named rule, when rules are added. */
   @Files(path = '.agents/adapters/codex/rules')
-  Map<String, String> ruleFiles() { rules ?: null }
+  Map<String, String> ruleFiles() {
+    rules ?: null
+  }
 
   /**
    * The `commands` section of `.agents/adapters/codex/rules/cook.rules`, in `#` comment syntax, when the policy has
    * command rules: the comment naming the recipe and arguments that cook it, when given, then the rules.
    */
   @Section(path = '.agents/adapters/codex/rules/cook.rules', id = 'commands', comment = '#')
-  List<String> commandRules() { commands ?: null }
+  List<String> commandRules() {
+    commands ?: null
+  }
 
   /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json` and `rules`. */
   @Links(path = '.codex')
@@ -170,11 +197,16 @@ class Codex implements Harness {
   }
 
   private static void readsNatively(String path, String expected) {
-    if (path != expected) throw new IllegalArgumentException("Codex reads ${expected} in its own directory, not ${path}")
+    if (path != expected) {
+      throw new IllegalArgumentException("Codex reads ${expected} in its own directory, not ${path}")
+    }
   }
 
   private static String prefixRule(Command command, String decision) {
-    if (command.claude) return "# Not enforced by Codex, Claude-only: ${command.claude}"
+    if (command.claude) {
+      return "# Not enforced by Codex, Claude-only: ${command.claude}"
+    }
+
     "prefix_rule(pattern = ${pattern(command.prefix)}, decision = \"${decision}\")"
   }
 

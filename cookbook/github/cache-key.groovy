@@ -25,12 +25,15 @@ own the step's other inputs. Cooking the same arguments again leaves the key unc
 ## With other recipes
 
 Cook a recipe that supplies the cache step first, so this recipe can select its existing id. Distinct step
-inputs compose independently; the last recipe declaring this key supplies it. `io.github.lmarqs.cookbook:github:<version>#aws-oidc`
+inputs compose independently; the last recipe declaring this key supplies it. \
+`io.github.lmarqs.cookbook:github:<version>#aws-oidc`
 declares the separate AWS credentials step and permission grants.
 ''')
 import io.github.lmarqs.cookbook.github.Workflow
 
-@param(value = ['workflow'], doc = 'Workflow path relative to the instance directory, such as .github/workflows/ci.yml') String workflow
+@param(value = ['workflow'],
+    doc = 'Workflow path relative to the instance directory, such as .github/workflows/ci.yml')
+    String workflow
 @param(value = ['job'], doc = 'The job holding the cache step') String jobName
 @param(value = ['step'], default = 'cache', doc = 'The cache step id') String step
 @param(value = ['key'], doc = 'The new cache key expression') String key

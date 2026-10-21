@@ -12,15 +12,18 @@ The `pyproject.toml` project must support editable installation when that manife
 
 ```sh
 ./cook io.github.lmarqs.cookbook:python:<version>#dependency --dependency='httpx>=0.27' --group=dev
-./cook io.github.lmarqs.cookbook:python:<version>#dependency --dependency='httpx>=0.27' --manifest=requirements.txt --installer=pip --dir=services/api
+./cook io.github.lmarqs.cookbook:python:<version>#dependency --dependency='httpx>=0.27' --manifest=requirements.txt \
+--installer=pip --dir=services/api
 ```
 
 ## Writes
 
 | Target | Part | When |
 | --- | --- | --- |
-| `<dir>/pyproject.toml` | The package's entry in `project.dependencies`, matched by package name | `--manifest=pyproject.toml` without a group |
-| `<dir>/pyproject.toml` | The package's entry in `project.optional-dependencies.<group>`, matched by package name | `--manifest=pyproject.toml` with a group |
+| `<dir>/pyproject.toml` | The package's entry in `project.dependencies`, matched by package name \
+| `--manifest=pyproject.toml` without a group |
+| `<dir>/pyproject.toml` | The package's entry in `project.optional-dependencies.<group>`, matched by package name \
+| `--manifest=pyproject.toml` with a group |
 | `<dir>/requirements.txt` | The section `dependencies` | `--manifest=requirements.txt` |
 | `mise.toml` | `tasks."dependency:python"`, owned whole, running the selected installer in `<dir>` | Always |
 
@@ -29,7 +32,8 @@ no effect for `requirements.txt`.
 
 ## With other recipes
 
-`io.github.lmarqs.cookbook:mise:<version>#runtime-version --runtime=python` pins the interpreter at the destination root;
+`io.github.lmarqs.cookbook:mise:<version>#runtime-version --runtime=python` pins the interpreter at the destination \
+root;
 use `--dir=.` here for that project. Each application of this dependency recipe declares the same
 `tasks."dependency:python"` key, so the last recipe in an invocation selects its installer and directory.
 Distinct pyproject dependency entries compose; requirements-file applications share the whole section.
@@ -42,8 +46,12 @@ import io.github.lmarqs.cookbook.mise.Mise
 
 @param(value = ['dependency'], doc = 'One requirement, such as httpx>=0.27') String dependency
 @param(value = ['group'], default = [], doc = 'Optional dependency group') String group
-@param(value = ['installer'], choices = ['uv', 'pip'], default = 'uv', doc = 'The installer the mise task runs') String installer
-@param(value = ['manifest'], choices = ['pyproject.toml', 'requirements.txt'], default = 'pyproject.toml', doc = 'The manifest that records the requirement') String manifest
+@param(value = ['installer'], choices = ['uv', 'pip'], default = 'uv',
+    doc = 'The installer the mise task runs')
+    String installer
+@param(value = ['manifest'], choices = ['pyproject.toml', 'requirements.txt'], default = 'pyproject.toml',
+    doc = 'The manifest that records the requirement')
+    String manifest
 @param(value = ['dir'], default = '.', doc = 'The project directory') String dir
 
 @ingredient(Python) def python
@@ -52,7 +60,10 @@ import io.github.lmarqs.cookbook.mise.Mise
 python.directory = dir
 python.installer = installer
 
-if (manifest == 'pyproject.toml') python.dependency(dependency, group ?: '')
-else python.requirement(dependency)
+if (manifest == 'pyproject.toml') {
+  python.dependency(dependency, group ?: '')
+} else {
+  python.requirement(dependency)
+}
 
 mise.task('dependency:python', python.installCommand())

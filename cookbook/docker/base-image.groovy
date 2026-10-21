@@ -10,8 +10,10 @@ image must be a literal reference. mise and Docker must be available to run the 
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:docker:<version>#base-image --stage=build --expected=eclipse-temurin:17 --image=eclipse-temurin:21
-./cook io.github.lmarqs.cookbook:docker:<version>#base-image --dockerfile=Dockerfile.dev --stage=build --expected=eclipse-temurin:17 --image=eclipse-temurin:21
+./cook io.github.lmarqs.cookbook:docker:<version>#base-image --stage=build --expected=eclipse-temurin:17 \
+--image=eclipse-temurin:21
+./cook io.github.lmarqs.cookbook:docker:<version>#base-image --dockerfile=Dockerfile.dev --stage=build \
+--expected=eclipse-temurin:17 --image=eclipse-temurin:21
 ```
 
 ## Writes
@@ -27,7 +29,8 @@ A stage already using the requested image keeps its `FROM` line.
 
 Distinct stage lines compose. To change the same stage again in one invocation, set the later recipe's
 expected image to the image the preceding recipe supplies. Each application declares `tasks."docker:verify"`,
-so the last one selects its Dockerfile and stage. `io.github.lmarqs.cookbook:docker:<version>#compose-service` declares a
+so the last one selects its Dockerfile and stage. `io.github.lmarqs.cookbook:docker:<version>#compose-service` \
+declares a
 separate validation task.
 ''')
 @yield('''
@@ -37,7 +40,9 @@ root as the build context.
 import io.github.lmarqs.cookbook.docker.Docker
 import io.github.lmarqs.cookbook.mise.Mise
 
-@param(value = ['dockerfile'], default = 'Dockerfile', doc = 'The Dockerfile containing the named stage') String dockerfile
+@param(value = ['dockerfile'], default = 'Dockerfile',
+    doc = 'The Dockerfile containing the named stage')
+    String dockerfile
 @param(value = ['stage'], doc = 'The named build stage') String stage
 @param(value = ['expected'], doc = 'The image the stage uses now') String expected
 @param(value = ['image'], doc = 'The image to use instead') String image

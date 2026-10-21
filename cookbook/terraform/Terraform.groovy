@@ -43,10 +43,14 @@ class Terraform {
    * Declares the whole file at `path`, relative to this instance's directory, with the given HCL content.
    * A second call for the same path replaces its content.
    */
-  void file(String path, String hcl) { files[path] = hcl }
+  void file(String path, String hcl) {
+    files[path] = hcl
+  }
 
   /** Supplies the Terraform toolchain version for Mise, or an empty map when no version is set. */
-  Map<String, String> tools() { version ? [terraform: version] : [:] }
+  Map<String, String> tools() {
+    version ? [terraform: version] : [:]
+  }
 
   /**
    * Supplies a `terraform plan` command in the directory holding `path`, resolved relative to this instance's
@@ -58,5 +62,7 @@ class Terraform {
 
   /** Each declared path as a whole file when `file` is called; declares nothing when no files are supplied. */
   @Files(path = '.')
-  Map<String, String> hclFiles() { files ?: null }
+  Map<String, String> hclFiles() {
+    files ?: null
+  }
 }

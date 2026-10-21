@@ -14,10 +14,10 @@ package io.github.lmarqs.cookbook.ralph
  * file tasks.
  *
  * Model, effort and further entries are the team's, in the seeded configuration. A model goes per run
- * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`); ralph-tui 0.12's Claude plugin accepts only
- * `sonnet`, `opus` and `haiku`. Claude's effort goes per run through `CLAUDE_CODE_EFFORT_LEVEL`, which the launcher and
- * ralph-tui pass to every worker; Codex's goes per entry, as `"-c", "model_reasoning_effort=high"` in `defaultFlags`.
- * Entries a team may add, launched with `ralph-tui run --agent <name>`:
+ * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`); ralph-tui 0.12's Claude plugin accepts
+ * only `sonnet`, `opus` and `haiku`. Claude's effort goes per run through `CLAUDE_CODE_EFFORT_LEVEL`, which the
+ * launcher and ralph-tui pass to every worker; Codex's goes per entry, as `"-c", "model_reasoning_effort=high"` in
+ * `defaultFlags`. Entries a team may add, launched with `ralph-tui run --agent <name>`:
  *
  * ```toml
  * # A Claude worker bound to a role's denies, beside the default entry.
@@ -40,8 +40,8 @@ package io.github.lmarqs.cookbook.ralph
  * ```
  *
  * Known limits of those versions: ralph-tui's parallel mode starts children that are still blocked and refuses fewer
- * than three tasks; Codex runs no project hooks in a worktree, because it trusts hooks per checkout path, unless started
- * with `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor write the Beads
+ * than three tasks; Codex runs no project hooks in a worktree, because it trusts hooks per checkout path, unless
+ * started with `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor write the Beads
  * database, nor write `.git`, so it cannot commit; Claude Code ignores the project's `permissions.allow` in a workspace
  * nobody has trusted, so an unattended Claude worker's allows come through `--role` or `--settings`; deny rules are
  * prefix rules that `git -C . push` gets past, a guardrail, and the structural limit is a worker without push
@@ -99,8 +99,15 @@ class RalphTui {
    */
   void harnesses(List<String> names) {
     def unknown = names - HARNESSES
-    if (unknown) throw new IllegalArgumentException("--harness=${unknown.first()} is not one of: ${HARNESSES.join(', ')}")
-    if (!names) throw new IllegalArgumentException('ralph-tui needs at least one --harness')
+
+    if (unknown) {
+      throw new IllegalArgumentException("--harness=${unknown.first()} is not one of: ${HARNESSES.join(', ')}")
+    }
+
+    if (!names) {
+      throw new IllegalArgumentException('ralph-tui needs at least one --harness')
+    }
+
     harnesses = names.unique(false)
   }
 
@@ -114,14 +121,21 @@ class RalphTui {
       throw new IllegalArgumentException("--role=${name} is not a role name\n  a role is a key under roles in " +
       '.agents/permission/policy.yaml: lower-case letters, digits and hyphens, starting with a letter')
     }
+
     claudeOnly("--role=${name}")
-    if (settings) throw exclusive()
+
+    if (settings) {
+      throw exclusive()
+    }
+
     def file = "${ROLES}/${name}.json"
+
     if (current(file) == null) {
       throw new IllegalArgumentException("--role=${name} needs ${file}\n  the role file is not in the draft\n" +
       "  define roles.${name} in .agents/permission/policy.yaml, then cook " +
       'io.github.lmarqs.cookbook:agents#connect --harness=claude')
     }
+
     role = name
   }
 
@@ -131,31 +145,44 @@ class RalphTui {
    * `harnesses`.
    */
   void settings(String path) {
-    if (!path?.trim()) throw new IllegalArgumentException('--settings needs a path')
+    if (!path?.trim()) {
+      throw new IllegalArgumentException('--settings needs a path')
+    }
+
     claudeOnly("--settings=${path}")
-    if (role) throw exclusive()
+
+    if (role) {
+      throw exclusive()
+    }
+
     settings = path
   }
 
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, the `ralph-tui` section of `.gitignore`, and, while
-   * `mise.toml` is in the draft, the mise wrappers. `cookedWith` names the recipe and its arguments, which the section's
-   * first line records; it must not be blank. Call after `harnesses`, `role` and `settings`.
+   * `mise.toml` is in the draft, the mise wrappers. `cookedWith` names the recipe and its arguments, which the
+   * section's first line records; it must not be blank. Call after `harnesses`, `role` and `settings`.
    */
   void install(String cookedWith) {
-    if (!cookedWith?.trim()) throw new IllegalArgumentException('install needs the recipe it is cooked with')
+    if (!cookedWith?.trim()) {
+      throw new IllegalArgumentException('install needs the recipe it is cooked with')
+    }
+
     this.cookedWith = cookedWith
     miseTasks = current('mise.toml') != null
   }
 
   /**
    * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the `beads` tracker, the first
-   * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, direct merges in parallel mode, and
-   * one `[[agents]]` entry per harness, when harnesses are set.
+   * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, direct merges in parallel mode,
+   * and one `[[agents]]` entry per harness, when harnesses are set.
    */
   @Seed(path = '.ralph-tui/config.toml')
   String config() {
-    if (!harnesses) return null
+    if (!harnesses) {
+      return null
+    }
+
     def lines = [
       'configVersion = "2.1"',
       'tracker = "beads"',
@@ -171,12 +198,13 @@ class RalphTui {
       'directMerge = true',
     ]
     harnesses.each { harness ->
+      def defaultFlags = flags(harness).collect { quoted(it) }
       lines += [
         '',
         '[[agents]]',
         "name = \"${harness}\"",
         "plugin = \"${harness}\"",
-        "defaultFlags = [${flags(harness).collect { quoted(it) }.join(', ')}]",
+        "defaultFlags = [${defaultFlags.join(', ')}]",
         '',
         '[agents.options]',
       ] + OPTIONS[harness]
@@ -189,22 +217,30 @@ class RalphTui {
    * harnesses are set.
    */
   @Seed(path = '.ralph-tui/templates/beads.hbs')
-  String beadsPrompt() { harnesses ? resource('templates/beads.hbs') : null }
+  String beadsPrompt() {
+    harnesses ? resource('templates/beads.hbs') : null
+  }
 
   /**
    * `.ralph-tui/templates/json.hbs`, the prompt for a run with `--prd`, seeded when absent and never owned, when
    * harnesses are set.
    */
   @Seed(path = '.ralph-tui/templates/json.hbs')
-  String jsonPrompt() { harnesses ? resource('templates/json.hbs') : null }
+  String jsonPrompt() {
+    harnesses ? resource('templates/json.hbs') : null
+  }
 
   /** The executable `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>`, when installed. */
   @File(path = '.ralph-tui/bin/run', mode = '0755')
-  String run() { cookedWith ? resource('bin/run.sh') : null }
+  String run() {
+    cookedWith ? resource('bin/run.sh') : null
+  }
 
   /** The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, when installed. */
   @File(path = '.ralph-tui/bin/clean', mode = '0755')
-  String clean() { cookedWith ? resource('bin/clean.sh') : null }
+  String clean() {
+    cookedWith ? resource('bin/clean.sh') : null
+  }
 
   /**
    * The `ralph-tui` section of `.gitignore`: a comment naming the recipe and its arguments, then everything under
@@ -212,7 +248,10 @@ class RalphTui {
    */
   @Section(path = '.gitignore', id = 'ralph-tui')
   List<String> ignoreSection() {
-    if (!cookedWith) return null
+    if (!cookedWith) {
+      return null
+    }
+
     [
       "# ${cookedWith}".toString(),
       '/.ralph-tui/*',
@@ -223,19 +262,25 @@ class RalphTui {
     ]
   }
 
-  /** The mise file tasks `ralph:run` and `ralph:clean`, each handing its arguments to the launcher script of its name. */
+  /**
+   * The mise file tasks `ralph:run` and `ralph:clean`, each handing its arguments to the launcher script of its name.
+   */
   @Files(path = '.mise/tasks/ralph', mode = '0755')
   Map<String, String> miseWrappers() {
-    if (!(cookedWith && miseTasks)) return null
+    if (!(cookedWith && miseTasks)) {
+      return null
+    }
+
     [
-      run: wrapper('run', 'Run ralph-tui in .worktrees/ralph/<name>: <name> (--epic <id> | --prd <file>) [--base <ref>]'),
+      run: wrapper('run',
+      'Run ralph-tui in .worktrees/ralph/<name>: <name> (--epic <id> | --prd <file>) [--base <ref>]'),
       clean: wrapper('clean', "Remove a ralph-tui run's worktrees and branches: <name> [--force]"),
     ]
   }
 
   private List<String> flags(String harness) {
     def extra = harness == 'claude' && role ? ['--settings', "${ROLES}/${role}.json".toString()] :
-        harness == 'claude' && settings ? ['--settings', settings] : []
+    harness == 'claude' && settings ? ['--settings', settings] : []
     FLAGS[harness] + extra
   }
 
@@ -248,10 +293,12 @@ class RalphTui {
 
   private static IllegalArgumentException exclusive() {
     new IllegalArgumentException('--role and --settings are both given\n  each sets the one --settings file of the ' +
-    'claude entry\n  give one of them; to combine a role with more settings, write a settings file that holds both')
+        'claude entry\n  give one of them; to combine a role with more settings, write a settings file that holds both')
   }
 
-  private static String quoted(String value) { groovy.json.JsonOutput.toJson(value) }
+  private static String quoted(String value) {
+    groovy.json.JsonOutput.toJson(value)
+  }
 
   private static String wrapper(String script, String description) {
     "#!/bin/sh\n#MISE description=${quoted(description)}\nexec .ralph-tui/bin/${script} \"\$@\"\n"

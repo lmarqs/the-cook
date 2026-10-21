@@ -10,7 +10,8 @@ to run the install task. The version range is recorded as supplied.
 
 ```sh
 ./cook io.github.lmarqs.cookbook:node:<version>#dependency --package=zod --version=^3.23.0 --dir=packages/api
-./cook io.github.lmarqs.cookbook:node:<version>#dependency --package=typescript --version=^5.7.0 --kind=devDependencies --manager=yarn
+./cook io.github.lmarqs.cookbook:node:<version>#dependency --package=typescript --version=^5.7.0 \
+--kind=devDependencies --manager=yarn
 ```
 
 ## Writes
@@ -25,7 +26,8 @@ file.
 
 ## With other recipes
 
-`io.github.lmarqs.cookbook:node:<version>#project` supplies tool pins and setup tasks for a root project. Use the same manager
+`io.github.lmarqs.cookbook:node:<version>#project` supplies tool pins and setup tasks for a root project. Use the same \
+manager
 and `--dir=.` to target that project. Each application of this dependency recipe declares the same
 `tasks."dependency:node"` key; the last recipe in an invocation owns the task and selects its directory.
 ''')
@@ -37,8 +39,12 @@ import io.github.lmarqs.cookbook.mise.Mise
 
 @param(value = ['package'], doc = 'The package name') String packageName
 @param(value = ['version'], doc = 'The version range to record') String version
-@param(value = ['kind'], choices = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'], default = 'dependencies', doc = 'The package.json dependency group that owns the entry') String kind
-@param(value = ['manager'], choices = ['npm', 'pnpm', 'yarn'], default = 'npm', doc = 'The package manager the install task runs') String manager
+@param(value = ['kind'], choices = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'],
+    default = 'dependencies', doc = 'The package.json dependency group that owns the entry')
+    String kind
+@param(value = ['manager'], choices = ['npm', 'pnpm', 'yarn'], default = 'npm',
+    doc = 'The package manager the install task runs')
+    String manager
 @param(value = ['dir'], default = '.', doc = 'The package directory') String dir
 
 @ingredient(Node) def node

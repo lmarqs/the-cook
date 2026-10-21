@@ -11,14 +11,16 @@ must be available to run the task.
 
 ```sh
 ./cook io.github.lmarqs.cookbook:go:<version>#dependency --module=github.com/google/uuid --version=v1.6.0
-./cook io.github.lmarqs.cookbook:go:<version>#dependency --module=github.com/google/uuid --version=v1.6.0 --dir=services/api
+./cook io.github.lmarqs.cookbook:go:<version>#dependency --module=github.com/google/uuid --version=v1.6.0 \
+--dir=services/api
 ```
 
 ## Writes
 
 | Target | Part | When |
 | --- | --- | --- |
-| `<dir>/go.mod` | The module's requirement line, kept as written at the requested version or appended when absent | Always |
+| `<dir>/go.mod` | The module's requirement line, kept as written at the requested version or appended when absent \
+| Always |
 | `mise.toml` | `tasks."dependency:go"`, owned whole, running tidy and tests in `<dir>` | Always |
 
 ## With other recipes
