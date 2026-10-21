@@ -26,9 +26,10 @@ typed (tested).
 Run `sh .agents/skills/agents-layout/scripts/check.sh` from the repository root. It writes nothing, prints one line
 per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. A `FAIL`
 is a setup a harness cannot read: `AGENTS.md` missing, a `CLAUDE.md` that hides it, or a link missing, broken or
-ignored. A `WARN` is a recommendation to weigh, such as the word budget; a name `AGENTS.md` gives that is not in the
-tree may be a stale path, or a git ref or a file made at run time. It reads the links and the tracked `AGENTS.md`
-files from the index, so stage the layout before running it on uncommitted work. Then make the checks a script cannot:
+ignored. A `WARN` is a recommendation to weigh, such as the word budget or an entry directly under `.agents/` outside
+the shared directories; a name `AGENTS.md` gives that is not in the tree may be a stale path, or a git ref or a file
+made at run time. It reads the links, the entries of `.agents/` and the tracked `AGENTS.md` files from the index, so
+stage the layout before running it on uncommitted work. Then make the checks a script cannot:
 
 - Each rule in `AGENTS.md` states what its source states: the code, a config file, the README, CI or the developer.
 - Each command in Quick reference runs here; run each one marked `(unverified)` and remove the mark when it passes.
@@ -101,7 +102,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | --- | --- | --- | --- |
 | `skills/` | One directory per skill: `SKILL.md`, whose frontmatter `name` and `description` say when to use it, and the files it refers to | Through the `.claude/skills` link | Natively |
 | `commands/` | One Markdown file per slash command; the file name is the command | Through the `.claude/commands` link | Not read; turn a command both need into a skill |
-| `hooks/` | Scripts that hook settings run, by their path from the repository root | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
+| `hooks/` | Scripts that hook settings run, by their path from the repository root, and the files they load | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
 | `memory/` | Durable facts about the repository that the code and `README.md` do not show; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
 
 - **A skill** is for knowledge an agent needs only for some tasks: it loads when its description matches, so it costs

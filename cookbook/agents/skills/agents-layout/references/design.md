@@ -55,6 +55,13 @@ A fresh clone, a cloud session or a CI job works with no cooking: the links and 
 repository. The review of a policy change shows exactly what each harness will enforce, because the rendered rules
 are in the same diff.
 
+Ignoring `.claude/` and `.codex/` whole, and cooking the links in each checkout, would move six links out of Git and
+nothing else: Claude Code and Codex read only their own directories, so the links must exist, and the adapters stay
+committed either way. Every clone, worktree, loop runner's worker, cloud session and CI job would then need Cook and a
+setup step before its first session. One that skips it runs the harness with none of the team's permissions, hooks
+or skills, and with Claude's bypass mode allowed, and nothing warns. `cook.lock` would record links that a clean
+checkout lacks, so `cook --check` fails in CI.
+
 The cost: generated files can drift from the policy and can conflict in a merge. Both are fixed the same way: resolve
 `policy.yaml`, then cook `#connect` again. Windows checks links out as text files unless `core.symlinks` is on.
 

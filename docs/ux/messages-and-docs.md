@@ -158,10 +158,9 @@ from search needs the purpose before the detail. ADRs follow the
 
 Keep the Objective independent of design details, so readers understand the purpose before judging a solution.
 
-Three pages state their objective in an opening paragraph instead, because readers open them for lookup rather than
-motivation: `docs/architecture.md` (the authority that other pages cite), `docs/features/cli.md` (command syntax) and
-`docs/features/agentic-dogfood.md` (current-implementation guide). Cookbook units open with the lead of their doc
-comment.
+Two pages state their objective in an opening paragraph instead, because readers open them for lookup rather than
+motivation: `docs/architecture.md` (the authority that other pages cite) and `docs/features/cli.md` (command syntax).
+Cookbook units open with the lead of their doc comment.
 
 ADR facts follow under `## Context`; reference material and examples follow under their own headings, because readers
 use the outline to find each kind of information.

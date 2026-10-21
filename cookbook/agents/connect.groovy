@@ -77,6 +77,11 @@ earlier rule, then its contents ignored except the links above, all committed; a
 
 Cooking with fewer harnesses removes the outputs of the ones left out.
 
+`.claude/` and `.codex/` hold only the links, and the links are committed: a clone, a worktree, a cloud session or a CI
+job reads the layout with no cooking and no Cook installed. Everything else a harness writes there for one machine,
+such as `.claude/settings.local.json`, stays out of Git, so a file the team shares goes under `.agents/`. The
+`agents-layout` skill's `references/design.md` gives the reason and its cost.
+
 Never touches: `AGENTS.md`; every other key in the adapter files, such as the other events under `hooks`, `env` or
 `[mcp_servers]`, which the team writes in the file and cooking keeps; the scripts in `.agents/hooks/session-start.d/`;
 `.claude/settings.local.json` and anything else a harness writes in its own directory.

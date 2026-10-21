@@ -43,7 +43,6 @@ sketches how recipes and ingredients are written and distributed.
 | [Discard](discard.md) | Removing what a recipe owns, without evaluating it |
 | [Wrapper](wrapper.md) | Version and checksum pinning, first-use download and cache, explicit upgrades and the current launcher |
 | [Pitfalls, gaps and traps](pitfalls.md) | Symptoms, causes, Cook's responsibility and what to review |
-| [This repository's agent setup](agentic-dogfood.md) | How this checkout cooks its own agent recipes with the current CLI |
 
 ## Related documentation
 
