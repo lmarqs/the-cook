@@ -29,7 +29,8 @@ Cook `io.github.lmarqs.cookbook:agents:<version>#connect` with the harnesses to 
 @yield('''
 Have an agent fill in `AGENTS.md`, edit `.agents/permission/policy.yaml`, then cook
 `io.github.lmarqs.cookbook:agents:<version>#connect`, all in one commit: `$agents-layout adopt` in Codex does it, and
-`/agents-layout adopt` in Claude Code once `#connect --harness=claude` has linked `.claude/skills`.
+`/agents-layout adopt` in Claude Code once `#connect --harness=claude` has linked `.claude/skills`. Until that link
+exists, ask Claude Code to follow `.agents/skills/agents-layout/SKILL.md` with the argument `adopt`.
 ''')
 import io.github.lmarqs.cookbook.agents.Agents
 
