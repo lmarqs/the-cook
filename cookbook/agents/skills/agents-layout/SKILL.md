@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Takes adopt to set the layout up, which it also does when given nothing in a repository without the layout, review to check it, and review --fix to close the gaps it finds. Not for the repository's own code, and not for a person's own harness settings outside this repository.
+description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Takes adopt to set the layout up, review to check it, and review --fix to close the gaps it finds. Not for the repository's own code, and not for a person's own harness settings outside this repository.
 argument-hint: "[adopt | review [--fix]]"
 ---
 
@@ -19,8 +19,7 @@ typed (tested).
 | `adopt` | Follow [references/adopt.md](references/adopt.md) from its first step |
 | `review` | Run [the review](#review) and report it; change no file |
 | `review --fix` | Run the review, then [fix what it finds](#review---fix) |
-| None, and `grep -qF 'io.github.lmarqs.cookbook:agents#connect' "$(git rev-parse --show-toplevel)/cook.lock"` fails | `adopt`: the layout is not set up here yet |
-| None, and the layout is set up | Pick the task from [the table below](#pick-the-task) |
+| None | Pick the task from [the table below](#pick-the-task) |
 
 ### Review
 
@@ -103,7 +102,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | --- | --- | --- | --- |
 | `skills/` | One directory per skill: `SKILL.md`, whose frontmatter `name` and `description` say when to use it, and the files it refers to | Through the `.claude/skills` link | Natively |
 | `commands/` | One Markdown file per slash command; the file name is the command | Through the `.claude/commands` link | Not read; turn a command both need into a skill |
-| `hooks/` | Scripts that hook settings run, by their path from the repository root | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
+| `hooks/` | Scripts that hook settings run, by their path from the repository root, and the files they load | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
 | `memory/` | Durable facts about the repository that the code and `README.md` do not show; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
 
 - **A skill** is for knowledge an agent needs only for some tasks: it loads when its description matches, so it costs

@@ -376,13 +376,13 @@ before step 8.
 1. List the entries that are not the layout's:
 
    ```sh
-   git ls-files -- .agents | cut -d/ -f2 | sort -u |
+   git ls-files -- .agents | sed -n 's|^\.agents/\([^/]*\).*|\1|p' | sort -u |
      grep -vxE 'README\.md|permission|adapters|skills|commands|hooks|memory'
    ```
 
 2. Find what names each one: `git grep -n -e <entry>`.
 3. Move it beside what uses it: a file a hook script loads into `hooks/`, a file one skill reads into that skill's
-   directory, a durable fact into `memory/`. A file no agent reads, such as a loop runner's configuration, leaves
+   directory, a durable fact into `memory/`, permission rules into `permission/policy.yaml`. A file no agent reads, such as a loop runner's configuration, leaves
    `.agents/`. Then update every path step 2 found, and the relative paths inside the moved file.
 
 ## Risks a review catches

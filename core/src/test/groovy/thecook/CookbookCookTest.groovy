@@ -772,12 +772,7 @@ bypass allow
   @Test void theLayoutCheckOnlyRecommendsOnAFreshSeedAndOnAFilledAgentsMdNamingWhatIsNotInTheTree() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def environment = System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1']
-    def run = { List<String> command ->
-      def process = command.execute(environment.collect { name, value -> "${name}=${value}" }, kitchen)
-      def output = process.text
-      [process.waitFor(), output]
-    }
+    def run = runner(kitchen)
     assert run(['git', 'init', '-q'])[0] == 0
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
@@ -814,12 +809,7 @@ bypass allow
   @Test void theLayoutCheckFailsOnlyOnAClaudeFileBesideOrAboveAnAgentsMdAndNeverOnATrackedLink() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def environment = System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1']
-    def run = { List<String> command ->
-      def process = command.execute(environment.collect { name, value -> "${name}=${value}" }, kitchen)
-      def output = process.text
-      [process.waitFor(), output]
-    }
+    def run = runner(kitchen)
     assert run(['git', 'init', '-q'])[0] == 0
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
@@ -866,12 +856,7 @@ bypass allow
   @Test void theLayoutCheckRecommendsMovingATrackedEntryBesideTheSharedDirectories() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def environment = System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1']
-    def run = { List<String> command ->
-      def process = command.execute(environment.collect { name, value -> "${name}=${value}" }, kitchen)
-      def output = process.text
-      [process.waitFor(), output]
-    }
+    def run = runner(kitchen)
     assert run(['git', 'init', '-q'])[0] == 0
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
@@ -889,9 +874,33 @@ bypass allow
 
     assert tracked == 0
     assert trackedOutput.readLines().findAll { it.contains('hook-config') } == [
-      'WARN .agents/hook-config.json is outside the shared directories -- move it into skills/, commands/, hooks/ ' +
-      'or memory/, beside what uses it, or out of .agents/ when no agent reads it; then update the paths that name it'
+      'WARN .agents/hook-config.json is outside the shared directories -- move it beside what uses it in skills/, ' +
+      'commands/, hooks/ or memory/, merge permission rules into permission/policy.yaml, or move it out of .agents/ ' +
+      'when no agent reads it; then update the paths that name it'
     ]
+
+    new File(kitchen, '.agents/notas-ção.md').text = 'notes\n'
+    assert run(['git', 'add', '.agents/notas-ção.md'])[0] == 0
+    def (accented, accentedOutput) = run(check)
+
+    assert accented == 0
+    assert accentedOutput.contains('WARN .agents/notas-ção.md is outside the shared directories -- ')
+  }
+
+  @Test void theLayoutCheckReadsNoEntryFromAnAgentsLinkItself() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def run = runner(kitchen)
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    def elsewhere = new File(kitchen, 'shared')
+    assert new File(kitchen, '.agents').renameTo(elsewhere)
+    Files.createSymbolicLink(new File(kitchen, '.agents').toPath(), Paths.get('shared'))
+    assert run(['git', 'add', '.agents'])[0] == 0
+
+    def output = run(['sh', new File(elsewhere, 'skills/agents-layout/scripts/check.sh').absolutePath])[1]
+
+    assert output.contains('ok every tracked entry in .agents/ belongs to the layout\n')
   }
 
   @Test void commitsTheHarnessLinksAndKeepsEverythingElseInTheirDirectoriesOutOfGit() {
@@ -1557,6 +1566,17 @@ import acme.noisy.Noisy
   // The policy and the output the layout's mock-up was written with, copied from it.
   private static String fixture(String name) {
     CookbookCookTest.getResource("/agents-layout/${name}").text
+  }
+
+  /** Runs a command in the kitchen with no global or system git configuration, returning its exit code and output. */
+  private static Closure<List> runner(File kitchen) {
+    def environment = (System.getenv() + [GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1'])
+    .collect { name, value -> "${name}=${value}" }
+    return { List<String> command ->
+      def process = command.execute(environment, kitchen)
+      def output = process.text
+      [process.waitFor(), output]
+    }
   }
 
   private File kitchen() {
