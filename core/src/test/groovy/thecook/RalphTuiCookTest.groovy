@@ -302,7 +302,7 @@ roles:
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
-    assert texts.params*.names == [['harness'], ['role'], ['settings']]
+    assert texts.params*.names == [['harness'], ['role'], ['settings'], ['setup']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
     assert texts.help.readLines().findAll { it.startsWith('## ') } == [
       '## API',
@@ -378,12 +378,10 @@ roles:
     assert reused.output.readLines()[3] == 'ralph-tui run --epic ep-1'
   }
 
-  @Test void runPassesThePrdByItsAbsolutePathStartsFromTheBaseAndRunsTheSetupScript() {
+  @Test void runPassesThePrdByItsAbsolutePathAndStartsFromTheBase() {
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
-    write(kitchen, '.worktrees/setup', '#!/bin/sh\ntouch setup-ran\n')
-    new File(kitchen, '.worktrees/setup').setExecutable(true)
     commitAll(kitchen)
     git(kitchen, 'branch', 'base')
     write(kitchen, 'later.txt', 'after the base\n')
@@ -395,8 +393,107 @@ roles:
     assert run.exit == 0
     assert run.output.readLines()[3] == "ralph-tui run --prd ${kitchen.canonicalPath}/tasks/prd.json".toString()
     assert git(kitchen, 'rev-parse', 'ralph/story') == git(kitchen, 'rev-parse', 'base')
-    assert new File(kitchen, '.worktrees/ralph/story/setup-ran').exists()
+  }
+
+  @Test void runRunsNoSetupWithoutSetupEvenWhenWorktreesSetupIsExecutable() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    executable(kitchen, '.worktrees/setup', '#!/bin/sh\ntouch setup-ran\n')
+    commitAll(kitchen)
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+
+    assert run.exit == 0
+    assert run.output.readLines()[3] == 'ralph-tui run --epic ep-1'
+    assert !new File(kitchen, '.worktrees/ralph/demo/setup-ran').exists()
     assert !new File(kitchen, 'setup-ran').exists()
+  }
+
+  @Test void runRunsTheSetupFileOnceFromTheRootOfAWorktreeItCreatesAndNotOnReuse() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], setup: ['.worktrees/setup']]).commit()
+    executable(kitchen, '.worktrees/setup', '#!/bin/sh\npwd -P >> setup-ran\n')
+    commitAll(kitchen)
+    def worktree = new File(kitchen, '.worktrees/ralph/demo')
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+
+    assert run.exit == 0
+    assert run.output.readLines()[3] == 'ralph-tui run --epic ep-1'
+    assert new File(worktree, 'setup-ran').readLines() == [worktree.canonicalPath]
+    assert !new File(kitchen, 'setup-ran').exists()
+
+    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    assert reused.exit == 0
+    assert new File(worktree, 'setup-ran').readLines() == [worktree.canonicalPath]
+  }
+
+  @Test void aSetupPathIsShellQuotedIntoTheLauncherAndRecordedOnTheArgumentLine() {
+    def kitchen = repository()
+    def path = "tools/it's \$HOME `set` up"
+    cook(kitchen, RALPH, [harness: ['claude'], setup: [path]]).commit()
+    executable(kitchen, path, '#!/bin/sh\ntouch setup-ran\n')
+    commitAll(kitchen)
+
+    assert new File(kitchen, '.ralph-tui/bin/run').readLines().contains("setup='tools/it'\\''s \$HOME `set` up'")
+    assert new File(kitchen, '.gitignore').readLines()[1] ==
+    "# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --setup=${path}".toString()
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert new File(kitchen, '.worktrees/ralph/demo/setup-ran').exists()
+  }
+
+  @Test void runFailsWhenTheSetupFileIsMissingNotExecutableOrFails() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], setup: ['scripts/setup']]).commit()
+    commitAll(kitchen)
+
+    def missing = launch(kitchen, '.ralph-tui/bin/run', 'missing', '--epic', 'ep-1')
+    assert missing.exit == 1
+    def worktree = new File(kitchen, '.worktrees/ralph/missing').canonicalPath
+    assert missing.output.readLines()[1..-1] == [
+      "run: scripts/setup is not in ${worktree}",
+      '  a worktree holds only what is committed',
+      '  fix it, then run .ralph-tui/bin/clean missing and run again',
+    ]*.toString()
+
+    write(kitchen, 'scripts/setup', '#!/bin/sh\nexit 0\n')
+    commitAll(kitchen)
+    def plain = launch(kitchen, '.ralph-tui/bin/run', 'plain', '--epic', 'ep-1')
+    assert plain.exit == 1
+    assert plain.output.readLines()[1] == 'run: scripts/setup is not executable'
+
+    executable(kitchen, 'scripts/setup', '#!/bin/sh\nexit 3\n')
+    commitAll(kitchen)
+    def failing = launch(kitchen, '.ralph-tui/bin/run', 'failing', '--epic', 'ep-1')
+    assert failing.exit == 1
+    assert failing.output.readLines()[1..-1] == [
+      'run: scripts/setup failed',
+      "  in ${new File(kitchen, '.worktrees/ralph/failing').canonicalPath}",
+      '  fix it, then run .ralph-tui/bin/clean failing and run again',
+    ]*.toString()
+    assert !failing.output.contains('ralph-tui run')
+  }
+
+  @Test void refusesASetupPathOutsideTheRepositoryOrUnderRalphTui() {
+    def kitchen = kitchen()
+
+    ['/etc/setup', '../setup', 'a/../../setup'].each { path ->
+      def error = shouldFail(IllegalArgumentException) { cook(kitchen, RALPH, [harness: ['claude'], setup: [path]]) }
+      assert error.message.readLines() == [
+        "${RALPH}: --setup=${path} is outside the repository",
+        '  bin/run runs it from the root of each run worktree, which holds the committed files',
+        '  name the file by its path from the repository root, as --setup=.worktrees/setup',
+      ]*.toString()
+    }
+    ['.ralph-tui/setup', './.ralph-tui/bin/setup'].each { path ->
+      def error = shouldFail(IllegalArgumentException) { cook(kitchen, RALPH, [harness: ['claude'], setup: [path]]) }
+      assert error.message.readLines() == [
+        "${RALPH}: --setup=${path} is under .ralph-tui/",
+        '  a run worktree has there only the configuration, prompts and launcher this recipe writes',
+        '  name a committed file outside .ralph-tui/, as --setup=.worktrees/setup',
+      ]*.toString()
+    }
+    assert files(kitchen) == []
   }
 
   @Test void runRefusesBothTrackersAndNeedsOne() {
@@ -519,6 +616,11 @@ roles:
     def process = builder.start()
     def output = process.inputStream.text
     [exit: process.waitFor(), output: output]
+  }
+
+  private static void executable(File kitchen, String path, String text) {
+    write(kitchen, path, text)
+    new File(kitchen, path).setExecutable(true)
   }
 
   private static void write(File kitchen, String path, String text) {

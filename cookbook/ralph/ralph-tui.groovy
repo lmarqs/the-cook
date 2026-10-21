@@ -14,10 +14,13 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --role=worker
 # Claude workers with a settings file the team writes
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --settings=ralph-worker.json
+# Claude workers in run worktrees the launcher sets up with the team's script
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --setup=.worktrees/setup
 ```
 
 The first `--harness` is the default agent. `--role` and `--settings` reach only the Claude entry, and only one of them
-is given. What it publishes for people, sessions and other recipes:
+is given. `--setup` names a committed executable by its path from the repository root, outside `.ralph-tui/`; without
+it, `bin/run` runs no setup. What it publishes for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -39,7 +42,8 @@ with `--prd` |
 - The `--settings` path as given: written into the configuration, never read or written at cook time. Workers
   resolve it in the run worktree, so it names a committed file by its path from the repository root, outside
   `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
-- `.worktrees/setup`, at run time, when it is executable in a new run worktree.
+- The `--setup` file, at run time, only with `--setup`: `bin/run` runs it in each run worktree it creates and fails the
+  run when it is missing there, not executable or fails. Never read or written at cook time.
 - By hand first: `bun install -g ralph-tui@0.12.0`, and for `--epic`, a Beads database with the epic.
 
 ## Produces
@@ -74,7 +78,7 @@ requests, and the tracker's state.
 by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
 | What a Codex worker may do | Codex's `workspace-write` sandbox, in the seeded entry |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
-| The run worktree's setup | The team, in `.worktrees/setup`, which `bin/run` runs in each worktree it creates |
+| The run worktree's setup | The person, by `--setup`; the team writes the file |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
 | Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry |
 | A line in `AGENTS.md` and the agents layout's Launching table | The team, from After cooking |
@@ -89,11 +93,12 @@ the role defined in the policy.
 
 `bin/run <name>` refuses while `git status --porcelain .ralph-tui` in the main checkout lists anything, because a
 worktree holds only what is committed. It creates `.worktrees/ralph/<name>` on a new branch `ralph/<name>` from
-`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist. In a worktree it creates, it runs
-`.worktrees/setup` when that is executable. It prints the worktree's path and branch, then runs
-`ralph-tui run --epic <id>`, or `--prd` with the file's absolute path, in the worktree, with the remaining arguments,
-such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no environment variable, so
-`CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
+`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist. With `--setup`, it runs that file
+from the root of each worktree it creates, never one it reuses, and stops the run when the file is missing, not
+executable or fails, leaving the worktree for `bin/clean`; without `--setup`, it runs no setup. It prints the
+worktree's path and branch, then runs `ralph-tui run --epic <id>`, or `--prd` with the file's absolute path, in the
+worktree, with the remaining arguments, such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no
+environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 `bin/clean <name>` refuses while `ralph/<name>` has commits `HEAD` does not, which includes a branch delivered by a
 squash merge, or while its worktree has changes; `--force` removes them anyway. It removes the worktree, every worktree
@@ -102,9 +107,10 @@ on a `ralph-parallel/*` branch with that branch, then the branch `ralph/<name>`.
 ## Re-cooking
 
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as
-`# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex`. The seeds are never rewritten: to take
-other harnesses, a role or a newer version's configuration or prompts, edit them or delete them and cook again. A newer
-version rewrites the launcher and the section.
+`# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --setup=.worktrees/setup`. Cooking with
+another `--setup`, or without it, rewrites the launcher. The seeds are never rewritten: to take other harnesses, a role
+or a newer version's configuration or prompts, edit them or delete them and cook again. A newer version rewrites the
+launcher and the section.
 
 ## Traps
 
@@ -138,6 +144,9 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
     String role
 @param(value = ['settings'], default = [], doc = 'A Claude settings file the claude entry passes with --settings')
     String settings
+@param(value = ['setup'], default = [],
+    doc = 'An executable, by its path from the repository root, that bin/run runs in each run worktree it creates')
+    String setup
 
 @ingredient(RalphTui) def ralph
 
@@ -152,6 +161,11 @@ if (role != null) {
   ralph.role(role)
 }
 
+if (setup != null) {
+  ralph.setup(setup)
+}
+
 def arguments = harnesses.collect { "--harness=${it}" } +
-(role != null ? ["--role=${role}"] : []) + (settings != null ? ["--settings=${settings}"] : [])
+(role != null ? ["--role=${role}"] : []) + (settings != null ? ["--settings=${settings}"] : []) +
+(setup != null ? ["--setup=${setup}"] : [])
 ralph.install((['io.github.lmarqs.cookbook:ralph#ralph-tui'] + arguments).join(' '))

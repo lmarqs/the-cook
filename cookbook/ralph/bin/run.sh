@@ -3,6 +3,9 @@
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -eu
 
+# The file --setup names, by its path from the repository root; empty without --setup.
+setup=''
+
 usage() {
   echo 'usage: .ralph-tui/bin/run <name> (--epic <id> | --prd <file>) [--base <ref>] [ralph-tui run arguments...]' >&2
   exit 2
@@ -82,8 +85,12 @@ else
     git -C "$root" worktree add --quiet -b "$branch" "$worktree" "$base"
   fi
   echo "Created the worktree $worktree on $branch."
-  if [ -x "$worktree/.worktrees/setup" ]; then
-    (cd "$worktree" && ./.worktrees/setup) || fail '.worktrees/setup failed' "in $worktree"
+  if [ -n "$setup" ]; then
+    retry="fix it, then run .ralph-tui/bin/clean $name and run again"
+    [ -f "$worktree/$setup" ] ||
+      fail "$setup is not in $worktree" 'a worktree holds only what is committed' "$retry"
+    [ -x "$worktree/$setup" ] || fail "$setup is not executable" "in $worktree" "$retry"
+    (cd "$worktree" && "./$setup") || fail "$setup failed" "in $worktree" "$retry"
   fi
 fi
 echo "worktree: $worktree"

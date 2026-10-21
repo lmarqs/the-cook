@@ -60,14 +60,16 @@ package io.github.lmarqs.cookbook.ralph
  *
  * ralph.harnesses(['claude', 'codex'])
  * ralph.role('worker')
- * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --role=worker')
+ * ralph.setup('.worktrees/setup')
+ * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --role=worker ' +
+ *     '--setup=.worktrees/setup')
  * ```
  *
  * ## With other models
  *
  * None: ralph-tui names the other tools only by path. Run worktrees follow `io.github.lmarqs.cookbook:git#worktrees`'s
- * rule `.worktrees/<branch>` and run its `.worktrees/setup`; `--role` reads the role files
- * `io.github.lmarqs.cookbook:agents#connect` renders.
+ * rule `.worktrees/<branch>`, and the launcher runs a setup file only when `setup` names one, such as that recipe's
+ * `.worktrees/setup`; `--role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders.
  */
 @Ingredient
 class RalphTui {
@@ -89,6 +91,7 @@ class RalphTui {
   private List<String> harnesses = []
   private String role
   private String settings
+  private String setup
   private String cookedWith
 
   /**
@@ -157,9 +160,37 @@ class RalphTui {
   }
 
   /**
+   * Has `bin/run` run the file at `path`, by its path from the repository root, from the root of each worktree it
+   * creates, and fail the run when that file is missing, not executable or fails. Without it, `bin/run` runs no setup.
+   * Refused when blank, absolute, holding a `..` segment, or under `.ralph-tui/`, which in a run worktree holds only
+   * what this recipe writes.
+   */
+  void setup(String path) {
+    if (!path?.trim()) {
+      throw new IllegalArgumentException('--setup needs a path')
+    }
+
+    def segments = path.split('/').findAll { it && it != '.' }
+
+    if (path.startsWith('/') || '..' in segments) {
+      throw new IllegalArgumentException("--setup=${path} is outside the repository\n  bin/run runs it from the root " +
+      'of each run worktree, which holds the committed files\n  name the file by its path from the repository root, ' +
+      'as --setup=.worktrees/setup')
+    }
+
+    if (segments && segments.first() == '.ralph-tui') {
+      throw new IllegalArgumentException("--setup=${path} is under .ralph-tui/\n  a run worktree has there only the " +
+      'configuration, prompts and launcher this recipe writes\n  name a committed file outside .ralph-tui/, as ' +
+      '--setup=.worktrees/setup')
+    }
+
+    setup = path
+  }
+
+  /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `role` and `settings`.
+   * `harnesses`, `role`, `settings` and `setup`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -227,10 +258,18 @@ class RalphTui {
     harnesses ? resource('templates/json.hbs') : null
   }
 
-  /** The executable `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>`, when installed. */
+  /**
+   * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>`, with the `setup` path
+   * shell-quoted into its `setup` variable, when installed.
+   */
   @File(path = '.ralph-tui/bin/run', mode = '0755')
   String run() {
-    cookedWith ? resource('bin/run.sh') : null
+    if (!cookedWith) {
+      return null
+    }
+
+    def script = resource('bin/run.sh')
+    setup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(setup)}\n") : script
   }
 
   /** The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, when installed. */
@@ -275,6 +314,10 @@ class RalphTui {
   private static IllegalArgumentException exclusive() {
     new IllegalArgumentException('--role and --settings are both given\n  each sets the one --settings file of the ' +
         'claude entry\n  give one of them; to combine a role with more settings, write a settings file that holds both')
+  }
+
+  private static String shellQuoted(String value) {
+    "'${value.replace("'", "'\\''")}'"
   }
 
   private static String quoted(String value) {
