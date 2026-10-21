@@ -71,6 +71,8 @@ When a write fails, it restores the paths it already wrote and fails.
 ## Verification
 
 `./gradlew check` runs the core tests: `CookbookCookTest` cooks the `agents` artifact and small artifacts built
-in the test, by coordinates and by path; `GitWorktreesCookTest` and `BeadsTrackerCookTest` cook `git#worktrees` and
-`beads#tracker` through `Kitchens`, which publishes any `cookbook/<artifact>/` into a test kitchen; `DocumentsTest` edits JSON and TOML through the documents' own API;
+in the test, by coordinates and by path; `GitWorktreesCookTest`, `BeadsTrackerCookTest` and `RalphTuiCookTest` cook
+`git#worktrees`, `beads#tracker` and `ralph#ralph-tui` through `Kitchens`, which publishes any `cookbook/<artifact>/`
+into a test kitchen, and `RalphTuiCookTest` runs the launcher it installs against a fake `ralph-tui`; `DocumentsTest`
+edits JSON and TOML through the documents' own API;
 `CoordinatesTest` and `RecipeSourceTest` cover coordinates and recipe texts; `FilePatchTest` covers the review diff.

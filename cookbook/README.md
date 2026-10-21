@@ -17,7 +17,7 @@ everything a reader needs without the source checkout. Each release of this repo
 artifact to Maven Central as `io.github.lmarqs.cookbook:agents:<version>`, so it cooks with no `cook.toml`; the other
 directories are not published.
 
-A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#prd-story`. Without
+A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
 `#recipe` the address names the artifact, which `./cook help` describes and nothing cooks.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources.
