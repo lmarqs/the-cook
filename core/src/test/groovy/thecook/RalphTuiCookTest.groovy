@@ -302,7 +302,7 @@ roles:
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
-    assert texts.params*.names == [['harness'], ['role'], ['settings'], ['setup']]
+    assert texts.params*.names == [['harness'], ['role'], ['settings'], ['worktree-setup']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
     assert texts.help.readLines().findAll { it.startsWith('## ') } == [
       '## API',
@@ -411,7 +411,7 @@ roles:
 
   @Test void runRunsTheSetupFileOnceFromTheRootOfAWorktreeItCreatesAndNotOnReuse() {
     def kitchen = repository()
-    cook(kitchen, RALPH, [harness: ['claude'], setup: ['.worktrees/setup']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': ['.worktrees/setup']]).commit()
     executable(kitchen, '.worktrees/setup', '#!/bin/sh\npwd -P >> setup-ran\n')
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
@@ -431,20 +431,20 @@ roles:
   @Test void aSetupPathIsShellQuotedIntoTheLauncherAndRecordedOnTheArgumentLine() {
     def kitchen = repository()
     def path = "tools/it's \$HOME `set` up"
-    cook(kitchen, RALPH, [harness: ['claude'], setup: [path]]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': [path]]).commit()
     executable(kitchen, path, '#!/bin/sh\ntouch setup-ran\n')
     commitAll(kitchen)
 
     assert new File(kitchen, '.ralph-tui/bin/run').readLines().contains("setup='tools/it'\\''s \$HOME `set` up'")
     assert new File(kitchen, '.gitignore').readLines()[1] ==
-    "# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --setup=${path}".toString()
+    "# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worktree-setup=${path}".toString()
     assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
     assert new File(kitchen, '.worktrees/ralph/demo/setup-ran').exists()
   }
 
   @Test void runFailsWhenTheSetupFileIsMissingNotExecutableOrFails() {
     def kitchen = repository()
-    cook(kitchen, RALPH, [harness: ['claude'], setup: ['scripts/setup']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': ['scripts/setup']]).commit()
     commitAll(kitchen)
 
     def missing = launch(kitchen, '.ralph-tui/bin/run', 'missing', '--epic', 'ep-1')
@@ -478,19 +478,23 @@ roles:
     def kitchen = kitchen()
 
     ['/etc/setup', '../setup', 'a/../../setup'].each { path ->
-      def error = shouldFail(IllegalArgumentException) { cook(kitchen, RALPH, [harness: ['claude'], setup: [path]]) }
+      def error = shouldFail(IllegalArgumentException) {
+        cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': [path]])
+      }
       assert error.message.readLines() == [
-        "${RALPH}: --setup=${path} is outside the repository",
+        "${RALPH}: --worktree-setup=${path} is outside the repository",
         '  bin/run runs it from the root of each run worktree, which holds the committed files',
-        '  name the file by its path from the repository root, as --setup=.worktrees/setup',
+        '  name the file by its path from the repository root, as --worktree-setup=.worktrees/setup',
       ]*.toString()
     }
     ['.ralph-tui/setup', './.ralph-tui/bin/setup'].each { path ->
-      def error = shouldFail(IllegalArgumentException) { cook(kitchen, RALPH, [harness: ['claude'], setup: [path]]) }
+      def error = shouldFail(IllegalArgumentException) {
+        cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': [path]])
+      }
       assert error.message.readLines() == [
-        "${RALPH}: --setup=${path} is under .ralph-tui/",
+        "${RALPH}: --worktree-setup=${path} is under .ralph-tui/",
         '  a run worktree has there only the configuration, prompts and launcher this recipe writes',
-        '  name a committed file outside .ralph-tui/, as --setup=.worktrees/setup',
+        '  name a committed file outside .ralph-tui/, as --worktree-setup=.worktrees/setup',
       ]*.toString()
     }
     assert files(kitchen) == []

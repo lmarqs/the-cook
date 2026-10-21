@@ -3,7 +3,7 @@
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -eu
 
-# The file --setup names, by its path from the repository root; empty without --setup.
+# The file --worktree-setup names, by its path from the repository root; empty without --worktree-setup.
 setup=''
 
 usage() {

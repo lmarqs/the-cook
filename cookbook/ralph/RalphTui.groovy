@@ -60,9 +60,9 @@ package io.github.lmarqs.cookbook.ralph
  *
  * ralph.harnesses(['claude', 'codex'])
  * ralph.role('worker')
- * ralph.setup('.worktrees/setup')
+ * ralph.worktreeSetup('.worktrees/setup')
  * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --role=worker ' +
- *     '--setup=.worktrees/setup')
+ *     '--worktree-setup=.worktrees/setup')
  * ```
  *
  * ## With other models
@@ -91,7 +91,7 @@ class RalphTui {
   private List<String> harnesses = []
   private String role
   private String settings
-  private String setup
+  private String worktreeSetup
   private String cookedWith
 
   /**
@@ -165,32 +165,32 @@ class RalphTui {
    * Refused when blank, absolute, holding a `..` segment, or under `.ralph-tui/`, which in a run worktree holds only
    * what this recipe writes.
    */
-  void setup(String path) {
+  void worktreeSetup(String path) {
     if (!path?.trim()) {
-      throw new IllegalArgumentException('--setup needs a path')
+      throw new IllegalArgumentException('--worktree-setup needs a path')
     }
 
     def segments = path.split('/').findAll { it && it != '.' }
 
     if (path.startsWith('/') || '..' in segments) {
-      throw new IllegalArgumentException("--setup=${path} is outside the repository\n  bin/run runs it from the root " +
-      'of each run worktree, which holds the committed files\n  name the file by its path from the repository root, ' +
-      'as --setup=.worktrees/setup')
+      throw new IllegalArgumentException("--worktree-setup=${path} is outside the repository\n" +
+      '  bin/run runs it from the root of each run worktree, which holds the committed files\n' +
+      '  name the file by its path from the repository root, as --worktree-setup=.worktrees/setup')
     }
 
     if (segments && segments.first() == '.ralph-tui') {
-      throw new IllegalArgumentException("--setup=${path} is under .ralph-tui/\n  a run worktree has there only the " +
-      'configuration, prompts and launcher this recipe writes\n  name a committed file outside .ralph-tui/, as ' +
-      '--setup=.worktrees/setup')
+      throw new IllegalArgumentException("--worktree-setup=${path} is under .ralph-tui/\n" +
+      '  a run worktree has there only the configuration, prompts and launcher this recipe writes\n' +
+      '  name a committed file outside .ralph-tui/, as --worktree-setup=.worktrees/setup')
     }
 
-    setup = path
+    worktreeSetup = path
   }
 
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `role`, `settings` and `setup`.
+   * `harnesses`, `role`, `settings` and `worktreeSetup`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -259,8 +259,8 @@ class RalphTui {
   }
 
   /**
-   * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>`, with the `setup` path
-   * shell-quoted into its `setup` variable, when installed.
+   * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>`, with the `worktreeSetup`
+   * path shell-quoted into its `setup` variable, when installed.
    */
   @File(path = '.ralph-tui/bin/run', mode = '0755')
   String run() {
@@ -269,7 +269,7 @@ class RalphTui {
     }
 
     def script = resource('bin/run.sh')
-    setup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(setup)}\n") : script
+    worktreeSetup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(worktreeSetup)}\n") : script
   }
 
   /** The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, when installed. */

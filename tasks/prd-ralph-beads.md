@@ -90,9 +90,9 @@ answer for someone who never cooked `agents`.
 
 | | |
 | --- | --- |
-| API | `--harness=claude\|codex...` (required, many; the first is `defaultAgent`); `--role=<name>` or `--settings=<path>` (optional, exclusive, Claude entries only); `--setup=<path>` (optional, a committed executable by its path from the repository root; absolute, `..` and `.ralph-tui/` paths refused); `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run args…]`; `.ralph-tui/bin/clean <name> [--force]`; the rule `.worktrees/ralph/<name>` on `ralph/<name>` |
+| API | `--harness=claude\|codex...` (required, many; the first is `defaultAgent`); `--role=<name>` or `--settings=<path>` (optional, exclusive, Claude entries only); `--worktree-setup=<path>` (optional, a committed executable by its path from the repository root; absolute, `..` and `.ralph-tui/` paths refused); `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run args…]`; `.ralph-tui/bin/clean <name> [--force]`; the rule `.worktrees/ralph/<name>` on `ralph/<name>` |
 | Produces | seeds: `config.toml` (one `[[agents]]` per harness, `tracker = "beads"`), `templates/beads.hbs`, `templates/json.hbs`; owned: `bin/run`, `bin/clean`, `.gitignore` section `ralph-tui` |
-| Consumes | `ralph-tui` and `git` at run time; `bd` only when a run passes `--epic`; the `--setup` file at run time, only with `--setup`; `--role`: `.agents/adapters/claude/roles/<name>.json` must be in the draft, refused otherwise; `--settings`: the path as given, never written |
+| Consumes | `ralph-tui` and `git` at run time; `bd` only when a run passes `--epic`; the `--worktree-setup` file at run time, only with `--worktree-setup`; `--role`: `.agents/adapters/claude/roles/<name>.json` must be in the draft, refused otherwise; `--settings`: the path as given, never written |
 | Never touches | `AGENTS.md`, `policy.yaml`, any settings or role file, version pins, remotes, pull requests, the tracker's state |
 
 ### Contact points
@@ -102,7 +102,7 @@ answer for someone who never cooked `agents`.
 | beads → session context | Cook (`session-start.d/`), or the person (`--harness`) |
 | ralph → worker limits | the person (`--role` or `--settings`); the session (`--agent <entry>`); Codex workers by the sandbox |
 | ralph → tracker | the session (`--epic` or `--prd`) |
-| ralph → worktree setup | the person (`--setup`); the team writes the file |
+| ralph → worktree setup | the person (`--worktree-setup`); the team writes the file |
 | ralph → base branch | the session (`--base`, default `HEAD`) |
 | anything → `AGENTS.md` | the team, from each after-text |
 | anything → delivery | the session |
@@ -291,10 +291,10 @@ names the worktree after the branch, so that every session finds, sets up and cl
   from `<ref>`, default `HEAD`; prints the path and branch; then `exec ralph-tui run --epic <id>` or
   `--prd <absolute path>` there, passing the remaining arguments through. It sets no environment and strips none, so
   `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
-- [ ] Runs a setup only by `--setup=<path>`: the recipe renders the path, shell-quoted, into `bin/run`, which runs that
+- [ ] Runs a setup only by `--worktree-setup=<path>`: the recipe renders the path, shell-quoted, into `bin/run`, which runs that
   file from the root of each worktree it creates, never one it reuses, and fails the run when the file is missing,
-  not executable or fails. Without `--setup` it runs no setup and never looks at `.worktrees/setup`. Cooking refuses an
-  absolute path, a `..` segment and a path under `.ralph-tui/`; the `.gitignore` argument line records `--setup`.
+  not executable or fails. Without `--worktree-setup` it runs no setup and never looks at `.worktrees/setup`. Cooking refuses an
+  absolute path, a `..` segment and a path under `.ralph-tui/`; the `.gitignore` argument line records `--worktree-setup`.
 - [ ] Owns `.ralph-tui/bin/clean <name> [--force]` (0755). It refuses when the run branch has commits not in `HEAD`
   or the worktree is dirty, unless `--force`; the message says a squash merge needs `--force`. It removes the run
   worktree, every worktree whose branch is `ralph-parallel/*` found through `git worktree list --porcelain`, those
@@ -302,7 +302,7 @@ names the worktree after the branch, so that every session finds, sets up and cl
 - [ ] Writes nothing for mise or another task runner, `mise.toml` or not; the team exposes the scripts as tasks in
   files it owns. The after-text gives `bun install -g ralph-tui@0.12.0`.
 - [ ] Tests: a `mise.toml` in the draft gets no `.mise/` and stays unchanged. The scripts are executable in the
-  kitchen and pass `sh -n`. Without `--setup`, an executable `.worktrees/setup` is not run; with it, the file runs once
+  kitchen and pass `sh -n`. Without `--worktree-setup`, an executable `.worktrees/setup` is not run; with it, the file runs once
   in a new worktree and not on reuse, and a missing, non-executable or failing file fails the run.
 - [ ] `cookbook/ralph/run.sh` is deleted.
 
