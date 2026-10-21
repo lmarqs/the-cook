@@ -13,7 +13,6 @@ import thecook.cookbook.CookbookDiscard
 import thecook.cookbook.RecipeSource
 
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 
 class BeadsTrackerCookTest {
@@ -103,215 +102,108 @@ class BeadsTrackerCookTest {
     assert fork.message == "${TRACKER}: --share=fork is not one of: team, clone"
     def missing = shouldFail(IllegalArgumentException) { cook(kitchen, TRACKER) }
     assert missing.message.startsWith("${TRACKER}: Missing --share: ")
-    def harness = shouldFail(IllegalArgumentException) {
-      cook(kitchen, TRACKER, [share: ['clone'], harness: ['gemini']])
-    }
-    assert harness.message == "${TRACKER}: --harness=gemini is not one of: claude, codex"
     assert files(kitchen) == []
   }
 
-  @Test void ownsEachHarnessSessionStartHookOnAnEmptyKitchen() {
+  @Test void writesTheSessionStartScriptAtTheNamedPath() {
     def kitchen = kitchen()
+    def path = 'tools/session/20-beads.sh'
 
-    cook(kitchen, TRACKER, [share: ['clone'], harness: ['codex', 'claude']]).commit()
+    cook(kitchen, TRACKER, [share: ['clone'], 'session-start': [path]]).commit()
 
-    assert files(kitchen) ==
-    ['.beads/PRIME.md', '.claude/settings.json', '.codex/hooks.json', '.gitignore', 'cook.lock']
-    assert text(kitchen, '.claude/settings.json') == '''\
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bd prime"
-          }
-        ]
-      }
-    ]
-  }
-}
-'''
-    assert text(kitchen, '.codex/hooks.json') == '''\
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bd codex-hook SessionStart"
-          }
-        ]
-      }
-    ]
-  }
-}
-'''
-    assert text(kitchen, '.gitignore').readLines()[1] ==
-    '# io.github.lmarqs.cookbook:beads#tracker --share=clone --harness=claude --harness=codex'
-    assert text(kitchen, 'cook.lock') == lock('''\
-      sections:
-        - file: ".gitignore"
-          id: "io.github.lmarqs.cookbook:beads#tracker/beads"
-      keys:
-        - file: ".claude/settings.json"
-          path: ["hooks","SessionStart"]
-        - file: ".codex/hooks.json"
-          path: ["hooks","SessionStart"]
-''')
-    assert cook(kitchen, TRACKER, [share: ['clone'], harness: ['claude', 'codex']]).actions == [:]
-  }
-
-  @Test void keepsTheTeamsOtherHooksAndDiscardRestoresTheirFiles() {
-    def kitchen = kitchen()
-    def claude = write(kitchen, '.claude/settings.json', '''\
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{"type": "command", "command": "./check"}]
-      }
-    ]
-  },
-  "env": {"A": "1"}
-}
-''')
-    def codex = write(kitchen, '.codex/hooks.json', '''\
-{
-  "hooks": {
-    "Stop": [{"hooks": [{"type": "command", "command": "./stop"}]}]
-  }
-}
-''')
-    def claudeBefore = claude.text
-    def codexBefore = codex.text
-
-    cook(kitchen, TRACKER, [share: ['team'], harness: ['claude', 'codex']]).commit()
-
-    assert claude.text == '''\
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{"type": "command", "command": "./check"}]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bd prime"
-          }
-        ]
-      }
-    ]
-  },
-  "env": {"A": "1"}
-}
-'''
-    assert codex.text == '''\
-{
-  "hooks": {
-    "Stop": [{"hooks": [{"type": "command", "command": "./stop"}]}],
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bd codex-hook SessionStart"
-          }
-        ]
-      }
-    ]
-  }
-}
-'''
-    assert cook(kitchen, TRACKER, [share: ['team'], harness: ['claude', 'codex']]).actions == [:]
-
-    cook(kitchen, TRACKER, [share: ['team'], harness: ['codex']]).commit()
-    assert claude.text == claudeBefore
-
-    new CookbookDiscard(kitchen).propose([TRACKER]).commit()
-    assert claude.text == claudeBefore
-    assert codex.text == codexBefore
-    assert files(kitchen) == ['.beads/PRIME.md', '.claude/settings.json', '.codex/hooks.json']
-  }
-
-  @Test void theEngineRefusesAHookThroughALinkedSettingsFile() {
-    def kitchen = kitchen()
-    write(kitchen, 'shared.json', '{}\n')
-    Files.createDirectories(new File(kitchen, '.claude').toPath())
-    Files.createSymbolicLink(new File(kitchen, '.claude/settings.json').toPath(), Paths.get('../shared.json'))
-
-    def error = shouldFail(IllegalArgumentException) {
-      cook(kitchen, TRACKER, [share: ['clone'], harness: ['claude']])
-    }
-
-    assert error.message == "${TRACKER}: .claude/settings.json key hooks.SessionStart\n" +
-    '  .claude/settings.json is a symbolic link to ../shared.json\n' +
-    '    Cook writes sections and keys only into regular files'
-    assert text(kitchen, 'shared.json') == '{}\n'
-  }
-
-  @Test void ownsTheSessionStartScriptOnceTheLayoutIsInTheDraft() {
-    def kitchen = layoutKitchen('kitchen')
-
-    cook(kitchen, TRACKER, [share: ['clone']]).commit()
-
-    def script = new File(kitchen, HOOK)
+    def script = new File(kitchen, path)
     assert script.bytes == SCRIPT.bytes
     assert permissions(script) == 'rwxr-xr-x'
-    assert !new File(kitchen, '.claude').exists()
-    assert !new File(kitchen, '.codex').exists()
-    assert text(kitchen, 'cook.lock').contains('''\
-  - name: "io.github.lmarqs.cookbook:beads#tracker"
-    source: "io.github.lmarqs.cookbook:beads:0.1.0#tracker"
-    sha256: "''' + sourcesSha256('beads') + '''"
-    owns:
+    assert files(kitchen) == ['.beads/PRIME.md', '.gitignore', 'cook.lock', path]
+    assert text(kitchen, '.gitignore').readLines()[1] ==
+    "# io.github.lmarqs.cookbook:beads#tracker --share=clone --session-start=${path}".toString()
+    assert text(kitchen, 'cook.lock') == lock("""\
       sections:
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:beads#tracker/beads"
       files:
-        - ".agents/hooks/session-start.d/beads.sh"
+        - "${path}"
+""")
+    assert cook(kitchen, TRACKER, [share: ['clone'], 'session-start': [path]]).actions == [:]
+  }
+
+  @Test void writesNothingForSessionStartWithoutItEvenWithTheLayoutsHooksInTheDraft() {
+    def kitchen = kitchen()
+    write(kitchen, '.agents/hooks/.gitkeep', '')
+    write(kitchen, '.agents/hooks/session-start', '#!/bin/sh\n')
+    def before = files(kitchen)
+
+    cook(kitchen, TRACKER, [share: ['clone']]).commit()
+
+    assert files(kitchen) == (before + ['.beads/PRIME.md', '.gitignore', 'cook.lock']).sort()
+    assert text(kitchen, '.gitignore').readLines()[1] == '# io.github.lmarqs.cookbook:beads#tracker --share=clone'
+    assert text(kitchen, 'cook.lock') == lock('''\
+      sections:
+        - file: ".gitignore"
+          id: "io.github.lmarqs.cookbook:beads#tracker/beads"
 ''')
     assert cook(kitchen, TRACKER, [share: ['clone']]).actions == [:]
   }
 
-  @Test void refusesAHarnessOnceTheLayoutIsInTheDraftNamingWhatToCook() {
-    def kitchen = layoutKitchen('kitchen')
-    def before = files(kitchen)
+  @Test void anotherPathMovesTheScriptAndLeavingItOutOrDiscardRemovesIt() {
+    def kitchen = kitchen()
+    cook(kitchen, TRACKER, [share: ['team'], 'session-start': [HOOK]]).commit()
 
-    def error = shouldFail(IllegalArgumentException) {
-      cook(kitchen, TRACKER, [share: ['clone'], harness: ['codex', 'claude']])
+    cook(kitchen, TRACKER, [share: ['team'], 'session-start': ['scripts/beads.sh']]).commit()
+    assert !new File(kitchen, HOOK).exists()
+    assert new File(kitchen, 'scripts/beads.sh').bytes == SCRIPT.bytes
+
+    cook(kitchen, TRACKER, [share: ['team']]).commit()
+    assert files(kitchen) == ['.beads/PRIME.md', '.gitignore', 'cook.lock']
+
+    cook(kitchen, TRACKER, [share: ['team'], 'session-start': [HOOK]]).commit()
+    new CookbookDiscard(kitchen).propose([TRACKER]).commit()
+    assert files(kitchen) == ['.beads/PRIME.md']
+  }
+
+  @Test void refusesABlankAbsoluteOrOutsideSessionStartPath() {
+    def kitchen = kitchen()
+    def next = '  name the file by its path from the repository root, as ' +
+        '--session-start=.agents/hooks/session-start.d/beads.sh'
+
+    ['', ' '].each { path ->
+      def error = shouldFail(IllegalArgumentException) {
+        cook(kitchen, TRACKER, [share: ['clone'], 'session-start': [path]])
+      }
+      assert error.message.readLines() == [
+        "${TRACKER}: --session-start needs a path",
+        '  beads writes its session-start script at the path it names',
+        next,
+      ]*.toString()
     }
-
-    assert error.message == "${TRACKER}: --harness=claude --harness=codex writes the harness's own hook file, " +
-    'which the agents layout connects\n' +
-    "  the agents layout is in the draft, and ${HOOK} gives bd prime to every harness it connects\n" +
-    '  leave out --harness, and cook io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex'
-    assert files(kitchen) == before
+    ['/etc/beads.sh', '../beads.sh', 'a/../../beads.sh', 'hooks/../beads.sh'].each { path ->
+      def error = shouldFail(IllegalArgumentException) {
+        cook(kitchen, TRACKER, [share: ['clone'], 'session-start': [path]])
+      }
+      assert error.message.readLines() == [
+        "${TRACKER}: --session-start=${path} is outside the repository",
+        '  beads writes the script into the repository, so every clone has it',
+        next,
+      ]*.toString()
+    }
+    assert files(kitchen) == []
   }
 
   @Test void cooksWithAgentsConnectInEitherOrder() {
     def connectFirst = layoutKitchen('first')
-    cook(connectFirst, [(CONNECT): [harness: ['claude', 'codex']], (TRACKER): [share: ['clone']]]).commit()
+    def tracker = [share: ['clone'], 'session-start': [HOOK]]
+    cook(connectFirst, [(CONNECT): [harness: ['claude', 'codex']], (TRACKER): tracker]).commit()
     def beadsFirst = layoutKitchen('second')
-    cook(beadsFirst, [(TRACKER): [share: ['clone']], (CONNECT): [harness: ['claude', 'codex']]]).commit()
+    cook(beadsFirst, [(TRACKER): tracker, (CONNECT): [harness: ['claude', 'codex']]]).commit()
 
     [connectFirst, beadsFirst].each { kitchen ->
       assert new File(kitchen, HOOK).bytes == SCRIPT.bytes
       def ignore = text(kitchen, '.gitignore')
-      assert ignore.contains('# io.github.lmarqs.cookbook:beads#tracker --share=clone\n/.beads/*\n')
+      assert ignore.contains("# io.github.lmarqs.cookbook:beads#tracker --share=clone --session-start=${HOOK}\n" +
+      '/.beads/*\n')
       assert ignore.contains('# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex\n')
       assert Files.isSymbolicLink(new File(kitchen, '.claude/settings.json').toPath())
-      assert cook(kitchen, [(CONNECT): [harness: ['claude', 'codex']], (TRACKER): [share: ['clone']]]).actions == [:]
+      assert cook(kitchen, [(CONNECT): [harness: ['claude', 'codex']], (TRACKER): tracker]).actions == [:]
     }
     // Only the order of the sections in `.gitignore` and of the recipes in `cook.lock` follows the invocation.
     def unordered = { File kitchen ->
@@ -320,16 +212,6 @@ class BeadsTrackerCookTest {
       }
     }
     assert unordered(connectFirst) == unordered(beadsFirst)
-  }
-
-  @Test void addsTheScriptOnTheNextCookWhenTheLayoutCameLater() {
-    def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-
-    cook(kitchen, [(TRACKER): [share: ['clone']], (SEED): [:], (CONNECT): [harness: ['claude']]]).commit()
-    assert !new File(kitchen, HOOK).exists()
-
-    assert cook(kitchen, TRACKER, [share: ['clone']]).actions == [(HOOK): 'create', 'cook.lock': 'update']
   }
 
   @Test void theScriptPrintsBdPrimeAndNothingWithoutBdOrItsDatabase() {
@@ -358,20 +240,29 @@ class BeadsTrackerCookTest {
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(BEADS, 'tracker.groovy').text, 'tracker.groovy')
 
-    assert texts.params*.names == [['share'], ['harness']]
-    assert texts.params*.choices == [['team', 'clone'], ['claude', 'codex']]
+    assert texts.params*.names == [['share'], ['session-start']]
+    assert texts.params[0].choices == ['team', 'clone']
     assert texts.ingredients == ['io.github.lmarqs.cookbook.beads.Beads']
     assert texts.help.readLines().findAll { it.startsWith('## ') } ==
     ['## API', '## Consumes', '## Produces', '## Connections', '## Run-time effects', '## Re-cooking', '## Traps']
-    ['Never touches', 'leave out `--harness`', '5.5 KB', '--check',].each { assert texts.help.contains(it) }
     [
+      'Never touches',
+      '--session-start=.agents/hooks/session-start.d/beads.sh',
+      'The prime text at session start | The person, by `--session-start`',
+      '5.5 KB',
+      '--check',
+    ].each { assert texts.help.contains(it) }
+    assert !texts.help.contains('Cook, automatically')
+    [
+      'mise use -g aqua:steveyegge/beads@1.3.1',
       'bd init --prefix <p> --skip-hooks --skip-agents --non-interactive',
       'bd config set sync.remote <url>',
       'bd config set export.auto true',
       'bd hooks install --beads',
       'git config core.hooksPath .beads/hooks',
-      'bd setup',
-      'io.github.lmarqs.cookbook:agents:<version>#connect',
+      'command -v bd >/dev/null && bd prime',
+      'bd setup claude',
+      'bd setup codex',
       'run `bd prime`',
     ].each { assert texts.yieldText.contains(it) }
   }

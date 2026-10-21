@@ -26,8 +26,9 @@ rest |
 | `.agents/adapters/claude/roles/<role>.json` | A role's denies, added to one Claude run with `claude --settings \
 <file>` |
 | `.agents/hooks/session-start.d/<name>.sh` | Session context: each script's standard output reaches every connected \
-harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe owns \
-its own script there, named after the tool; the team writes its own beside them |
+harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe \
+writes its script there when the person names a path in it by a parameter of that recipe; the team writes its own \
+beside them |
 | `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
 | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
 
@@ -92,8 +93,8 @@ Never touches: `AGENTS.md`; every other key in the adapter files, such as the ot
 | --- | --- |
 | The layout to each harness | The person, by `--harness` |
 | The policy to each harness's settings | Cook, rendering the team's policy |
-| A tool's session context to every harness | Cook, when the tool's recipe writes its script into \
-`.agents/hooks/session-start.d/`; the team, writing its own there |
+| A tool's session context to every harness | The person, naming a path in `.agents/hooks/session-start.d/` by a \
+parameter of the tool's recipe; the team, writing its own there |
 | A role to a Claude run | The session, launching `claude --settings .agents/adapters/claude/roles/<role>.json`; the \
 Launching table in `.agents/README.md` lists the commands |
 | The team's other hooks to each harness | The team, under `hooks` in `.claude/settings.json` and \

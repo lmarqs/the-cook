@@ -2,21 +2,18 @@ package io.github.lmarqs.cookbook.beads
 
 /**
  * Models the files around a Beads tracker that bd leaves to the repository: the ignore rules for what stays out of
- * commits, the prime text bd prints as session context, and the session-start hooks that print it.
+ * commits, the prime text bd prints as session context, and a session-start script that prints it.
  *
  * ## Writes for
  *
  * bd 1.3.1. Git ignore syntax in `.gitignore`. Markdown in `.beads/PRIME.md`, which `bd prime` prints in place of its
- * own workflow text. A `hooks.SessionStart` key in Claude Code's `.claude/settings.json` running `bd prime`, and in
- * Codex's `.codex/hooks.json` running `bd codex-hook SessionStart` (Claude Code 2.1.306, Codex 0.160.1). A POSIX `sh`
- * script in the agents layout's `.agents/hooks/session-start.d/`, whose dispatcher runs it with the harness name as
- * `$1` and hands its plain output to that harness. bd writes its own `.beads/config.yaml`, `metadata.json`,
- * `.beads/.gitignore`, git hooks and database, and this model none of them.
+ * own workflow text. A POSIX `sh` script at the path the recipe names, for a session-start runner that runs it and adds
+ * its standard output to the session. bd writes its own `.beads/config.yaml`, `metadata.json`, `.beads/.gitignore`,
+ * git hooks and database, and this model none of them.
  *
  * ## Instances
  *
- * One instance covers one repository's tracker, at the repository's root, where bd keeps `.beads/` and the harnesses
- * read their settings.
+ * One instance covers one repository's tracker, at the repository's root, where bd keeps `.beads/`.
  *
  * ## Use
  *
@@ -25,14 +22,14 @@ package io.github.lmarqs.cookbook.beads
  *
  * @ingredient(Beads) def beads
  *
- * beads.track('clone', 'io.github.lmarqs.cookbook:beads#tracker --share=clone --harness=claude')
- * beads.prime(['claude'])
+ * beads.sessionStart('.agents/hooks/session-start.d/beads.sh')
+ * beads.track('clone', 'io.github.lmarqs.cookbook:beads#tracker --share=clone ' +
+ *     '--session-start=.agents/hooks/session-start.d/beads.sh')
  * ```
  *
  * ## With other models
  *
- * It names the agents layout only by its paths: `.agents/hooks/` in the draft is how it finds the layout, and
- * `.agents/hooks/session-start.d/` is where it adds its script. It never reads or writes the layout's adapters.
+ * None: the session-start script goes where the recipe names it, and the model reads no other model's files.
  */
 @Ingredient
 class Beads {
@@ -41,25 +38,38 @@ class Beads {
    */
   static final List<String> SHARES = ['team', 'clone']
 
-  /** The harnesses whose own hook file can run `bd prime`, in the order the argument line names them. */
-  static final List<String> HARNESSES = ['claude', 'codex']
-
-  /** The script the agents layout's session-start dispatcher runs. */
-  static final String SESSION_START_SCRIPT = '.agents/hooks/session-start.d/beads.sh'
-
-  /** The files that show the agents layout's `.agents/hooks/` is in the draft: its keep file and its dispatcher. */
-  static final List<String> LAYOUT_HOOKS = ['.agents/hooks/.gitkeep', '.agents/hooks/session-start']
-
-  private static final String CONNECT = 'io.github.lmarqs.cookbook:agents#connect'
+  private static final String EXAMPLE = '--session-start=.agents/hooks/session-start.d/beads.sh'
 
   private String share
   private String cookedWith
-  private boolean layout
-  private List<String> harnesses = []
+  private String sessionStart
+
+  /**
+   * Has the tracker write its session-start script at `path`, by its path from the repository root. Without it, the
+   * tracker writes nothing for session start. Refused when blank, absolute or holding a `..` segment. Call before
+   * `track`.
+   */
+  void sessionStart(String path) {
+    if (!path?.trim()) {
+      throw new IllegalArgumentException('--session-start needs a path\n' +
+      '  beads writes its session-start script at the path it names\n' +
+      "  name the file by its path from the repository root, as ${EXAMPLE}")
+    }
+
+    def segments = path.split('/').findAll { it && it != '.' }
+
+    if (path.startsWith('/') || '..' in segments) {
+      throw new IllegalArgumentException("--session-start=${path} is outside the repository\n" +
+      '  beads writes the script into the repository, so every clone has it\n' +
+      "  name the file by its path from the repository root, as ${EXAMPLE}")
+    }
+
+    sessionStart = path
+  }
 
   /**
    * Requests the tracker's ignore rules and prime text for `share`, `team` or `clone`, and the session-start script
-   * once `.agents/hooks/` is in the draft. `cookedWith` names the recipe and its arguments, which the `beads` section's
+   * when `sessionStart` named a path. `cookedWith` names the recipe and its arguments, which the `beads` section's
    * first line records; it must not be blank. Rejects any other share.
    */
   void track(String share, String cookedWith) {
@@ -73,31 +83,6 @@ class Beads {
 
     this.share = share
     this.cookedWith = cookedWith
-    layout = LAYOUT_HOOKS.any { current(it) != null }
-  }
-
-  /**
-   * Requests the `hooks.SessionStart` key that runs bd's prime text in each named harness's own hook file: `claude` or
-   * `codex`. Call it after `track`. Refuses any harness once the agents layout is in the draft, since the layout links
-   * those files to its adapters and the session-start script already reaches every harness it connects.
-   */
-  void prime(Collection<String> names) {
-    def unknown = names - HARNESSES
-
-    if (unknown) {
-      throw new IllegalArgumentException("Beads primes ${HARNESSES.join(' or ')}, not ${unknown.join(', ')}")
-    }
-
-    def selected = HARNESSES.findAll { it in names }
-
-    if (selected && layout) {
-      def flags = selected.collect { "--harness=${it}" }.join(' ')
-      throw new IllegalArgumentException("${flags} writes the harness's own hook file, which the agents layout " +
-      "connects\n  the agents layout is in the draft, and ${SESSION_START_SCRIPT} gives bd prime to every harness " +
-      "it connects\n  leave out --harness, and cook ${CONNECT} ${flags}")
-    }
-
-    harnesses = selected
   }
 
   /**
@@ -123,28 +108,12 @@ class Beads {
     share ? resource("templates/PRIME-${share}.template.md") : null
   }
 
-  /** `hooks.SessionStart` in `.claude/settings.json`, one command hook running `bd prime`, when `claude` is primed. */
-  @Key(path = '.claude/settings.json', segments = ['hooks', 'SessionStart'])
-  List<Map> claudeSessionStart() {
-    'claude' in harnesses ? [[hooks: [[type: 'command', command: 'bd prime']]]] : null
-  }
-
   /**
-   * `hooks.SessionStart` in `.codex/hooks.json`, one entry matching `startup|resume|clear` that runs
-   * `bd codex-hook SessionStart`, when `codex` is primed.
+   * The session-start script at the path `sessionStart` named, mode 0755, printing `bd prime` and nothing when bd or
+   * its database is missing, when the tracker is requested with that path.
    */
-  @Key(path = '.codex/hooks.json', segments = ['hooks', 'SessionStart'])
-  List<Map> codexSessionStart() {
-    'codex' in harnesses ?
-        [[matcher: 'startup|resume|clear', hooks: [[type: 'command', command: 'bd codex-hook SessionStart']]]] : null
-  }
-
-  /**
-   * `.agents/hooks/session-start.d/beads.sh`, mode 0755, printing `bd prime` and nothing when bd or its database is
-   * missing, when the tracker is requested and `.agents/hooks/` is in the draft.
-   */
-  @File(path = '.agents/hooks/session-start.d/beads.sh', mode = '0755')
+  @File(path = '${sessionStart}', mode = '0755')
   String sessionStartScript() {
-    cookedWith && layout ? resource('hooks/beads.sh') : null
+    cookedWith && sessionStart ? resource('hooks/beads.sh') : null
   }
 }

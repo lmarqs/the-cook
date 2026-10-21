@@ -31,8 +31,8 @@ means. Connections are made at three times by three actors, and every recipe's h
 
 | When | Who | What | Examples |
 | --- | --- | --- | --- |
-| Cook time | Cook, automatically | Mechanical wiring with one correct form, cheap to undo | a hook script in `session-start.d/`, an ignore line |
-| Cook time | The person, by parameter | Naming the other side of a connection | `--harness`, `--worker-role`, `--worker-settings`, `--share` |
+| Cook time | Cook, automatically | Mechanical wiring with one correct form between one recipe's own files, cheap to undo | a link from where a program reads to the recipe's own file, an ignore line |
+| Cook time | The person, by parameter | Naming the other side of a connection | `--harness`, `--worker-role`, `--worker-settings`, `--share`, `--session-start` |
 | Commit time | The team, in seeds it owns | Anything that expresses a policy | what a worker may do, which agent entries exist, how a worktree is set up |
 | Launch time | The session | Run-time choices | which agent entry, which epic or PRD, model, headless, serial or parallel, delivery |
 
@@ -42,8 +42,9 @@ answer for someone who never cooked `agents`.
 
 ### Decisions, as grilled
 
-1. Platform and plugins: `agents` publishes the extension points (`session-start.d/`, roles, Launching table). Tool
-   artifacts name them only as path conventions and still cook on their own.
+1. Platform and plugins: `agents` publishes the extension points (`session-start.d/`, roles, Launching table). A tool
+   artifact reaches one only through a parameter the person names, never by finding it
+   ([ADR 0030](../docs/adrs/0030-recipe-connections.md)), and still cooks on its own.
 2. Beads does not imply a harness.
 3. Worktrees belong to git. The path is the branch: `.worktrees/<branch>`. Ralph runs use the branch `ralph/<name>` at
    `.worktrees/ralph/<name>`.
@@ -81,9 +82,9 @@ answer for someone who never cooked `agents`.
 
 | | |
 | --- | --- |
-| API | `--share=team\|clone` (required); `--harness=claude\|codex...` (optional, many); after-text: `bd init …`, team-mode config, the `AGENTS.md` line, the hook line per harness |
-| Produces | `.gitignore` section `beads`; seed `.beads/PRIME.md`; with `--harness`: the owned `hooks.SessionStart` key in `.claude/settings.json` (`bd prime`) and the owned SessionStart entry in `.codex/hooks.json` (`bd codex-hook SessionStart`); with `.agents/hooks/` in the draft: owned `session-start.d/beads.sh` |
-| Consumes | `bd` at run time; optional: the layout's `session-start.d/`, detected |
+| API | `--share=team\|clone` (required); `--session-start=<path>` (optional, a file by its path from the repository root; blank, absolute and `..` paths refused), such as `.agents/hooks/session-start.d/beads.sh` with the agents layout; after-text: installing bd with mise, `bd init …`, team-mode config, getting `bd prime` to sessions without `--session-start`, the `AGENTS.md` line |
+| Produces | `.gitignore` section `beads`, whose argument line records `--session-start`; seed `.beads/PRIME.md`; with `--session-start`: the owned script at that path (0755), printing `bd prime` |
+| Consumes | `bd` at run time; nothing in the draft |
 | Never touches | `AGENTS.md`, `.beads/config.yaml`, `metadata.json`, bd's hooks, the database, the Dolt remote |
 
 ### `ralph#ralph-tui`
@@ -99,7 +100,7 @@ answer for someone who never cooked `agents`.
 
 | Contact | Connected by |
 | --- | --- |
-| beads → session context | Cook (`session-start.d/`), or the person (`--harness`) |
+| beads → session context | the person (`--session-start`, naming where a session-start runner looks); without it, the repository's own session-start hooks |
 | ralph → worker limits | the person (`--worker-role` or `--worker-settings`); the session (`--agent <entry>`); Codex workers by the sandbox |
 | ralph → tracker | the session (`--epic` or `--prd`) |
 | ralph → worktree setup | the person (`--worktree-setup`); the team writes the file |
@@ -109,9 +110,10 @@ answer for someone who never cooked `agents`.
 
 ## Goals
 
-- In an empty repository, cooking `git#worktrees`, `beads#tracker`, `ralph#ralph-tui` and the agents layout in any
-  order gives a setup where every session starts with `bd prime` context, and `.ralph-tui/bin/run <name> --epic <id>`
-  completes a bead in `.worktrees/ralph/<name>`.
+- In an empty repository, cooking `git#worktrees`, `beads#tracker` with `--session-start` naming a script in
+  `.agents/hooks/session-start.d/`, `ralph#ralph-tui` and the agents layout in any order gives a setup where every
+  session starts with `bd prime` context, and `.ralph-tui/bin/run <name> --epic <id>` completes a bead in
+  `.worktrees/ralph/<name>`.
 - In an empty repository with no layout and no `bd`, `ralph#ralph-tui --harness=claude` and
   `.ralph-tui/bin/run <name> --prd <file>` complete a story.
 - Each artifact's help reads as API, Produces, Consumes and Connections, and the tests prove the Connections section.
@@ -211,34 +213,35 @@ make them runnable the same way.
 
 ### US-005: beads#tracker
 **Description:** As a team using Beads, with or without agents, I want one recipe to write the ignore rules, the
-prime text and, when I name a harness or have the layout, the session hook, so that `bd init` is the only manual step.
+prime text and, where I name a path, a session-start script, so that `bd init` is the only manual step.
 
 **Acceptance Criteria:**
 - [ ] `--share` is required, with choices `team` and `clone`; `--share=fork` is refused naming the choices.
-  `--harness` is optional, many, with choices `claude` and `codex`.
+  `--session-start` is optional, single, a path from the repository root; blank, absolute and `..` paths are refused
+  with three-line messages.
 - [ ] `.gitignore` section `beads` opens with the argument line. `clone` writes `/.beads/*` and `!/.beads/PRIME.md`;
   `team` writes `/.beads/issues.jsonl`, because the export carries whatever people paste into issues, and bd's own
   `.beads/.gitignore` covers the rest. The after-text says `bd init` appends unrooted lines of its own to the root
   `.gitignore`, outside the section, which the team may delete.
 - [ ] Seeds `.beads/PRIME.md` with the rules for that `--share`, including "a worker never closes its bead or
   pushes".
-- [ ] With `--harness=claude`, owns the key `hooks.SessionStart` in `.claude/settings.json`, running `bd prime`. With
-  `--harness=codex`, owns the SessionStart entry in `.codex/hooks.json`, running `bd codex-hook SessionStart`. With the
-  layout, those files are links and the engine refuses the write; the help says to leave `--harness` out then.
-- [ ] Owns `.agents/hooks/session-start.d/beads.sh` (0755) when `.agents/hooks/` is in the draft. It prints `bd prime`
-  and nothing when `bd` or the database is missing. `bd prime` is 5.5 KB and fires on every session start, including
-  each worker iteration; the help says so.
+- [ ] With `--session-start=<path>`, owns the script at that path (0755), and the section's argument line records it.
+  It prints `bd prime`, and nothing when `bd` or the database is missing. Without it, writes nothing for session start,
+  whatever is in the draft: no layout detection, no harness keys. `bd prime` is 5.5 KB and fires on every session
+  start, including each worker iteration; the help says so.
 - [ ] No `AGENTS.md` section. The after-text gives the line to add: context arrives from `bd prime` at session start;
   if it is missing, run `bd prime`.
 - [ ] The after-text gives `bd init --prefix <p> --skip-hooks --skip-agents --non-interactive`. For `team`, it adds
   `bd config set sync.remote <url>`, `bd config set export.auto true`, `bd hooks install --beads` and
   `git config core.hooksPath .beads/hooks`, warning that `core.hooksPath` is per clone and replaces any hooks path the
-  project already uses. It says `bd init` makes a git commit of its own files and the root `.gitignore`. It says never to run `bd setup`, and, with the layout, to cook `agents#connect`.
+  project already uses. It says `bd init` makes a git commit of its own files and the root `.gitignore`. It installs
+  bd with `mise use -g aqua:steveyegge/beads@1.3.1` first. Without `--session-start`, it says how to get `bd prime` to
+  sessions: the repository's own session-start hook, guarded by `command -v bd`, or `bd setup <agent>`.
 - [ ] Never writes `.beads/config.yaml`, `metadata.json`, bd's git hooks or the database.
 - [ ] Tests: `team` and `clone` on an empty kitchen (exact files and `cook.lock`, second cook unchanged, hand-edited
-  seed kept); `--harness=claude --harness=codex` without the layout (exact keys, team's other hooks kept, discard
-  restores); with the layout, the hook file appears and `--harness` is refused; `beads` with `agents#connect` in both
-  orders.
+  seed kept); `--session-start` writes the script at that path (exact content, mode, argument line, second cook
+  unchanged), another path moves it, leaving it out or discard removes it; nothing for session start without it, even
+  with the layout's hooks in the draft; refused paths; `beads` with `agents#connect` in both orders.
 - [ ] `cookbook/beads/ready.sh` is deleted.
 
 ### US-006: ralph#ralph-tui configuration and prompts
@@ -338,8 +341,8 @@ without the layout.
 - [ ] Scratch repositories live outside `/tmp`, because Codex's sandbox writes `/tmp` by default and gives false
   passes (US-002). Recorded: whether a worktree of a trusted checkout counts as trusted for Claude's project allows.
 - [ ] Fresh scratch repository, no remote, CLI built from `main`: cook `agents#seed`, `agents#connect` for both
-  harnesses, `git#worktrees`, `beads#tracker --share=clone`, `ralph#ralph-tui --harness=claude --harness=codex`; run
-  `bd init` as the after-text says. A Claude session's context contains `bd prime` output.
+  harnesses, `git#worktrees`, `beads#tracker --share=clone --session-start=.agents/hooks/session-start.d/beads.sh`,
+  `ralph#ralph-tui --harness=claude --harness=codex`; run `bd init` as the after-text says. A Claude session's context contains `bd prime` output.
   `.ralph-tui/bin/run <name> --epic <id> --headless` with the fake agent completes one bead in
   `.worktrees/ralph/<name>`, and `.ralph-tui/bin/clean <name>` removes it after merge.
 - [ ] Second fresh scratch repository, no layout, no `bd` on `PATH`: cook only `ralph#ralph-tui --harness=claude`.
@@ -361,11 +364,11 @@ pointed at the new interface.
 
 - FR-1: `agents#connect` runs every `.agents/hooks/session-start.d/*.sh` at session start in each connected harness,
   in the envelope that harness takes.
-- FR-2: Only `agents#connect` owns the layout's session-start keys. Tool recipes write into `session-start.d/`, or, with
-  `--harness` and no layout, into the harness's own file.
+- FR-2: Only `agents#connect` owns the harnesses' session-start keys. A tool recipe writes a session-start script only
+  at a path the person names by a parameter, such as `beads#tracker --session-start`, and never a harness's own file.
 - FR-3: `git#worktrees` takes no arguments and owns only its `.gitignore` section and a seeded README.
-- FR-4: `beads#tracker` cooks with no layout and no harness, and writes a hook only where the person or the draft names
-  one.
+- FR-4: `beads#tracker` cooks with no layout and no harness, and writes a session-start script only at the path
+  `--session-start` names; it never looks for the layout.
 - FR-5: `ralph#ralph-tui` never writes outside `.ralph-tui/` and `.gitignore`, and never writes for a task runner such as mise.
 - FR-6: `ralph#ralph-tui` writes no deny, settings, role or pin. Worker limits enter only through `--worker-role`,
   `--worker-settings` or an entry the team adds.
@@ -388,13 +391,13 @@ pointed at the new interface.
 ## Technical Considerations
 
 - Recipes compile only against their own artifact's models (ADR 0025 §6). `current(path)` sees files written by
-  earlier recipes in the same invocation, which is how draft detection works in any order; the dispatcher reads its
-  directory at run time, so hook order never matters.
+  earlier recipes in the same invocation, which is how a recipe reads a file the person names, such as
+  `--worker-role`'s role file; the dispatcher reads its directory at run time, so hook order never matters.
 - Seeds are written only when absent, are not recorded in `cook.lock`, and are ignored by the overlap check. Cook
-  refuses to write through symlinks, which is what makes `beads --harness` safe beside the layout.
+  refuses to write through symlinks.
 - `cook.lock` records no arguments; the argument line in each owned section (FR-9) is what re-cooks and `--check` read.
-- A section that appears once its condition holds is drift under `--check`, by design; the Re-cooking help section
-  says so for `beads.sh`.
+- What a recipe writes follows from its arguments, never from another recipe's files, so cooking or removing another
+  recipe never makes `--check` report this one as changed.
 - ralph-tui 0.12.0 verified: `--prd` without `--tracker` switches to `json`; `parallel.mode` defaults to `never`;
   `--variant` reaches neither Claude nor Codex; the worker environment loses only `*_API_KEY`, `*_SECRET_KEY`,
   `*_SECRET`; worker branches are `ralph-parallel/...`; `bd close <id> --force` is run by ralph-tui's own process.

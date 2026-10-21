@@ -1,6 +1,7 @@
 #!/bin/sh
-# .agents/hooks/session-start runs this with the harness name as $1, which bd prime does not need, and hands what it
-# prints to the session. A clone without bd or its database starts the session without it, so this never fails.
+# Prints what bd prime prints, for a session-start runner that runs executables and adds their standard output to the
+# session. It ignores its arguments. Without bd or its database it prints nothing and exits 0, so the session starts
+# without the text rather than failing.
 command -v bd >/dev/null 2>&1 || exit 0
 bd prime 2>/dev/null
 exit 0

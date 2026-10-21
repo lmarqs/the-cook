@@ -38,8 +38,8 @@ package io.github.lmarqs.cookbook.agents
  * `Harness` models, such as `Claude` and `Codex` in this artifact or a harness from another cookbook, translate
  * the shared policy and paths into their own native files.
  * Agents owns the shared layout and computes the relative paths it passes to each harness, the session-start
- * dispatcher's included. A tool's recipe adds session context by owning a script in `.agents/hooks/session-start.d/`,
- * never a harness's session-start key.
+ * dispatcher's included. A tool's recipe adds session context by a script in `.agents/hooks/session-start.d/`, at the
+ * path the person names by a parameter of that recipe, never a harness's session-start key.
  */
 @Ingredient
 class Agents {

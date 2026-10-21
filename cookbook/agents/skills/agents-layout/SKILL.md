@@ -70,7 +70,7 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | --- | --- | --- |
 | The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/` with its own session-start scripts in `hooks/session-start.d/`, `memory/`, `.agents/README.md`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
-| A tool's recipe | Its own script in `.agents/hooks/session-start.d/`, named after the tool | Cooking that recipe |
+| A tool's recipe | A script in `.agents/hooks/session-start.d/`, at the path the person names by a parameter of that recipe | Cooking that recipe with that parameter |
 | Cook | What it renders from the policy: `permissions` in `.agents/adapters/claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `.agents/adapters/codex/config.toml`, `.agents/adapters/codex/rules/cook.rules` and `.agents/adapters/claude/roles/`; the session start: `.agents/hooks/session-start` and `hooks.SessionStart` in `.agents/adapters/claude/settings.json` and `.agents/adapters/codex/hooks.json`; the links in `.claude/` and `.codex/`; the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
 | Each person | `.claude/settings.local.json` | Nobody else; Cook never writes it and git ignores it |
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
