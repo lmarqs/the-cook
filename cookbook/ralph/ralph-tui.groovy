@@ -13,7 +13,7 @@ sets up and cleans the run's worktree.
 # Claude workers bound to the agents layout's role worker
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --role=worker
 # Claude workers with a settings file the team writes
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --settings=.ralph-tui/worker.json
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --settings=ralph-worker.json
 ```
 
 The first `--harness` is the default agent. `--role` and `--settings` reach only the Claude entry, and only one of them
@@ -34,7 +34,9 @@ is given. What it publishes for people, sessions and other recipes:
 - `.agents/adapters/claude/roles/<name>.json` in the draft, with `--role=<name>`: written by
   `io.github.lmarqs.cookbook:agents#connect --harness=claude` from `roles.<name>` in `.agents/permission/policy.yaml`.
   Without it, cooking is refused and names both.
-- The `--settings` path as given: written into the configuration, never read or written at cook time.
+- The `--settings` path as given: written into the configuration, never read or written at cook time. Workers
+  resolve it in the run worktree, so it names a committed file by its path from the repository root, outside
+  `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
 - `mise.toml` in the draft: when present, the mise wrappers are written. `mise.toml` itself is never changed.
 - `.worktrees/setup`, at run time, when it is executable in a new run worktree.
 - By hand first: `bun install -g ralph-tui@0.12.0`, and for `--epic`, a Beads database with the epic.
