@@ -134,7 +134,7 @@ check_links() {
 check_shared_entries() {
   # Harnesses reach .agents/ only through the shared directories and the adapters; an entry beside them is found
   # only through a path someone wrote down, and a reader of the layout does not look for it.
-  entries=$(git ls-files -- .agents | cut -d/ -f2 | sort -u)
+  entries=$(git -c core.quotePath=false ls-files -- .agents | cut -d/ -f2 | sort -u)
   next='move it into skills/, commands/, hooks/ or memory/, beside what uses it, or out of .agents/ when no agent'
   next="$next reads it; then update the paths that name it"
   found=0

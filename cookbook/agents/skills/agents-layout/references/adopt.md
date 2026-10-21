@@ -377,7 +377,7 @@ before step 8.
 
    ```sh
    git ls-files -- .agents | cut -d/ -f2 | sort -u |
-     grep -vxE 'README.md|permission|adapters|skills|commands|hooks|memory'
+     grep -vxE 'README\.md|permission|adapters|skills|commands|hooks|memory'
    ```
 
 2. Find what names each one: `git grep -n -e <entry>`.

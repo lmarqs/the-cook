@@ -19,7 +19,7 @@ typed (tested).
 | `adopt` | Follow [references/adopt.md](references/adopt.md) from its first step |
 | `review` | Run [the review](#review) and report it; change no file |
 | `review --fix` | Run the review, then [fix what it finds](#review---fix) |
-| None, and `grep -q 'io.github.lmarqs.cookbook:agents#connect' cook.lock` fails | `adopt`: the layout is not set up here yet |
+| None, and `grep -qF 'io.github.lmarqs.cookbook:agents#connect' "$(git rev-parse --show-toplevel)/cook.lock"` fails | `adopt`: the layout is not set up here yet |
 | None, and the layout is set up | Pick the task from [the table below](#pick-the-task) |
 
 ### Review
