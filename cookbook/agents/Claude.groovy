@@ -7,7 +7,8 @@ package io.github.lmarqs.cookbook.agents
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `allow`, `ask` and `deny` lists of `Bash(<prefix> *)`
- * rules and tool patterns, and `disableBypassPermissionsMode`. One file per policy role under
+ * rules and tool patterns, and `disableBypassPermissionsMode`; and `hooks.SessionStart` alone, a command hook whose
+ * printed `hookSpecificOutput.additionalContext` Claude Code adds to the session. One file per policy role under
  * `.agents/adapters/claude/roles/`, holding only that role's `permissions.deny`, which a run adds with
  * `claude --settings <file>`. Symbolic links from `.claude/skills` and `.claude/commands` to the shared directories
  * complete the project setup: Claude Code finds skills and commands only there. Hooks and memory are reached by their
@@ -48,6 +49,7 @@ class Claude implements Harness {
   private Map settings = [:]
   private Map<String, List<String>> roleDenies = [:]
   private Map<String, String> directoryLinks = [:]
+  private List sessionStart = []
 
   /** Destination-root ignore patterns for the local settings file Claude Code writes. */
   final List<String> localFiles = ['/.claude/settings.local.json']
@@ -91,19 +93,28 @@ class Claude implements Harness {
     .each { name, path -> directoryLinks[name] = "../${path}".toString() }
   }
 
+  /**
+   * Sets `hooks.SessionStart` to run `dispatcher`, a path relative to the project directory, as
+   * `"$CLAUDE_PROJECT_DIR"/<dispatcher> claude`; Claude Code adds the `additionalContext` it prints to the session.
+   * The rest of `hooks` stays the team's.
+   */
+  void startSession(String dispatcher) {
+    sessionStart = [[hooks: [[type: 'command', command: "\"\$CLAUDE_PROJECT_DIR\"/${dispatcher} claude".toString()]]]]
+  }
+
   /** `settings.json` when settings are set, then each shared directory linked. */
-  List<String> getLinkNames() { (settings ? ['settings.json'] : []) + directoryLinks.keySet() }
+  List<String> getLinkNames() { (written() ? ['settings.json'] : []) + directoryLinks.keySet() }
 
   /**
    * Each supplied top-level key of `.agents/adapters/claude/settings.json`, owned whole, when settings or permissions
-   * are set.
+   * are set, and `hooks.SessionStart` alone once a session-start dispatcher is set.
    */
   @Keys(path = '.agents/adapters/claude/settings.json')
-  Map settingsKeys() { settings ?: null }
+  Map settingsKeys() { written() ?: null }
 
-  /** `.claude/settings.json`, a link to the adapter's file, when settings or permissions are set. */
+  /** `.claude/settings.json`, a link to the adapter's file, when settings, permissions or the session start are set. */
   @Links(path = '.claude')
-  Map<String, String> adapterLinks() { settings ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
+  Map<String, String> adapterLinks() { written() ? ['settings.json': '../.agents/adapters/claude/settings.json'] : null }
 
   /**
    * `.agents/adapters/claude/roles/<role>.json` per policy role, holding the role's `permissions.deny`; Claude merges it
@@ -117,6 +128,8 @@ class Claude implements Harness {
   /** One relative link in `.claude/` per shared directory, such as `skills`, when the directories are connected. */
   @Links(path = '.claude')
   Map<String, String> links() { directoryLinks ?: null }
+
+  private Map written() { settings + (sessionStart ? [(['hooks', 'SessionStart']): sessionStart] : [:]) }
 
   private static List<String> rules(Command command) {
     if (command.claude) return ["Bash(${command.claude})".toString()]

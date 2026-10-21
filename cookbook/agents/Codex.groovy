@@ -5,10 +5,11 @@ package io.github.lmarqs.cookbook.agents
  *
  * ## Writes for
  *
- * Top-level TOML keys and `sandbox_workspace_write.network_access` in `config.toml`, top-level JSON keys in
- * `hooks.json` and rule files under `rules/`, all in `.agents/adapters/codex/` and linked from `.codex/`. Codex reads
- * `AGENTS.md` and `.agents/skills/` natively, and hook settings reach the shared hook scripts by their paths, so no
- * other link is needed. Command rules use the
+ * Top-level TOML keys and `sandbox_workspace_write.network_access` in `config.toml`, top-level JSON keys and
+ * `hooks.SessionStart` alone in `hooks.json`, whose command hooks' printed `hookSpecificOutput.additionalContext` Codex
+ * adds to the session, and rule files under `rules/`, all in `.agents/adapters/codex/` and linked from `.codex/`.
+ * Codex reads `AGENTS.md` and `.agents/skills/` natively, and hook settings reach the shared hook scripts by their
+ * paths, so no other link is needed. Command rules use the
  * Codex `prefix_rule` syntax: `prefix_rule(pattern = ["git", ["status", "diff"]], decision = "allow")`, where a nested
  * list holds alternatives for one word, with `allow`, `prompt` or `forbidden` decisions. `.codex/` holds only links, so it can be deleted and cooked again.
  *
@@ -51,6 +52,9 @@ class Codex implements Harness {
 
   /** The hooks file a team may write by hand, which Codex reads through `.codex/hooks.json`. */
   private static final String HOOKS_FILE = '.agents/adapters/codex/hooks.json'
+
+  /** The key path the session-start entry owns in `hooks.json`. */
+  private static final List<String> SESSION_START = ['hooks', 'SessionStart']
 
   /** The key path permissions own in `config.toml`. */
   private static final List<String> NETWORK_ACCESS = ['sandbox_workspace_write', 'network_access']
@@ -96,6 +100,19 @@ class Codex implements Harness {
   void hooks(Map more) { hooks += more }
 
   /**
+   * Sets `hooks.SessionStart` in `hooks.json` to one entry for `startup|resume|clear` that runs `dispatcher`, a path
+   * relative to this instance's directory, with the argument `codex`, and takes the `additionalContext` it prints.
+   * The command finds the path from the repository root through `git rev-parse --show-toplevel`, because Codex runs a
+   * relative hook path from the session's directory. The rest of `hooks` stays the team's.
+   */
+  void startSession(String dispatcher) {
+    def path = Path.of(directory, dispatcher).normalize()
+    hooks[SESSION_START] = [[matcher: 'startup|resume|clear', hooks: [[type: 'command',
+            command: "sh -c 'exec \"\$(git rev-parse --show-toplevel)/${path}\" codex'".toString(),
+            statusMessage: 'Loading session context']]]]
+  }
+
+  /**
    * Adds a whole rule file with `body` under `.agents/adapters/codex/rules/`, replacing an earlier rule with the same name.
    * The name accepts letters, digits, underscores, dots and hyphens; empty names, `.` and `..` are rejected.
    */
@@ -123,7 +140,10 @@ class Codex implements Harness {
   @Keys(path = '.agents/adapters/codex/config.toml')
   Map configKeys() { config ?: null }
 
-  /** Each supplied top-level key of `.agents/adapters/codex/hooks.json`, owned whole, when hooks keys are added. */
+  /**
+   * Each supplied top-level key of `.agents/adapters/codex/hooks.json`, owned whole, when hooks keys are added, and
+   * `hooks.SessionStart` alone once a session-start dispatcher is set.
+   */
   @Keys(path = '.agents/adapters/codex/hooks.json')
   Map hookKeys() { hooks ?: null }
 

@@ -8,8 +8,10 @@ package io.github.lmarqs.cookbook.agents
  * Markdown instructions in `AGENTS.md`, seeded from a section template that an agent fills in when asked, whose
  * line under each heading says what the section holds; version 2 of the YAML policy at
  * `.agents/permission/policy.yaml`; skill file trees under `.agents/skills/`, each with `SKILL.md` and its supporting
- * resources; and the shared directories `.agents/skills/`, `.agents/commands/`, `.agents/hooks/` and
- * `.agents/memory/`, described in `.agents/README.md`.
+ * resources; the shared directories `.agents/skills/`, `.agents/commands/`, `.agents/hooks/` and
+ * `.agents/memory/`, described in `.agents/README.md`; and the POSIX `sh` dispatcher `.agents/hooks/session-start`,
+ * which turns the output of the scripts in `.agents/hooks/session-start.d/` into the JSON session context Claude Code
+ * 2.1.306 and Codex 0.160.1 both take.
  *
  * ## Instances
  *
@@ -35,12 +37,20 @@ package io.github.lmarqs.cookbook.agents
  *
  * `Harness` models, such as `Claude` and `Codex` in this artifact or a harness from another cookbook, translate
  * the shared policy and paths into their own native files.
- * Agents owns the shared layout and computes the relative paths it passes to each harness.
+ * Agents owns the shared layout and computes the relative paths it passes to each harness, the session-start
+ * dispatcher's included. A tool's recipe adds session context by owning a script in `.agents/hooks/session-start.d/`,
+ * never a harness's session-start key.
  */
 @Ingredient
 class Agents {
   /** The shared directories under `.agents/` that `seed` creates and `connect` links each harness to. */
   static final List<String> DIRECTORIES = ['skills', 'commands', 'hooks', 'memory']
+
+  /**
+   * The session-start dispatcher each connected harness runs at session start; it runs every script in
+   * `.agents/hooks/session-start.d/`.
+   */
+  static final String SESSION_START = '.agents/hooks/session-start'
 
   /** The seeded files' templates, inside the `agents-layout` skill so a review can compare the seeds with them. */
   static final String TEMPLATES = 'skills/agents-layout/templates'
@@ -50,6 +60,7 @@ class Agents {
   private boolean instructionsUsed = false
   private boolean policyUsed = false
   private boolean layoutUsed = false
+  private boolean sessionStarted = false
   private List<Harness> ignoredHarnesses = []
   private String ignoredBy
 
@@ -110,8 +121,9 @@ class Agents {
 
   /**
    * Points each harness at the shared directories, by paths relative to where it sits: every directory once the layout
-   * is seeded, otherwise `.agents/skills` once skills are added. Each harness reads `AGENTS.md` natively. Call it after
-   * adding skills.
+   * is seeded, otherwise `.agents/skills` once skills are added. Each harness reads `AGENTS.md` natively. Once the
+   * layout is seeded, also makes each harness run the session-start dispatcher at session start. Call it after adding
+   * skills.
    */
   void connect(Collection<Harness> harnesses) {
     def shared = layoutUsed ? DIRECTORIES : skills ? ['skills'] : []
@@ -119,6 +131,9 @@ class Agents {
     harnesses.each { harness ->
       harness.readDirectories(shared.collectEntries { [it, reach(harness, ".agents/${it}")] })
     }
+    if (!layoutUsed || !harnesses) return
+    sessionStarted = true
+    harnesses.each { it.startSession(reach(it, SESSION_START)) }
   }
 
   /**
@@ -194,6 +209,15 @@ class Agents {
     ((ignoredBy ? ["# ${ignoredBy}"] : []) + lines)*.toString()
   }
 
+  /**
+   * `.agents/hooks/session-start`, executable, once harnesses are connected to a seeded layout: run as
+   * `session-start <harness>`, it runs every `.agents/hooks/session-start.d/*.sh` in name order with the harness name
+   * as `$1` and prints their joined output as `hookSpecificOutput.additionalContext` in one JSON object, the session
+   * context both Claude Code and Codex take; it needs only `sh` and `awk`, and prints nothing for no output.
+   */
+  @File(path = '.agents/hooks/session-start', mode = '0755')
+  String sessionStartDispatcher() { sessionStarted ? resource('hooks/session-start') : null }
+
   /** Whole files under `.agents/skills/<name>/`, when skills are added. */
   @Files(path = '.agents/skills')
   Map<String, String> skillFiles() {
@@ -247,6 +271,12 @@ interface Harness {
    * path relative to its directory.
    */
   void readDirectories(Map<String, String> paths)
+
+  /**
+   * Makes the harness run `dispatcher`, a path relative to its directory, with its own name as the only argument at the
+   * start of every session, and take what it prints as session context.
+   */
+  void startSession(String dispatcher)
 }
 
 /**

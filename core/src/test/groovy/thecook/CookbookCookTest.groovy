@@ -18,6 +18,7 @@ import thecook.cookbook.SectionTarget
 
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -71,7 +72,11 @@ recipes:
           id: "io.github.lmarqs.cookbook:agents#connect/harnesses"
       keys:
         - file: ".agents/adapters/claude/settings.json"
+          path: ["hooks","SessionStart"]
+        - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
+      files:
+        - ".agents/hooks/session-start"
       links:
         - ".claude/commands"
         - ".claude/settings.json"
@@ -432,38 +437,97 @@ notes.set(features: [hooks: true])
     def discarded = shouldFail(IllegalArgumentException) {
       new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect'])
     }
-    assert discarded.message.readLines()[0] == '.agents/adapters/claude/settings.json key permissions'
+    assert discarded.message.readLines()[0] == '.agents/adapters/claude/settings.json key hooks.SessionStart'
   }
 
-  @Test void connectKeepsTheTeamsOwnKeysAndLinksTheCodexHooksFileOnceItExists() {
+  @Test void connectKeepsTheTeamsOwnKeys() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
     def connect = { cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
     connect().commit()
     def settings = new File(kitchen, '.claude/settings.json')
-    def json = new groovy.json.JsonSlurper().parse(settings) +
-        [hooks: [Stop: [[hooks: [[type: 'command', command: '.agents/hooks/stop.sh']]]]], env: [CI: '1']]
+    def json = new groovy.json.JsonSlurper().parse(settings) + [env: [CI: '1']]
+    json.hooks.Stop = [[hooks: [[type: 'command', command: '.agents/hooks/stop.sh']]]]
     settings.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)) + '\n'
     def config = new File(kitchen, '.codex/config.toml')
     config.append('\n[features]\nhooks = true\n')
-    new File(kitchen, '.agents/adapters/codex/hooks.json').text = '{"hooks": {}}\n'
     def team = [settings.text, config.text]
 
-    def linked = connect()
-
-    assert linked.changes == ['.codex/hooks.json', 'cook.lock']
-    linked.commit()
-    assert Files.readSymbolicLink(new File(kitchen, '.codex/hooks.json').toPath()).toString() ==
-    '../.agents/adapters/codex/hooks.json'
-    assert [settings.text, config.text] == team
     assert connect().changes == []
+    assert [settings.text, config.text] == team
     def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
     assert lock.names == ['io.github.lmarqs.cookbook:agents#connect', 'io.github.lmarqs.cookbook:agents#seed'] as Set
     def ignore = new File(kitchen, '.gitignore').readLines()
     ['config.toml', 'hooks.json', 'rules'].each {
       assert ignore.indexOf("!/.codex/${it}".toString()) > ignore.indexOf('/.codex/*')
     }
+  }
+
+  @Test void connectOwnsTheSessionStartDispatcherAndOneSessionStartKeyPerHarnessAndKeepsTheTeamsHooks() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    def connect = { cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]) }
+    connect().commit()
+
+    def dispatcher = new File(kitchen, '.agents/hooks/session-start')
+    assert dispatcher.bytes == new File(COOKBOOK, 'agents/hooks/session-start').bytes
+    assert Files.getPosixFilePermissions(dispatcher.toPath()) == PosixFilePermissions.fromString('rwxr-xr-x')
+    def claudeSettings = new File(kitchen, '.agents/adapters/claude/settings.json')
+    def codexHooks = new File(kitchen, '.agents/adapters/codex/hooks.json')
+    def slurp = { File file -> new groovy.json.JsonSlurper().parse(file) }
+    assert slurp(claudeSettings).hooks == [SessionStart: [[hooks: [[type: 'command',
+            command: '"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude']]]]]
+    // Codex runs a relative hook path from the session's directory, so the command starts from the repository root.
+    assert slurp(codexHooks) == [hooks: [SessionStart: [[matcher: 'startup|resume|clear', hooks: [[type: 'command',
+            command: 'sh -c \'exec "$(git rev-parse --show-toplevel)/.agents/hooks/session-start" codex\'',
+            statusMessage: 'Loading session context']]]]]]
+    assert Files.readSymbolicLink(new File(kitchen, '.codex/hooks.json').toPath()).toString() ==
+    '../.agents/adapters/codex/hooks.json'
+    def owned = CookLock.parse(new File(kitchen, 'cook.lock').text).owned('io.github.lmarqs.cookbook:agents#connect')
+    assert new KeyTarget('.agents/adapters/claude/settings.json', ['hooks', 'SessionStart']) in owned
+    assert new KeyTarget('.agents/adapters/codex/hooks.json', ['hooks', 'SessionStart']) in owned
+
+    def preToolUse = [[matcher: 'Bash', hooks: [[type: 'command', command: '.agents/hooks/guard.sh']]]]
+    [claudeSettings, codexHooks].each { file ->
+      def json = slurp(file)
+      json.hooks.PreToolUse = preToolUse
+      file.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)) + '\n'
+    }
+    def team = [claudeSettings.text, codexHooks.text]
+    assert connect().changes == []
+    assert [claudeSettings.text, codexHooks.text] == team
+
+    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect']).commit()
+    assert !dispatcher.exists()
+    assert slurp(claudeSettings) == [hooks: [PreToolUse: preToolUse]]
+    assert slurp(codexHooks) == [hooks: [PreToolUse: preToolUse]]
+  }
+
+  @Test void theSessionStartDispatcherPrintsEveryScriptsOutputInNameOrderAsOneJsonEnvelope() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
+    def dispatch = { String harness ->
+      def process = new ProcessBuilder('.agents/hooks/session-start', harness).directory(kitchen).start()
+      def output = process.inputStream.text
+      [process.waitFor(), output]
+    }
+    def scripts = new File(kitchen, '.agents/hooks/session-start.d')
+    assert !scripts.exists()
+    assert dispatch('claude') == [0, '']
+    scripts.mkdirs()
+    assert dispatch('claude') == [0, '']
+
+    new File(scripts, '20-text.sh').text = 'printf \'quote " backslash \\\\ tab \\t end\\nsecond line\\n\'\n'
+    new File(scripts, '10-harness.sh').text = 'echo "harness $1"\n'
+    new File(scripts, '30-skipped.txt').text = 'echo never\n'
+    def (status, output) = dispatch('codex')
+
+    assert status == 0
+    assert new groovy.json.JsonSlurper().parseText(output) == [hookSpecificOutput: [hookEventName: 'SessionStart',
+          additionalContext: 'harness codex\nquote " backslash \\ tab \t end\nsecond line']]
   }
 
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
@@ -488,8 +552,10 @@ notes.set(features: [hooks: true])
       '.agents/README.md',
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
+      '.agents/adapters/codex/hooks.json',
       '.agents/commands/.gitkeep',
       '.agents/hooks/.gitkeep',
+      '.agents/hooks/session-start',
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
@@ -507,6 +573,7 @@ notes.set(features: [hooks: true])
       '.claude/settings.json',
       '.claude/skills',
       '.codex/config.toml',
+      '.codex/hooks.json',
       '.gitignore',
       'AGENTS.md',
       'cook.lock'
@@ -516,8 +583,8 @@ notes.set(features: [hooks: true])
     new File(TEMPLATES, 'policy.template.yaml').text
     assert Files.readSymbolicLink(new File(kitchen, '.claude/settings.json').toPath()).toString() ==
     '../.agents/adapters/claude/settings.json'
-    assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')) ==
-    [permissions: [allow: [], ask: [], deny: [], disableBypassPermissionsMode: 'disable']]
+    assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions ==
+    [allow: [], ask: [], deny: [], disableBypassPermissionsMode: 'disable']
     assert new File(kitchen, '.codex/config.toml').text.contains('sandbox_mode = "workspace-write"')
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text == '''{
   "permissions": {
@@ -525,6 +592,18 @@ notes.set(features: [hooks: true])
     "ask": [],
     "deny": [],
     "disableBypassPermissionsMode": "disable"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\\"$CLAUDE_PROJECT_DIR\\"/.agents/hooks/session-start claude"
+          }
+        ]
+      }
+    ]
   }
 }
 '''
@@ -535,8 +614,8 @@ notes.set(features: [hooks: true])
     assert same.changes == []
 
     def withoutCodex = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    assert withoutCodex.changes ==
-    ['.agents/adapters/codex/config.toml', '.codex/config.toml', '.gitignore', 'cook.lock']
+    assert withoutCodex.changes == ['.agents/adapters/codex/config.toml', '.agents/adapters/codex/hooks.json',
+      '.codex/config.toml', '.codex/hooks.json', '.gitignore', 'cook.lock']
     withoutCodex.commit()
     assert !new File(kitchen, '.codex').exists()
     assert !new File(kitchen, '.agents/adapters/codex').exists()
@@ -857,10 +936,13 @@ CLAUDE.local.md
     assert connected.changes == [
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
+      '.agents/adapters/codex/hooks.json',
+      '.agents/hooks/session-start',
       '.claude/commands',
       '.claude/settings.json',
       '.claude/skills',
       '.codex/config.toml',
+      '.codex/hooks.json',
       '.gitignore',
       'cook.lock'
     ]
@@ -884,7 +966,7 @@ CLAUDE.local.md
     }
     def again = connect()
     def links = ['.claude/commands', '.claude/settings.json', '.claude/skills']
-    assert again.changes == links + ['.codex/config.toml']
+    assert again.changes == links + ['.codex/config.toml', '.codex/hooks.json']
     again.commit()
     // How a session asks is each person's choice, so the shared settings leave out `defaultMode`.
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, '.claude/settings.json')).permissions ==
