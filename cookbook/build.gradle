@@ -6,22 +6,24 @@ description = 'Recipes and models for the-cook, a recipe driven configuration to
 
 apply from: '../gradle/central.gradle'
 
-// Maven Central takes `agents` with a sources and a javadoc jar. Its jar holds only sources, so the sources jar
-// repeats it, and the javadoc jar holds its README.
-def agentsSources = tasks.register('agentsSourcesJar', Jar) {
-  archiveBaseName = 'agents'
-  archiveClassifier = 'sources'
-  destinationDirectory = layout.buildDirectory.dir('libs')
-  from(file('agents')) { into("${project.group.toString().replace('.', '/')}/agents") }
-}
-def agentsJavadoc = tasks.register('agentsJavadocJar', Jar) {
-  archiveBaseName = 'agents'
-  archiveClassifier = 'javadoc'
-  destinationDirectory = layout.buildDirectory.dir('libs')
-  from(file('agents/README.md'))
-}
+// Maven Central takes each published artifact with a sources and a javadoc jar. Its jar holds only sources, so the
+// sources jar repeats it, and the javadoc jar holds its README.
+['agents', 'git', 'beads', 'ralph'].each { artifact ->
+  def sources = tasks.register("${artifact}SourcesJar", Jar) {
+    archiveBaseName = artifact
+    archiveClassifier = 'sources'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    from(file(artifact)) { into("${project.group.toString().replace('.', '/')}/${artifact}") }
+  }
+  def javadoc = tasks.register("${artifact}JavadocJar", Jar) {
+    archiveBaseName = artifact
+    archiveClassifier = 'javadoc'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    from(file("${artifact}/README.md"))
+  }
 
-publishing.publications.named('agents', MavenPublication) {
-  artifact(agentsSources)
-  artifact(agentsJavadoc)
+  publishing.publications.named(artifact, MavenPublication) {
+    it.artifact(sources)
+    it.artifact(javadoc)
+  }
 }

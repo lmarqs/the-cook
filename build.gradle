@@ -60,13 +60,17 @@ tasks.register('codenarc', JavaExec) {
   args '-maxPriority1Violations=0', '-maxPriority2Violations=0', '-maxPriority3Violations=0'
 }
 
-// The Maven Central Portal takes one zip of a Maven-layout tree for a release. The published artifacts are `agents`,
-// the cookbook plugin and the plugin's marker.
+// The Maven Central Portal takes one zip of a Maven-layout tree for a release. The published artifacts are the cookbook
+// artifacts `agents`, `git`, `beads` and `ralph`, the cookbook plugin and the plugin's marker.
 def releaseVersion = findProperty('releaseVersion') ?: '0.0.0'
+def cookbookArtifacts = ['agents', 'git', 'beads', 'ralph']
 def centralBundle = tasks.register('centralBundle', Zip) {
   group = 'publishing'
-  description = 'Bundle agents, the cookbook plugin and its marker, with their checksums, for the Central Portal.'
-  dependsOn gradle.includedBuild('cookbook').task(':publishAgentsPublicationToCentralRepository')
+  description = 'Bundle the cookbook artifacts, the cookbook plugin and its marker, with their checksums, for the ' +
+      'Central Portal.'
+  cookbookArtifacts.each {
+    dependsOn gradle.includedBuild('cookbook').task(":publish${it.capitalize()}PublicationToCentralRepository")
+  }
   dependsOn gradle.includedBuild('plugin').task(':publishAllPublicationsToCentralRepository')
   from('cookbook/build/central', 'plugin/build/central')
   exclude '**/maven-metadata.xml*'
@@ -83,13 +87,13 @@ tasks.register('centralBundleTest') {
   doLast {
     def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
     def v = releaseVersion
-    def agents = "io/github/lmarqs/cookbook/agents/${v}/agents-${v}"
+    def cookbook = cookbookArtifacts.collect { "io/github/lmarqs/cookbook/${it}/${v}/${it}-${v}" }
     def plugin = "io/github/lmarqs/the-cook-plugin/${v}/the-cook-plugin-${v}"
     def marker = "io/github/lmarqs/cookbook/io.github.lmarqs.cookbook.gradle.plugin/${v}/" +
         "io.github.lmarqs.cookbook.gradle.plugin-${v}"
-    def expected = ['', '-sources', '-javadoc'].collectMany {
-      ["${agents}${it}.jar", "${plugin}${it}.jar", "${marker}${it}.jar"]
-    } + ["${agents}.pom", "${plugin}.pom", "${plugin}.module", "${marker}.pom"]
+    def expected = ['', '-sources', '-javadoc'].collectMany { suffix ->
+      cookbook.collect { "${it}${suffix}.jar" } + ["${plugin}${suffix}.jar", "${marker}${suffix}.jar"]
+    } + cookbook.collect { "${it}.pom" } + ["${plugin}.pom", "${plugin}.module", "${marker}.pom"]
     def files = entries.findAll { !it.endsWith('/') && !(it ==~ /.*\.(md5|sha1|sha256|sha512|asc)/) }
     def missing = files.findAll { !(entries.contains(it + '.md5') && entries.contains(it + '.sha1')) }
 
