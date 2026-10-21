@@ -92,7 +92,8 @@ appears in the draft, until the recipe is cooked again.
 ''')
 @yield('''
 Run `bd init --prefix <p> --skip-hooks --skip-agents --non-interactive`, where `<p>` starts every issue id. It makes a
-git commit of its own files and the root `.gitignore`, where it appends unrooted lines the team may delete. Never run
+git commit of the root `.gitignore`, where it appends unrooted lines the team may delete, and with `--share=team` of
+the `.beads/` files it leaves tracked. Never run
 `bd setup`: this recipe writes the hooks bd's setup would.
 
 For `--share=team`, then run `bd config set sync.remote <url>`, `bd config set export.auto true`,

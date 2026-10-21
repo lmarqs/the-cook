@@ -438,7 +438,7 @@ roles:
 
     def ahead = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
     assert ahead.exit == 1
-    assert ahead.output.readLines()[0] == 'clean: ralph/demo has 1 commits that HEAD does not'
+    assert ahead.output.readLines()[0] == 'clean: ralph/demo has commits that HEAD does not (1)'
     assert ahead.output.contains('a squash or rebase merge')
     assert ahead.output.contains('--force')
 

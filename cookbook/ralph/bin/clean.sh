@@ -36,7 +36,7 @@ if [ "$force" = false ]; then
   if [ "$has_branch" = true ]; then
     ahead=$(git -C "$root" rev-list --count "HEAD..refs/heads/$branch")
     if [ "$ahead" -gt 0 ]; then
-      fail "$branch has $ahead commits that HEAD does not" \
+      fail "$branch has commits that HEAD does not ($ahead)" \
         'a squash or rebase merge leaves them out of HEAD, so clean cannot tell they were delivered' \
         "merge $branch, or run with --force to delete them"
     fi
