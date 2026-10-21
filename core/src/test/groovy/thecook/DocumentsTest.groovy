@@ -40,6 +40,20 @@ class DocumentsTest {
     assert new JsonSlurper().parseText(document.text) == [name: 'fixture', kept: [:]]
   }
 
+  @Test void jsonRemovesObjectsLeftEmptyByRemovingTheirLastKeyAndKeepsOnesWithOtherKeys() {
+    def emptied = open('json', '{\n  "permissions": {},\n  "hooks": {\n    "SessionStart": []\n  }\n}\n')
+    remove(emptied, ['hooks', 'SessionStart'])
+    assert emptied.text == '{\n  "permissions": {}\n}\n'
+
+    def nested = open('json', '{"a": {"b": {"c": 1}}}')
+    remove(nested, ['a', 'b', 'c'])
+    assert new JsonSlurper().parseText(nested.text) == [:]
+
+    def shared = open('json', '{"hooks": {"SessionStart": [], "PreToolUse": []}}')
+    remove(shared, ['hooks', 'SessionStart'])
+    assert new JsonSlurper().parseText(shared.text) == [hooks: [PreToolUse: []]]
+  }
+
   @Test void jsonKeepsNullsArraysEscapedStringsAndSlashedKeysApart() {
     def document = open('json', '{}')
     set(document, ['a/b'], null)

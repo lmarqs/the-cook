@@ -9,8 +9,10 @@ import groovy.json.JsonSlurper
 class JsonDocument implements Document {
   String text
   final List<List<String>> createdParents = []
+  private final List<List<String>> emptyWhenOpened
   JsonDocument(String text) {
-    this.text = text ?: '{}\n'; root()
+    this.text = text ?: '{}\n'
+    emptyWhenOpened = emptyObjects(root(), [])
   }
   boolean isEmpty() {
     root().members.isEmpty()
@@ -107,7 +109,9 @@ class JsonDocument implements Document {
   }
   @Override
   void remove(String id, RegionLocation location) {
-    deleteKey(((KeyLocation) location).path)
+    def removed = ((KeyLocation) location).path
+    deleteKey(removed)
+    removeEmptiedParents(removed.dropRight(1))
     def deepestFirst = createdParents.sort { -it.size() }.toList()
 
     deepestFirst.each { path ->
@@ -118,6 +122,27 @@ class JsonDocument implements Document {
         createdParents.remove(path)
       }
     }
+  }
+  // An object whose last key was removed is dropped, as TOML drops an emptied table, so withdrawing the key Cook wrote
+  // into an object it added leaves no parent behind in a later invocation; one that was empty when opened stays.
+  private void removeEmptiedParents(List<String> path) {
+    for (def parent = path; parent; parent = parent.dropRight(1)) {
+      def node = at(parent)
+
+      if (node?.kind != 'object' || !node.members.isEmpty() || parent in emptyWhenOpened) {
+        return
+      }
+
+      deleteKey(parent)
+    }
+  }
+  private static List<List<String>> emptyObjects(Map node, List<String> path) {
+    if (node.kind != 'object') {
+      return []
+    }
+
+    def nested = node.members.collectMany { key, member -> emptyObjects(member.value, path + [key]) }
+    node.members.isEmpty() && path ? [path] + nested : nested
   }
   private void deleteKey(List<String> path) {
     def parent = at(path.dropRight(1))

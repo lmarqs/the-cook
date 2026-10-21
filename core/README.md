@@ -66,7 +66,8 @@ When a write fails, it restores the paths it already wrote and fails.
 
 - `Draft.commit` keeps no journal, so a process killed mid-commit can leave files and `cook.lock` half-written.
 - Models use only their own artifact's types.
-- A document forgets, between invocations, which empty parents it created, so withdrawing a key leaves those parents.
+- A YAML document forgets, between invocations, which empty parents it created, so withdrawing a key leaves those
+  parents. JSON and TOML documents drop an object or table that withdrawing its last key leaves empty.
 
 ## Verification
 
