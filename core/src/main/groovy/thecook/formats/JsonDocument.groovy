@@ -96,6 +96,16 @@ class JsonDocument implements Document {
   private void insert(List<String> path, String content) {
     def parent = at(path.dropRight(1))
     def members = parent.members.values().toList()
+    def parentIndent = !members && path.size() > 1 ?
+        lineIndent(at(path.dropRight(2)).members[path[-2]].keyStart) : null
+
+    if (parentIndent != null) {
+      def inner = parentIndent + '  '
+      splice(parent.start, parent.end, '{\n' + inner + JsonOutput.toJson(path[-1]) + ': ' +
+          indented(new JsonSlurper().parseText(content), inner) + '\n' + parentIndent + '}')
+      return
+    }
+
     int offset = members ? members[-1].value.end : parent.start + 1
     def indent = members ? lineIndent(members[-1].keyStart) : null
     def entry = indent == null ? (members ? ', ' : '') + JsonOutput.toJson(path[-1]) + ':' + content :

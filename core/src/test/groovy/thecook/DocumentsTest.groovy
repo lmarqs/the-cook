@@ -84,6 +84,27 @@ class DocumentsTest {
 '''
   }
 
+  @Test void jsonWritesANestedKeyIntoAnIndentedFileAtTheDepthOfItsKeyThroughNewAndEmptyParents() {
+    def document = open('json', '{\n  "permissions": {},\n  "empty": {}\n}\n')
+    set(document, ['hooks', 'SessionStart'], [[type: 'command']])
+    set(document, ['empty', 'key'], 1)
+    assert document.text == '''\
+{
+  "permissions": {},
+  "empty": {
+    "key": 1
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command"
+      }
+    ]
+  }
+}
+'''
+  }
+
   @Test void jsonKeepsAOneLineFileOnOneLine() {
     def document = open('json', '{"a": {"b": 1}, "c": 2}\n')
     set(document, ['a'], [b: 2])
