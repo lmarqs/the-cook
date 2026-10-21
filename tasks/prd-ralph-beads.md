@@ -177,11 +177,14 @@ that I never learn a harness's hook format and never collide with another tool o
 **Acceptance Criteria:**
 - [ ] `#connect` owns `.agents/hooks/session-start` (mode 0755). Run as `session-start <harness>`, it runs every
   `.agents/hooks/session-start.d/*.sh` in name order with the harness name as `$1`, joins their standard output, and
-  prints it in the envelope that harness takes, as US-002 recorded. It exits 0, and prints nothing for an empty or
+  prints it as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<text>"}}`, which both
+  harnesses take (US-002), JSON-encoded with `sh` and `awk` only. It exits 0, and prints nothing for an empty or
   missing directory.
 - [ ] For `--harness=claude`, `#connect` owns `hooks.SessionStart` in `.agents/adapters/claude/settings.json`, running
   `"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude`. For `--harness=codex`, it owns the SessionStart entry in
-  `.agents/adapters/codex/hooks.json`, in the shape US-002 recorded, linked as `.codex/hooks.json`.
+  `.agents/adapters/codex/hooks.json` (matcher `startup|resume|clear`), linked as `.codex/hooks.json`. Its command
+  resolves the root through `git rev-parse --show-toplevel`, because Codex runs a relative hook path from the session's
+  directory (US-002).
 - [ ] `CookbookCookTest` cases: both harnesses get the key and the script. A `hooks.PreToolUse` the team wrote
   survives a second cook. Discard removes only what `#connect` wrote. A second cook prints `Already cooked.`.
 - [ ] `design.md` gains "Tools that add session context", and "Cook owns only the keys it renders" lists the
@@ -231,7 +234,7 @@ prime text and, when I name a harness or have the layout, the session hook, so t
 - [ ] The after-text gives `bd init --prefix <p> --skip-hooks --skip-agents --non-interactive`. For `team`, it adds
   `bd config set sync.remote <url>`, `bd config set export.auto true`, `bd hooks install --beads` and
   `git config core.hooksPath .beads/hooks`, warning that `core.hooksPath` is per clone and replaces any hooks path the
-  project already uses. It says never to run `bd setup`, and, with the layout, to cook `agents#connect`.
+  project already uses. It says `bd init` makes a git commit of its own files and the root `.gitignore`. It says never to run `bd setup`, and, with the layout, to cook `agents#connect`.
 - [ ] Never writes `.beads/config.yaml`, `metadata.json`, bd's git hooks or the database.
 - [ ] Tests: `team` and `clone` on an empty kitchen (exact files and `cook.lock`, second cook unchanged, hand-edited
   seed kept); `--harness=claude --harness=codex` without the layout (exact keys, team's other hooks kept, discard
@@ -251,23 +254,27 @@ try and connect to worker limits only when I name them.
 - [ ] Seeds `.ralph-tui/config.toml` with `configVersion = "2.1"`, `tracker = "beads"`, `defaultAgent`,
   `maxIterations = 10` with a comment stating what ralph-tui counts, `autoCommit = true`,
   `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true` and one `[[agents]]` per harness, named after it.
-  Plugin settings sit under `[agents.options]`, because ralph-tui 0.12 drops unknown top-level agent keys. Claude:
+  `defaultFlags` sits at the top of the entry and plugin settings under `[agents.options]`: ralph-tui 0.12 replaces a
+  `defaultFlags` under options and drops unknown top-level agent keys, silently (US-002). Claude:
   `defaultFlags = ["--permission-prompts", "none", "--permission-mode", "acceptEdits"]` plus
   `"--settings", "<file>"` from `--role` or `--settings`; `skipPermissions = false`. Codex:
   `defaultFlags = ["-c", "approval_policy=never", "-c", "sandbox_workspace_write.network_access=false"]`,
   `fullAuto = false`, `sandbox = "workspace-write"`. No model, no effort.
 - [ ] Seeds `.ralph-tui/templates/beads.hbs` and `json.hbs`; ralph-tui loads `<tracker>.hbs` for the tracker a run
-  uses. Both say: stay in this worktree, commit small, never push, print `<promise>COMPLETE</promise>` only after the
+  uses. Both say: stay in this worktree, leave committing to ralph-tui (`autoCommit`; a Codex `workspace-write`
+  worker cannot write `.git`, US-002), never push, print `<promise>COMPLETE</promise>` only after the
   checks pass, `BLOCKED:` otherwise. `beads.hbs` adds "never close or update the bead; ralph-tui closes it";
-  `json.hbs` adds "never edit the PRD file; ralph-tui marks the story done". Neither asks a worker to write to `bd`.
+  `json.hbs` adds "never edit the PRD file; ralph-tui marks the story done". Neither asks a worker to run `bd`: the
+  task text is in the prompt, and a Codex `workspace-write` worker can neither read nor write the database.
 - [ ] Owns `.gitignore` section `ralph-tui`: the argument line, `/.ralph-tui/*`, `!/.ralph-tui/config.toml`,
   `!/.ralph-tui/templates/`, `!/.ralph-tui/bin/`, `/.worktrees/ralph/`.
 - [ ] No `AGENTS.md` section, no deny file, no version pins. The class doc shows: a role-bound entry and a bypass entry
   (`skipPermissions = true`) as entries to add; model per run or per entry; Claude effort through
   `CLAUDE_CODE_EFFORT_LEVEL`, Codex effort per entry; ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus`,
   `haiku`; its parallel mode starts blocked children and refuses fewer than three tasks; Codex workers in worktrees run
-  no project hooks without `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker cannot write to the
-  Beads database (US-002); denies are prefix rules, a guardrail, and the structural limit is a worker without push
+  no project hooks without `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor
+  write the Beads database nor `.git` (US-002); Claude ignores the project's `permissions.allow` in a workspace it has
+  not trusted, so an unattended worker's allows come through `--role` or `--settings`; denies are prefix rules, a guardrail, and the structural limit is a worker without push
   credentials.
 - [ ] Tests: both harnesses on an empty kitchen (exact seed text, exact `cook.lock`); `--role=worker` with the role
   file present and absent (refusal text); `--settings=x.json` (flag written, file untouched); both together refused;
@@ -320,6 +327,8 @@ example cannot drift from the recipe.
 without the layout.
 
 **Acceptance Criteria:**
+- [ ] Scratch repositories live outside `/tmp`, because Codex's sandbox writes `/tmp` by default and gives false
+  passes (US-002). Recorded: whether a worktree of a trusted checkout counts as trusted for Claude's project allows.
 - [ ] Fresh scratch repository, no remote, CLI built from `main`: cook `agents#seed`, `agents#connect` for both
   harnesses, `git#worktrees`, `beads#tracker --share=clone`, `ralph#ralph-tui --harness=claude --harness=codex`; run
   `bd init` as the after-text says. A Claude session's context contains `bd prime` output.
@@ -381,6 +390,10 @@ pointed at the new interface.
 - ralph-tui 0.12.0 verified: `--prd` without `--tracker` switches to `json`; `parallel.mode` defaults to `never`;
   `--variant` reaches neither Claude nor Codex; the worker environment loses only `*_API_KEY`, `*_SECRET_KEY`,
   `*_SECRET`; worker branches are `ralph-parallel/...`; `bd close <id> --force` is run by ralph-tui's own process.
+- US-002 verified: both harnesses take plain stdout or the `hookSpecificOutput.additionalContext` envelope; Codex
+  hook trust is keyed by the absolute path of `hooks.json`; ralph-tui passes `CLAUDE_CODE_EFFORT_LEVEL` to workers and
+  `claude --print` honours it; role denies passed with `--settings` add to the project's, and `git -C . push` gets past
+  a `git push` prefix rule.
 - `bd` 1.3.1 verified: finds the main checkout's database from a worktree through git's common directory;
   `bd codex-hook SessionStart` prints the Codex JSON envelope; `bd init` appends unrooted lines to the root
   `.gitignore` and writes `.beads/.gitignore`.
