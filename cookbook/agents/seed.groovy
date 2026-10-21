@@ -23,7 +23,8 @@ Paths, scripts and commands other recipes, launchers and people rely on:
 in `.agents/README.md` |
 | The Launching table in `.agents/README.md` | The launch command for each harness, mode and role |
 | `sh .agents/skills/agents-layout/scripts/check.sh` | The layout check |
-| `/agents-layout` in Claude Code, `$agents-layout` in Codex | The skill, taking `adopt`, `review` or `review --fix` |
+| `/agents-layout` in Claude Code, `$agents-layout` in Codex | The skill, taking `adopt`, `review` or `review --fix`; \
+given nothing, it adopts until `cook.lock` records `#connect` |
 
 ## Consumes
 
