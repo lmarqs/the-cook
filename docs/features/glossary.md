@@ -14,7 +14,7 @@ see the [root README](../../README.md) and [core implementation guide](../../cor
 
 | Term | Meaning |
 | --- | --- |
-| Agent harness | A program that runs an agent and consumes its native configuration and guidance. See [ingredients](../architecture.md#ingredients-recipes-and-cookbooks). |
+| Agent harness | A program that runs an agent and consumes its native configuration and guidance, such as Claude Code or Codex. Ralph TUI's agent plugin names the same thing: its `claude` and `codex` plugins are the harnesses of those names. See [ingredients](../architecture.md#ingredients-recipes-and-cookbooks). |
 | Agent-content directory | A repository convention such as `.agents/` for skills, memory and guidance. Program support determines what is consumed. |
 | Batch | An ordered collection of declared file operations, reviewed as one final diff and approved as a whole. It can include directory and symlink operations, but external command execution is not a batch action. |
 | Batch approval | Approval for all declared operations in the final terminal diff. `--batch-approve` displays that diff and proceeds without prompting; otherwise Cook asks before target writes. Noninteractive execution alone does not authorize writes. See [CLI](cli.md). |

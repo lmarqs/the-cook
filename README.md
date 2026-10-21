@@ -108,8 +108,8 @@ notes.add('Run the tests before committing.')
 
 A path outside the kitchen, through a symbolic link too, is refused.
 
-Of the [cookbook](cookbook/README.md), the `agents` artifact runs; the other directories are a design sketch that has
-not been compiled. `./gradlew :cookbook:publish` packages the cookbook with the `io.github.lmarqs.cookbook` Gradle
+Of the [cookbook](cookbook/README.md), the `agents`, `git`, `beads` and `ralph` artifacts run; the other directories
+are a design sketch that has not been compiled. `./gradlew :cookbook:publish` packages the cookbook with the `io.github.lmarqs.cookbook` Gradle
 plugin, built from [`plugin`](plugin) apart from the engine: a jar and a POM per directory and the
 `io.github.lmarqs:cookbook` BOM. Packaging compiles nothing; the engine compiles an artifact's sources when one of its recipes is cooked.
 

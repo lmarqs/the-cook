@@ -1,7 +1,7 @@
 # Cookbook
 
-This directory shows the shape of recipes and ingredients. The engine runs the `agents` artifact; the other
-directories are a design sketch in Groovy that has not been compiled.
+This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `git`, `beads` and
+`ralph` artifacts; the other directories are a design sketch in Groovy that has not been compiled.
 
 ## Units
 
@@ -13,9 +13,9 @@ A cookbook releases as jars in a Maven-layout repository. The `io.github.lmarqs.
 jar per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
 `<group>:cookbook:<version>`, listing the artifacts at that release, so no directory is named `cookbook`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
-everything a reader needs without the source checkout. Each release of this repository publishes the `agents`
-artifact to Maven Central as `io.github.lmarqs.cookbook:agents:<version>`, so it cooks with no `cook.toml`; the other
-directories are not published.
+everything a reader needs without the source checkout. Each release of this repository publishes the `agents`,
+`git`, `beads` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
+with no `cook.toml`; the other directories are not published.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
 `#recipe` the address names the artifact, which `./cook help` describes and nothing cooks.
@@ -207,158 +207,161 @@ A model's class doc comment holds these sections in order.
 Rendered help for an artifact and a recipe, as `./cook help` prints them:
 
 ````text
-$ ./cook help io.github.lmarqs.cookbook:agents:0.0.0
-io.github.lmarqs.cookbook:agents:0.0.0
+$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0
+io.github.lmarqs.cookbook:ralph:0.0.0
 
-Shared setup for the coding agents in one repository, so project guidance, permissions and skills stay the same
-across every agent program the team uses. The artifact also models the programs it drives, Claude Code and Codex,
-and ships the `agents-layout` skill, which explains the layout to the people and agents working in it.
-Its `references/design.md` gives the reason behind each decision of the layout, such as committed links, deny-only
-roles and no Codex roles. To set the layout up in a repository, cook `#seed`, whose help says how to go on.
+ralph-tui works through a tracker's tasks, a Beads epic or a JSON PRD, by running coding agents in a loop. This artifact
+sets it up so each run works unattended in a worktree of its own, `.worktrees/ralph/<name>` on the branch
+`ralph/<name>`, and connects to worker limits, worktree setup and mise only where the team names them. To set it up,
+cook `#ralph-tui`, whose help says what it writes and how to launch a run.
 
 Recipes
-  io.github.lmarqs.cookbook:agents:0.0.0#connect
-  io.github.lmarqs.cookbook:agents:0.0.0#seed
+  io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
 
 Models
-  io.github.lmarqs.cookbook.agents.Agents
-  io.github.lmarqs.cookbook.agents.Claude
-  io.github.lmarqs.cookbook.agents.Codex
+  io.github.lmarqs.cookbook.ralph.RalphTui
 ````
 
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ````text
-$ ./cook help io.github.lmarqs.cookbook:agents:0.0.0#connect
-io.github.lmarqs.cookbook:agents:0.0.0#connect
+$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
+io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
 
-Connects each selected harness to the shared agent layout: renders the shared policy into its settings under
-`.agents/adapters/<harness>/`, links its own directory, `.claude/` or `.codex/`, to those files and to the shared
-directories, and runs every script in `.agents/hooks/session-start.d/` when a session starts. Each harness reads
-`AGENTS.md` natively, and hooks and memory are reached by their paths. The links are committed, so a fresh clone needs
-no cooking; everything else in the harness directories is ignored in Git.
+Sets ralph-tui up to work through a tracker's tasks with unattended coding agents, each run in a worktree of its own:
+a configuration with one agent entry per harness, the prompts it renders for each task, and a launcher that creates,
+sets up and cleans the run's worktree.
 
 ## API
 
 ```sh
-# A team that uses Claude Code only
-./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
-# A team that uses Claude Code and Codex
-./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
-# A new repository: the layout and its connection in one invocation
-./cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+# Claude Code workers, limited by the project's settings
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
+# Claude Code and Codex workers, Claude by default
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
+# Claude workers bound to the agents layout's role worker
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --role=worker
+# Claude workers with a settings file the team writes
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --settings=ralph-worker.json
 ```
 
-Paths other recipes, launchers and people rely on:
+The first `--harness` is the default agent. `--role` and `--settings` reach only the Claude entry, and only one of them
+is given. What it publishes for people, sessions and other recipes:
 
-| Path | What it is |
+| Name | What it is |
 | --- | --- |
-| `.agents/adapters/<harness>/` | Each harness's settings; Cook owns only the keys it renders, and the team writes the rest |
-| `.agents/adapters/claude/roles/<role>.json` | A role's denies, added to one Claude run with `claude --settings <file>` |
-| `.agents/hooks/session-start.d/<name>.sh` | Session context: each script's standard output reaches every connected harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe owns its own script there, such as `beads.sh`; the team writes its own beside them |
-| `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
-| `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
+| `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | Runs ralph-tui in the run's worktree, as Run-time effects says |
+| `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and every `ralph-parallel/*` worktree and branch |
+| `.worktrees/ralph/<name>` on branch `ralph/<name>` | The rule for a run's worktree, following `.worktrees/<branch>` |
+| `mise run ralph:run …`, `mise run ralph:clean …` | The same scripts as mise tasks, with the same arguments, when the repository has a `mise.toml` |
+| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` and with `--prd` |
 
 ## Consumes
 
-- Claude Code and Codex read what it writes; written for Claude Code 2.1.304 and Codex 0.160.1, with the session-start
-  hooks tested on Claude Code 2.1.306.
-- `.agents/permission/policy.yaml` in the draft, the team's: its `commands` render into each harness's settings, its
-  `tools` and `roles` into Claude's, and its `bypass` decides whether Claude's bypass mode is refused. When absent, the
-  starter is seeded, which grants nothing.
-- `.agents/hooks/session-start.d/*.sh` at run time, from tool recipes and the team: the dispatcher runs each with `sh`.
-  `sh`, `awk` and, for Codex, `git` must be on the path.
-- A file or directory already at a link's path, such as a committed `.codex/config.toml` or `.claude/skills/`, is
-  refused, and nothing is written: move its contents where the message says, delete it, and cook again. A link there
-  is replaced.
-- By hand first: cook `io.github.lmarqs.cookbook:agents:<version>#seed` to create `AGENTS.md` and the policy, and
-  edit the policy.
+- ralph-tui 0.12.0 and Git at run time; Claude Code 2.1.306 and codex-cli 0.160.1 as workers. `bd` 1.3.1 only for a
+  run with `--epic`, which reads the Beads database; a run with `--prd` needs no `bd`.
+- `.agents/adapters/claude/roles/<name>.json` in the draft, with `--role=<name>`: written by
+  `io.github.lmarqs.cookbook:agents#connect --harness=claude` from `roles.<name>` in `.agents/permission/policy.yaml`.
+  Without it, cooking is refused and names both.
+- The `--settings` path as given: written into the configuration, never read or written at cook time. Workers
+  resolve it in the run worktree, so it names a committed file by its path from the repository root, outside
+  `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
+- `mise.toml` in the draft: when present, the mise wrappers are written. `mise.toml` itself is never changed.
+- `.worktrees/setup`, at run time, when it is executable in a new run worktree.
+- By hand first: `bun install -g ralph-tui@0.12.0`, and for `--epic`, a Beads database with the epic.
 
 ## Produces
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
-| `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories | Always, when absent | seed |
-| `.agents/hooks/session-start` | The session-start dispatcher, mode 0755 | Always | owned |
-| `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's `bypass` is `refuse` | `--harness=claude` | owned |
-| `.agents/adapters/claude/settings.json` | `hooks.SessionStart`, running `"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude` | `--harness=claude` | owned |
-| `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` | link |
-| `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles | owned |
-| `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude finds skills and commands | `--harness=claude` | link |
-| `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | `--harness=codex` | owned |
-| `.agents/adapters/codex/hooks.json` | `hooks.SessionStart`: one entry for `startup\|resume\|clear` running the dispatcher with `codex`, found from the root that `git rev-parse --show-toplevel` prints | `--harness=codex` | owned |
-| `.agents/adapters/codex/rules/cook.rules` | The section `commands`: the argument line, a comment on the runs Codex cannot refuse while `bypass` is `refuse`, then one rule per command entry | `--harness=codex` and the policy has command rules | owned |
-| `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` | link |
-| `.gitignore` | The section `harnesses`: the argument line; each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"`, the first harness as `defaultAgent`, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness | Always, when absent | seed |
+| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
+| `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
+| `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/.worktrees/ralph/` | Always | owned |
+| `.mise/tasks/ralph/run`, `.mise/tasks/ralph/clean` | Executable wrappers running `.ralph-tui/bin/run` and `clean` with their arguments | `mise.toml` in the draft | owned |
 
-Cooking with fewer harnesses removes the outputs of the ones left out.
+The Claude entry runs `claude --permission-prompts none --permission-mode acceptEdits --print`: edits are accepted, and
+any command the settings do not allow is refused rather than asked, with `skipPermissions = false`. `--role` or
+`--settings` adds `--settings <file>` to it. The Codex entry runs `codex -c approval_policy=never -c
+sandbox_workspace_write.network_access=false exec --sandbox workspace-write`: no approvals, no network, writes only in
+the worktree. Neither sets a model or an effort.
 
-Never touches: `AGENTS.md`; every other key in the adapter files, such as the other events under `hooks`, `env` or
-`[mcp_servers]`, which the team writes in the file and cooking keeps; the scripts in `.agents/hooks/session-start.d/`;
-`.claude/settings.local.json` and anything else a harness writes in its own directory.
+Never touches: `AGENTS.md`, `.agents/permission/policy.yaml`, any settings or role file, version pins, `mise.toml`,
+remotes, pull requests, and the tracker's state.
 
 ## Connections
 
 | Contact | Made by |
 | --- | --- |
-| The layout to each harness | The person, by `--harness` |
-| The policy to each harness's settings | Cook, rendering the team's policy |
-| A tool's session context to every harness | Cook, when the tool's recipe writes its script into `.agents/hooks/session-start.d/`; the team, writing its own there |
-| A role to a Claude run | The session, launching `claude --settings .agents/adapters/claude/roles/<role>.json`; the Launching table in `.agents/README.md` lists the commands |
-| The team's other hooks to each harness | The team, under `hooks` in `.claude/settings.json` and `.agents/adapters/codex/hooks.json` |
-| Shared skills and commands to Claude | Cook, by the `.claude/skills` and `.claude/commands` links |
+| What a Claude worker may do | The person, by `--role` or `--settings`; the team, by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
+| What a Codex worker may do | Codex's `workspace-write` sandbox, in the seeded entry |
+| The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
+| The run worktree's setup | The team, in `.worktrees/setup`, which `bin/run` runs in each worktree it creates |
+| The branch a run starts from | The session, by `--base`, `HEAD` by default |
+| The mise tasks | Cook, when `mise.toml` is in the draft |
+| Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry |
+| A line in `AGENTS.md` and the agents layout's Launching table | The team, from After cooking |
+| Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
 
-`io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects: cook it first, or before
-this recipe in the same invocation. Every cook names every harness the team uses. Scripts in `session-start.d/` are
-read when a session starts, so a recipe that writes one can be cooked before or after this one.
+`io.github.lmarqs.cookbook:git#worktrees` ignores and documents `.worktrees/`; cook the two in either order.
+`io.github.lmarqs.cookbook:beads#tracker` gives the Beads side; cook the two in either order. With `--role`, cook
+`io.github.lmarqs.cookbook:agents#connect --harness=claude` first, or before this recipe in the same invocation, with
+the role defined in the policy.
 
 ## Run-time effects
 
-`.agents/hooks/session-start <harness>` runs every `.agents/hooks/session-start.d/*.sh` with `sh`, in name order, with
-the harness name as `$1`, no standard input, and standard error discarded. It joins their standard output and prints
-it once as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<text>"}}`, which both
-harnesses add to the session. It prints nothing when the directory is missing or the scripts print nothing, and
-always exits 0. Name a script with a number first, such as `20-beads.sh`, to place it in the order.
+`bin/run <name>` refuses while `git status --porcelain .ralph-tui` in the main checkout lists anything, because a
+worktree holds only what is committed. It creates `.worktrees/ralph/<name>` on a new branch `ralph/<name>` from
+`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist. In a worktree it creates, it runs
+`.worktrees/setup` when that is executable. It prints the worktree's path and branch, then runs
+`ralph-tui run --epic <id>`, or `--prd` with the file's absolute path, in the worktree, with the remaining arguments,
+such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no environment variable, so
+`CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
+
+`bin/clean <name>` refuses while `ralph/<name>` has commits `HEAD` does not, which includes a branch delivered by a
+squash merge, or while its worktree has changes; `--force` removes them anyway. It removes the worktree, every worktree
+on a `ralph-parallel/*` branch with that branch, then the branch `ralph/<name>`.
 
 ## Re-cooking
 
-Repeat the arguments on the opening line of the `harnesses` section in `.gitignore`, or of the `commands` section in
-`cook.rules`, such as `# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex`. Cook again after
-editing the policy, and after deleting `.claude/` or `.codex/` to recreate the links. A newer version rewrites the
-keys, links, files and sections it owns; the team's keys, the scripts in `session-start.d/` and the seeded files stay
-as they are. Under `--check`, a role file or `cook.rules` shows as a change once the policy gains roles or command
-rules, until the recipe is cooked again.
+Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as
+`# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex`. The seeds are never rewritten: to take
+other harnesses, a role or a newer version's configuration or prompts, edit them or delete them and cook again. A newer
+version rewrites the launcher, the section and the wrappers. Under `--check`, the wrappers show as a change once a
+`mise.toml` appears, until the recipe is cooked again.
 
 ## Traps
 
-- Claude Code applies the project's allow rules only in a workspace someone has trusted, and Codex loads `.codex/rules`
-  only in a trusted project: start each once, interactively, in the main checkout.
-- Codex trusts hooks per absolute path of `.codex/hooks.json`, recorded in `~/.codex/config.toml`, so a worktree runs
-  none of them, the session start included, without `--dangerously-bypass-hook-trust`, and Codex prints no warning
-  when it skips them.
-- A `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the directory of an `AGENTS.md` or one above makes Claude
-  Code skip that `AGENTS.md`. Claude Code older than 2.1.277 reads no `AGENTS.md`.
-- Codex has no roles: a role's denies reach only Claude runs. `codex exec --ignore-rules`, `--approve-for-me` or an
-  untrusted project skip or approve the Codex rules, and no setting refuses them.
-- `hooks.SessionStart` is Cook's in both harnesses: a session-start hook the team writes there is replaced on the next
-  cook. Write it as a script in `.agents/hooks/session-start.d/` instead.
-- With `core.symlinks` off, as is common on Windows, Git checks the links out as text files.
-
-The `agents-layout` skill's `references/investigate.md` lists more symptoms, with their checks and fixes.
+- Claude Code ignores the project's `permissions.allow` in a workspace nobody has trusted, and a fresh clone or a new
+  worktree may be one: an unattended Claude worker's allows come through `--role` or `--settings`.
+- Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a
+  worker without push credentials.
+- A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
+  and closes beads for it, and the prompts ask for neither.
+- Codex runs no project hooks in a worktree it has not trusted, so a Codex worker gets no session-start context unless
+  started with `--dangerously-bypass-hook-trust`.
+- ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
+- ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
+- `bin/clean` removes every `ralph-parallel/*` worktree, so cleaning one run while another runs in parallel mode stops
+  the other's workers.
 
 Parameters
   --harness=<String[]>
-      Harnesses to connect to the shared layout; required; choices: claude, codex; repeatable
+      Harnesses ralph-tui drives, one agent entry each; the first is the default; required; choices: claude, codex; repeatable
+  --role=<String>
+      A role of the agents layout whose rendered Claude settings the claude entry passes with --settings; optional
+  --settings=<String>
+      A Claude settings file the claude entry passes with --settings; optional
 
 Ingredients
-  io.github.lmarqs.cookbook.agents.Agents
-  io.github.lmarqs.cookbook.agents.Claude
-  io.github.lmarqs.cookbook.agents.Codex
+  io.github.lmarqs.cookbook.ralph.RalphTui
 
 After cooking
-  Review the rendered permissions against each harness's permission model. Edit `.agents/permission/policy.yaml` and
-  cook again to update them; after deleting `.claude/` or `.codex/`, cook again to recreate the links.
+  Install ralph-tui with `bun install -g ralph-tui@0.12.0`, review `.ralph-tui/config.toml` and the prompts, and commit
+  `.gitignore` and `.ralph-tui/`: `bin/run` refuses while `.ralph-tui` has uncommitted changes. Then run
+  `.ralph-tui/bin/run <name> --epic <id>` or `.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>`
+  once the branch `ralph/<name>` is delivered. With an `AGENTS.md`, add these commands to it, and with the agents layout,
+  to the Launching table in `.agents/README.md`.
 ````
 
 ## Layout

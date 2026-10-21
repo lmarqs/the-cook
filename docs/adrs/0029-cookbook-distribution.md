@@ -24,8 +24,8 @@ repository cooking a release can tell when the content under that release change
   verified through the GitHub account of that name.
 - GitHub Packages' Maven registry needs an access token to install any package, public ones included.
 - Two builds of one jar can differ in bytes, such as entry timestamps, while holding the same sources.
-- This repository publishes its `agents` cookbook artifact and the cookbook Gradle plugin to Maven Central under
-  `io.github.lmarqs` when the maintainer starts a release.
+- This repository publishes its `agents`, `git`, `beads` and `ralph` cookbook artifacts and the cookbook Gradle
+  plugin to Maven Central under `io.github.lmarqs` when the maintainer starts a release.
 
 ## Decision
 

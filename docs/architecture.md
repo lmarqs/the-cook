@@ -295,7 +295,8 @@ publishes:
 
 - on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
   package with its `.sha256`, and the `cook` wrapper with its `.sha256`;
-- on Maven Central, the `io.github.lmarqs.cookbook:agents` cookbook artifact and the cookbook Gradle plugin with its marker.
+- on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:git`, `:beads` and `:ralph`, and the
+  cookbook Gradle plugin with its marker.
 
 A repository commits the release's executable `./cook` wrapper, which pins the engine version and the checksum of
 each package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
