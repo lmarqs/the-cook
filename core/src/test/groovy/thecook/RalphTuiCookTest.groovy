@@ -283,6 +283,32 @@ roles:
     }
   }
 
+  @Test void cooksWithBeadsTrackerInOneInvocation() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'beads')
+
+    cook(kitchen, [
+      'io.github.lmarqs.cookbook:beads:0.1.0#tracker': [share: ['clone']],
+      (RALPH): [harness: ['claude', 'codex']],
+    ]).commit()
+
+    assert files(kitchen).findAll { it.startsWith('.ralph-tui/') || it.startsWith('.beads/') } == [
+      '.beads/PRIME.md',
+      '.ralph-tui/bin/clean',
+      '.ralph-tui/bin/run',
+      '.ralph-tui/config.toml',
+      '.ralph-tui/templates/beads.hbs',
+      '.ralph-tui/templates/json.hbs',
+    ]
+    assert new File(kitchen, '.ralph-tui/config.toml').text == CONFIG
+    def gitignore = new File(kitchen, '.gitignore').text
+    assert gitignore.contains('# cook:begin io.github.lmarqs.cookbook:beads#tracker/beads\n')
+    assert gitignore.contains('# cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui\n')
+    def lock = new File(kitchen, 'cook.lock').text
+    assert lock.contains('  - name: "io.github.lmarqs.cookbook:beads#tracker"\n')
+    assert lock.contains('  - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"\n')
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
