@@ -19,9 +19,9 @@ Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-w
   `./gradlew codenarc` lints every Groovy and Gradle file.
 - Generate code: none.
 - Local services: none.
-- Worktrees: in `.worktrees/`, which git ignores. Create one with `git worktree add .worktrees/<name> -b <branch>`,
-  then `./gradlew cliBuild` inside it; remove it with `git worktree remove --force .worktrees/<name>` and
-  `git branch -D <branch>`.
+- Worktrees: `.worktrees/<branch>`, as [.worktrees/README.md](.worktrees/README.md) says. Create one with
+  `git worktree add .worktrees/<branch> -b <branch>`, then `./gradlew cliBuild` inside it; remove it with
+  `git worktree remove --force .worktrees/<branch>` and `git branch -D <branch>`.
 - Quick check, seconds on what changed: `./gradlew -p <module> check` for each module changed, about 13 s for `core`.
 - Done check, all that must pass before a change is done: `./gradlew check cliBuild jpackageTest`, then
   `git diff --check`; about a minute with a warm Gradle daemon, no services, network access to fetch Gradle dependencies.
