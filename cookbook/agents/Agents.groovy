@@ -97,10 +97,15 @@ class Agents {
     Policy.parse(current(Policy.PATH) ?: resource("${TEMPLATES}/policy.template.yaml"))
   }
 
-  /** Renders the shared policy into each harness's own permission model. */
-  void permit(Collection<Harness> harnesses) {
+  /**
+   * Renders the shared policy into each harness's own permission model. `cookedWith`, when given, names the recipe and
+   * the arguments that cook the rendered sections again, such as
+   * `io.github.lmarqs.cookbook:agents#connect --harness=codex`; each section opens with it as a comment, because
+   * `cook.lock` records no arguments.
+   */
+  void permit(Collection<Harness> harnesses, String cookedWith = null) {
     def shared = policy()
-    harnesses.each { it.permit(shared) }
+    harnesses.each { it.permit(shared, cookedWith) }
   }
 
   /**
@@ -222,8 +227,11 @@ interface Harness {
    */
   String getLocalDirectory()
 
-  /** Renders the shared policy into the harness's own permission model. */
-  void permit(Policy policy)
+  /**
+   * Renders the shared policy into the harness's own permission model; `cookedWith`, when not null, opens each section
+   * it owns as a comment.
+   */
+  void permit(Policy policy, String cookedWith)
 
   /** The names of the links Cook can make in the local directory, such as `settings.json`, which stay in Git. */
   List<String> getLinkNames()

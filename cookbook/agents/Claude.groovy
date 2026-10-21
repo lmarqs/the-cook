@@ -68,9 +68,10 @@ class Claude implements Harness {
    * combination of a command entry's alternatives, `Bash(<pattern>)` for a Claude-only command entry, and each tool
    * pattern as it is, then `disableBypassPermissionsMode: "disable"` while the policy's `bypass` is `refuse`, so no
    * launch flag starts a run in bypass mode. Writes one deny file per role. Sets no `defaultMode`: how a session asks
-   * is each person's choice. Replaces any permissions supplied by an earlier `settings` call.
+   * is each person's choice. Replaces any permissions supplied by an earlier `settings` call. `cookedWith` is unused:
+   * Claude's settings are JSON keys, which have no comment syntax.
    */
-  void permit(Policy policy) {
+  void permit(Policy policy, String cookedWith = null) {
     settings.permissions = ['allow', 'ask', 'deny'].collectEntries { decision ->
       [decision, policy.commands[decision].collectMany { rules(it) } + policy.tools[decision]*.claude]
     }

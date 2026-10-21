@@ -48,7 +48,7 @@ Paths other recipes, launchers and people rely on:
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings <file>` | `--harness=claude` and the policy has roles | owned |
 | `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude finds skills and commands | `--harness=claude` | link |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | `--harness=codex` | owned |
-| `.agents/adapters/codex/rules/cook.rules` | The section `commands`, opening with a comment on the runs Codex cannot refuse while `bypass` is `refuse` | `--harness=codex` and the policy has command rules | owned |
+| `.agents/adapters/codex/rules/cook.rules` | The section `commands`: the argument line, a comment on the runs Codex cannot refuse while `bypass` is `refuse`, then one rule per command entry | `--harness=codex` and the policy has command rules | owned |
 | `.codex/config.toml`, `.codex/rules` | Links to the files of the same names in `../.agents/adapters/codex/` | `--harness=codex` | link |
 | `.codex/hooks.json` | A link to `../.agents/adapters/codex/hooks.json` | `--harness=codex` and that file exists | link |
 | `.gitignore` | The section `harnesses`: the argument line; each selected harness's directory re-included over an earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
@@ -74,10 +74,10 @@ this recipe in the same invocation. Every cook names every harness the team uses
 
 ## Re-cooking
 
-Repeat the arguments on the opening line of the `harnesses` section in `.gitignore`, such as
-`# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex`. Cook again after editing the policy, and
-after deleting `.claude/` or `.codex/` to recreate the links. A newer version rewrites the keys, links and section it
-owns; the team's keys and the seeded files stay as they are. Under `--check`, a role file, `cook.rules` or the
+Repeat the arguments on the opening line of the `harnesses` section in `.gitignore`, or of the `commands` section in
+`cook.rules`, such as `# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex`. Cook again after
+editing the policy, and after deleting `.claude/` or `.codex/` to recreate the links. A newer version rewrites the
+keys, links and sections it owns; the team's keys and the seeded files stay as they are. Under `--check`, a role file, `cook.rules` or the
 `.codex/hooks.json` link shows as a change once the policy gains roles or command rules, or the team writes
 `.agents/adapters/codex/hooks.json`, until the recipe is cooked again.
 
@@ -109,8 +109,8 @@ String[] harness
 @ingredient(Codex) def codex
 
 def selected = [claude, codex].findAll { it.name in harness }
-agents.seedLayout()
-agents.permit(selected)
-agents.connect(selected)
 def cookedWith = (['io.github.lmarqs.cookbook:agents#connect'] + selected.collect { "--harness=${it.name}" }).join(' ')
+agents.seedLayout()
+agents.permit(selected, cookedWith)
+agents.connect(selected)
 agents.ignoreLocalDirectories(selected, cookedWith)

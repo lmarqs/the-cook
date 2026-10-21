@@ -673,14 +673,15 @@ bypass allow
     def rules = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
     assert rules.first() == '# cook:begin io.github.lmarqs.cookbook:agents#connect/commands'
     assert rules.last() == '# cook:end io.github.lmarqs.cookbook:agents#connect/commands'
-    assert rules[1..-2].join('\n') + '\n' == fixture('codex-commands.rules')
+    assert rules[1] == '# io.github.lmarqs.cookbook:agents#connect --harness=codex'
+    assert rules[2..-2].join('\n') + '\n' == fixture('codex-commands.rules')
     // A Codex run cannot add a rules file of its own, so roles render nothing for Codex.
     assert !new File(kitchen, '.agents/adapters/codex/roles').exists()
 
     policy.text = policy.text.replaceFirst('version: 2\n', 'version: 2\nbypass: allow\n')
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
     def allowed = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
-    assert allowed[1..-2] == rules[2..-2]
+    assert allowed[1..-2] == [rules[1]] + rules[3..-2]
   }
 
   @Test void theLayoutCheckOnlyRecommendsOnAFreshSeedAndOnAFilledAgentsMdNamingWhatIsNotInTheTree() {

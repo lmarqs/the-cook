@@ -71,15 +71,17 @@ class Codex implements Harness {
    * tool entries and roles render nothing: tools are named per harness, and a Codex run cannot add a rules file of its
    * own. While the policy's `bypass` is `refuse`, the rules start with a comment naming the runs that step outside
    * them, since Codex has no setting that refuses those. These settings keys, and a whole `sandbox_workspace_write`,
-   * replace values supplied by an earlier `config` call.
+   * replace values supplied by an earlier `config` call. `cookedWith`, when given, opens the rules as a comment naming
+   * the recipe and the arguments that cook them again.
    */
-  void permit(Policy policy) {
+  void permit(Policy policy, String cookedWith = null) {
     config = config.findAll { key, value -> key != 'sandbox_workspace_write' } +
         [sandbox_mode: 'workspace-write', approval_policy: 'on-request', (NETWORK_ACCESS): false]
     commands = [allow: 'allow', ask: 'prompt', deny: 'forbidden'].collectMany { decision, codexDecision ->
       policy.commands[decision].collect { prefixRule(it, codexDecision) }
     }
     if (commands && policy.bypass == 'refuse') commands.add(0, UNREFUSED_RUNS)
+    if (commands && cookedWith) commands.add(0, "# ${cookedWith}".toString())
   }
 
   /**
@@ -131,7 +133,7 @@ class Codex implements Harness {
 
   /**
    * The `commands` section of `.agents/adapters/codex/rules/cook.rules`, in `#` comment syntax, when the policy has
-   * command rules.
+   * command rules: the comment naming the recipe and arguments that cook it, when given, then the rules.
    */
   @Section(path = '.agents/adapters/codex/rules/cook.rules', id = 'commands', comment = '#')
   List<String> commandRules() { commands ?: null }
