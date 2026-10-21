@@ -1,22 +1,93 @@
-# Agent instructions
+# the-cook
 
-This repository builds the-cook, a recipe driven configuration tool. Read
-`README.md`, the relevant page under `docs/features/` and the matching
-standard under `docs/ux/` before changing a workflow or the command line. Keep cookbook recipes and core, infra or CLI changes in their
-existing modules.
+This repository builds the-cook, a recipe driven configuration tool, and the `agents` cookbook it cooks. The
+[README](README.md#objective) says who it is for, and [Quick start](README.md#quick-start) how to try it.
 
-Run the focused module check while developing. Before delivery, run
-`./gradlew check cliBuild jpackageTest` and `git diff --check`.
-Review generated configuration and ownership records after changing recipes.
+Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-wrapper.properties`), JUnit 4
+(`core/build.gradle`), Spotless and CodeNarc (`build.gradle`), semantic-release (`.github/workflows/release.yml`).
 
-Write commit subjects as `<type>(<area>): <sentence>`, where `<area>` is the module or
-topic, such as `core`, `cli` or `docs`. The type decides the next release:
+## Quick reference
 
-| Type | Release |
-| --- | --- |
-| `feat` | minor |
-| `fix` | patch |
-| `docs`, `refactor`, `test`, `build`, `ci`, `chore` | none |
+- Install or add a dependency: `mise install` for Java 17; add a library to the `dependencies` block of the module's
+  `build.gradle`.
+- Run: `./cook <recipe> [arguments]` once the CLI is built; `./cook --help` lists the options.
+- Build: `./gradlew cliBuild -PreleaseVersion=<version>`; without the property, `./cook --version` prints `0.0.0`.
+- Test one file: `./gradlew -p <module> test --tests <class>`, as
+  `./gradlew -p core test --tests thecook.CoordinatesTest`.
+- Lint or format one file: `./gradlew spotlessApply -PspotlessIdeHook=<absolute path>` formats one file;
+  `./gradlew codenarc` lints every Groovy and Gradle file.
+- Generate code: none.
+- Local services: none.
+- Worktrees: in `.worktrees/`, which git ignores. Create one with `git worktree add .worktrees/<name> -b <branch>`,
+  then `./gradlew cliBuild` inside it; remove it with `git worktree remove --force .worktrees/<name>` and
+  `git branch -D <branch>`.
+- Quick check, seconds on what changed: `./gradlew -p <module> check` for each module changed, about 13 s for `core`.
+- Done check, all that must pass before a change is done: `./gradlew check cliBuild jpackageTest`, then
+  `git diff --check`; about a minute with a warm Gradle daemon, no services, network access to fetch Gradle dependencies.
 
-A `!` after the area, as in `feat(core)!:`, releases a major version. Lint-only changes
-use `chore(lint)`.
+## Boundaries
+
+**Always**
+
+- Run the Quick check before moving on. A change is done when the Done check passes.
+- Report each check's result, or that it did not run.
+- Update this file in the change that alters a command, path or rule it names.
+- Keep this file under 800 words; past 1,200, move a section into a skill or memory file before adding. All
+  `AGENTS.md` files together stay under 16 KiB.
+- After changing a recipe, review the configuration it generates and its ownership records in `cook.lock`.
+
+**Never**
+
+- Commit secrets or credentials, or put personal data in logs, fixtures or commits.
+- Edit generated files by hand: `cook.lock`; `.agents/skills/agents-layout/`, cooked from
+  `cookbook/agents/skills/agents-layout/`; the keys Cook renders from `.agents/permission/policy.yaml` into
+  `.agents/adapters/`; `build/` directories.
+- Make a check pass by weakening it: skipping a test, suppressing a warning, loosening an assertion.
+
+**Stop and ask** before starting the `release` workflow, which publishes to Maven Central, and when a
+check fails again after a fix, a command is refused, or a decision is left open.
+
+Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
+
+## Where things go
+
+- New code: in its existing module: `core/` the engine, `infra/` the kitchen's `cook.toml` and cookbook fetching,
+  `cli/` the command line, `plugin/` the cookbook Gradle plugin, `cookbook/<artifact>/` recipes. The design is
+  [docs/architecture.md](docs/architecture.md).
+- Tests: `<module>/src/test/groovy/thecook/`, one `<Subject>Test.groovy` per subject, as
+  `core/src/test/groovy/thecook/CoordinatesTest.groovy`.
+- Settings: build options are Gradle `-P` properties, as `releaseVersion`; release secrets are the GitHub Actions
+  secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and `SIGNING_PASSWORD`.
+- Decisions and domain rules: [docs/adrs/](docs/adrs/README.md); feature behavior in `docs/features/`, interface
+  standards in `docs/ux/`.
+- A procedure an agent repeats: a skill in `.agents/skills/`.
+- A trap in one area: `.agents/memory/`, listed under Deep dive.
+
+## Rules
+
+- A behavior change ships with a test; a bug fix with one that failed before the fix.
+- Comments record only reasons the code cannot show.
+- Change only what the task needs, matching the surrounding code.
+- Before changing a workflow or the command line, read its page under `docs/features/` and the matching standard
+  under `docs/ux/`.
+- Format and lint follow [Development tooling](README.md#development-tooling); the Done check enforces them.
+- Commits: subjects are `<type>(<area>): <sentence>`, where `<area>` is the module or topic, such as `core`, `cli` or
+  `docs`. The type decides the next release: `feat` a minor, `fix` a patch, and `docs`, `refactor`, `test`, `build`,
+  `ci` and `chore` none. A `!` after the area, as in `feat(core)!:`, releases a major version. Lint-only changes use
+  `chore(lint)`.
+- Deploy: the maintainer starts the `release` workflow; semantic-release takes the version from the commits since the
+  last `v*` tag, and the release publishes only after the Linux and macOS builds pass. It shows in the workflow run and
+  on the GitHub releases page. No rollback: Maven Central cannot take a release back.
+
+## Gotchas
+
+- The Quick check skips Spotless and CodeNarc, which only the root build runs; the Done check catches them.
+- The Groovy formatter rejects some syntax, and Spotless's Groovy step and CodeNarc skip `cookbook/`; see
+  [Development tooling](README.md#development-tooling).
+
+## Deep dive (read on demand)
+
+- How the engine cooks a recipe: [core/README.md](core/README.md); how cookbooks are fetched:
+  [infra/README.md](infra/README.md).
+- Known traps by feature: [docs/features/pitfalls.md](docs/features/pitfalls.md).
+- Agent permissions, roles and launch commands: [.agents/README.md](.agents/README.md) and the `agents-layout` skill.
