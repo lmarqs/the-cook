@@ -52,6 +52,13 @@ that tool merely to be read, one person's choice becomes a dependency for every 
 At its best, a single runtime mediates every program's setup. It loses because configuration becomes unusable for
 teammates who did not choose Cook, and Cook becomes responsible for running programs outside its file-operation role.
 
+### Ignore generated native files and cook them in every checkout
+
+At its best, the repository commits only the sources, such as an agent policy, and Git holds no rendered settings or
+links: each checkout cooks them. It loses because every clone, worktree, cloud session and CI job then needs the engine
+and a setup step before a program reads its configuration, and one that skips the step runs the program with no
+settings and no warning. `cook.lock` would also own files no clean checkout has, so `cook --check` fails there.
+
 ### Run Cook from agent session hooks
 
 At its best, agent hooks call Cook when a session starts or acts, and skip when the engine is absent so the session
