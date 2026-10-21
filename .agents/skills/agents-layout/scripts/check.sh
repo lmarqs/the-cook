@@ -131,6 +131,28 @@ check_links() {
   fi
 }
 
+check_shared_entries() {
+  # Harnesses reach .agents/ only through the shared directories and the adapters; an entry beside them is found
+  # only through a path someone wrote down, and a reader of the layout does not look for it.
+  entries=$(git ls-files -- .agents | cut -d/ -f2 | sort -u)
+  next='move it into skills/, commands/, hooks/ or memory/, beside what uses it, or out of .agents/ when no agent'
+  next="$next reads it; then update the paths that name it"
+  found=0
+  saved_ifs=$IFS
+  IFS=$newline
+  for entry in $entries; do
+    case $entry in
+      README.md | permission | adapters | skills | commands | hooks | memory) ;;
+      *)
+        warn ".agents/$entry is outside the shared directories" "$next"
+        found=1
+        ;;
+    esac
+  done
+  IFS=$saved_ifs
+  [ "$found" -eq 0 ] && ok 'every tracked entry in .agents/ belongs to the layout'
+}
+
 if [ -f AGENTS.md ]; then
   check_agents_md
 else
@@ -139,5 +161,6 @@ fi
 check_agents_bytes
 check_claude_files
 check_links
+check_shared_entries
 
 exit "$status"

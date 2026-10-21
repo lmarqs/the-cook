@@ -52,6 +52,12 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    git commit
    ```
 
+   The links in `.claude/` and `.codex/` are committed, so a clone, a worktree, a cloud session or a CI job reads the
+   layout with no cooking and no Cook installed. The `harnesses` section of `.gitignore` keeps everything else a
+   harness writes there, such as `.claude/settings.local.json` or `.claude/worktrees/`, out of commits. Commit no
+   real file in either directory: a file the team shares goes under `.agents/`, which the links reach, and a file
+   for one person stays on their machine. [design.md](design.md#links-and-adapters-are-committed) gives the cost.
+
    After the commit, `git ls-files .claude .codex` lists only links, and `git ls-files -s .claude .codex` shows each
    with mode `120000`. `git check-ignore --no-index $(find .claude .codex -maxdepth 1 -type l)` prints nothing; a link
    it prints is hidden by an ignore rule, which [investigate.md](investigate.md) shows how to find.
@@ -360,6 +366,24 @@ commands:
   allow:
     - [git, [status, diff]]
 ```
+
+### Files beside the shared directories
+
+Harnesses reach `.agents/` through the shared directories and the adapters only, so a file or directory the team
+keeps directly under `.agents/` is found only through a path someone wrote down. `check.sh` warns on each. This comes
+before step 8.
+
+1. List the entries that are not the layout's:
+
+   ```sh
+   git ls-files -- .agents | cut -d/ -f2 | sort -u |
+     grep -vxE 'README.md|permission|adapters|skills|commands|hooks|memory'
+   ```
+
+2. Find what names each one: `git grep -n -e <entry>`.
+3. Move it beside what uses it: a file a hook script loads into `hooks/`, a file one skill reads into that skill's
+   directory, a durable fact into `memory/`. A file no agent reads, such as a loop runner's configuration, leaves
+   `.agents/`. Then update every path step 2 found, and the relative paths inside the moved file.
 
 ## Risks a review catches
 

@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Takes adopt to set the layout up, review to check it, and review --fix to close the gaps it finds. Not for the repository's own code, and not for a person's own harness settings outside this repository.
+description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Takes adopt to set the layout up, which it also does when given nothing in a repository without the layout, review to check it, and review --fix to close the gaps it finds. Not for the repository's own code, and not for a person's own harness settings outside this repository.
 argument-hint: "[adopt | review [--fix]]"
 ---
 
@@ -19,16 +19,18 @@ typed (tested).
 | `adopt` | Follow [references/adopt.md](references/adopt.md) from its first step |
 | `review` | Run [the review](#review) and report it; change no file |
 | `review --fix` | Run the review, then [fix what it finds](#review---fix) |
-| None | Pick the task from [the table below](#pick-the-task) |
+| None, and `grep -q 'io.github.lmarqs.cookbook:agents#connect' cook.lock` fails | `adopt`: the layout is not set up here yet |
+| None, and the layout is set up | Pick the task from [the table below](#pick-the-task) |
 
 ### Review
 
 Run `sh .agents/skills/agents-layout/scripts/check.sh` from the repository root. It writes nothing, prints one line
 per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. A `FAIL`
 is a setup a harness cannot read: `AGENTS.md` missing, a `CLAUDE.md` that hides it, or a link missing, broken or
-ignored. A `WARN` is a recommendation to weigh, such as the word budget; a name `AGENTS.md` gives that is not in the
-tree may be a stale path, or a git ref or a file made at run time. It reads the links and the tracked `AGENTS.md`
-files from the index, so stage the layout before running it on uncommitted work. Then make the checks a script cannot:
+ignored. A `WARN` is a recommendation to weigh, such as the word budget or an entry directly under `.agents/` outside
+the shared directories; a name `AGENTS.md` gives that is not in the tree may be a stale path, or a git ref or a file
+made at run time. It reads the links, the entries of `.agents/` and the tracked `AGENTS.md` files from the index, so
+stage the layout before running it on uncommitted work. Then make the checks a script cannot:
 
 - Each rule in `AGENTS.md` states what its source states: the code, a config file, the README, CI or the developer.
 - Each command in Quick reference runs here; run each one marked `(unverified)` and remove the mark when it passes.

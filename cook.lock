@@ -3,7 +3,7 @@ version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:4.0.0#connect"
-    sha256: "8ba0aad0a7f6eadf17bc3fa3e748ee8500e8e6f75c7881023ef3a77d05ccb7cc"
+    sha256: "4b88e988463acf8534772fdbc68857fb76016d8402795f8d31e509d9196541ff"
     owns:
       sections:
         - file: ".agents/adapters/codex/rules/cook.rules"
@@ -34,7 +34,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:4.0.0#seed"
-    sha256: "8ba0aad0a7f6eadf17bc3fa3e748ee8500e8e6f75c7881023ef3a77d05ccb7cc"
+    sha256: "4b88e988463acf8534772fdbc68857fb76016d8402795f8d31e509d9196541ff"
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
