@@ -14,6 +14,7 @@ a subdirectory.
 git worktree add .worktrees/<branch> -b <branch>   # a new branch, from the current commit
 git worktree add .worktrees/<branch> <branch>      # an existing branch
 git worktree remove .worktrees/<branch>            # refused while it has changes; --force removes them
+git branch -d <branch>                             # once merged; -D deletes an unmerged branch
 git worktree prune                                 # forgets worktrees whose directory was deleted by hand
 ```
 
