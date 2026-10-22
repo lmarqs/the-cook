@@ -59,11 +59,11 @@ recipes, programs and the repository can be read from the arguments a recipe was
   that copies one picks some programs and drifts from the rest. A recipe that owns another program's key also replaces
   the team's use of it on every cook. The trade is a step the team takes by hand, which the recipe's After cooking names.
 - **4.** Between files of one recipe the connection has one correct form and no other party to agree with.
-- **5.** The same few lines on where a recipe's files are and how to use them would otherwise be written by hand in
-  every repository that cooks it, and drift from the recipe when it changes; owned, they change with the recipe's
-  arguments and version. Naming the files keeps point 1: the recipe never looks for an instruction file, and a
-  repository whose agents read another file names that one. Several files reach agents and people in one cook. The
-  trade is a section the team does not edit by hand, since the recipe owns it ([0007](0007-ownership.md)).
+- **5.** Otherwise every repository that cooks a recipe writes the same few lines by hand on where its files are and
+  how to use them, and those lines drift when the recipe changes. Owned, they change with the recipe's arguments and
+  version. Naming the files keeps point 1: the recipe never looks for an instruction file, a repository whose agents
+  read another file names that one, and one cook writes to every file named. The trade is a section the team does not
+  edit by hand, since the recipe owns it ([0007](0007-ownership.md)).
 
 ## Rejected alternatives
 
