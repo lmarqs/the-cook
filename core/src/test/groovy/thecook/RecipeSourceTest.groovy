@@ -14,7 +14,16 @@ class RecipeSourceTest {
     assert texts.yieldText.startsWith('Review the rendered permissions against each harness')
     assert texts.params.first() == new RecipeParam(['harness'], 'String[]', 'Harnesses to connect to the shared layout',
     null, ['claude', 'codex'], true)
-    assert texts.params*.names == [['harness'], ['worktree-root'], ['worktree-setup'], ['worktree-teardown']]
+    assert texts.params*.names == [
+      ['harness'],
+      ['worktree-root'],
+      ['worktree-setup'],
+      ['worktree-teardown'],
+      ['worktree-base'],
+      ['worktree-fetch'],
+      ['worktree-remote'],
+      ['worktree-branch-prefix']
+    ]
     assert texts.ingredients == [
       'io.github.lmarqs.cookbook.agents.Agents',
       'io.github.lmarqs.cookbook.agents.Claude',
