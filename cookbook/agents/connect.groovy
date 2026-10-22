@@ -199,6 +199,9 @@ change once the policy gains roles or command rules, until the recipe is cooked 
   bypasses them, and Codex's own worktrees go where Codex puts them.
 - Claude Code keeps the worktrees of subagents and workflows and never runs `WorktreeRemove` for them: remove them with
   `git worktree remove`, after running the teardown by hand.
+- Under `fresh`, a subagent's worktree, which Claude Code 2.1.308 names `agent-<id>`, also starts at the remote's
+  default branch, without the session's unpushed commits, as Claude Code's own `worktree.baseRef` `fresh` does:
+  `--worktree-base=head` starts it at the `HEAD` of the session's `cwd` instead (tested).
 - Claude Code 2.1.308's `ExitWorktree` tool refuses `remove` for a worktree the hook created, even a clean one,
   saying it could not verify the worktree's state, until it is given `discard_changes: true` (tested).
   `claude --worktree -p` keeps the worktree on exit.
