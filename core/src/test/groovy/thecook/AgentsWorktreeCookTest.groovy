@@ -278,6 +278,32 @@ class AgentsWorktreeCookTest {
     assert !new File(kitchen, '.worktrees/feature').exists()
   }
 
+  @Test void removeFetchesOnlyWhenTheBranchHasNotLandedOnHead() {
+    def kitchen = repository([harness: ['claude'], 'worktree-fetch': ['always']])
+    remote(kitchen, 'origin')
+    ['merged', 'open'].each { assert hook(kitchen, 'create', [name: it]).exit == 0 }
+    def merged = new File(kitchen, '.worktrees/merged')
+    new File(merged, 'merged.txt').text = 'merged\n'
+    git(merged, 'add', 'merged.txt')
+    git(merged, 'commit', '-q', '-m', 'merged')
+    git(kitchen, 'merge', '-q', '--ff-only', 'merged')
+    def open = new File(kitchen, '.worktrees/open')
+    new File(open, 'open.txt').text = 'open\n'
+    git(open, 'add', 'open.txt')
+    git(open, 'commit', '-q', '-m', 'open')
+    git(kitchen, 'remote', 'set-url', 'origin', new File(folder.root, 'unreachable.git').path)
+
+    def removed = hook(kitchen, 'remove', [worktree_path: merged.canonicalPath])
+    def kept = hook(kitchen, 'remove', [worktree_path: open.canonicalPath])
+
+    assert removed.exit == 0
+    assert !removed.error.contains('could not fetch')
+    assert git(kitchen, 'branch', '--list', 'merged') == ''
+    assert kept.exit == 0
+    assert kept.error.contains('worktree: could not fetch origin')
+    assert git(kitchen, 'branch', '--list', 'open') == 'open'
+  }
+
   @Test void skipsTheScriptsABranchPredatesAndStillFailsOnesNeverCommitted() {
     def kitchen = repository(NAMED) {
       executable(it, '.worktrees/setup', '#!/bin/sh\n')

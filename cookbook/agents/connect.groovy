@@ -163,8 +163,8 @@ nothing. Otherwise it prints the worktree's path last.
 worktree's root; if the executable is missing, not executable or fails, the hook exits 1 and keeps the worktree. It
 then removes the worktree and the directories under the root it leaves empty. It deletes the branch the worktree's path
 names, whichever branch the worktree had checked out, once `git cherry` finds every patch on it on the main checkout's
-`HEAD` or on the remote's default branch, fetched as `--worktree-fetch` says, so a branch merged, rebased or
-cherry-picked there counts; otherwise it keeps the branch and says so on standard error.
+`HEAD` or, fetched as `--worktree-fetch` says only when the branch is not on `HEAD`, on the remote's default branch,
+so a branch merged, rebased or cherry-picked there counts; otherwise it keeps the branch and says so on standard error.
 
 A setup or teardown committed on the main checkout's `HEAD` but missing from the worktree is skipped with a line on
 standard error: the branch predates it. One missing from the main checkout's `HEAD` too still fails.
@@ -202,7 +202,8 @@ change once the policy gains roles or command rules, until the recipe is cooked 
   `claude --worktree -p` keeps the worktree on exit.
 - A reused worktree keeps its old tip, and its setup does not run again; Claude Code's own `fresh` reuse resets a
   clean worktree with no commits to the default branch instead.
-- A fetch has no time limit: a slow remote delays creating and removing a worktree, up to the hook's 600 s timeout.
+- A fetch has no time limit: a slow remote delays creating a worktree, and removing one whose branch is not on the
+  main checkout's `HEAD`, up to the hook's 600 s timeout.
   `--worktree-fetch=never` keeps the hook off the network.
 - `git cherry` matches patches, so a branch squash-merged, or whose commits changed while being delivered, counts as
   not merged and is kept.

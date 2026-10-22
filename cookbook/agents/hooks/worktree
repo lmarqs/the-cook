@@ -133,13 +133,12 @@ case ${1:-} in
     else
       git -C "$main" worktree prune >&2
     fi
-    if [ -n "$branch" ]; then
-      parent=$(dirname -- "$worktree")
-      while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
-    fi
-    if [ -n "$branch" ] && git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
-      refresh
-      if landed "$branch" HEAD || landed "$branch" "$upstream"; then
+    [ -n "$branch" ] || exit 0
+    parent=$(dirname -- "$worktree")
+    while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
+    if git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
+      upstream=''
+      if landed "$branch" HEAD || { refresh && landed "$branch" "$upstream"; }; then
         git -C "$main" branch -D "$branch" >&2 ||
           printf 'worktree: kept the branch %s, which Git would not delete\n' "$branch" >&2
       else
