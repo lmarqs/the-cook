@@ -206,18 +206,22 @@ Resolved from ralph-tui 0.12.0's source and a spike under `dash` and `bash` with
 - Retries: a failing check exits 1, and the seeded `[errorHandling]` is `strategy = "retry"`, `maxRetries = 2`,
   `continueOnNonZeroExit = false`.
 
+With real ralph-tui 0.12.0 and a fake `claude`, a failing check kept the story open with no commit, retried twice
+and skipped it, without rate-limit detection; a passing check completed it in one commit holding only the agent's
+change.
+
 **Acceptance Criteria:**
 
-- [ ] `--worker-check=<path>`, a committed executable outside `.ralph-tui/`, writes the owned, executable
+- [x] `--worker-check=<path>`, a committed executable outside `.ralph-tui/`, writes the owned, executable
   `.ralph-tui/bin/worker`; without it, nothing changes.
-- [ ] With it, the seeded configuration points each entry's `command` at `.ralph-tui/bin/worker`, puts the harness
+- [x] With it, the seeded configuration points each entry's `command` at `.ralph-tui/bin/worker`, puts the harness
   first in its `defaultFlags`, and seeds the retry settings. A configuration seeded earlier stays as it is.
-- [ ] The wrapper passes `--version` to each seeded harness, and refuses the main checkout.
-- [ ] It holds the agent's stdout. It runs the check, with the commit the agent started from as its argument, only
+- [x] The wrapper passes `--version` to each seeded harness, and refuses the main checkout.
+- [x] It holds the agent's stdout. It runs the check, with the commit the agent started from as its argument, only
   when that output holds `<promise>COMPLETE</promise>`. It writes the output only once the check passes, keeps the
   check's output in an ignored log, never on stderr, and stops the agent's and the check's process trees when stopped.
-- [ ] `bin/run` copies `.ralph-tui/bin/worker` with the configuration when it copies one.
-- [ ] The help and the README's Gating completion describe it.
+- [x] `bin/run` copies `.ralph-tui/bin/worker` with the configuration when it copies one.
+- [x] The help and the README's Gating completion describe it.
 
 ## Functional Requirements
 
