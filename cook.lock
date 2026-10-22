@@ -56,3 +56,15 @@ recipes:
           id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
         - file: "AGENTS.md"
           id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
+  - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
+    source: "io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui"
+    sha256: "40a58da7e5f215b7ad02c3a067d9a1bda3363e15284556be1b10e9d9c200c2a3"
+    owns:
+      sections:
+        - file: ".gitignore"
+          id: "io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui"
+        - file: "AGENTS.md"
+          id: "io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui"
+      files:
+        - ".ralph-tui/bin/clean"
+        - ".ralph-tui/bin/run"

@@ -94,3 +94,9 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
   [infra/README.md](infra/README.md).
 - Known traps by feature: [docs/features/pitfalls.md](docs/features/pitfalls.md).
 - Agent permissions, roles and launch commands: [.agents/README.md](.agents/README.md) and the `agents-layout` skill.
+<!-- cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
+<!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown --instructions=AGENTS.md -->
+- Loop runs: `.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`, runs ralph-tui in
+  `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the
+  branch is delivered.
+<!-- cook:end io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
