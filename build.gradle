@@ -18,17 +18,25 @@ dependencies {
 
 spotless {
   def generated = ['**/build/**', '**/.gradle/**', '.worktrees/**']
+  // download.eclipse.org can be shut down for days; an Eclipse Foundation mirror serves the same update sites.
+  // Spotless refuses an update site with no entry, so the Groovy-Eclipse site maps to itself.
+  def groovyEclipse = 'https://groovy.jfrog.io/artifactory/plugins-release/'
+  def eclipseMirror = ['https://download.eclipse.org/': 'https://ftp.fau.de/eclipse/', (groovyEclipse): groovyEclipse]
   groovy {
     target '**/*.groovy'
     // The formatter cannot parse the quoted `default` member that recipes write as `@param(default = ...)`.
     targetExclude generated +
         ['core/src/main/groovy/thecook/cookbook/api/recipe/RecipeAnnotations.groovy']
-    greclipse().configFile('gradle/spotless/greclipse.properties')
+    greclipse()
+        .configFile('gradle/spotless/greclipse.properties')
+        .withP2Mirrors(eclipseMirror)
   }
   groovyGradle {
     target '**/*.gradle'
     targetExclude generated
-    greclipse().configFile('gradle/spotless/greclipse.properties')
+    greclipse()
+        .configFile('gradle/spotless/greclipse.properties')
+        .withP2Mirrors(eclipseMirror)
   }
   format 'misc', {
     target '**/*.md', '**/*.properties', '**/*.sh', '**/*.toml', '.gitignore'
