@@ -347,12 +347,12 @@ worktree's path and branch, then runs `ralph-tui run --epic <id>`, or `--prd` wi
 worktree, with the remaining arguments, such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no
 environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
-`bin/clean <name>` refuses while `ralph/<name>` has commits `HEAD` does not, which includes a branch delivered by a
-squash merge, or while its worktree or a worker's has changes; `--force` removes them anyway. With
-`--worktree-teardown`, it then runs that file from the root of the run worktree, when one exists, and stops when the
-file is missing, not executable or fails, removing nothing. It removes the worktrees ralph-tui made for the run's
-parallel workers, in `.worktrees/ralph/.ralph-worktrees/<name>/`, with their branches, then the worktree and the branch
-`ralph/<name>`.
+`bin/clean <name>` refuses while `ralph/<name>` has a commit whose change neither `HEAD` nor `origin/HEAD` has. A merge,
+rebase or cherry-pick counts as delivered; a squash merge, or a commit changed while delivering it, does not. It also
+refuses while its worktree or a worker's has changes. `--force` removes them anyway. With `--worktree-teardown`, it then
+runs that file from the root of the run worktree, when one exists, and stops when the file is missing, not executable or
+fails, removing nothing. It removes the worktrees ralph-tui made for the run's parallel workers, in
+`.worktrees/ralph/.ralph-worktrees/<name>/`, with their branches, then the worktree and the branch `ralph/<name>`.
 
 ## Re-cooking
 

@@ -627,9 +627,11 @@ roles:
 
     def ahead = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
     assert ahead.exit == 1
-    assert ahead.output.readLines()[0] == 'clean: ralph/demo has commits that HEAD does not (1)'
-    assert ahead.output.contains('a squash or rebase merge')
-    assert ahead.output.contains('--force')
+    def lines = ahead.output.readLines()
+    assert lines[0] == 'clean: ralph/demo has commits that neither HEAD nor origin/HEAD has'
+    assert lines[1] ==~ /  [0-9a-f]+ work/
+    assert lines[2].contains('a squash merge, or a commit changed while delivering it')
+    assert lines[3] == '  deliver ralph/demo, or run with --force to delete them'
 
     git(kitchen, 'merge', '-q', '--ff-only', 'ralph/demo')
     write(worktree, 'draft.txt', 'not yet\n')
@@ -642,6 +644,47 @@ roles:
     assert forced.exit == 0
     assert !worktree.exists()
     assert !new File(kitchen, '.worktrees/ralph').exists()
+    assert git(kitchen, 'branch', '--list', 'ralph/*') == ''
+  }
+
+  @Test void cleanCountsACherryPickedOrRebasedBranchAsDeliveredAndPrefersOriginHead() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    def run = { String name ->
+      assert launch(kitchen, '.ralph-tui/bin/run', name, '--epic', 'ep-1').exit == 0
+      def worktree = new File(kitchen, ".worktrees/ralph/${name}")
+      write(worktree, "${name}.txt", "${name}\n")
+      git(worktree, 'add', '-A')
+      git(worktree, 'commit', '-q', '-m', name)
+      worktree
+    }
+
+    run('picked')
+    write(kitchen, 'main.txt', 'moved on\n')
+    commitAll(kitchen)
+    git(kitchen, 'cherry-pick', 'ralph/picked')
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'picked').exit == 0
+
+    run('rebased')
+    write(kitchen, 'main2.txt', 'moved on again\n')
+    commitAll(kitchen)
+    // A forge's rebase merge: a copy rebased onto main, so main gets new commits with the same patches.
+    git(kitchen, 'branch', 'copy', 'ralph/rebased')
+    git(kitchen, 'rebase', '-q', 'main', 'copy')
+    git(kitchen, 'checkout', '-q', 'main')
+    git(kitchen, 'merge', '-q', '--ff-only', 'copy')
+    assert launch(kitchen, 'git', 'merge-base', '--is-ancestor', 'ralph/rebased', 'main').exit == 1
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'rebased').exit == 0
+
+    run('upstream')
+    git(kitchen, 'update-ref', 'refs/remotes/origin/main', 'ralph/upstream')
+    git(kitchen, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main')
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'upstream').exit == 0
+
+    run('local')
+    git(kitchen, 'merge', '-q', '--ff-only', 'ralph/local')
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'local').exit == 0
     assert git(kitchen, 'branch', '--list', 'ralph/*') == ''
   }
 

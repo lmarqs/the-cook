@@ -40,17 +40,25 @@ parallel=$(git -C "$root" worktree list --porcelain | PREFIX="$root/.worktrees/r
 ')
 tab=$(printf '\t')
 
+# The commits of $branch whose patches $1 lacks, one per line; git cherry matches merged, rebased and cherry-picked
+# commits by patch. A git error stops clean, never reads as delivered.
+undelivered() {
+  cherry=$(git -C "$root" cherry -v --abbrev "$1" "refs/heads/$branch") || exit 1
+  printf '%s\n' "$cherry" | sed -n 's/^+ //p' | sed '2,$s/^/  /'
+}
+
 has_branch=false
 if git -C "$root" show-ref --verify --quiet "refs/heads/$branch"; then has_branch=true; fi
 
 if [ "$force" = false ]; then
   if [ "$has_branch" = true ]; then
-    ahead=$(git -C "$root" rev-list --count "HEAD..refs/heads/$branch")
-    if [ "$ahead" -gt 0 ]; then
-      fail "$branch has commits that HEAD does not ($ahead)" \
-        'a squash or rebase merge leaves them out of HEAD, so clean cannot tell they were delivered' \
-        "merge $branch, or run with --force to delete them"
+    missing=$(undelivered HEAD)
+    if [ -n "$missing" ] && git -C "$root" rev-parse --verify --quiet 'refs/remotes/origin/HEAD^{commit}' >/dev/null; then
+      missing=$(undelivered refs/remotes/origin/HEAD)
     fi
+    [ -z "$missing" ] || fail "$branch has commits that neither HEAD nor origin/HEAD has" "$missing" \
+      'a squash merge, or a commit changed while delivering it, such as by resolving conflicts, changes its patch' \
+      "deliver $branch, or run with --force to delete them"
   fi
   while IFS=$tab read -r path _; do
     if [ -e "$path/.git" ] && [ -n "$(git -C "$path" status --porcelain)" ]; then

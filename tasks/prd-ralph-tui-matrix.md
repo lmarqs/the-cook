@@ -93,7 +93,7 @@ delivered, so `--force` and its skipped dirty check are not the norm.
 **Acceptance Criteria:**
 
 - [ ] `clean.sh` counts `ralph/<name>` as delivered when `git cherry <upstream> ralph/<name>` lists no line starting
-  with `+`, where `<upstream>` is `refs/remotes/origin/HEAD` when it resolves and `HEAD` otherwise.
+  with `+` for `<upstream>` `HEAD`, or for `refs/remotes/origin/HEAD` when it resolves; a `git cherry` error stops it.
 - [ ] Its refusal names the commits not found upstream and says a squash merge, or a cherry-pick that resolved
   conflicts, still needs `--force`.
 - [ ] Tests: a cherry-picked branch is cleaned without `--force`; a rebased branch is cleaned; an undelivered branch is
