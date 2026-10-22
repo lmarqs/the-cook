@@ -37,32 +37,52 @@ run_script() {
   (cd "$1" && "./$2") >&2 || fail "$2 failed" "in $1"
 }
 
-# Runs a Git command that may reach the remote, failing instead of asking for a password, a passphrase or a host key.
+# Runs a Git command that may reach the remote for at most ten seconds, failing instead of asking for a password, a
+# passphrase or a host key. Its output reaches standard error once it ends, through a file, so an ssh it leaves behind
+# holds none of the hook's own output open.
 unprompted() {
+  log=$(mktemp)
   if [ -z "${GIT_SSH_COMMAND:-}${GIT_SSH:-}" ] && ! git -C "$main" config core.sshCommand >/dev/null; then
-    GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' "$@"
+    env GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' "$@" </dev/null >"$log" 2>&1 &
   else
-    GIT_TERMINAL_PROMPT=0 "$@"
+    env GIT_TERMINAL_PROMPT=0 "$@" </dev/null >"$log" 2>&1 &
   fi
+  pid=$!
+  (sleep 10 && kill "$pid") </dev/null >/dev/null 2>&1 &
+  watcher=$!
+  if wait "$pid"; then status=0; else status=$?; fi
+  kill "$watcher" 2>/dev/null || true
+  cat "$log" >&2
+  rm -f "$log"
+  return "$status"
 }
 
-# Fetches the remote as $fetch says, stale fetching once its last fetch is a day old, and sets $upstream to the
-# remote's default branch, such as origin/main, or to nothing when it is not known.
+# Fetches the remote as $fetch says, stale fetching once its last fetch is a day old, only its default branch once that
+# is known, and sets $upstream to the remote's default branch, such as origin/main, or to nothing when it is not known.
 refresh() {
   upstream=''
   git -C "$main" remote get-url "$remote" >/dev/null 2>&1 || return 0
   fetched=$(git -C "$main" rev-parse --absolute-git-dir)/FETCH_HEAD
+  reachable=true
   if [ "$fetch" = always ] || { [ "$fetch" = stale ] && [ -z "$(find "$fetched" -mmin -1440 2>/dev/null)" ]; }; then
-    unprompted git -C "$main" fetch --quiet "$remote" >&2 ||
+    known=$(git -C "$main" symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null) || known=''
+    if ! unprompted git -C "$main" fetch --quiet "$remote" ${known:+"${known#"$remote"/}"}; then
       printf 'worktree: could not fetch %s, so its branches are as last fetched\n' "$remote" >&2
+      reachable=false
+    fi
   fi
-  if [ "$fetch" != never ] && ! git -C "$main" symbolic-ref --quiet "refs/remotes/$remote/HEAD" >/dev/null; then
+  if [ "$fetch" != never ] && [ "$reachable" = true ] && ! git -C "$main" symbolic-ref --quiet "refs/remotes/$remote/HEAD" >/dev/null; then
     unprompted git -C "$main" remote set-head "$remote" --auto >/dev/null 2>&1 || true
   fi
   upstream=$(git -C "$main" symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null) || upstream=''
   if [ -n "$upstream" ] && ! git -C "$main" rev-parse --verify --quiet "$upstream^{commit}" >/dev/null; then
     upstream=''
   fi
+}
+
+# The file marking the worktree $1 as one this hook created, in the worktree's own Git directory, so it goes with it.
+marker() {
+  printf '%s/cook-worktree\n' "$(git -C "$1" rev-parse --absolute-git-dir)"
 }
 
 # Whether every patch on the branch $1 is on the commit $2, matched by patch, so a rebased or cherry-picked commit
@@ -87,6 +107,7 @@ case ${1:-} in
     worktree=$main/$root/$branch
     if git -C "$main" worktree list --porcelain | grep -qxF "worktree $worktree"; then
       if [ -d "$worktree" ]; then
+        [ -e "$(marker "$worktree")" ] || fail "$worktree is a worktree this hook did not create" 'name another'
         printf 'worktree: reusing %s\n' "$worktree" >&2
         printf '%s\n' "$worktree"
         exit 0
@@ -111,6 +132,7 @@ case ${1:-} in
       git -C "$main" worktree add --no-track -b "$branch" "$worktree" "${start:-HEAD}" >&2
       created=true
     fi
+    : >"$(marker "$worktree")"
     if [ -n "$setup" ] && ! (run_script "$worktree" "$setup"); then
       git -C "$main" worktree remove --force "$worktree" >&2
       if [ "$created" = true ]; then git -C "$main" branch -D "$branch" >&2; fi
@@ -128,18 +150,18 @@ case ${1:-} in
       *) branch='' ;;
     esac
     if [ -d "$worktree" ]; then
+      [ -e "$(marker "$worktree")" ] || fail "$worktree is a worktree this hook did not create" 'it is kept'
       if [ -n "$teardown" ]; then run_script "$worktree" "$teardown"; fi
       git -C "$main" worktree remove --force "$worktree" >&2
     else
       git -C "$main" worktree prune >&2
     fi
-    if [ -n "$branch" ]; then
-      parent=$(dirname -- "$worktree")
-      while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
-    fi
-    if [ -n "$branch" ] && git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
-      refresh
-      if landed "$branch" HEAD || landed "$branch" "$upstream"; then
+    [ -n "$branch" ] || exit 0
+    parent=$(dirname -- "$worktree")
+    while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
+    if git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
+      upstream=''
+      if landed "$branch" HEAD || { refresh && landed "$branch" "$upstream"; }; then
         git -C "$main" branch -D "$branch" >&2 ||
           printf 'worktree: kept the branch %s, which Git would not delete\n' "$branch" >&2
       else
