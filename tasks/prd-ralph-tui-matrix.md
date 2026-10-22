@@ -11,7 +11,7 @@ uncommitted files, cannot recognise a cherry-picked delivery, and ralph-tui 0.12
 `<promise>COMPLETE</promise>` whatever its checks say.
 
 This feature fixes `bin/clean`, documents how a team gates completion, lets a team narrow the recipe to the trackers
-it uses, and states every other trap as one line of the help. The recipe stays small: what it does not fix, it names.
+it uses and choose where run worktrees go, and states every other trap as one line of the help. The recipe stays small: what it does not fix, it names.
 
 Facts the stories rely on, from ralph-tui 0.12.0 (`dist/cli.js` of the npm package) and bd 1.3.1:
 
@@ -49,6 +49,8 @@ Decisions already made by the maintainer:
 - A run branch delivered by merge, rebase or cherry-pick is cleaned without `--force`.
 - A team can write its own completion gate from the artifact's README without reading ralph-tui's source.
 - A team that uses only JSON PRDs, or only Beads, is seeded and offered only that tracker.
+- A team that keeps worktrees outside `.worktrees/` puts run worktrees there with the parameter
+  `io.github.lmarqs.cookbook:agents#connect` already names, `--worktree-root`.
 - Every trap a team can hit in ralph-tui 0.12, from medprev's field report or the stress test, is one line in the
   recipe's Traps, and the recipe adds no code for it.
 
@@ -135,6 +137,21 @@ avoid it without reading the source.
   an ignored or uncommitted `.ralph-tui/` never reaching the run worktree.
 - [ ] The help standard test and the rendered-help test pass.
 
+### US-006: `--worktree-root` moves the run worktrees
+
+**Description:** As a team whose worktrees live outside `.worktrees/`, I want to name the worktree root as I do for
+`io.github.lmarqs.cookbook:agents#connect`, so run worktrees go where the rest of our worktrees go.
+
+**Acceptance Criteria:**
+
+- [ ] New param `--worktree-root`, a path from the repository root, default `.worktrees`, with
+  `agents#connect`'s name and meaning: a run's worktree is `<root>/ralph/<name>`, following `<root>/<branch>`.
+- [ ] `bin/run` and `bin/clean` read the root from one shell-quoted variable; ralph-tui's parallel workers follow it to
+  `<root>/ralph/.ralph-worktrees/<name>/` (F9) with no `[parallel] worktreeDir`; `.gitignore` ignores `/<root>/ralph/`;
+  the instructions section names `<root>/ralph/<name>`.
+- [ ] Existing argument lines cook byte-identical scripts; a test cooks `--worktree-root=wt`, runs, adds a parallel
+  worker, finds the main checkout clean, and cleans both.
+
 ## Functional Requirements
 
 - FR-1: `bin/clean <name>` must remove only worktrees under `.worktrees/ralph/.ralph-worktrees/<name>/`, the run
@@ -143,13 +160,14 @@ avoid it without reading the source.
 - FR-3: `bin/clean` must treat a branch as delivered when `git cherry` finds every commit in `HEAD` or `origin/HEAD`.
 - FR-4: `--tracker` must limit the seeded prompts, the config's tracker line, the instructions and the usage line to
   the chosen trackers.
+- FR-5: `--worktree-root` must set where `bin/run` creates and `bin/clean` removes run worktrees, and the ignored path.
 
 ## Non-Goals
 
 - Any launcher or cook-time code for a trap: personal setup, Beads guards, the PRD rule, a forced `--prompt`, flag
   rewriting, a brownfield config guard. Each is a Trap line.
 - A recipe-owned worker wrapper, completion gate or cooked skill; the README describes one.
-- A param for where worktrees go.
+- A setting for ralph-tui's `[parallel] worktreeDir`; parallel workers follow the run worktree.
 - Committed spike results and a matrix document; observations go on #53.
 - Writing outside the repository.
 - This repository's own uncommitted ralph-tui cook, and the release; the maintainer decides both.

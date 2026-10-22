@@ -1,8 +1,10 @@
 #!/bin/sh
-# Runs ralph-tui in the worktree .worktrees/ralph/<name>, on the branch ralph/<name>.
+# Runs ralph-tui in the worktree <worktrees>/ralph/<name>, on the branch ralph/<name>.
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -eu
 
+# The directory --worktree-root names, by its path from the repository root.
+worktrees='.worktrees'
 # The file --worktree-setup names, by its path from the repository root; empty without --worktree-setup.
 setup=''
 
@@ -72,7 +74,7 @@ if [ -n "$(git -C "$root" status --porcelain -- .ralph-tui)" ]; then
     'commit .ralph-tui, then run again'
 fi
 
-worktree=$root/.worktrees/ralph/$name
+worktree=$root/$worktrees/ralph/$name
 if [ -e "$worktree/.git" ]; then
   current=$(git -C "$worktree" symbolic-ref --quiet --short HEAD || true)
   [ "$current" = "$branch" ] ||

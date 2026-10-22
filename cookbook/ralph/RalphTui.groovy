@@ -51,7 +51,7 @@ package io.github.lmarqs.cookbook.ralph
  * ## Instances
  *
  * One instance covers one repository's ralph-tui setup, at its root: the launcher puts run worktrees under the
- * repository's `.worktrees/ralph/`.
+ * repository's `<worktree root>/ralph/`, `.worktrees/ralph/` by default.
  *
  * ## Use
  *
@@ -62,16 +62,18 @@ package io.github.lmarqs.cookbook.ralph
  *
  * ralph.harnesses(['claude', 'codex'])
  * ralph.workerRole('worker')
+ * ralph.worktreeRoot('.worktrees')
  * ralph.worktreeSetup('.worktrees/setup')
  * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worker-role=worker ' +
- *     '--worktree-setup=.worktrees/setup')
+ *     '--worktree-root=.worktrees --worktree-setup=.worktrees/setup')
  * ```
  *
  * ## With other models
  *
  * None: ralph-tui names the other tools only by path. Run worktrees follow `io.github.lmarqs.cookbook:git#worktrees`'s
- * rule `.worktrees/<branch>`, and the launcher runs a setup file only when `setup` names one, such as that recipe's
- * `.worktrees/setup`; `--worker-role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders.
+ * rule `.worktrees/<branch>` by default, and `worktreeRoot` moves them as `io.github.lmarqs.cookbook:agents#connect
+ * --worktree-root` moves Claude Code's; the launcher runs a setup file only when `setup` names one, such as that
+ * recipe's `.worktrees/setup`; `--worker-role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders.
  */
 @Ingredient
 class RalphTui {
@@ -80,6 +82,9 @@ class RalphTui {
 
   /** The trackers a run takes tasks from: `beads` with `--epic`, `json` with `--prd`. */
   static final List<String> TRACKERS = ['beads', 'json']
+
+  /** Where run worktrees go when `worktreeRoot` is not called, following `.worktrees/<branch>`. */
+  static final String WORKTREE_ROOT = '.worktrees'
 
   /** Where `io.github.lmarqs.cookbook:agents#connect` renders each role's Claude settings, as `<role>.json`. */
   static final String ROLES = '.agents/adapters/claude/roles'
@@ -97,6 +102,7 @@ class RalphTui {
   private List<String> trackers = TRACKERS
   private String workerRole
   private String workerSettings
+  private String worktreeRoot = WORKTREE_ROOT
   private String worktreeSetup
   private String worktreeTeardown
   private String cookedWith
@@ -184,6 +190,15 @@ class RalphTui {
   }
 
   /**
+   * Has `bin/run` put each run's worktree at `<path>/ralph/<name>`, `path` being a directory by its path from the
+   * repository root, and `bin/clean` remove it from there; ralph-tui puts the run's parallel workers beside it, in
+   * `<path>/ralph/.ralph-worktrees/<name>/`. `.worktrees` without it.
+   */
+  void worktreeRoot(String path) {
+    worktreeRoot = path
+  }
+
+  /**
    * Has `bin/run` run the file at `path`, by its path from the repository root, from the root of each worktree it
    * creates, and fail the run when that file is missing, not executable or fails. Without it, `bin/run` runs no setup.
    * Refused under `.ralph-tui/`, which in a run worktree holds only what this recipe writes.
@@ -212,7 +227,8 @@ class RalphTui {
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `workerRole`, `workerSettings`, `worktreeSetup`, `worktreeTeardown` and `instructions`.
+   * `harnesses`, `workerRole`, `workerSettings`, `worktreeRoot`, `worktreeSetup`, `worktreeTeardown` and
+   * `instructions`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -279,8 +295,8 @@ class RalphTui {
   }
 
   /**
-   * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>`, with the `worktreeSetup`
-   * path shell-quoted into its `setup` variable, when installed.
+   * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `<worktreeRoot>/ralph/<name>`, with the `worktreeRoot`
+   * and `worktreeSetup` paths shell-quoted into its `worktrees` and `setup` variables, when installed.
    */
   @File(path = '.ralph-tui/bin/run', mode = '0755')
   String run() {
@@ -288,13 +304,13 @@ class RalphTui {
       return null
     }
 
-    def script = resource('bin/run.sh').replace('(--epic <id> | --prd <file>)', runFlags())
+    def script = withWorktreeRoot(resource('bin/run.sh')).replace('(--epic <id> | --prd <file>)', runFlags())
     worktreeSetup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(worktreeSetup)}\n") : script
   }
 
   /**
-   * The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, with the `worktreeTeardown`
-   * path shell-quoted into its `teardown` variable, when installed.
+   * The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, with the `worktreeRoot` and
+   * `worktreeTeardown` paths shell-quoted into its `worktrees` and `teardown` variables, when installed.
    */
   @File(path = '.ralph-tui/bin/clean', mode = '0755')
   String clean() {
@@ -302,7 +318,7 @@ class RalphTui {
       return null
     }
 
-    def script = resource('bin/clean.sh')
+    def script = withWorktreeRoot(resource('bin/clean.sh'))
     worktreeTeardown ? script.replace("\nteardown=''\n", "\nteardown=${shellQuoted(worktreeTeardown)}\n") : script
   }
 
@@ -322,7 +338,7 @@ class RalphTui {
       '!/.ralph-tui/config.toml',
       '!/.ralph-tui/templates/',
       '!/.ralph-tui/bin/',
-      '/.worktrees/ralph/',
+      "/${worktreeRoot}/ralph/".toString(),
     ]
   }
 
@@ -341,10 +357,14 @@ class RalphTui {
     def lines = [
       "<!-- ${cookedWith} -->",
       "- Loop runs: ${run} runs ralph-tui in",
-      '  `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the',
+      "  `${worktreeRoot}/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the",
       '  branch is delivered.',
     ]*.toString()
     instructions.collectEntries { [(it): lines] }
+  }
+
+  private String withWorktreeRoot(String script) {
+    script.replace("\nworktrees='.worktrees'\n", "\nworktrees=${shellQuoted(worktreeRoot)}\n")
   }
 
   private String runFlags() {

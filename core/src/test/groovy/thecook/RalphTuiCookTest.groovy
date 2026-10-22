@@ -338,6 +338,31 @@ roles:
     assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--prd', 'tasks/prd.json').exit == 0
   }
 
+  @Test void aWorktreeRootMovesTheRunWorktreesTheirParallelWorkersAndTheIgnoreLine() {
+    def kitchen = repository()
+    write(kitchen, 'AGENTS.md', '# Agents\n')
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-root': ['wt'], instructions: ['AGENTS.md']]).commit()
+    commitAll(kitchen)
+
+    assert new File(kitchen, '.gitignore').readLines().contains('/wt/ralph/')
+    assert new File(kitchen, 'AGENTS.md').text.contains('`wt/ralph/<name>` on branch `ralph/<name>`')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    assert run.exit == 0
+    assert run.output.readLines()[1] == "worktree: ${kitchen.canonicalPath}/wt/ralph/demo".toString()
+    def workers = new File(kitchen, 'wt/ralph/.ralph-worktrees/demo')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', new File(workers, 'worker-1').path)
+    assert git(kitchen, 'status', '--porcelain') == ''
+
+    def clean = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
+
+    assert clean.exit == 0
+    assert clean.output.readLines().contains(
+    "Removed the worktree ${workers.canonicalPath}/worker-1 and the branch ralph-parallel/s1/t1.".toString())
+    assert !new File(kitchen, 'wt/ralph').exists()
+    assert !new File(kitchen, '.worktrees').exists()
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
@@ -346,6 +371,7 @@ roles:
       ['harness'],
       ['worker-role'],
       ['worker-settings'],
+      ['worktree-root'],
       ['worktree-setup'],
       ['worktree-teardown'],
       ['tracker'],

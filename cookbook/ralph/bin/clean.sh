@@ -1,8 +1,10 @@
 #!/bin/sh
-# Removes the worktree .worktrees/ralph/<name>, its parallel workers' worktrees, their branches and ralph/<name>.
+# Removes the worktree <worktrees>/ralph/<name>, its parallel workers' worktrees, their branches and ralph/<name>.
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -eu
 
+# The directory --worktree-root names, by its path from the repository root.
+worktrees='.worktrees'
 # The file --worktree-teardown names, by its path from the repository root; empty without --worktree-teardown.
 teardown=''
 
@@ -32,9 +34,9 @@ done
 branch=ralph/$name
 git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
   fail "$name is not a run name" "ralph/$name must be a valid branch name"
-worktree=$root/.worktrees/ralph/$name
+worktree=$root/$worktrees/ralph/$name
 # ralph-tui puts a run's parallel workers beside its worktree, in .ralph-worktrees/<name>/.
-parallel=$(git -C "$root" worktree list --porcelain | PREFIX="$root/.worktrees/ralph/.ralph-worktrees/$name/" awk '
+parallel=$(git -C "$root" worktree list --porcelain | PREFIX="$root/$worktrees/ralph/.ralph-worktrees/$name/" awk '
   /^worktree / { path = substr($0, 10) }
   /^branch refs\/heads\// && index(path, ENVIRON["PREFIX"]) == 1 { print path "\t" substr($0, 19) }
 ')
@@ -86,7 +88,7 @@ while IFS=$tab read -r parallel_worktree parallel_branch; do
 done <<EOF
 $parallel
 EOF
-rmdir "$root/.worktrees/ralph/.ralph-worktrees/$name" "$root/.worktrees/ralph/.ralph-worktrees" 2>/dev/null || true
+rmdir "$root/$worktrees/ralph/.ralph-worktrees/$name" "$root/$worktrees/ralph/.ralph-worktrees" 2>/dev/null || true
 
 if [ -e "$worktree/.git" ]; then
   git -C "$root" worktree remove --force "$worktree"
@@ -97,4 +99,4 @@ if [ "$has_branch" = true ]; then
   git -C "$root" branch --quiet -D "$branch"
   echo "Removed the branch $branch."
 fi
-rmdir "$root/.worktrees/ralph" 2>/dev/null || true
+rmdir "$root/$worktrees/ralph" 2>/dev/null || true
