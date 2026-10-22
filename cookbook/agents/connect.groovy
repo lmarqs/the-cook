@@ -3,8 +3,8 @@ Connects each selected harness to the shared agent layout: renders the shared po
 `.agents/adapters/<harness>/`, links its own directory, `.claude/` or `.codex/`, to those files and to the shared
 directories, and runs every script in `.agents/hooks/session-start.d/` when a session starts. With a worktree root, it
 also has Claude Code create its worktrees there, set them up and tear them down with the team's scripts. Each harness
-reads `AGENTS.md` natively, and hooks and memory are reached by their paths. The links are committed, so a fresh clone
-needs no cooking; everything else in the harness directories is ignored in Git.
+reads `AGENTS.md` natively and reaches hooks and memory by their paths. The links are committed, so a fresh clone
+needs no cooking; Git ignores everything else in the harness directories.
 
 ## API
 
@@ -135,24 +135,25 @@ it once as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalCon
 harnesses add to the session. It prints nothing when the directory is missing or the scripts print nothing, and
 always exits 0. Name a script with a number first, such as `20-<tool>.sh`, to place it in the order.
 
-`.agents/hooks/worktree create` reads `name` from its input and adds the worktree `<root>/<name>` under the main
-checkout, the first entry of `git worktree list`, on the branch `<name>`, made from the main checkout's `HEAD` unless it
-exists. With `--worktree-setup`, it then runs that executable from the worktree's root with its output on standard
-error; when the executable is missing, not executable or fails, it removes the worktree, and the branch when it made
-it, and exits 1, so Claude Code creates nothing. It prints the worktree's path last. `.agents/hooks/worktree remove`
-reads `worktree_path`; with `--worktree-teardown`, it runs that executable from the worktree's root and, when it is
-missing, not executable or fails, exits 1 and keeps the worktree. It then removes the worktree and deletes its branch
-with `git branch -d`, which keeps a branch not merged into the main checkout's `HEAD` and says so on standard error.
+`.agents/hooks/worktree create` reads `name` from its input and adds the worktree `<root>/<name>` on the branch
+`<name>`. The root is under the main checkout, the first entry of `git worktree list`, and a missing branch is made from
+the main checkout's `HEAD`. With `--worktree-setup`, the hook then runs that executable from the worktree's root, with
+its output on standard error. If the executable is missing, not executable or fails, the hook removes the worktree,
+and the branch if it made it, and exits 1, so Claude Code creates nothing. Otherwise it prints the worktree's path last.
+
+`.agents/hooks/worktree remove` reads `worktree_path`. With `--worktree-teardown`, it runs that executable from the
+worktree's root; if the executable is missing, not executable or fails, the hook exits 1 and keeps the worktree. It
+then removes the worktree and deletes its branch with `git branch -d`, which keeps a branch not merged into the main
+checkout's `HEAD` and says so on standard error.
 
 ## Re-cooking
 
 Repeat the arguments on the opening line of the `harnesses` section in `.gitignore`, or of the `commands` section in
 `cook.rules`, such as `# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex \
---worktree-root=.worktrees`. Cook again after
-editing the policy, and after deleting `.claude/` or `.codex/` to recreate the links. A newer version rewrites the
-keys, links, files and sections it owns; the team's keys, the scripts in `session-start.d/` and the seeded files stay
-as they are. Under `--check`, a role file or `cook.rules` shows as a change once the policy gains roles or command
-rules, until the recipe is cooked again.
+--worktree-root=.worktrees`. Cook again after editing the policy, and after deleting `.claude/` or `.codex/` to recreate
+the links. A newer version rewrites the keys, links, files and sections it owns; the team's keys, the scripts in
+`session-start.d/` and the seeded files stay as they are. Under `--check`, a role file or `cook.rules` shows as a change
+once the policy gains roles or command rules, until the recipe is cooked again.
 
 ## Traps
 
@@ -169,9 +170,9 @@ rules, until the recipe is cooked again.
   bypasses them, and Codex's own worktrees go where Codex puts them.
 - Claude Code keeps the worktrees of subagents and workflows and never runs `WorktreeRemove` for them: remove them with
   `git worktree remove`, after running the teardown by hand.
-- Claude Code 2.1.308 cannot verify the state of a worktree the hook created, so its `ExitWorktree` tool refuses
-  `remove` until it is given `discard_changes: true`, even for a clean worktree (tested), and `claude --worktree -p`
-  keeps the worktree on exit.
+- Claude Code 2.1.308's `ExitWorktree` tool refuses `remove` for a worktree the hook created, even a clean one,
+  saying it could not verify the worktree's state, until it is given `discard_changes: true` (tested).
+  `claude --worktree -p` keeps the worktree on exit.
 - Once `hooks.WorktreeCreate` is set, Claude Code no longer copies the files `.worktreeinclude` lists: the
   `--worktree-setup` executable copies what a worktree needs.
 - `hooks.SessionStart` is Cook's in both harnesses, and `hooks.WorktreeCreate` and `hooks.WorktreeRemove` Claude's

@@ -1,7 +1,7 @@
 @help('''
 Sets a repository up for a Beads tracker around what `bd init` writes: the ignore rules for the issues that stay out
 of commits, the prime text `bd prime` prints, and, at the path the person names, a session-start script that prints
-it, so `bd init` is the only step left by hand.
+it. Installing bd, `bd init` and, for a shared tracker, bd's remote and hooks are left by hand, as After cooking says.
 
 ## API
 
