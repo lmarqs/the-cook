@@ -221,10 +221,10 @@ class RalphTui {
   }
 
   /**
-   * Writes `.ralph-tui/bin/worker`, which runs the agent with its output held and hands that output to ralph-tui only
-   * once the file at `path`, by its path from the repository root, passes; and seeds each `[[agents]]` entry with the
-   * worker as its `command`, its harness as the worker's first argument, and retries for a failed iteration. Without
-   * it, no worker is written. Refused under `.ralph-tui/`, as `worktreeSetup` is.
+   * Has `.ralph-tui/bin/worker` hand the agent's output to ralph-tui only once the file at `path`, by its path from the
+   * repository root, passes; and seeds each `[[agents]]` entry with the worker as its `command`, its harness as the
+   * worker's first argument, and retries for a failed iteration. Without it, the worker refuses every task. Refused
+   * under `.ralph-tui/`, as `worktreeSetup` is.
    */
   void workerCheck(String path) {
     workerCheck = outsideRalphTui('worker-check', path, 'scripts/check')
@@ -239,10 +239,10 @@ class RalphTui {
   }
 
   /**
-   * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
-   * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `workerRole`, `workerSettings`, `worktreeRoot`, `worktreeSetup`, `worktreeTeardown`, `workerCheck` and
-   * `instructions`.
+   * Requests the owned launcher, `bin/run` and `bin/clean`, the worker `bin/worker`, and the `ralph-tui` section of
+   * `.gitignore`. `cookedWith` names the recipe and its arguments, which the section's first line records; it must not
+   * be blank. Call after `harnesses`, `workerRole`, `workerSettings`, `worktreeRoot`, `worktreeSetup`,
+   * `worktreeTeardown`, `workerCheck` and `instructions`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -335,16 +335,17 @@ class RalphTui {
 
   /**
    * The executable `.ralph-tui/bin/worker`, which gates each agent run on the `workerCheck` file, with that path and
-   * the harnesses shell-quoted into its `check` and `agents` variables, when installed with `workerCheck`.
+   * the harnesses shell-quoted into its `check` and `agents` variables, when installed; without `workerCheck`, its
+   * `check` is empty and it refuses every task.
    */
   @File(path = '.ralph-tui/bin/worker', mode = '0755')
   String worker() {
-    if (!cookedWith || !workerCheck) {
+    if (!cookedWith) {
       return null
     }
 
-    def script = resource('bin/worker.sh').replace("\ncheck=''\n", "\ncheck=${shellQuoted(workerCheck)}\n")
-    script.replace("\nagents=''\n", "\nagents=${shellQuoted(harnesses.join(' '))}\n")
+    def script = resource('bin/worker.sh').replace("\nagents=''\n", "\nagents=${shellQuoted(harnesses.join(' '))}\n")
+    workerCheck ? script.replace("\ncheck=''\n", "\ncheck=${shellQuoted(workerCheck)}\n") : script
   }
 
   /**

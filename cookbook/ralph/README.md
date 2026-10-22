@@ -6,13 +6,15 @@ sets it up so each run works unattended in a worktree of its own, `.worktrees/ra
 ## Gating completion
 
 ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere, at
-any exit code, even in a sentence saying it is not done; it never runs the project's checks itself. Cooking
-`#ralph-tui` with `--worker-check=<path>` gates completion on a committed check the team writes: the recipe writes
-`.ralph-tui/bin/worker`, a wrapper that follows the pseudo code below, and seeds each agent entry to run it. The check
-gets the commit the agent started from as its argument, and exits 0 when the task's work passes.
+any exit code, even in a sentence saying it is not done; it never runs the project's checks itself. `#ralph-tui`
+always writes `.ralph-tui/bin/worker`, a wrapper that follows the pseudo code below. Cooking it with
+`--worker-check=<path>` names the committed check the worker runs and seeds each agent entry to run the worker;
+without that flag, the worker refuses every task. The check gets the commit the agent started from as its argument,
+and exits 0 when the task's work passes.
 
-A team that wants another gate points an agent entry's `command` at a wrapper script of its own. What ralph-tui does
-to that command:
+A team that wants another gate points an agent entry's `command` at a wrapper of its own, such as
+`scripts/worker.py`, and leaves `.ralph-tui/bin/` as written: every cook rewrites it. What ralph-tui does to that
+command:
 
 - It runs `<command> --version` first, to detect the agent.
 - The arguments are the entry's `defaultFlags`, then the plugin's own; Codex's end in `-`, with the prompt on stdin, as

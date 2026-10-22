@@ -96,13 +96,15 @@ else
   fi
 fi
 
-# ralph-tui reads its configuration and prompts only from the worktree, and commits each task with git add -A, so a
-# configuration not committed on the branch is copied in on every run, and only where Git ignores it and the session
-# files ralph-tui writes beside it.
+# ralph-tui reads its configuration, prompts and worker only from the worktree, and commits each task with git add -A,
+# so a configuration not committed on the branch is copied in on every run, and only where Git ignores it and the
+# session files ralph-tui writes beside it.
 copied=false
 if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/null 2>&1; then
-  [ -f "$root/.ralph-tui/config.toml" ] ||
-    fail ".ralph-tui/config.toml is not in $root" 'cook io.github.lmarqs.cookbook:ralph#ralph-tui again'
+  for file in config.toml bin/worker; do
+    [ -f "$root/.ralph-tui/$file" ] ||
+      fail ".ralph-tui/$file is not in $root" 'cook io.github.lmarqs.cookbook:ralph#ralph-tui again'
+  done
   for file in "$root/.ralph-tui/config.toml" "$root/.ralph-tui/session.json" "$root"/.ralph-tui/templates/*.hbs \
     "$root/.ralph-tui/bin/worker"; do
     path=.ralph-tui/${file#"$root/.ralph-tui/"}
@@ -116,12 +118,9 @@ if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/nu
   mkdir -p "$worktree/.ralph-tui"
   cp "$root/.ralph-tui/config.toml" "$worktree/.ralph-tui/"
   [ ! -d "$root/.ralph-tui/templates" ] || cp -R "$root/.ralph-tui/templates" "$worktree/.ralph-tui/"
-  echo "Copied .ralph-tui/config.toml and .ralph-tui/templates/ from $root: they are not committed on $branch."
-  if [ -f "$root/.ralph-tui/bin/worker" ]; then
-    mkdir -p "$worktree/.ralph-tui/bin"
-    cp -p "$root/.ralph-tui/bin/worker" "$worktree/.ralph-tui/bin/"
-    echo "Copied .ralph-tui/bin/worker too, which the configuration's agents run."
-  fi
+  mkdir -p "$worktree/.ralph-tui/bin"
+  cp -p "$root/.ralph-tui/bin/worker" "$worktree/.ralph-tui/bin/"
+  echo "Copied .ralph-tui/config.toml, templates/ and bin/worker from $root: they are not committed on $branch."
   copied=true
 fi
 echo "worktree: $worktree"

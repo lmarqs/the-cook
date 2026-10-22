@@ -63,6 +63,7 @@ sandbox = "workspace-write"
       '.gitignore',
       '.ralph-tui/bin/clean',
       '.ralph-tui/bin/run',
+      '.ralph-tui/bin/worker',
       '.ralph-tui/config.toml',
       '.ralph-tui/templates/beads.hbs',
       '.ralph-tui/templates/json.hbs',
@@ -100,6 +101,7 @@ recipes:
       files:
         - ".ralph-tui/bin/clean"
         - ".ralph-tui/bin/run"
+        - ".ralph-tui/bin/worker"
 """
     // No actions is what `./cook` reports as `Already cooked.`.
     assert cook(kitchen, RALPH, [harness: ['claude', 'codex']]).actions == [:]
@@ -288,6 +290,7 @@ roles:
       '.beads/PRIME.md',
       '.ralph-tui/bin/clean',
       '.ralph-tui/bin/run',
+      '.ralph-tui/bin/worker',
       '.ralph-tui/config.toml',
       '.ralph-tui/templates/beads.hbs',
       '.ralph-tui/templates/json.hbs',
@@ -461,7 +464,7 @@ roles:
     write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo').canonicalPath
-    def copied = "Copied .ralph-tui/config.toml and .ralph-tui/templates/ from ${kitchen.canonicalPath}: " +
+    def copied = "Copied .ralph-tui/config.toml, templates/ and bin/worker from ${kitchen.canonicalPath}: " +
         'they are not committed on ralph/demo.'
 
     def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--headless')
@@ -671,7 +674,24 @@ roles:
     cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']]).commit()
 
     assert new File(kitchen, '.ralph-tui/config.toml').text == CONFIG
-    assert new File(kitchen, '.ralph-tui/bin/worker').exists()
+    assert new File(kitchen, '.ralph-tui/bin/worker').text.contains("\ncheck='scripts/check'\n")
+  }
+
+  @Test void withoutAWorkerCheckTheWorkerIsWrittenAndRefusesEveryTask() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph/demo', '.worktrees/ralph/demo')
+
+    def refused = launch(new File(kitchen, '.worktrees/ralph/demo'), '.ralph-tui/bin/worker', 'claude', '--print')
+
+    assert refused.exit == 1
+    assert refused.output.readLines() == [
+      'worker: no check is set, so no task may complete',
+      '  cook io.github.lmarqs.cookbook:ralph#ralph-tui again with --worker-check=<path>,',
+      "  or point the agent entry's command in .ralph-tui/config.toml at the team's own wrapper",
+    ]
+    assert !new File(kitchen, '.ralph-tui/config.toml').text.contains('command')
   }
 
   @Test void refusesAWorkerCheckUnderRalphTui() {
@@ -768,7 +788,7 @@ roles:
 
   @Test void runCopiesTheWorkerWithAnIgnoredConfiguration() {
     def kitchen = repository()
-    cook(kitchen, RALPH, [harness: ['claude'], 'worker-check': ['scripts/check']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
     new File(kitchen, '.git/info/exclude') << '/.ralph-tui/\n'
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
@@ -776,7 +796,7 @@ roles:
     def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
 
     assert run.exit == 0
-    assert run.output.readLines()[2] == 'Copied .ralph-tui/bin/worker too, which the configuration\'s agents run.'
+    assert run.output.readLines()[1].startsWith('Copied .ralph-tui/config.toml, templates/ and bin/worker from ')
     def worker = new File(worktree, '.ralph-tui/bin/worker')
     assert worker.text == new File(kitchen, '.ralph-tui/bin/worker').text
     assert Files.isExecutable(worker.toPath())

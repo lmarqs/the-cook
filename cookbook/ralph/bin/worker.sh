@@ -3,13 +3,15 @@
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -u
 
-# The file --worker-check names, by its path from the repository root.
+# The file --worker-check names, by its path from the repository root; empty without --worker-check.
 check=''
 # The harnesses the configuration was seeded with, each asked for its version when ralph-tui asks the worker.
 agents=''
 
 fail() {
   printf 'worker: %s\n' "$1" >&2
+  shift
+  for line in "$@"; do printf '  %s\n' "$line" >&2; done
   exit 1
 }
 
@@ -18,6 +20,9 @@ if [ "$*" = --version ]; then
   exit 0
 fi
 
+[ -n "$check" ] || fail 'no check is set, so no task may complete' \
+  'cook io.github.lmarqs.cookbook:ralph#ralph-tui again with --worker-check=<path>,' \
+  "or point the agent entry's command in .ralph-tui/config.toml at the team's own wrapper"
 [ $# -ge 1 ] || fail 'usage: .ralph-tui/bin/worker <agent> [agent arguments...]'
 agent=$1
 shift
