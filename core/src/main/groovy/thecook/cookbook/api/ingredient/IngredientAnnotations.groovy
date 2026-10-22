@@ -22,6 +22,18 @@ import java.lang.annotation.Target
   String comment() default ''
 }
 
+/**
+ * The marked section `id` in one file per map entry: the key is the file's path under `path`, and the value its lines;
+ * `comment` names the line comment when the extension does not.
+ */
+@Target([ElementType.METHOD, ElementType.FIELD])
+@Retention(RetentionPolicy.RUNTIME)
+@interface Sections {
+  String path()
+  String id()
+  String comment() default ''
+}
+
 /** One key path in a JSON, TOML or YAML document, owned whole. */
 @Target([ElementType.METHOD, ElementType.FIELD])
 @Retention(RetentionPolicy.RUNTIME)

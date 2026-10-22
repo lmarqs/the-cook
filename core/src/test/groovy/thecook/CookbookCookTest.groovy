@@ -1437,6 +1437,44 @@ notes.set(test: 'new', other: 'mine')
     assert !new File(kitchen, 'cook.lock').text.contains('local')
   }
 
+  @Test void sectionsWritesOneSectionPerNamedFileAndRemovesItFromAFileNoLongerNamed() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes
+
+@Ingredient
+class Notes {
+  private List<String> files = []
+  void into(List<String> paths) { files = paths }
+  @Sections(path = '.', id = 'notes')
+  Map<String, List<String>> sections() { files.collectEntries { [(it): ["into ${it}".toString()]] } ?: null }
+}
+''')
+    recipe(kitchen, 'recipes/notes.groovy', '''import acme.notes.Notes
+@param(value = ['into'], many = true, doc = 'The files') String[] into
+@ingredient(Notes) def notes
+notes.into(into as List)
+''')
+    def agents = new File(kitchen, 'AGENTS.md')
+    agents.text = '# Agents\n'
+    def readme = new File(kitchen, 'docs/README.md')
+    readme.parentFile.mkdirs()
+    readme.text = '# Docs\n'
+
+    cook(kitchen, 'recipes/notes.groovy', [into: ['AGENTS.md', 'docs/README.md']]).commit()
+
+    assert agents.text == '# Agents\n<!-- cook:begin recipes/notes/notes -->\ninto AGENTS.md\n' +
+    '<!-- cook:end recipes/notes/notes -->\n'
+    assert readme.text == '# Docs\n<!-- cook:begin recipes/notes/notes -->\ninto docs/README.md\n' +
+    '<!-- cook:end recipes/notes/notes -->\n'
+    assert CookLock.parse(new File(kitchen, 'cook.lock').text).owned('recipes/notes')*.file as Set ==
+    ['AGENTS.md', 'docs/README.md'] as Set
+
+    cook(kitchen, 'recipes/notes.groovy', [into: ['docs/README.md']]).commit()
+
+    assert agents.text == '# Agents\n'
+    assert readme.text.contains('into docs/README.md')
+  }
+
   @Test void movingARecipeRenamesItAndDiscardingTheOldNameRemovesOnlyWhatTheLockStillListsForIt() {
     def kitchen = kitchen()
     recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes

@@ -7,6 +7,7 @@ import thecook.cookbook.api.ingredient.Key
 import thecook.cookbook.api.ingredient.Keys
 import thecook.cookbook.api.ingredient.Links
 import thecook.cookbook.api.ingredient.Section
+import thecook.cookbook.api.ingredient.Sections
 import thecook.cookbook.api.ingredient.Seed
 
 import java.lang.annotation.Annotation
@@ -17,12 +18,16 @@ import java.lang.reflect.Method
 /** Reads what model instances declare through their annotated members. */
 final class Declarations {
   private static final List<Class<? extends Annotation>> KINDS =
-  [Seed, Section, Key, Keys, WholeFile, Files, Links, Delete]
+  [Seed, Section, Sections, Key, Keys, WholeFile, Files, Links, Delete]
 
   private Declarations() { }
 
   /** `path` below `directory`, the instance base with `.` at the destination root. */
   static String join(String directory, String path) {
+    if (path == '.') {
+      return directory
+    }
+
     directory in ['.', ''] ? path : "${directory}/${path}"
   }
 
@@ -94,6 +99,14 @@ final class Declarations {
         def section = (Section) annotation
         def target = new SectionTarget(base, "${recipe}/${section.id()}".toString(), section.comment() ?: null)
         declared.owned << new Declaration(member, target, lines(member, value))
+        break
+      case Sections:
+        def sections = (Sections) annotation
+        entries(member, value).each { file, content ->
+          def target = new SectionTarget(join(base, file.toString()), "${recipe}/${sections.id()}".toString(),
+              sections.comment() ?: null)
+          declared.owned << new Declaration(member, target, lines(member, content))
+        }
         break
       case Key:
         declared.owned << new Declaration(member, key(member, base, ((Key) annotation).segments().toList()), value)
