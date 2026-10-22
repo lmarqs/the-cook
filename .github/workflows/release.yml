@@ -54,6 +54,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
       - run: ./gradlew check cliBuild jpackageTest jpackageArchive -PreleaseVersion=${{ needs.version.outputs.version }}
       - uses: actions/upload-artifact@v7
         with:
