@@ -27,7 +27,10 @@ import java.lang.annotation.Target
   String value()
 }
 
-/** An input bound from `--name=value`; required without a `default`, repeatable with `many`. */
+/**
+ * An input bound from `--name=value`; required without a `default`, repeatable with `many`. With `path`, each value is
+ * a path from the repository root, refused when blank, absolute or holding a `..` segment.
+ */
 @Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
 @Retention(RetentionPolicy.RUNTIME)
 @interface param {
@@ -36,6 +39,7 @@ import java.lang.annotation.Target
   String[] 'default'() default []
   String[] choices() default []
   boolean many() default false
+  boolean path() default false
 }
 
 /** An injected model instance, at the destination root or at the directory `at`. */

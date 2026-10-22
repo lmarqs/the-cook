@@ -93,7 +93,28 @@ final class RecipeRun {
         throw new IllegalArgumentException("${name}=${value} is not one of: ${choices.join(', ')}")
       }
     }
+
+    if (declared.path()) {
+      values = values.collect { inRepository(name, it) }
+    }
+
     convert(name, field.type, values)
+  }
+
+  private static String inRepository(String name, String value) {
+    def next = 'name the file by its path from the repository root'
+    def segments = value.split('/').findAll { it && it != '.' }
+
+    if (!value.trim() || !segments) {
+      throw new IllegalArgumentException(Diagnostic.text("${name} needs a path", null, next))
+    }
+
+    if (value.startsWith('/') || '..' in segments) {
+      throw new IllegalArgumentException(Diagnostic.text("${name}=${value} is outside the repository",
+      'a recipe reads and writes only inside the repository', next))
+    }
+
+    segments.join('/')
   }
 
   private static Object convert(String name, Class type, List<String> values) {

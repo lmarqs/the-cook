@@ -24,7 +24,8 @@ import java.lang.annotation.Target
 
 /**
  * The marked section `id` in one file per map entry: the key is the file's path under `path`, and the value its lines;
- * `comment` names the line comment when the extension does not.
+ * `comment` names the line comment when the extension does not. With `missing = "fail"`, a file the draft lacks is
+ * refused rather than created holding only the section; `"create"` creates it.
  */
 @Target([ElementType.METHOD, ElementType.FIELD])
 @Retention(RetentionPolicy.RUNTIME)
@@ -32,6 +33,7 @@ import java.lang.annotation.Target
   String path()
   String id()
   String comment() default ''
+  String missing() default 'create'
 }
 
 /** One key path in a JSON, TOML or YAML document, owned whole. */

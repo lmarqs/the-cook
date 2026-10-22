@@ -61,14 +61,16 @@ Recipe names are noun phrases naming the state the destination gets, without rep
 `node/project.groovy`, `docker/base-image.groovy` and `agents/connect.groovy`. A recipe that configures one of
 several programs in its directory names the program first: `ralph/ralph-tui.groovy`.
 
-Params are kebab-case and name the value's role in what the recipe sets up, as the recipe sees it:
-`--worktree-setup`, `--share`. A param that applies to one party of a run names that party first: `--worker-role` and
-`--worker-settings` limit the workers a loop runner starts, not whoever launches it. One concept keeps one name across
-artifacts: `--harness` names the coding agents a recipe connects, with the programs' own names, `claude` and `codex`,
-as values. A param avoids a word the configured program uses for something else, as ralph-tui 0.12 has a `setup`
-command, and a word this repository uses for something else, as `hook` names harness and Git hooks. A param that
-names another recipe's or the team's file takes its path from the repository root, and is refused when absolute or
-holding a `..` segment ([0030](../docs/adrs/0030-recipe-connections.md)).
+Params are kebab-case and name the value's role in what the recipe sets up, as the recipe sees it: `--worktree-setup`,
+`--share`. A param that applies to one party of a run names that party first: `--worker-role` and `--worker-settings`
+limit the workers a loop runner starts, not whoever launches it. One concept keeps one name across artifacts:
+`--harness` names the coding agents a recipe connects, with the programs' own names, `claude` and `codex`, as values,
+and `--instructions`, repeatable, names the Markdown files where a recipe states the rules it sets up for people and
+agents, such as `AGENTS.md` and `README.md`. A param avoids a word the configured program uses for something else, as
+ralph-tui 0.12 has a `setup` command, and a word this repository uses for something else, as `hook` names harness and
+Git hooks. A param that names another recipe's or the team's file takes its path from the repository root and is
+declared with `path`, so the engine refuses it when absolute or holding a `..` segment
+([0030](../docs/adrs/0030-recipe-connections.md)).
 
 The engine imports its own annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and `java.nio.file` into every
 unit, as the Groovy shell imports `java.util`. A unit imports nothing from the engine and nothing for JSON, YAML,
@@ -85,7 +87,7 @@ An author's code reaches the engine only through annotations. It imports nothing
 | --- | --- | --- |
 | `@Ingredient` | class | A model or content. The engine adds `directory`, the instance's base inside the destination with `.` at its root; `resource(name)` and `resources(dir)`, which read one file or every file packaged in the jar, or in the directory of a model beside a loose recipe; and `current(path)`, which reads a destination file. |
 | `@Section(path, id, comment)` | member returning `List<String>` | The marked section `id` of a shared text file. `comment` names the comment syntax when the extension does not. |
-| `@Sections(path, id, comment)` | member returning `Map<String, List<String>>` | The marked section `id` in one file per entry: the key is the file's path under `path`, and the value its lines. |
+| `@Sections(path, id, comment, missing)` | member returning `Map<String, List<String>>` | The marked section `id` in one file per entry: the key is the file's path under `path`, and the value its lines. With `missing = 'fail'`, a file the draft lacks is refused rather than created holding only the section. |
 | `@Key(path, segments)` | member | One key path in a JSON, TOML or YAML document, owned whole. A segment can select a list entry. |
 | `@Keys(path, under)` | member returning `Map` | One owned key per entry, under the key path `under`. A `List` map key is a deeper path. |
 | `@Lines(path)` | member returning `Map<String, String>` | One line per entry, owned on its own. The key is a regular expression: the value replaces the one line it matches, or is appended when none does. More than one match is an error. |
@@ -133,7 +135,7 @@ Rules:
 | `@yield('''...''')` | first import | What to do next, printed after the writes succeed. Optional. |
 | `@ingredient(Type, at)` | field | An injected instance, at the destination root or at the directory `at`. |
 | `@resource('path')` | field | The text of a file: beside a loose recipe, inside the repository, or in the recipe's artifact. The field is a `String`. |
-| `@param(value = names, doc = '...', default = ..., choices = ..., many = ...)` | field | An input bound from `--name=value` or `--name value`. Required without a default; `default = []` makes it optional with no value. `many` accepts repeats. The field is a `String`, a yes-or-no `boolean`, an `int` or `long`, or with `many` a `String[]` or `List<String>`; an input file is passed as its path. `doc` is required: it is the param's line in `help`. |
+| `@param(value = names, doc = '...', default = ..., choices = ..., many = ..., path = ...)` | field | An input bound from `--name=value` or `--name value`. Required without a default; `default = []` makes it optional with no value. `many` accepts repeats. `path` takes each value as a path from the repository root: it is refused when blank, absolute or holding a `..` segment, and reaches the recipe without empty or `.` segments. The field is a `String`, a yes-or-no `boolean`, an `int` or `long`, or with `many` a `String[]` or `List<String>`; an input file is passed as its path. `doc` is required: it is the param's line in `help`. |
 
 A file that another recipe in the same invocation may write, such as a program's own configuration or Ralph's PRD,
 is read by the ingredient that models it, through `current(path)`; the recipe passes its path as a `String`.

@@ -102,9 +102,10 @@ final class Declarations {
         break
       case Sections:
         def sections = (Sections) annotation
+        boolean failsOnMissing = failsOnMissing(member, sections)
         entries(member, value).each { file, content ->
           def target = new SectionTarget(join(base, file.toString()), "${recipe}/${sections.id()}".toString(),
-              sections.comment() ?: null)
+              sections.comment() ?: null, failsOnMissing)
           declared.owned << new Declaration(member, target, lines(member, content))
         }
         break
@@ -142,6 +143,14 @@ final class Declarations {
     }
 
     seed.existing() == 'fail'
+  }
+
+  private static boolean failsOnMissing(String member, Sections sections) {
+    if (!(sections.missing() in ['create', 'fail'])) {
+      throw new IllegalArgumentException("${member}: missing = '${sections.missing()}' is not create or fail")
+    }
+
+    sections.missing() == 'fail'
   }
 
   private static KeyTarget key(String member, String file, List<String> path) {

@@ -1475,6 +1475,47 @@ notes.into(into as List)
     assert readme.text.contains('into docs/README.md')
   }
 
+  @Test void sectionsWithMissingFailRefusesAFileTheDraftLacksAndAPathParamRefusesAPathOutsideTheRepository() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes
+
+@Ingredient
+class Notes {
+  private List<String> files = []
+  void into(List<String> paths) { files = paths }
+  @Sections(path = '.', id = 'notes', missing = 'fail')
+  Map<String, List<String>> sections() { files.collectEntries { [(it): ['note']] } ?: null }
+}
+''')
+    recipe(kitchen, 'recipes/notes.groovy', '''import acme.notes.Notes
+@param(value = ['into'], many = true, path = true, doc = 'The files') String[] into
+@ingredient(Notes) def notes
+notes.into(into as List)
+''')
+    def outside = { String path ->
+      "recipes/notes.groovy: --into=${path} is outside the repository\n" +
+          '  a recipe reads and writes only inside the repository\n' +
+          '  name the file by its path from the repository root'
+    }
+    [
+      'NOTES.md': 'recipes/notes.groovy: NOTES.md section recipes/notes/notes\n  NOTES.md is missing\n' +
+      '    the section goes into a file the team keeps, and the recipe never creates it\n' +
+      '    create the file, or cook the recipe that writes it earlier in the same invocation',
+      '/NOTES.md': outside('/NOTES.md'),
+      'a/../../NOTES.md': outside('a/../../NOTES.md'),
+      '': 'recipes/notes.groovy: --into needs a path\n  name the file by its path from the repository root',
+    ].each { path, message ->
+      def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'recipes/notes.groovy', [into: [path]]) }
+      assert error.message == message
+    }
+    assert !new File(kitchen, 'NOTES.md').exists()
+
+    new File(kitchen, 'NOTES.md').text = '# Notes\n'
+    cook(kitchen, 'recipes/notes.groovy', [into: ['./NOTES.md']]).commit()
+
+    assert new File(kitchen, 'NOTES.md').text.startsWith('# Notes\n<!-- cook:begin recipes/notes/notes -->\nnote\n')
+  }
+
   @Test void movingARecipeRenamesItAndDiscardingTheOldNameRemovesOnlyWhatTheLockStillListsForIt() {
     def kitchen = kitchen()
     recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes

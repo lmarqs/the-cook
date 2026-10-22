@@ -90,11 +90,13 @@ final class SectionTarget extends Target {
   final String id
   // A recorded section has no declared comment; withdrawing it reads the comment from its marker.
   private final String comment
+  private final boolean failsOnMissing
 
-  SectionTarget(String file, String id, String comment = null) {
+  SectionTarget(String file, String id, String comment = null, boolean failsOnMissing = false) {
     super(file)
     this.id = id
     this.comment = comment
+    this.failsOnMissing = failsOnMissing
   }
 
   String getKind() {
@@ -106,6 +108,12 @@ final class SectionTarget extends Target {
   }
 
   void write(Draft draft, Object lines) {
+    if (failsOnMissing && draft.kind(file) == null) {
+      throw new IllegalArgumentException(Diagnostic.text("${file} is missing",
+      'the section goes into a file the team keeps, and the recipe never creates it',
+      'create the file, or cook the recipe that writes it earlier in the same invocation'))
+    }
+
     def document = blocks(editable(draft), comment)
     document.write(id, new BlockLocation(), document.render(((List) lines).join('\n')))
     draft.replace(file, document)
