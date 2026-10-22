@@ -1,0 +1,44 @@
+{
+  "name": "the-cook",
+  "branchName": "ralph/clean-scope",
+  "description": "bin/clean fixes from tasks/prd-ralph-tui-matrix.md (#53): remove only the run's own parallel worktrees, and recognise a cherry-picked or rebased delivery.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "bin/clean removes only its own run's parallel worktrees",
+      "description": "As a developer with several runs or an earlier runner's worktrees in one clone, I want `.ralph-tui/bin/clean <name>` to remove only what run `<name>` created, so other work is never lost.",
+      "acceptanceCriteria": [
+        "A test in `core/src/test/groovy/thecook/RalphTuiCookTest.groovy` fails on the 4.2.0 `clean.sh`: it creates a `ralph-parallel/*` worktree outside `.worktrees/ralph/.ralph-worktrees/<name>/` with an uncommitted file, runs `bin/clean <name>`, and asserts that worktree, its file and its branch remain.",
+        "`cookbook/ralph/bin/clean.sh` removes only worktrees whose path is under `<root>/.worktrees/ralph/.ralph-worktrees/<name>/`, and their branches; it never lists or removes others, with or without `--force`.",
+        "Without `--force`, a worktree under that directory with uncommitted changes makes `clean` exit 1 before removing anything, naming the worktree and that `--force` deletes them.",
+        "With `--force`, those worktrees are removed and each removal is printed, as today.",
+        "`cleanRemovesADeliveredRunAndEveryParallelWorktree` places its `ralph-parallel/*` worktrees under `.worktrees/ralph/demo/.ralph-tui/worktrees/`, a path ralph-tui never uses (F9), and asserts `clean` removes them; it encodes the defect. It is rewritten to place them at F9's path, and the foreign case moves to the new test. Every other `RalphTuiCookTest` test passes unchanged.",
+        "`./gradlew check cliBuild jpackageTest` passes",
+        "`git diff --check` passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "dependsOn": []
+    },
+    {
+      "id": "US-002",
+      "title": "bin/clean recognises a cherry-picked or rebased delivery",
+      "description": "As a team that delivers run branches by cherry-pick or rebase, I want `bin/clean` to recognise them as delivered, so `--force` and its skipped dirty check are not the norm.",
+      "acceptanceCriteria": [
+        "`clean.sh` counts `ralph/<name>` as delivered when `git cherry <upstream> ralph/<name>` lists no line starting with `+`, where `<upstream>` is `refs/remotes/origin/HEAD` when it resolves and `HEAD` otherwise.",
+        "Its refusal names the commits not found upstream and says a squash merge, or a cherry-pick that resolved conflicts, still needs `--force`.",
+        "Tests: a cherry-picked branch is cleaned without `--force`; a rebased branch is cleaned; an undelivered branch is refused; with `origin/HEAD` set ahead of a lagging `HEAD`, a branch delivered upstream is cleaned.",
+        "`cleanRefusesUndeliveredOrUncommittedWorkUnlessForced` asserts the 4.2.0 refusal text (\"has commits that HEAD does not\", \"a squash or rebase merge\"); its assertions change to the new text, and it still asserts the refusal.",
+        "`./gradlew check cliBuild jpackageTest` passes",
+        "`git diff --check` passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "dependsOn": [
+        "US-001"
+      ]
+    }
+  ]
+}
