@@ -1209,6 +1209,34 @@ text.text = template
     assert !new File(kitchen, 'OUT.md').exists()
   }
 
+  @Test void aRecipeReadsTheNameItsMarkersCarryByPathAndByCoordinates() {
+    def kitchen = kitchen()
+    def source = """import acme.text.Text
+@recipe String self
+@ingredient(Text) def text
+text.text = self + '\\n'
+"""
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', source)
+    publishText(kitchen, ['setup.groovy': source])
+
+    assert cook(kitchen, 'recipes/setup.groovy', [:]).after('OUT.md') == 'recipes/setup\n'
+    assert cook(kitchen, 'acme:text:1.0.0#setup', [:]).after('OUT.md') == 'acme:text#setup\n'
+  }
+
+  @Test void refusesARecipeNameFieldThatIsNotAString() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
+@recipe List self
+@ingredient(Text) def text
+text.text = self.toString()
+""")
+
+    def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'recipes/setup.groovy', [:]) }
+    assert error.message == 'recipes/setup.groovy: self has the type List, which the recipe name cannot have'
+  }
+
   @Test void composesARecipePathWithCoordinatesUnderItsShortName() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')

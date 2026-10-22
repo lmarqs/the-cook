@@ -3,14 +3,15 @@ package thecook.cookbook
 // Lower-case names would read as variables in Groovy expressions.
 import thecook.cookbook.api.recipe.ingredient as Injected
 import thecook.cookbook.api.recipe.param as Param
+import thecook.cookbook.api.recipe.recipe as Self
 import thecook.cookbook.api.recipe.resource as Resource
 import thecook.model.Diagnostic
 
 import java.lang.reflect.Field
 
 /**
- * Runs a compiled recipe: binds its `@param` fields from the arguments, sets its `@resource` fields, injects its
- * ingredients, then runs its body.
+ * Runs a compiled recipe: binds its `@param` fields from the arguments, sets its `@resource` and `@recipe` fields,
+ * injects its ingredients, then runs its body.
  */
 final class RecipeRun {
   private RecipeRun() { }
@@ -18,9 +19,10 @@ final class RecipeRun {
   /**
    * Runs `recipe` with `arguments` and returns its ingredients in declaration order. A bare `--name` is `true` for a
    * yes-or-no param and an error for any other. `resources` holds the text of each `@resource` path.
-   * `newIngredient` creates an instance of a model type at a directory.
+   * `name` is the recipe's own name, for its `@recipe` fields. `newIngredient` creates an instance of a model type at a
+   * directory.
    */
-  static List<Object> run(CompiledRecipe recipe, List<Argument> arguments, Map<String, String> resources,
+  static List<Object> run(CompiledRecipe recipe, String name, List<Argument> arguments, Map<String, String> resources,
       Closure newIngredient) {
     def script = (Script) recipe.type.getDeclaredConstructor().newInstance()
     List<Field> fields = recipe.fields.collect { recipe.type.getDeclaredField(it) }
@@ -45,6 +47,14 @@ final class RecipeRun {
       }
 
       set(script, field, resources[field.getAnnotation(Resource).value()])
+    }
+    fields.findAll { it.getAnnotation(Self) }.each { field ->
+      if (!(field.type in [String, CharSequence, Object])) {
+        throw new IllegalArgumentException(
+        "${field.name} has the type ${field.type.simpleName}, which the recipe name cannot have")
+      }
+
+      set(script, field, name)
     }
     def ingredients = fields.findAll { it.getAnnotation(Injected) }.collect { field ->
       def injected = field.getAnnotation(Injected)

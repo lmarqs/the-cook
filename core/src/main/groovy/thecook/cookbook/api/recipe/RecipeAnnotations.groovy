@@ -56,3 +56,12 @@ import java.lang.annotation.Target
 @interface resource {
   String value()
 }
+
+/**
+ * The recipe's own name, as its section markers and `cook.lock` carry it: its coordinates without the version, or its
+ * place in the kitchen, such as `recipes/setup`. A recipe opens its argument lines with it.
+ */
+@Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
+@Retention(RetentionPolicy.RUNTIME)
+@interface recipe {
+}

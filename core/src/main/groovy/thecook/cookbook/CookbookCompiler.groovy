@@ -48,8 +48,8 @@ final class CookbookCompiler {
   }
 
   /**
-   * Compiles a recipe in its own class loader over `models`; its `@param`, `@ingredient` and `@resource` lines become
-   * fields.
+   * Compiles a recipe in its own class loader over `models`; its `@param`, `@ingredient`, `@resource` and `@recipe`
+   * lines become fields.
    */
   static CompiledRecipe recipe(String source, String name, ClassLoader models) {
     def config = configuration()
@@ -85,6 +85,7 @@ final class CookbookCompiler {
 
   /** Turns a recipe's annotated declarations into script fields, which keep their annotations at runtime. */
   private static final class RecipeFields extends CompilationCustomizer {
+    private static final List<String> FIELD_ANNOTATIONS = ['param', 'ingredient', 'resource', 'recipe']
     final List<String> names = []
     final Set<String> defaulted = []
 
@@ -102,7 +103,7 @@ final class CookbookCompiler {
         if (statement instanceof ExpressionStatement && statement.expression instanceof DeclarationExpression) {
           def declaration = (DeclarationExpression) statement.expression
 
-          if (declaration.annotations.any { it.classNode.nameWithoutPackage in ['param', 'ingredient', 'resource'] }) {
+          if (declaration.annotations.any { it.classNode.nameWithoutPackage in FIELD_ANNOTATIONS }) {
             declaration.addAnnotation(new AnnotationNode(ClassHelper.make(Field)))
             names.add(declaration.variableExpression.name)
 
@@ -141,8 +142,8 @@ final class CookbookCompiler {
 }
 
 /**
- * A compiled recipe: its script class, the names of its `@param`, `@ingredient` and `@resource` fields in source order,
- * and the params that declare a default.
+ * A compiled recipe: its script class, the names of its `@param`, `@ingredient`, `@resource` and `@recipe` fields in
+ * source order, and the params that declare a default.
  */
 final class CompiledRecipe {
   final Class type
