@@ -120,8 +120,9 @@ key, the last one cooked would remove the others, and each tool would need to kn
 So `#connect` owns the key in each harness and points it at one dispatcher, `.agents/hooks/session-start`. The
 dispatcher runs every `.agents/hooks/session-start.d/*.sh` in name order, with the harness name as `$1`, and prints
 their joined output once, as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<text>"}}`,
-which Claude Code 2.1.306 and Codex 0.160.1 both add to the session (tested). A tool's recipe owns one script there,
-and the team writes its own beside them; none of them learns a harness format, and none collides with another. The
+which Claude Code 2.1.306 and Codex 0.160.1 both add to the session (tested). A tool's recipe writes one script there
+when the person names its path by a parameter of that recipe, never because it finds the directory, and the team
+writes its own beside them; none of them learns a harness format, and none collides with another. The
 dispatcher encodes the JSON with `sh` and `awk` alone, so the layout adds no dependency such as `jq` or Python; the
 encoding round-trips quotes, backslashes, control characters and UTF-8 under dash and bash, with gawk and mawk
 (tested).
@@ -234,7 +235,7 @@ tested here. "Not verified" marks what the sources did not show:
 
 | Runner | Worktrees | Copies or setup | Launches by default | Launch configurable through | Source |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code `--worktree` | `.claude/worktrees/<name>/`; a `WorktreeCreate` hook replaces it | `.worktreeinclude` | Itself | Not applicable | [docs](https://code.claude.com/docs/en/worktrees) |
+| Claude Code `--worktree` | `.claude/worktrees/<name>/`; a `WorktreeCreate` hook replaces it, and `#connect --worktree-root` writes one that uses `<root>/<name>` | `.worktreeinclude`; with that hook, the `--worktree-setup` executable | Itself | Not applicable | [docs](https://code.claude.com/docs/en/worktrees) |
 | Codex `--worktree` | `$CODEX_HOME/worktrees` | `.worktreeinclude` in the app; setup scripts, key not verified | Itself | Not applicable | [docs](https://learn.chatgpt.com/docs/environments/git-worktrees) |
 | ralph-tui 0.12 | `../.ralph-worktrees/<project>/` in its code, `.ralph-tui/worktrees` in its docs; `[parallel].worktreeDir` | Its own configuration only | Claude with `--dangerously-skip-permissions`; `codex exec --full-auto`, an option `codex exec` rejects (tested) | `command`, `defaultFlags`, `skipPermissions`, `fullAuto` | [docs](https://ralph-tui.com/docs/parallel/configuration) |
 | Conductor | `~/conductor/workspaces/<repo>/<workspace>` | `.worktreeinclude` or `file_include_globs`; `[scripts] setup` | Not verified | Not verified | [docs](https://conductor.build/docs/concepts/git-worktrees) |

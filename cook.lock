@@ -33,8 +33,8 @@ recipes:
         - ".codex/hooks.json"
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
-    source: "io.github.lmarqs.cookbook:agents:4.0.0#seed"
-    sha256: "160d3b84a1b65ffff68c6603ab423b40ac4eab7e35fb9e7664f3a43a272fa748"
+    source: "io.github.lmarqs.cookbook:agents:4.2.0#seed"
+    sha256: "1fc21edd53b20c3d1de5ff3fd142cce40ccac56c56fb5c5dccf672a901973445"
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
