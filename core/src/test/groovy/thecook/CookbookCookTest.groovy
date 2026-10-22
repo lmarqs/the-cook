@@ -1492,7 +1492,7 @@ notes.set(test: 'new', other: 'mine')
 
   @Test void sectionsWritesOneSectionPerNamedFileAndRemovesItFromAFileNoLongerNamed() {
     def kitchen = kitchen()
-    recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes
+    recipe(kitchen, 'recipes/NotesModel.groovy', '''package acme.notes
 
 @Ingredient
 class Notes {
@@ -1530,7 +1530,7 @@ notes.into(into as List)
 
   @Test void sectionsWithMissingFailRefusesAFileTheDraftLacksAndAPathParamRefusesAPathOutsideTheRepository() {
     def kitchen = kitchen()
-    recipe(kitchen, 'recipes/Notes.groovy', '''package acme.notes
+    recipe(kitchen, 'recipes/NotesModel.groovy', '''package acme.notes
 
 @Ingredient
 class Notes {
