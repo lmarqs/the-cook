@@ -18,11 +18,15 @@ updates. People need to see the actual requested changes and keep unrelated cont
 - Trusted Groovy [recipes](../features/glossary.md) execute before batch writes. Code evaluated with the user's
   privileges can have effects that are not represented in the batch.
 - Issue trackers, code-review platforms and coding agents have their own execution and delivery conventions.
+- Git keeps a repository's history, index, configuration and hooks under `.git/`, and runs a hook from there at the
+  next matching Git command ([githooks](https://git-scm.com/docs/githooks), Git 2.x). None of it is a file the
+  repository's diff shows.
 
 ## Decision
 
 1. Declared writes and deletions stay within the invocation's current working directory, regardless of the recipe
-   or executable location. Targets resolved through symlinks remain within that boundary.
+   or executable location. Targets resolved through symlinks remain within that boundary. None targets the
+   repository's `.git/` directory.
 2. Recipes come from paths inside the destination repository or by coordinates
    ([0013](0013-organization-content.md)). Relative references to recipes and templates resolve from the referencing
    recipe's location. A local operand or reference that resolves outside the repository is refused.
@@ -44,7 +48,10 @@ updates. People need to see the actual requested changes and keep unrelated cont
 ## Reasons
 
 - **1.** The invocation directory makes the destination explicit even for recipes cooked by coordinates. Resolving
-  symlink targets within it prevents a declared path from redirecting a batch write elsewhere.
+  symlink targets within it prevents a declared path from redirecting a batch write elsewhere. A write under `.git/`
+  would change the history, the index or a hook Git runs next, none of which the reviewed diff shows, as Context
+  notes. The trade is that a recipe cannot set a clone's own Git state, such as an exclude entry or a hook; it states
+  the command for the person to run.
 - **2.** Source origins have a different role from the destination: they locate inputs without moving outputs or
   changing relative resolution. Keeping local sources inside the
   repository means every local input is one a reviewer can see in the same repository; the trade is that a shared
@@ -93,7 +100,8 @@ Costs:
 
 Must be maintained:
 
-- Declared target scope, destination containment including symlinks, and preservation of unrelated content.
+- Declared target scope, destination containment including symlinks and `.git/`, and preservation of unrelated
+  content.
 - Whole-batch diff and approval, rollback on a write failure, and deletion only through a recipe's new version or a
   discard, both read from `cook.lock`.
 
@@ -104,5 +112,6 @@ Must be maintained:
 - Does an existing manually edited target go through the ordinary batch diff and approval flow, whether or not
   `cook.lock` records its owner, while cooking another recipe leaves unrelated prior output in place?
 - Are a recipe operand and a template reference that resolve outside the repository both refused?
+- Is a declared target under `.git/`, in any letter case, refused?
 - Do descriptions of recovery ordering and write failures match the architecture, without treating recipe evaluation
   side effects as reversible batch writes?
