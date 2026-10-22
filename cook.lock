@@ -63,7 +63,7 @@ recipes:
           id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
   - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
     source: "io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui"
-    sha256: "e72e3d736079275f0230e623c7d20a34f4906995318b636695bcda24cbca8acb"
+    sha256: "0315660cf253db46c7a7710d2f0382e69fb3c64508cc46f7b205e26296d1dc6b"
     owns:
       sections:
         - file: ".gitignore"
