@@ -837,6 +837,155 @@ roles:
     assert git(kitchen, 'branch', '--list', 'ralph*') == ''
   }
 
+  @Test void cleanRefusesAWorkerBranchWithCommitsNeitherHeadNorOriginHeadHasUnlessForced() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def worker = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo/worker-1')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path, 'ralph/demo')
+    write(worker, 'unmerged.txt', 'committed, never merged\n')
+    git(worker, 'add', '-A')
+    git(worker, 'commit', '-q', '-m', 'unmerged')
+
+    def refused = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
+    assert refused.exit == 1
+    def lines = refused.output.readLines()
+    assert lines[0] == 'clean: ralph-parallel/s1/t1 has commits that neither HEAD nor origin/HEAD has'
+    assert lines[1] ==~ /  [0-9a-f]+ unmerged/
+    assert lines[3] == '  deliver ralph-parallel/s1/t1, or run with --force to delete them'
+    assert worker.exists()
+
+    git(new File(kitchen, '.worktrees/ralph/demo'), 'merge', '-q', '--no-edit', 'ralph-parallel/s1/t1')
+    git(kitchen, 'merge', '-q', '--ff-only', 'ralph/demo')
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'demo').exit == 0
+    assert !worker.exists()
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
+  @Test void cleanRefusesAMergeWhoseResultDiffersFromGitsOwnUnlessDeliveredByMerge() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    // A run whose branch merges a worker's branch, as ralph-tui's parallel mode does, with or without a change of the
+    // merge's own, such as a resolved conflict.
+    def run = { String name, boolean resolved ->
+      assert launch(kitchen, '.ralph-tui/bin/run', name, '--epic', 'ep-1').exit == 0
+      def worktree = new File(kitchen, ".worktrees/ralph/${name}")
+      git(worktree, 'checkout', '-q', '-b', "worker/${name}")
+      write(worktree, "${name}-worker.txt", 'worker\n')
+      git(worktree, 'add', '-A')
+      git(worktree, 'commit', '-q', '-m', "${name} worker")
+      git(worktree, 'checkout', '-q', "ralph/${name}")
+      write(worktree, "${name}-run.txt", 'run\n')
+      git(worktree, 'add', '-A')
+      git(worktree, 'commit', '-q', '-m', "${name} run")
+      git(worktree, 'merge', '-q', '--no-commit', "worker/${name}")
+
+      if (resolved) {
+        write(worktree, "${name}-worker.txt", 'resolved\n')
+        git(worktree, 'add', '-A')
+      }
+
+      git(worktree, 'commit', '-q', '-m', "Merge ${name}")
+      git(kitchen, 'branch', '-q', '-D', "worker/${name}")
+    }
+    // A forge's rebase merge, which drops merge commits and keeps the others' patches.
+    def deliverByRebase = { String name ->
+      git(kitchen, 'branch', 'copy', "ralph/${name}")
+      git(kitchen, 'rebase', '-q', 'main', 'copy')
+      git(kitchen, 'checkout', '-q', 'main')
+      git(kitchen, 'merge', '-q', '--ff-only', 'copy')
+      git(kitchen, 'branch', '-q', '-D', 'copy')
+    }
+
+    run('clean', false)
+    deliverByRebase('clean')
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'clean').exit == 0
+
+    run('resolved', true)
+    deliverByRebase('resolved')
+    def refused = launch(kitchen, '.ralph-tui/bin/clean', 'resolved')
+    assert refused.exit == 1
+    def lines = refused.output.readLines()
+    assert lines[0] == 'clean: ralph/resolved has commits that neither HEAD nor origin/HEAD has'
+    assert lines[1] ==~ /  [0-9a-f]+ Merge resolved/
+    assert lines.size() == 4
+
+    git(kitchen, 'merge', '-q', '--no-edit', '-X', 'theirs', 'ralph/resolved')
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'resolved').exit == 0
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
+  @Test void cleanListsOnlyTheCommitsThatNeitherHeadNorOriginHeadHas() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def worktree = new File(kitchen, '.worktrees/ralph/demo')
+    ['picked', 'pushed', 'neither'].each { subject ->
+      write(worktree, "${subject}.txt", "${subject}\n")
+      git(worktree, 'add', '-A')
+      git(worktree, 'commit', '-q', '-m', subject)
+    }
+    git(kitchen, 'cherry-pick', 'ralph/demo~2')
+    git(kitchen, 'branch', 'upstream', 'main~1')
+    git(kitchen, 'checkout', '-q', 'upstream')
+    git(kitchen, 'cherry-pick', 'ralph/demo~1')
+    git(kitchen, 'checkout', '-q', 'main')
+    git(kitchen, 'update-ref', 'refs/remotes/origin/main', 'upstream')
+    git(kitchen, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main')
+
+    def refused = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
+
+    assert refused.exit == 1
+    def lines = refused.output.readLines()
+    assert lines[0] == 'clean: ralph/demo has commits that neither HEAD nor origin/HEAD has'
+    assert lines[1] ==~ /  [0-9a-f]+ neither/
+    assert lines.size() == 4
+  }
+
+  @Test void cleanFindsTheParallelWorktreesOfARunWhoseNameHasASlash() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'team/demo', '--epic', 'ep-1').exit == 0
+    def worker = new File(kitchen, '.worktrees/ralph/team/.ralph-worktrees/demo/worker-1')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path)
+    write(worker, 'draft.txt', 'not yet\n')
+
+    def dirty = launch(kitchen, '.ralph-tui/bin/clean', 'team/demo')
+    assert dirty.exit == 1
+    assert dirty.output.startsWith("clean: ${worker.canonicalPath} has uncommitted changes\n")
+
+    def forced = launch(kitchen, '.ralph-tui/bin/clean', 'team/demo', '--force')
+    assert forced.exit == 0
+    assert !worker.exists()
+    assert !new File(kitchen, '.worktrees/ralph/team/.ralph-worktrees').exists()
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
+  @Test void cleanFindsTheParallelWorktreesOfItsRunWhenStartedThroughASymbolicLink() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def worker = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo/worker-1')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path)
+    write(worker, 'draft.txt', 'not yet\n')
+    def link = new File(folder.root, 'link')
+    Files.createSymbolicLink(link.toPath(), kitchen.toPath())
+
+    def dirty = launch(kitchen, "${link.path}/.ralph-tui/bin/clean".toString(), 'demo')
+    assert dirty.exit == 1
+    assert dirty.output.startsWith("clean: ${worker.canonicalPath} has uncommitted changes\n")
+
+    def forced = launch(kitchen, "${link.path}/.ralph-tui/bin/clean".toString(), 'demo', '--force')
+    assert forced.exit == 0
+    assert !worker.exists()
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
   private File kitchen() {
     def kitchen = folder.newFolder('kitchen')
     publishDirectory(kitchen, 'ralph')

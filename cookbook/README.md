@@ -400,12 +400,15 @@ worktree's path and branch, then runs `ralph-tui run --epic <id>`, or `--prd` wi
 worktree, with the remaining arguments, such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no
 environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
-`bin/clean <name>` refuses while `ralph/<name>` has a commit whose change neither `HEAD` nor `origin/HEAD` has. A merge,
-rebase or cherry-pick counts as delivered; a squash merge, or a commit changed while delivering it, does not. It also
-refuses while its worktree or a worker's has changes. `--force` removes them anyway. With `--worktree-teardown`, it then
-runs that file from the root of the run worktree, when one exists, and stops when the file is missing, not executable or
-fails, removing nothing. It removes the worktrees ralph-tui made for the run's parallel workers, in
-`<worktree root>/ralph/.ralph-worktrees/<name>/`, with their branches, then the worktree and the branch `ralph/<name>`.
+`bin/clean <name>` refuses while `ralph/<name>` or a parallel worker's branch has a commit whose change neither `HEAD`
+nor `origin/HEAD` has. A merge, rebase or cherry-pick counts as delivered, except where it loses a change: a squash
+merge, a commit changed while delivering it, and a rebase or cherry-pick that drops a merge commit whose result differs
+from Git's own merge, such as a resolved conflict. It also refuses while its worktree or a worker's has changes.
+`--force` removes them anyway. With `--worktree-teardown`, it then runs that file from the root of the run worktree,
+when one exists, and stops when the file is missing, not executable or fails, removing nothing. It removes the worktrees
+ralph-tui made for the run's parallel workers, in `.ralph-worktrees/<last part of the name>/` beside the run worktree,
+such as `<worktree root>/ralph/.ralph-worktrees/<name>/`, with their branches, then the worktree and the branch
+`ralph/<name>`.
 
 ## Re-cooking
 
@@ -438,6 +441,8 @@ launcher and the sections.
 - ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
   agent: a worker's checks that print such words to stderr look rate-limited.
 - ralph-tui 0.12 copies only `config.toml` into a parallel worker's worktree and runs no setup there.
+- A `[parallel] worktreeDir` in the configuration moves the parallel workers where `bin/clean` does not look: it then
+  removes the run and leaves its workers' worktrees and branches.
 - ralph-tui commits with `git add -A`, so whatever a worker changes in the run worktree, `.beads/` included, rides in
   the run branch.
 - A tracked PRD run with `--parallel` leaves its completion marks uncommitted: ralph-tui 0.12 writes them after merging

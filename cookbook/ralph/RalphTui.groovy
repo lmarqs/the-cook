@@ -192,7 +192,7 @@ class RalphTui {
   /**
    * Has `bin/run` put each run's worktree at `<path>/ralph/<name>`, `path` being a directory by its path from the
    * repository root, and `bin/clean` remove it from there; ralph-tui puts the run's parallel workers beside it, in
-   * `<path>/ralph/.ralph-worktrees/<name>/`. `.worktrees` without it.
+   * `.ralph-worktrees/<last part of the name>/`. `.worktrees` without it.
    */
   void worktreeRoot(String path) {
     worktreeRoot = path

@@ -35,33 +35,54 @@ branch=ralph/$name
 git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
   fail "$name is not a run name" "ralph/$name must be a valid branch name"
 worktree=$root/$worktrees/ralph/$name
-# ralph-tui puts a run's parallel workers beside its worktree, in .ralph-worktrees/<name>/.
-parallel=$(git -C "$root" worktree list --porcelain | PREFIX="$root/$worktrees/ralph/.ralph-worktrees/$name/" awk '
+# ralph-tui puts a run's parallel workers beside its worktree, in .ralph-worktrees/<the worktree's directory name>/.
+# git lists worktrees by their paths with symbolic links resolved, so the prefix matched against them is resolved too.
+workers=$(CDPATH='' cd -P -- "$(dirname -- "$worktree")" 2>/dev/null && pwd -P ||
+  dirname -- "$worktree")/.ralph-worktrees
+parallel=$(git -C "$root" worktree list --porcelain | PREFIX="$workers/${name##*/}/" awk '
   /^worktree / { path = substr($0, 10) }
   /^branch refs\/heads\// && index(path, ENVIRON["PREFIX"]) == 1 { print path "\t" substr($0, 19) }
 ')
 tab=$(printf '\t')
 
-# The commits of $branch whose patches $1 lacks, one per line; git cherry matches merged, rebased and cherry-picked
-# commits by patch. A git error stops clean, never reads as delivered.
-undelivered() {
-  cherry=$(git -C "$root" cherry -v --abbrev "$1" "refs/heads/$branch") || exit 1
-  printf '%s\n' "$cherry" | sed -n 's/^+ //p' | sed '2,$s/^/  /'
+origin_head=false
+if git -C "$root" rev-parse --verify --quiet 'refs/remotes/origin/HEAD^{commit}' >/dev/null; then origin_head=true; fi
+
+# The commits of branch $1 that $2 lacks, one per line: git cherry matches merged, rebased and cherry-picked commits by
+# patch, and skips merges, so a merge counts only when its result differs from Git's own, as a resolved conflict does.
+# A git error stops clean, never reads as delivered.
+lacks() {
+  cherry=$(git -C "$root" cherry -v --abbrev "$2" "refs/heads/$1") || exit 1
+  printf '%s\n' "$cherry" | sed -n 's/^+ //p'
+  merges=$(git -C "$root" rev-list --merges "refs/heads/$1" "^$2") || exit 1
+  for merge in $merges; do
+    resolution=$(git -C "$root" show --remerge-diff --format= "$merge") || exit 1
+    [ -z "$resolution" ] || git -C "$root" log -1 --format='%h %s' --abbrev=7 "$merge"
+  done
+}
+
+refuse_undelivered() {
+  missing=$(lacks "$1" HEAD)
+  if [ -n "$missing" ] && [ "$origin_head" = true ]; then
+    upstream=$(lacks "$1" refs/remotes/origin/HEAD)
+    missing=$(printf '%s\n' "$missing" | grep -Fx -e "$upstream" || true)
+  fi
+  [ -z "$missing" ] || fail "$1 has commits that neither HEAD nor origin/HEAD has" \
+    "$(printf '%s\n' "$missing" | sed '2,$s/^/  /')" \
+    'a squash merge, or a commit changed while delivering it, such as by resolving conflicts, changes its patch' \
+    "deliver $1, or run with --force to delete them"
 }
 
 has_branch=false
 if git -C "$root" show-ref --verify --quiet "refs/heads/$branch"; then has_branch=true; fi
 
 if [ "$force" = false ]; then
-  if [ "$has_branch" = true ]; then
-    missing=$(undelivered HEAD)
-    if [ -n "$missing" ] && git -C "$root" rev-parse --verify --quiet 'refs/remotes/origin/HEAD^{commit}' >/dev/null; then
-      missing=$(undelivered refs/remotes/origin/HEAD)
-    fi
-    [ -z "$missing" ] || fail "$branch has commits that neither HEAD nor origin/HEAD has" "$missing" \
-      'a squash merge, or a commit changed while delivering it, such as by resolving conflicts, changes its patch' \
-      "deliver $branch, or run with --force to delete them"
-  fi
+  if [ "$has_branch" = true ]; then refuse_undelivered "$branch"; fi
+  while IFS=$tab read -r _ parallel_branch; do
+    [ -z "$parallel_branch" ] || refuse_undelivered "$parallel_branch"
+  done <<EOF
+$parallel
+EOF
   while IFS=$tab read -r path _; do
     if [ -e "$path/.git" ] && [ -n "$(git -C "$path" status --porcelain)" ]; then
       fail "$path has uncommitted changes" 'they would be lost' 'commit them, or run with --force to delete them'
@@ -88,7 +109,7 @@ while IFS=$tab read -r parallel_worktree parallel_branch; do
 done <<EOF
 $parallel
 EOF
-rmdir "$root/$worktrees/ralph/.ralph-worktrees/$name" "$root/$worktrees/ralph/.ralph-worktrees" 2>/dev/null || true
+rmdir "$workers/${name##*/}" "$workers" 2>/dev/null || true
 
 if [ -e "$worktree/.git" ]; then
   git -C "$root" worktree remove --force "$worktree"

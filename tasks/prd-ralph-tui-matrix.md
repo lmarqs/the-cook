@@ -25,7 +25,7 @@ Facts the stories rely on, from ralph-tui 0.12.0 (`dist/cli.js` of the npm packa
 | F6 | Serial: the task is completed, then, with `autoCommit = true`, auto-commit runs `git add -A`. Parallel: the task is completed after the merge and nothing commits it | engine `runIteration`, parallel merge |
 | F7 | Beads trackers need `<cwd>/.beads`; bd in a worktree uses the main checkout's database and honours `BEADS_DIR`; ralph-tui calls `bd sync --flush-only`, which bd 1.3.1 lacks | Beads tracker plugins, bd 1.3.1 |
 | F8 | `run` matches flags exactly, so `--epic=x` is not parsed; it takes a repeated `--epic` and `--epics a,b` | `run` argument parser |
-| F9 | Parallel workers live at `.worktrees/ralph/.ralph-worktrees/<name>/worker-<id>` for a run at `.worktrees/ralph/<name>`, unless `[parallel] worktreeDir` is set, on `ralph-parallel/<session>/<task>` branches; only `config.toml` is copied in, no setup runs, and ralph-tui force-removes a worker path before reuse. The `.ralph-tui/worktrees` default in `DEFAULT_PARALLEL_CONFIG` never applies: `run` passes `worktreeDir: undefined`, which overrides it | `getWorktreeBaseDir`, `WorktreeManager`, `ParallelExecutor`, `copyConfig`, `cleanupStaleWorktree` |
+| F9 | Parallel workers live at `<dir>/.ralph-worktrees/<base>/worker-<id>` for a run at `<dir>/<base>`, as `.worktrees/ralph/.ralph-worktrees/<name>/worker-<id>` for a run at `.worktrees/ralph/<name>` whose `<name>` has no `/`, unless `[parallel] worktreeDir` is set, on `ralph-parallel/<session>[/<scope>]/<task>` branches; only `config.toml` is copied in, no setup runs, and ralph-tui force-removes a worker path before reuse. The `.ralph-tui/worktrees` default in `DEFAULT_PARALLEL_CONFIG` never applies: `run` passes `worktreeDir: undefined`, which overrides it | `getWorktreeBaseDir`, `WorktreeManager`, `ParallelExecutor`, `copyConfig`, `cleanupStaleWorktree` |
 | F10 | `<promise>COMPLETE</promise>` in the agent's final stdout completes and commits the task at any exit code | `PROMISE_COMPLETE_PATTERN` |
 | F11 | `rate[- ]limit`, 429, `too many requests`, `quota exceeded` or `overloaded` on stderr makes the iteration rate-limited at any exit code; with exit 1, 2 or 429, so do `throttl`, `limit…exceeded`, `exceeded…limit`, `capacity` and `backoff` | `RateLimitDetector.detect`, `looseRateLimitCheck` |
 | F12 | `ralph-tui setup` writes `agentOptions = {}` and never writes `prompt_template` | setup wizard |
@@ -73,13 +73,17 @@ These commands must pass for every user story:
 - [x] A test in `core/src/test/groovy/thecook/RalphTuiCookTest.groovy` fails on the 4.2.0 `clean.sh`: it creates a
   `ralph-parallel/*` worktree outside `.worktrees/ralph/.ralph-worktrees/<name>/` with an uncommitted file, runs
   `bin/clean <name>`, and asserts that worktree, its file and its branch remain.
-- [x] `cookbook/ralph/bin/clean.sh` removes only worktrees whose path is under
-  `<root>/.worktrees/ralph/.ralph-worktrees/<name>/`, and their branches; it never lists or removes others, with or
-  without `--force`.
+- [x] `cookbook/ralph/bin/clean.sh` removes only worktrees whose path is under the run's F9 directory,
+  `.worktrees/ralph/.ralph-worktrees/<name>/` for a `<name>` without `/`, and their branches; it never lists or
+  removes others, with or without `--force`.
 - [x] Without `--force`, a worktree under that directory with uncommitted changes makes `clean` exit 1 before removing
   anything, naming the worktree and that `--force` deletes them.
 - [x] With `--force`, those worktrees are removed and each removal is printed, as today.
-- [x] `cleanRemovesADeliveredRunAndEveryParallelWorktree` places its `ralph-parallel/*` worktrees under
+- [x] Without `--force`, a worker branch with a commit that neither `HEAD` nor `origin/HEAD` has, as when ralph-tui
+  could not merge it into `ralph/<name>`, makes `clean` exit 1, naming the branch and the commit, as US-002 does for
+  `ralph/<name>`.
+- [x] `cleanRemovesADeliveredRunAndEveryParallelWorktree`, now
+  `cleanRemovesADeliveredRunAndTheParallelWorktreesRalphTuiMadeForIt`, placed its `ralph-parallel/*` worktrees under
   `.worktrees/ralph/demo/.ralph-tui/worktrees/`, a path ralph-tui never uses (F9), and asserts `clean` removes them;
   it encodes the defect. It is rewritten to place them at F9's path, and the foreign case moves to the new test. Every
   other `RalphTuiCookTest` test passes unchanged.
@@ -91,10 +95,13 @@ delivered, so `--force` and its skipped dirty check are not the norm.
 
 **Acceptance Criteria:**
 
-- [x] `clean.sh` counts `ralph/<name>` as delivered when `git cherry <upstream> ralph/<name>` lists no line starting
-  with `+` for `<upstream>` `HEAD`, or for `refs/remotes/origin/HEAD` when it resolves; a `git cherry` error stops it.
-- [x] Its refusal names the commits not found upstream and says a squash merge, or a cherry-pick that resolved
-  conflicts, still needs `--force`.
+- [x] `clean.sh` counts `ralph/<name>` as delivered when no commit is listed with `+` by both
+  `git cherry HEAD ralph/<name>` and, when it resolves, `git cherry refs/remotes/origin/HEAD ralph/<name>`; a
+  `git cherry` error stops it.
+- [x] A merge commit counts when its result differs from Git's own merge (`git show --remerge-diff` prints a
+  change), as a conflict ralph-tui resolved does: a rebase or cherry-pick that drops it is refused; merging delivers it.
+- [x] Its refusal names the commits that neither `HEAD` nor `origin/HEAD` has, and only those, and says a squash
+  merge, or a cherry-pick that resolved conflicts, still needs `--force`.
 - [x] Tests: a cherry-picked branch is cleaned without `--force`; a rebased branch is cleaned; an undelivered branch is
   refused; with `origin/HEAD` set ahead of a lagging `HEAD`, a branch delivered upstream is cleaned.
 - [x] `cleanRefusesUndeliveredOrUncommittedWorkUnlessForced` asserts the 4.2.0 refusal text ("has commits that HEAD
@@ -154,10 +161,12 @@ avoid it without reading the source.
 
 ## Functional Requirements
 
-- FR-1: `bin/clean <name>` must remove only worktrees under `.worktrees/ralph/.ralph-worktrees/<name>/`, the run
-  worktree and their branches.
+- FR-1: `bin/clean <name>` must remove only worktrees under the run's F9 directory, the run worktree and their
+  branches.
 - FR-2: `bin/clean` must refuse uncommitted changes in any worktree it would remove unless `--force` is given.
-- FR-3: `bin/clean` must treat a branch as delivered when `git cherry` finds every commit in `HEAD` or `origin/HEAD`.
+- FR-3: `bin/clean` must treat `ralph/<name>` and each worker branch as delivered when every commit is in `HEAD` or
+  `origin/HEAD`: by patch through `git cherry`, and, for a merge commit whose result differs from Git's own merge, by
+  ancestry.
 - FR-4: `--tracker` must limit the seeded prompts, the config's tracker line, the instructions and the usage line to
   the chosen trackers.
 - FR-5: `--worktree-root` must set where `bin/run` creates and `bin/clean` removes run worktrees, and the ignored path.
