@@ -484,16 +484,16 @@ roles:
       }
       assert error.message.readLines() == [
         "${RALPH}: --worktree-setup=${path} is outside the repository",
-        '  bin/run runs it from the root of each run worktree, which holds the committed files',
-        '  name the file by its path from the repository root, as --worktree-setup=.worktrees/setup',
+        '  a recipe reads and writes only inside the repository',
+        '  name the file by its path from the repository root',
       ]*.toString()
     }
-    ['.ralph-tui/setup', './.ralph-tui/bin/setup'].each { path ->
+    ['.ralph-tui/setup': '.ralph-tui/setup', './.ralph-tui/bin/setup': '.ralph-tui/bin/setup'].each { path, given ->
       def error = shouldFail(IllegalArgumentException) {
         cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': [path]])
       }
       assert error.message.readLines() == [
-        "${RALPH}: --worktree-setup=${path} is under .ralph-tui/",
+        "${RALPH}: --worktree-setup=${given} is under .ralph-tui/",
         '  a run worktree has there only the configuration, prompts and launcher this recipe writes',
         '  name a committed file outside .ralph-tui/, as --worktree-setup=.worktrees/setup',
       ]*.toString()

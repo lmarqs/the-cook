@@ -148,7 +148,7 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 @param(value = ['worker-settings'], default = [],
     doc = 'A Claude settings file the claude entry passes with --settings')
     String workerSettings
-@param(value = ['worktree-setup'], default = [],
+@param(value = ['worktree-setup'], default = [], path = true,
     doc = 'An executable, by its path from the repository root, that bin/run runs in each run worktree it creates')
     String worktreeSetup
 

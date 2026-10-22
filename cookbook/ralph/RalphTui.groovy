@@ -162,23 +162,10 @@ class RalphTui {
   /**
    * Has `bin/run` run the file at `path`, by its path from the repository root, from the root of each worktree it
    * creates, and fail the run when that file is missing, not executable or fails. Without it, `bin/run` runs no setup.
-   * Refused when blank, absolute, holding a `..` segment, or under `.ralph-tui/`, which in a run worktree holds only
-   * what this recipe writes.
+   * Refused under `.ralph-tui/`, which in a run worktree holds only what this recipe writes.
    */
   void worktreeSetup(String path) {
-    if (!path?.trim()) {
-      throw new IllegalArgumentException('--worktree-setup needs a path')
-    }
-
-    def segments = path.split('/').findAll { it && it != '.' }
-
-    if (path.startsWith('/') || '..' in segments) {
-      throw new IllegalArgumentException("--worktree-setup=${path} is outside the repository\n" +
-      '  bin/run runs it from the root of each run worktree, which holds the committed files\n' +
-      '  name the file by its path from the repository root, as --worktree-setup=.worktrees/setup')
-    }
-
-    if (segments && segments.first() == '.ralph-tui') {
+    if (path.split('/').first() == '.ralph-tui') {
       throw new IllegalArgumentException("--worktree-setup=${path} is under .ralph-tui/\n" +
       '  a run worktree has there only the configuration, prompts and launcher this recipe writes\n' +
       '  name a committed file outside .ralph-tui/, as --worktree-setup=.worktrees/setup')

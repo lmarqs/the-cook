@@ -117,7 +117,7 @@ import io.github.lmarqs.cookbook.beads.Beads
 @param(value = ['share'], choices = ['team', 'clone'],
     doc = 'Who shares the issues: team syncs them through a Dolt remote; clone keeps them in this clone')
     String share
-@param(value = ['session-start'], default = [],
+@param(value = ['session-start'], default = [], path = true,
     doc = 'Where to write the script that prints bd prime for a session-start runner, from the repository root')
     String sessionStart
 

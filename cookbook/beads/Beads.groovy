@@ -38,32 +38,15 @@ class Beads {
    */
   static final List<String> SHARES = ['team', 'clone']
 
-  private static final String EXAMPLE = '--session-start=.agents/hooks/session-start.d/beads.sh'
-
   private String share
   private String cookedWith
   private String sessionStart
 
   /**
    * Has the tracker write its session-start script at `path`, by its path from the repository root. Without it, the
-   * tracker writes nothing for session start. Refused when blank, absolute or holding a `..` segment. Call before
-   * `track`.
+   * tracker writes nothing for session start. Call before `track`.
    */
   void sessionStart(String path) {
-    if (!path?.trim()) {
-      throw new IllegalArgumentException('--session-start needs a path\n' +
-      '  beads writes its session-start script at the path it names\n' +
-      "  name the file by its path from the repository root, as ${EXAMPLE}")
-    }
-
-    def segments = path.split('/').findAll { it && it != '.' }
-
-    if (path.startsWith('/') || '..' in segments) {
-      throw new IllegalArgumentException("--session-start=${path} is outside the repository\n" +
-      '  beads writes the script into the repository, so every clone has it\n' +
-      "  name the file by its path from the repository root, as ${EXAMPLE}")
-    }
-
     sessionStart = path
   }
 

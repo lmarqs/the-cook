@@ -163,18 +163,13 @@ class BeadsTrackerCookTest {
 
   @Test void refusesABlankAbsoluteOrOutsideSessionStartPath() {
     def kitchen = kitchen()
-    def next = '  name the file by its path from the repository root, as ' +
-        '--session-start=.agents/hooks/session-start.d/beads.sh'
+    def next = '  name the file by its path from the repository root'
 
-    ['', ' '].each { path ->
+    ['', ' ', '.', './'].each { path ->
       def error = shouldFail(IllegalArgumentException) {
         cook(kitchen, TRACKER, [share: ['clone'], 'session-start': [path]])
       }
-      assert error.message.readLines() == [
-        "${TRACKER}: --session-start needs a path",
-        '  beads writes its session-start script at the path it names',
-        next,
-      ]*.toString()
+      assert error.message.readLines() == ["${TRACKER}: --session-start needs a path", next]*.toString()
     }
     ['/etc/beads.sh', '../beads.sh', 'a/../../beads.sh', 'hooks/../beads.sh'].each { path ->
       def error = shouldFail(IllegalArgumentException) {
@@ -182,7 +177,7 @@ class BeadsTrackerCookTest {
       }
       assert error.message.readLines() == [
         "${TRACKER}: --session-start=${path} is outside the repository",
-        '  beads writes the script into the repository, so every clone has it',
+        '  a recipe reads and writes only inside the repository',
         next,
       ]*.toString()
     }
