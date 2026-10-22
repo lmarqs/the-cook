@@ -645,24 +645,103 @@ roles:
     assert git(kitchen, 'branch', '--list', 'ralph/*') == ''
   }
 
-  @Test void cleanRemovesADeliveredRunAndEveryParallelWorktree() {
+  @Test void cleanRemovesADeliveredRunAndTheParallelWorktreesRalphTuiMadeForIt() {
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
     assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
     assert launch(kitchen, '.ralph-tui/bin/run', 'other', '--epic', 'ep-2').exit == 0
-    def parallel = new File(kitchen, '.worktrees/ralph/demo/.ralph-tui/worktrees')
-    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/w1', new File(parallel, 'w1').path)
-    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/w2', new File(parallel, 'w 2').path)
+    def workers = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', new File(workers, 'worker-1').path)
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t2', new File(workers, 'worker 2').path)
 
     def clean = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
 
     assert clean.exit == 0
+    assert clean.output.readLines().containsAll([
+      "Removed the worktree ${workers.canonicalPath}/worker-1 and the branch ralph-parallel/s1/t1.",
+      "Removed the worktree ${workers.canonicalPath}/worker 2 and the branch ralph-parallel/s1/t2.",
+    ]*.toString())
     assert !new File(kitchen, '.worktrees/ralph/demo').exists()
+    assert !new File(kitchen, '.worktrees/ralph/.ralph-worktrees').exists()
     assert git(kitchen, 'branch', '--list', 'ralph*') == '+ ralph/other'
     def worktrees = git(kitchen, 'worktree', 'list', '--porcelain').readLines()
     assert worktrees.count { it.startsWith('worktree ') } == 2
     assert new File(kitchen, '.worktrees/ralph/other').exists()
+  }
+
+  @Test void cleanLeavesParallelWorktreesOutsideItsRunsDirectoryWithOrWithoutForce() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    def foreign = [
+      'ralph-parallel/old/t1': new File(kitchen, '.worktrees/earlier-runner/t1'),
+      'ralph-parallel/s2/t1': new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo2/worker-1'),
+    ]
+    foreign.each { branch, path ->
+      git(kitchen, 'worktree', 'add', '-q', '-b', branch, path.path)
+      write(path, 'unsaved.txt', 'not committed\n')
+    }
+
+    ['', '--force'].each { force ->
+      assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+      def clean = launch(kitchen, *(['.ralph-tui/bin/clean', 'demo'] + (force ? [force] : [])))
+
+      assert clean.exit == 0
+      assert !clean.output.contains('ralph-parallel')
+      assert !new File(kitchen, '.worktrees/ralph/demo').exists()
+      foreign.each { branch, path ->
+        assert new File(path, 'unsaved.txt').text == 'not committed\n'
+        assert git(kitchen, 'branch', '--list', branch) == "+ ${branch}".toString()
+      }
+    }
+  }
+
+  @Test void cleanRefusesANameThatIsNotARunName() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def feature = new File(kitchen, '.worktrees/feature')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'feature', feature.path)
+    write(feature, 'wip.txt', 'not committed\n')
+
+    ['../feature', 'demo/'].each { name ->
+      def clean = launch(kitchen, '.ralph-tui/bin/clean', name, '--force')
+
+      assert clean.exit == 1
+      assert clean.output.readLines() ==
+      ["clean: ${name} is not a run name", "  ralph/${name} must be a valid branch name"]*.toString()
+    }
+    assert new File(feature, 'wip.txt').exists()
+    assert new File(kitchen, '.worktrees/ralph/demo').exists()
+  }
+
+  @Test void cleanRefusesAParallelWorktreeOfItsRunWithChangesUnlessForced() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def worker = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo/worker-1')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path)
+    write(worker, 'draft.txt', 'not yet\n')
+
+    def dirty = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
+    assert dirty.exit == 1
+    assert dirty.output.readLines() == [
+      "clean: ${worker.canonicalPath} has uncommitted changes",
+      '  they would be lost',
+      '  commit them, or run with --force to delete them',
+    ]*.toString()
+    assert new File(worker, 'draft.txt').exists()
+    assert new File(kitchen, '.worktrees/ralph/demo').exists()
+
+    def forced = launch(kitchen, '.ralph-tui/bin/clean', 'demo', '--force')
+    assert forced.exit == 0
+    assert forced.output.readLines().contains(
+    "Removed the worktree ${worker.canonicalPath} and the branch ralph-parallel/s1/t1.".toString())
+    assert !worker.exists()
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
   }
 
   private File kitchen() {

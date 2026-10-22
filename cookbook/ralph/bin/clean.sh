@@ -1,5 +1,5 @@
 #!/bin/sh
-# Removes the worktree .worktrees/ralph/<name>, every ralph-parallel/* worktree, their branches and ralph/<name>.
+# Removes the worktree .worktrees/ralph/<name>, its parallel workers' worktrees, their branches and ralph/<name>.
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -eu
 
@@ -30,7 +30,15 @@ for argument in "$@"; do
 done
 [ -n "$name" ] || usage
 branch=ralph/$name
+git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
+  fail "$name is not a run name" "ralph/$name must be a valid branch name"
 worktree=$root/.worktrees/ralph/$name
+# ralph-tui puts a run's parallel workers beside its worktree, in .ralph-worktrees/<name>/.
+parallel=$(git -C "$root" worktree list --porcelain | PREFIX="$root/.worktrees/ralph/.ralph-worktrees/$name/" awk '
+  /^worktree / { path = substr($0, 10) }
+  /^branch refs\/heads\// && index(path, ENVIRON["PREFIX"]) == 1 { print path "\t" substr($0, 19) }
+')
+tab=$(printf '\t')
 
 has_branch=false
 if git -C "$root" show-ref --verify --quiet "refs/heads/$branch"; then has_branch=true; fi
@@ -44,9 +52,14 @@ if [ "$force" = false ]; then
         "merge $branch, or run with --force to delete them"
     fi
   fi
-  if [ -e "$worktree/.git" ] && [ -n "$(git -C "$worktree" status --porcelain)" ]; then
-    fail "$worktree has uncommitted changes" 'they would be lost' 'commit them, or run with --force to delete them'
-  fi
+  while IFS=$tab read -r path _; do
+    if [ -e "$path/.git" ] && [ -n "$(git -C "$path" status --porcelain)" ]; then
+      fail "$path has uncommitted changes" 'they would be lost' 'commit them, or run with --force to delete them'
+    fi
+  done <<EOF
+$worktree
+$parallel
+EOF
 fi
 
 if [ -n "$teardown" ] && [ -e "$worktree/.git" ]; then
@@ -57,19 +70,15 @@ if [ -n "$teardown" ] && [ -e "$worktree/.git" ]; then
   (cd "$worktree" && "./$teardown") || fail "$teardown failed" "in $worktree" 'nothing was removed' "$retry"
 fi
 
-parallel=$(git -C "$root" worktree list --porcelain | awk '
-  /^worktree / { path = substr($0, 10) }
-  /^branch refs\/heads\/ralph-parallel\// { print substr($0, 19) "\t" path }
-')
-tab=$(printf '\t')
-while IFS=$tab read -r parallel_branch parallel_worktree; do
-  [ -n "$parallel_branch" ] || continue
+while IFS=$tab read -r parallel_worktree parallel_branch; do
+  [ -n "$parallel_worktree" ] || continue
   git -C "$root" worktree remove --force "$parallel_worktree"
   git -C "$root" branch --quiet -D "$parallel_branch"
   echo "Removed the worktree $parallel_worktree and the branch $parallel_branch."
 done <<EOF
 $parallel
 EOF
+rmdir "$root/.worktrees/ralph/.ralph-worktrees/$name" "$root/.worktrees/ralph/.ralph-worktrees" 2>/dev/null || true
 
 if [ -e "$worktree/.git" ]; then
   git -C "$root" worktree remove --force "$worktree"

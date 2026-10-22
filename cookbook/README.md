@@ -274,7 +274,7 @@ exist. What it publishes for people, sessions and other recipes:
 | Name | What it is |
 | --- | --- |
 | `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | Runs ralph-tui in the run's worktree, as Run-time effects says |
-| `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and every `ralph-parallel/*` worktree and branch |
+| `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and its parallel workers' worktrees and branches |
 | `.worktrees/ralph/<name>` on branch `ralph/<name>` | The rule for a run's worktree, following `.worktrees/<branch>` |
 | `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` and with `--prd` |
 
@@ -348,10 +348,11 @@ worktree, with the remaining arguments, such as `--headless`, `--agent codex` or
 environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 `bin/clean <name>` refuses while `ralph/<name>` has commits `HEAD` does not, which includes a branch delivered by a
-squash merge, or while its worktree has changes; `--force` removes them anyway. With `--worktree-teardown`, it then
-runs that file from the root of the run worktree, when one exists, and stops when the file is missing, not executable
-or fails, removing nothing. It removes the worktree, every worktree on a `ralph-parallel/*` branch with that branch,
-then the branch `ralph/<name>`.
+squash merge, or while its worktree or a worker's has changes; `--force` removes them anyway. With
+`--worktree-teardown`, it then runs that file from the root of the run worktree, when one exists, and stops when the
+file is missing, not executable or fails, removing nothing. It removes the worktrees ralph-tui made for the run's
+parallel workers, in `.worktrees/ralph/.ralph-worktrees/<name>/`, with their branches, then the worktree and the branch
+`ralph/<name>`.
 
 ## Re-cooking
 
@@ -374,8 +375,6 @@ launcher and the sections.
   started with `--dangerously-bypass-hook-trust`.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
 - ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
-- `bin/clean` removes every `ralph-parallel/*` worktree, so cleaning one run while another runs in parallel mode stops
-  the other's workers.
 
 Parameters
   --harness=<String[]>
