@@ -37,24 +37,24 @@ root I name, so Claude Code's worktrees follow the repository's rule.
 
 **Acceptance Criteria:**
 
-- [ ] New resource `cookbook/agents/hooks/worktree`, POSIX `sh`, run as `worktree create` or `worktree remove` with
+- [x] New resource `cookbook/agents/hooks/worktree`, POSIX `sh`, run as `worktree create` or `worktree remove` with
   Claude Code's hook JSON on stdin; it needs only `sh`, `sed` and `git`, not `jq`.
-- [ ] The root, setup and teardown paths are rendered into the script at cook time, shell-quoted, as ralph's
+- [x] The root, setup and teardown paths are rendered into the script at cook time, shell-quoted, as ralph's
   `bin/run` renders `setup=''` (`cookbook/ralph/bin/run.sh`).
-- [ ] It finds the main checkout as the first entry of `git worktree list --porcelain`, so a session already inside a
+- [x] It finds the main checkout as the first entry of `git worktree list --porcelain`, so a session already inside a
   worktree creates the new one under the main checkout's root, never nested.
-- [ ] `create` reads `name`, then runs `git worktree add <main>/<root>/<name> -b <name>`, or without `-b` when branch
+- [x] `create` reads `name`, then runs `git worktree add <main>/<root>/<name> -b <name>`, or without `-b` when branch
   `<name>` exists; git's output goes to stderr.
-- [ ] With a setup path, `create` runs `<worktree>/<setup>` with the worktree's root as the working directory and its
+- [x] With a setup path, `create` runs `<worktree>/<setup>` with the worktree's root as the working directory and its
   stdout sent to stderr; when that file is missing, not executable or exits non-zero, it removes the worktree and the
   branch it created in this call, prints what failed to stderr, and exits 1.
-- [ ] `create` prints the worktree's absolute, normalized path as the last line of stdout and exits 0.
-- [ ] `remove` reads `worktree_path`; with a teardown path, it runs `<worktree_path>/<teardown>` from the worktree's
+- [x] `create` prints the worktree's absolute, normalized path as the last line of stdout and exits 0.
+- [x] `remove` reads `worktree_path`; with a teardown path, it runs `<worktree_path>/<teardown>` from the worktree's
   root, and when that file is missing, not executable or exits non-zero, it prints what failed to stderr and exits 1,
   leaving the worktree in place.
-- [ ] `remove` then runs `git worktree remove --force <worktree_path>` and `git branch -d <branch>`; an unmerged branch
+- [x] `remove` then runs `git worktree remove --force <worktree_path>` and `git branch -d <branch>`; an unmerged branch
   stays, with a line on stderr naming it, and the hook still exits 0.
-- [ ] Tests run the script in a scratch Git repository with the documented JSON payloads and assert: the path printed,
+- [x] Tests run the script in a scratch Git repository with the documented JSON payloads and assert: the path printed,
   the branch made, a nested call from inside a worktree, setup run and its failure rolled back, teardown run and its
   failure keeping the worktree, the merged branch deleted and the unmerged one kept.
 
@@ -65,16 +65,16 @@ and tear them down, so Claude Code's worktree hooks are written for me.
 
 **Acceptance Criteria:**
 
-- [ ] `cookbook/agents/connect.groovy` declares `--worktree-root`, `--worktree-setup` and `--worktree-teardown`, each
+- [x] `cookbook/agents/connect.groovy` declares `--worktree-root`, `--worktree-setup` and `--worktree-teardown`, each
   optional with `default = []` and `path = true`.
-- [ ] With `--worktree-root` and `--harness=claude`, the recipe owns `.agents/hooks/worktree` (mode 0755) and the keys
+- [x] With `--worktree-root` and `--harness=claude`, the recipe owns `.agents/hooks/worktree` (mode 0755) and the keys
   `hooks.WorktreeCreate` and `hooks.WorktreeRemove` in `.agents/adapters/claude/settings.json`, running
   `"$CLAUDE_PROJECT_DIR"/.agents/hooks/worktree create` and `... remove`; the rest of `hooks` stays the team's.
-- [ ] Without `--worktree-root`, none of them is written, and re-cooking without it removes them.
-- [ ] `--worktree-setup` or `--worktree-teardown` without `--worktree-root` is refused, naming `--worktree-root`.
-- [ ] `--worktree-root` without `--harness=claude` is refused: Codex 0.160.1 has no worktree hook event.
-- [ ] The opening line of the `harnesses` section in `.gitignore` records the new arguments.
-- [ ] Tests in `core/src/test/groovy/thecook/CookbookCookTest.groovy`, or a new `AgentsWorktreeCookTest.groovy`,
+- [x] Without `--worktree-root`, none of them is written, and re-cooking without it removes them.
+- [x] `--worktree-setup` or `--worktree-teardown` without `--worktree-root` is refused, naming `--worktree-root`.
+- [x] `--worktree-root` without `--harness=claude` is refused: Codex 0.160.1 has no worktree hook event.
+- [x] The opening line of the `harnesses` section in `.gitignore` records the new arguments.
+- [x] Tests in `core/src/test/groovy/thecook/CookbookCookTest.groovy`, or a new `AgentsWorktreeCookTest.groovy`,
   assert the exact keys and script, the refusals, the removal on re-cook, and that a team's other hook events survive.
 
 ### US-003: `agents#connect` help and the agents-layout docs
@@ -84,13 +84,13 @@ know what they cover and what they do not.
 
 **Acceptance Criteria:**
 
-- [ ] `cookbook/agents/connect.groovy` help: API examples, the three params, Produces rows for the script and both
+- [x] `cookbook/agents/connect.groovy` help: API examples, the three params, Produces rows for the script and both
   keys, Connections rows naming the person by each param, and Traps: a `git worktree add` an agent runs through Bash
   bypasses the hook; Claude Code keeps a subagent's or workflow's worktree and never runs `WorktreeRemove` for it;
   Codex's own worktrees are not covered.
-- [ ] `cookbook/agents/skills/agents-layout/references/design.md`: the Claude Code `--worktree` row of the runners
+- [x] `cookbook/agents/skills/agents-layout/references/design.md`: the Claude Code `--worktree` row of the runners
   table names the hook the layout writes.
-- [ ] The cooked copy in `.agents/skills/agents-layout/` follows only through `agents#seed`, never by hand.
+- [x] The cooked copy in `.agents/skills/agents-layout/` follows only through `agents#seed`, never by hand.
 
 ### US-004: `git#worktrees` documents `.worktrees/teardown`
 
@@ -99,11 +99,11 @@ script, so people and runners know both meeting points.
 
 **Acceptance Criteria:**
 
-- [ ] `cookbook/git/templates/README.template.md` describes `.worktrees/teardown`: an optional executable the team
+- [x] `cookbook/git/templates/README.template.md` describes `.worktrees/teardown`: an optional executable the team
   writes and commits, run from a worktree's root before it is removed, to stop services and delete local data.
-- [ ] `cookbook/git/worktrees.groovy` help: an API row for `.worktrees/teardown`, a Connections row, After cooking
+- [x] `cookbook/git/worktrees.groovy` help: an API row for `.worktrees/teardown`, a Connections row, After cooking
   says to commit it with `git add -f`, and the trap on `/.worktrees/*` names it.
-- [ ] `GitWorktreesCookTest` asserts the README names `.worktrees/teardown`.
+- [x] `GitWorktreesCookTest` asserts the README names `.worktrees/teardown`.
 
 ### US-005: `ralph#ralph-tui --worktree-teardown`
 
@@ -112,14 +112,14 @@ torn down the same way as any other.
 
 **Acceptance Criteria:**
 
-- [ ] `cookbook/ralph/ralph-tui.groovy` declares `--worktree-teardown`, optional, `path = true`, refused under
+- [x] `cookbook/ralph/ralph-tui.groovy` declares `--worktree-teardown`, optional, `path = true`, refused under
   `.ralph-tui/` as `--worktree-setup` is.
-- [ ] `bin/clean <name>` runs `<worktree>/<teardown>` from the run worktree's root before removing anything; when it
+- [x] `bin/clean <name>` runs `<worktree>/<teardown>` from the run worktree's root before removing anything; when it
   is missing, not executable or fails, `bin/clean` stops with a message and removes nothing.
-- [ ] The argument line and the help (API, Consumes, Run-time effects, Re-cooking) include `--worktree-teardown`.
-- [ ] `cookbook/README.md`'s embedded ralph help is regenerated from `./cook help`, and
+- [x] The argument line and the help (API, Consumes, Run-time effects, Re-cooking) include `--worktree-teardown`.
+- [x] `cookbook/README.md`'s embedded ralph help is regenerated from `./cook help`, and
   `./gradlew -p cli test --tests thecook.cli.CookCommandTest --rerun` passes.
-- [ ] `RalphTuiCookTest` covers teardown run, teardown failure stopping `bin/clean`, and the refusal under
+- [x] `RalphTuiCookTest` covers teardown run, teardown failure stopping `bin/clean`, and the refusal under
   `.ralph-tui/`.
 
 ### US-006: Live check with Claude Code
@@ -129,14 +129,14 @@ holds for the version we name.
 
 **Acceptance Criteria:**
 
-- [ ] In a scratch repository outside `/tmp`, cook `agents#seed`, `agents#connect --harness=claude
+- [x] In a scratch repository outside `/tmp`, cook `agents#seed`, `agents#connect --harness=claude
   --worktree-root=.worktrees --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown` and
   `git#worktrees`; commit, with setup and teardown scripts that each write a marker file.
-- [ ] `claude --worktree demo -p '<prompt printing the working directory>'` runs in `.worktrees/demo` on branch `demo`,
+- [x] `claude --worktree demo -p '<prompt printing the working directory>'` runs in `.worktrees/demo` on branch `demo`,
   and the setup marker exists there.
-- [ ] Removing the worktree, through a Claude Code path that runs `WorktreeRemove` or, failing one in print mode, the
+- [x] Removing the worktree, through a Claude Code path that runs `WorktreeRemove` or, failing one in print mode, the
   hook run with the documented JSON, runs the teardown and removes the worktree; the merged branch is deleted.
-- [ ] The results, with the Claude Code version, go on the tracking issue.
+- [x] The results, with the Claude Code version, go on the tracking issue.
 
 ## Functional Requirements
 
@@ -177,4 +177,5 @@ holds for the version we name.
 
 ## Open Questions
 
-- Which Claude Code path runs `WorktreeRemove` from a print-mode session, if any; US-006 records what it finds.
+None. Claude Code 2.1.308 runs `WorktreeRemove` from a print-mode session through the `ExitWorktree` tool with
+`action: "remove"` and `discard_changes: true`; `claude --worktree -p` keeps the worktree on exit.

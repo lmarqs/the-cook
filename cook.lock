@@ -34,7 +34,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:4.2.0#seed"
-    sha256: "1fc21edd53b20c3d1de5ff3fd142cce40ccac56c56fb5c5dccf672a901973445"
+    sha256: "5b78c70a7bc41f7e62a1b46ccc3d85c087a86c0b256ee7b82dab60ae9ce3e54c"
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"

@@ -52,7 +52,7 @@ beside them |
 - `.agents/hooks/session-start.d/*.sh` at run time, from tool recipes and the team: the dispatcher runs each with `sh`.
   `sh`, `awk` and, for Codex, `git` must be on the path.
 - The `--worktree-setup` and `--worktree-teardown` executables at run time, committed by the team; the worktree hook
-  needs `sh`, `sed` and `git`. The worktree hooks are written for Claude Code 2.1.308.
+  needs `sh`, `sed` and `git`. The worktree hooks are written for Claude Code 2.1.308 and tested with it.
 - A file or directory already at a link's path, such as a committed `.codex/config.toml` or `.claude/skills/`, is
   refused, and nothing is written: move its contents where the message says, delete it, and cook again. A link there
   is replaced.
@@ -169,6 +169,9 @@ rules, until the recipe is cooked again.
   bypasses them, and Codex's own worktrees go where Codex puts them.
 - Claude Code keeps the worktrees of subagents and workflows and never runs `WorktreeRemove` for them: remove them with
   `git worktree remove`, after running the teardown by hand.
+- Claude Code 2.1.308 cannot verify the state of a worktree the hook created, so its `ExitWorktree` tool refuses
+  `remove` until it is given `discard_changes: true`, even for a clean worktree (tested), and `claude --worktree -p`
+  keeps the worktree on exit.
 - Once `hooks.WorktreeCreate` is set, Claude Code no longer copies the files `.worktreeinclude` lists: the
   `--worktree-setup` executable copies what a worktree needs.
 - `hooks.SessionStart` is Cook's in both harnesses, and `hooks.WorktreeCreate` and `hooks.WorktreeRemove` Claude's
