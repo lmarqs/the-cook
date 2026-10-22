@@ -1649,6 +1649,37 @@ import acme.broken.Broken
     assert error.message == 'acme:broken:1.0.0#broken: cannot start'
   }
 
+  @Test void seedsAFileWithItsModeAndLeavesAnExistingFileMode() {
+    def kitchen = kitchen()
+    publish(kitchen, 'acme:script:1.0.0', [
+      'Script.groovy': '''package acme.script
+
+@Ingredient
+class Script {
+  private boolean wanted
+  void want() { wanted = true }
+  @Seed(path = 'run', mode = '0755')
+  String run() { wanted ? '#!/bin/sh\\n' : null }
+}
+''',
+      'script.groovy': '''@help('Seeds a script.')
+import acme.script.Script
+@ingredient(Script) def script
+script.want()
+''',
+    ])
+
+    cook(kitchen, 'acme:script:1.0.0#script', [:]).commit()
+    def run = new File(kitchen, 'run')
+    assert run.text == '#!/bin/sh\n'
+    assert Files.getPosixFilePermissions(run.toPath()) == PosixFilePermissions.fromString('rwxr-xr-x')
+
+    run.text = 'mine\n'
+    Files.setPosixFilePermissions(run.toPath(), PosixFilePermissions.fromString('rw-r--r--'))
+    assert cook(kitchen, 'acme:script:1.0.0#script', [:]).changes == []
+    assert Files.getPosixFilePermissions(run.toPath()) == PosixFilePermissions.fromString('rw-r--r--')
+  }
+
   @Test void refusesAModelThatDeclaresOutputOnANewInstance() {
     def kitchen = kitchen()
     publish(kitchen, 'acme:noisy:1.0.0', [

@@ -110,7 +110,7 @@ final class CookbookCook {
     }
     declared.seeds.each { seed ->
       if (draft.read(seed.file) == null) {
-        draft.write(seed.file, seed.text)
+        draft.write(seed.file, seed.text, seed.mode)
       } else if (seed.failsOnExisting && !lock.cooked(name)) {
         seeds.existing(existing, seed, name, draft)
       }
@@ -197,7 +197,7 @@ final class SeedOutcomes {
 
   void existing(ExistingSeed choice, Seeding seed, String recipe, Draft draft) {
     if (choice == ExistingSeed.REPLACE) {
-      draft.write(seed.file, seed.text)
+      draft.write(seed.file, seed.text, seed.mode)
       replaced.add(seed.file)
     } else if (choice == ExistingSeed.KEEP) {
       kept.add(seed.file)

@@ -94,7 +94,7 @@ An author's code reaches the engine only through annotations. It imports nothing
 | `@File(path, mode)` | member returning `String` | The whole file. |
 | `@Files(path, mode)` | member returning `Map<String, String>` | One whole file per entry, under `path`. |
 | `@Links(path, instead)` | member returning `Map<String, String>` | One symbolic link per entry, under `path`, pointing at the value. A link already at the path is replaced; a file or directory there is refused, and `instead` names where its contents belong, by default the link's target. |
-| `@Seed(path, existing)` | member returning `String` | Written only when the file is absent, and never owned. With `existing = 'fail'`, cooking the recipe the first time fails when the file exists, unless Cook runs with `--force`, which replaces the file, or `--skip`, which keeps it. |
+| `@Seed(path, existing, mode)` | member returning `String` | Written only when the file is absent, and never owned. With `existing = 'fail'`, cooking the recipe the first time fails when the file exists, unless Cook runs with `--force`, which replaces the file, or `--skip`, which keeps it. `mode` sets the permissions of the file it writes, such as `0755`, and never of a file it keeps. |
 | `@Delete(path)` | member returning `boolean` | Deletes a file the recipe does not own, when true. |
 
 Rules:

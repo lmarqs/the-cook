@@ -82,13 +82,15 @@ import java.lang.annotation.Target
 /**
  * Content written only when the file is absent, and never owned. With `existing = "fail"`, cooking the recipe the first
  * time fails when the file already exists, so the file always starts from this content, unless Cook runs with
- * `--force`, which replaces the file, or `--skip`, which keeps it; `"keep"` leaves an existing file.
+ * `--force`, which replaces the file, or `--skip`, which keeps it; `"keep"` leaves an existing file. `mode` sets the
+ * permissions of the file it writes, such as `0755`, and never of a file it keeps.
  */
 @Target([ElementType.METHOD, ElementType.FIELD])
 @Retention(RetentionPolicy.RUNTIME)
 @interface Seed {
   String path()
   String existing() default 'keep'
+  String mode() default ''
 }
 
 /** Deletes a file no recipe owns, when the member returns true. */

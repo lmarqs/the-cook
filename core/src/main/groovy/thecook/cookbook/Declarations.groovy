@@ -9,6 +9,7 @@ import thecook.cookbook.api.ingredient.Links
 import thecook.cookbook.api.ingredient.Section
 import thecook.cookbook.api.ingredient.Sections
 import thecook.cookbook.api.ingredient.Seed
+import thecook.reconciliation.Permissions
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.AccessibleObject
@@ -87,7 +88,8 @@ final class Declarations {
 
     switch (annotation) {
       case Seed:
-        declared.seeds << new Seeding(member, base, value.toString(), failsOnExisting(member, (Seed) annotation))
+        declared.seeds << new Seeding(member, base, value.toString(), failsOnExisting(member, (Seed) annotation),
+        mode((Seed) annotation))
         break
       case Delete:
         if (value == true) {
@@ -135,6 +137,10 @@ final class Declarations {
           declared.owned << new Declaration(member, new LinkTarget("${base}/${name}", instead), target.toString())
         }
     }
+  }
+
+  private static String mode(Seed seed) {
+    seed.mode() ? Permissions.parse(seed.mode()) : null
   }
 
   private static boolean failsOnExisting(String member, Seed seed) {
@@ -230,19 +236,21 @@ final class Declaration {
 
 /**
  * A file a model member writes only when it does not exist yet, and never owns. `failsOnExisting` refuses the recipe
- * the first time it is cooked, when the file exists.
+ * the first time it is cooked, when the file exists. `mode` sets the permissions of the file it writes.
  */
 final class Seeding {
   final String member
   final String file
   final String text
   final boolean failsOnExisting
+  final String mode
 
-  Seeding(String member, String file, String text, boolean failsOnExisting) {
+  Seeding(String member, String file, String text, boolean failsOnExisting, String mode) {
     this.member = member
     this.file = file
     this.text = text
     this.failsOnExisting = failsOnExisting
+    this.mode = mode
   }
 
   @Override
