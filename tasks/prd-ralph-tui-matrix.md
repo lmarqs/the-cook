@@ -187,6 +187,38 @@ isolated `HOME` showed:
 - [x] A committed configuration is never overwritten and gets no `--prompt`.
 - [x] The help's Run-time effects, Connections, Traps and After cooking describe both ways.
 
+### US-008: `--worker-check` gates task completion on the team's check
+
+**Description:** As a team whose checks must pass before a task counts as done, I want the recipe to write a worker
+wrapper that holds the agent's output until my check passes, so ralph-tui never completes and commits a task whose
+checks fail (F10). Issue #55; the maintainer chose to ship the wrapper, opt in.
+
+Resolved from ralph-tui 0.12.0's source and a spike under `dash` and `bash` with a fake agent:
+
+- ralph-tui runs `<command> --version` without `defaultFlags`, and the agent with `defaultFlags`, then its own
+  arguments. So each entry names its agent as the wrapper's first argument, in `defaultFlags`, and the wrapper asks
+  every seeded harness for its version.
+- A relative `command` is resolved in each worker's directory, so `.ralph-tui/bin/worker` reaches a parallel worker
+  only where `.ralph-tui/` is committed.
+- ralph-tui stops an agent with SIGTERM to the wrapper's own process. A shell without a terminal gets no job control,
+  so the wrapper stops the process tree it started, found through `ps`, and passes stdin to the background agent
+  through a spare descriptor; otherwise the agent reads nothing.
+- Retries: a failing check exits 1, and the seeded `[errorHandling]` is `strategy = "retry"`, `maxRetries = 2`,
+  `continueOnNonZeroExit = false`.
+
+**Acceptance Criteria:**
+
+- [ ] `--worker-check=<path>`, a committed executable outside `.ralph-tui/`, writes the owned, executable
+  `.ralph-tui/bin/worker`; without it, nothing changes.
+- [ ] With it, the seeded configuration points each entry's `command` at `.ralph-tui/bin/worker`, puts the harness
+  first in its `defaultFlags`, and seeds the retry settings. A configuration seeded earlier stays as it is.
+- [ ] The wrapper passes `--version` to each seeded harness, and refuses the main checkout.
+- [ ] It holds the agent's stdout. It runs the check, with the commit the agent started from as its argument, only
+  when that output holds `<promise>COMPLETE</promise>`. It writes the output only once the check passes, keeps the
+  check's output in an ignored log, never on stderr, and stops the agent's and the check's process trees when stopped.
+- [ ] `bin/run` copies `.ralph-tui/bin/worker` with the configuration when it copies one.
+- [ ] The help and the README's Gating completion describe it.
+
 ## Functional Requirements
 
 - FR-1: `bin/clean <name>` must remove only worktrees under the run's F9 directory, the run worktree and their
@@ -198,12 +230,13 @@ isolated `HOME` showed:
 - FR-4: `--tracker` must limit the seeded prompts, the config's tracker line, the instructions and the usage line to
   the chosen trackers.
 - FR-5: `--worktree-root` must set where `bin/run` creates and `bin/clean` removes run worktrees, and the ignored path.
+- FR-6: With `--worker-check`, a task must complete only when the team's check passes after the agent claims it.
 
 ## Non-Goals
 
 - Any launcher or cook-time code for a trap: personal setup, Beads guards, the PRD rule, a forced `--prompt`, flag
   rewriting, a brownfield config guard. Each is a Trap line.
-- A recipe-owned worker wrapper, completion gate or cooked skill; the README describes one.
+- A completion gate other than `--worker-check`, and a cooked skill; the README describes how to write one.
 - A setting for ralph-tui's `[parallel] worktreeDir`; parallel workers follow the run worktree.
 - Committed spike results and a matrix document; observations go on #53.
 - Writing outside the repository.
