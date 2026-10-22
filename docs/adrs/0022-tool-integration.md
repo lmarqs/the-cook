@@ -27,7 +27,9 @@ Program knowledge can evolve separately from the rules for reviewing and writing
 1. Ingredients carry program-specific knowledge as models of native files and configuration. Cookbooks hold and ship
    those models and recipes; Cook handles the resulting ordered file operations.
 2. Configuring a program does not make Cook its runner. External commands are not batch actions. Recipes remain trusted
-   executable code, whose arbitrary side effects are outside batch guarantees.
+   executable code, whose arbitrary side effects are outside batch guarantees. The rule binds the engine, not what
+   recipes write: a recipe can write a launcher, a wrapper or another script that runs a program, as a file like any
+   other output, which the team reviews, commits and runs without Cook.
 3. Native targets, ordered composition and ownership follow [0007](0007-ownership.md); omitting a model from an
    invocation removes nothing.
 4. Engine package pinning follows [0017](0017-engine-version.md) and is separate from cookbook content: an engine
@@ -41,8 +43,10 @@ Program knowledge can evolve separately from the rules for reviewing and writing
   guarantee compatible versions.
 - **2.** FR-3 limits batches to file operations. Contracts for launching and supervising programs would make a
   configuration engine run them. Native files let teams use their own runners without making Cook part of every run.
-  The trade is that Cook does not police how those programs run, and trusted recipe code can act beyond the declared
-  batch.
+  A script a recipe writes is such a file: Cook writes it through the batch and never runs it, so a cookbook can ship
+  the way a team launches a program, such as `io.github.lmarqs.cookbook:ralph#ralph-tui`'s `.ralph-tui/bin/run`,
+  while the engine stays out of every run. The trade is that Cook does not police how those programs run, and trusted
+  recipe code can act beyond the declared batch.
 - **3.** FR-7 through FR-10 make requested targets and order the basis of composition, so in the acme example one model
   serves both repositories while each recipe's targets decide the result. Recorded ownership decides only what a
   recipe's later versions remove (FR-8). Reconciling earlier output would block requested changes instead (FR-9). The
@@ -92,4 +96,5 @@ Must be maintained:
   instructions replace earlier values, and does cooking one recipe leave unrelated earlier output intact?
 - Review a proposed ingredient: does it describe native files and configuration only, with nothing that launches or
   supervises the program?
+- Review a recipe that writes a launcher: does Cook only write the script, and does the team run it without Cook?
 - Review an engine upgrade against FR-26: does it change the pin without selecting cookbook content?
