@@ -190,7 +190,7 @@ import io.github.lmarqs.cookbook.agents.Agents
 import io.github.lmarqs.cookbook.agents.Claude
 import io.github.lmarqs.cookbook.agents.Codex
 
-@param(value = ['harness'], choices = ['claude', 'codex'], many = true,
+@param(value = ['harness'], choices = ['claude', 'codex'], many = true, sorted = true,
     doc = 'Harnesses to connect to the shared layout')
     String[] harness
 @param(value = ['worktree-root'], default = [], path = true,
@@ -203,15 +203,12 @@ import io.github.lmarqs.cookbook.agents.Codex
     doc = 'An executable, by its path from a worktree root, that the worktree hook runs before removing a worktree')
     String worktreeTeardown
 
-@recipe String self
+@recipe(arguments = true) String cookedWith
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude
 @ingredient(Codex) def codex
 
 def selected = [claude, codex].findAll { it.name in harness }
-def worktreePaths = [root: worktreeRoot, setup: worktreeSetup, teardown: worktreeTeardown].findAll { it.value != null }
-def cookedWith = ([self] + selected.collect { "--harness=${it.name}" } +
-worktreePaths.collect { name, path -> "--worktree-${name}=${path}" }).join(' ')
 agents.seedLayout()
 agents.permit(selected, cookedWith)
 agents.connect(selected)

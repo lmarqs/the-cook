@@ -78,13 +78,12 @@ again with it, such as `--instructions=AGENTS.md`, to state the rule where agent
 ''')
 import io.github.lmarqs.cookbook.git.Git
 
-@param(value = ['instructions'], many = true, default = [], path = true,
+@param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = 'A Markdown file, from the repository root, where the recipe states the worktree rule')
     String[] instructions
 
-@recipe String self
+@recipe(arguments = true) String cookedWith
 @ingredient(Git) def git
 
-List<String> files = (instructions as List<String>).unique(false).sort(false)
-git.instructions(files)
-git.worktrees(([self] + files.collect { "--instructions=${it}" }).join(' '))
+git.instructions(instructions as List<String>)
+git.worktrees(cookedWith)

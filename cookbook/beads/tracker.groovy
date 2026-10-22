@@ -129,20 +129,16 @@ import io.github.lmarqs.cookbook.beads.Beads
 @param(value = ['session-start'], default = [], path = true,
     doc = 'Where to write the script that prints bd prime for a session-start runner, from the repository root')
     String sessionStart
-@param(value = ['instructions'], many = true, default = [], path = true,
+@param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = 'A Markdown file, from the repository root, where the recipe tells agents Beads tracks the work')
     String[] instructions
 
-@recipe String self
+@recipe(arguments = true) String cookedWith
 @ingredient(Beads) def beads
 
 if (sessionStart != null) {
   beads.sessionStart(sessionStart)
 }
 
-List<String> files = (instructions as List<String>).unique(false).sort(false)
-beads.instructions(files)
-
-def arguments = ["--share=${share}"] + (sessionStart != null ? ["--session-start=${sessionStart}"] : []) +
-files.collect { "--instructions=${it}" }
-beads.track(share, ([self] + arguments).join(' '))
+beads.instructions(instructions as List<String>)
+beads.track(share, cookedWith)

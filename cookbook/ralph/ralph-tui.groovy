@@ -171,15 +171,14 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 @param(value = ['worktree-teardown'], default = [], path = true,
     doc = 'An executable, by its path from the repository root, that bin/clean runs in a run worktree before removal')
     String worktreeTeardown
-@param(value = ['instructions'], many = true, default = [], path = true,
+@param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = "A Markdown file, from the repository root, where the recipe gives the launcher's commands")
     String[] instructions
 
-@recipe String self
+@recipe(arguments = true) String cookedWith
 @ingredient(RalphTui) def ralph
 
-List<String> harnesses = (harness as List<String>).unique(false)
-ralph.harnesses(harnesses)
+ralph.harnesses(harness as List<String>)
 
 if (workerSettings != null) {
   ralph.workerSettings(workerSettings)
@@ -197,13 +196,5 @@ if (worktreeTeardown != null) {
   ralph.worktreeTeardown(worktreeTeardown)
 }
 
-List<String> files = (instructions as List<String>).unique(false).sort(false)
-ralph.instructions(files)
-
-def arguments = harnesses.collect { "--harness=${it}" } +
-(workerRole != null ? ["--worker-role=${workerRole}"] : []) +
-(workerSettings != null ? ["--worker-settings=${workerSettings}"] : []) +
-(worktreeSetup != null ? ["--worktree-setup=${worktreeSetup}"] : []) +
-(worktreeTeardown != null ? ["--worktree-teardown=${worktreeTeardown}"] : []) +
-files.collect { "--instructions=${it}" }
-ralph.install(([self] + arguments).join(' '))
+ralph.instructions(instructions as List<String>)
+ralph.install(cookedWith)

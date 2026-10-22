@@ -34,7 +34,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:4.2.0#seed"
-    sha256: "5b78c70a7bc41f7e62a1b46ccc3d85c087a86c0b256ee7b82dab60ae9ce3e54c"
+    sha256: "0689f75758f4eae6716a3e0476f761f288b2c7ddb9911236fc70f74186ffa214"
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
@@ -49,7 +49,7 @@ recipes:
         - ".agents/skills/agents-layout/templates/policy.template.yaml"
   - name: "io.github.lmarqs.cookbook:git#worktrees"
     source: "io.github.lmarqs.cookbook:git:4.2.0#worktrees"
-    sha256: "7f54416335486e268cdb40d66685e0a531bb999851a21c3c48897fec475bc3cb"
+    sha256: "a48d044b0801e6129bb5270999753f887ec1231ea98bbe322e615952139df0e7"
     owns:
       sections:
         - file: ".gitignore"
