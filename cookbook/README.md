@@ -231,6 +231,50 @@ sets it up so each run works unattended in a worktree of its own, `.worktrees/ra
 `ralph/<name>`, and connects to worker limits and worktree setup only where the person names them. To set it up, cook
 `#ralph-tui`, whose help says what it writes and how to launch a run.
 
+## Gating completion
+
+ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere, at
+any exit code, even in a sentence saying it is not done; it never runs the project's checks itself. A team that needs
+the checks to pass first points an agent entry's `command` at a wrapper script of its own. What ralph-tui does to that
+command:
+
+- It runs `<command> --version` first, to detect the agent.
+- The arguments are the entry's `defaultFlags`, then the plugin's own; Codex's end in `-`, with the prompt on stdin, as
+  Claude's prompt is.
+- Output to stderr with `rate limit`, `429`, `too many requests`, `quota exceeded` or `overloaded` marks the iteration
+  rate-limited, at any exit code; with exit 1, 2 or 429, so do `throttl`, `capacity` and `backoff`.
+- A non-zero exit fails the iteration; `[errorHandling] strategy = "retry"`, `maxRetries` and
+  `continueOnNonZeroExit = false` retry it, then skip the task.
+- The environment passes through, except variables matching `*_API_KEY`, `*_SECRET_KEY` and `*_SECRET`.
+- `command` cannot contain `;&|`$()`; put arguments in `defaultFlags`.
+- Parallel workers get only `config.toml` copied into their worktree, and no setup runs there.
+
+A wrapper, in the project's own language:
+
+```
+if the arguments are just --version: run the agent with --version and exit with its code
+base = git rev-parse HEAD                    # ralph-tui commits each task, so each starts from a new base
+run the agent with the arguments, stdin passed on, stdout held in a temporary file
+if the agent exits non-zero: exit with its code
+run the project's checks against base, output to an ignored log file, never stderr
+if the checks fail: print one line to stderr, free of the words above; exit 1
+print the held stdout; exit 0
+```
+
+Wired in `.ralph-tui/config.toml`, with the wrapper committed so every run worktree has it:
+
+```toml
+[[agents]]
+name = "claude"
+plugin = "claude"
+command = "scripts/ralph-worker"
+
+[errorHandling]
+strategy = "retry"
+maxRetries = 2
+continueOnNonZeroExit = false
+```
+
 Recipes
   io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
 
@@ -261,6 +305,8 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-settings=ralph-worker.json
 # Claude workers in run worktrees the launcher sets up and tears down with the team's scripts
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
+# Only JSON PRDs: seeds only their prompt, and the launcher offers only --prd
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=json
 # Also giving agents and people the launcher's commands, in the files they read
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
@@ -268,8 +314,10 @@ sets up and cleans the run's worktree.
 The first `--harness` is the default agent. `--worker-role` and `--worker-settings` reach only the Claude entry, and
 only one of them is given. `--worktree-setup` and `--worktree-teardown` each name a committed executable by its path
 from the repository root, outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown.
-`--instructions` names a Markdown file by its path from the repository root, and repeats for each file; the file must
-exist. What it publishes for people, sessions and other recipes:
+`--tracker` is `beads`, run with `--epic`, or `json`, run with `--prd`, and repeats; both by default. It narrows the
+seeded prompts, the configuration's `tracker` line and the run flag the launcher offers. `--instructions` names a
+Markdown file by its path from the repository root, and repeats for each file; the file must exist. What it publishes
+for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -302,8 +350,8 @@ exist. What it publishes for people, sessions and other recipes:
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"`, the first harness as `defaultAgent`, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness | Always, when absent | seed |
-| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` with the `beads` tracker, the first harness as `defaultAgent`, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness | Always, when absent | seed |
+| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
 | `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/.worktrees/ralph/` | Always | owned |
 
@@ -359,7 +407,8 @@ fails, removing nothing. It removes the worktrees ralph-tui made for the run's p
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as `#
 io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup`. Cooking
 with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrites the launcher, and cooking without a
-file's `--instructions` removes its section. The seeds are never rewritten: to take other harnesses, a worker role or a
+file's `--instructions` removes its section. The seeds are never rewritten or removed, so a narrower `--tracker`
+leaves a prompt seeded earlier in place: to take other harnesses, a worker role or a
 newer version's configuration or prompts, edit them or delete them and cook again. A newer version rewrites the
 launcher and the sections.
 
@@ -375,6 +424,20 @@ launcher and the sections.
   started with `--dangerously-bypass-hook-trust`.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
 - ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
+- ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
+  under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
+- ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere,
+  even in a sentence saying it is not done, whatever the checks say. The artifact's README, under Gating completion,
+  says how a team wraps the agent to gate it on the checks.
+- ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
+  agent: a worker's checks that print such words to stderr look rate-limited.
+- ralph-tui 0.12 copies only `config.toml` into a parallel worker's worktree and runs no setup there.
+- ralph-tui commits with `git add -A`, so whatever a worker changes in the run worktree, `.beads/` included, rides in
+  the run branch.
+- A tracked PRD run with `--parallel` leaves its completion marks uncommitted: ralph-tui 0.12 writes them after merging
+  the workers' commits, and commits nothing after that.
+- An uncommitted or ignored `.ralph-tui/` never reaches the run worktree, so ralph-tui there runs without the team's
+  configuration: `bin/run` refuses while `.ralph-tui` has uncommitted changes, but cannot see ignored ones.
 
 Parameters
   --harness=<String[]>
@@ -387,6 +450,8 @@ Parameters
       An executable, by its path from the repository root, that bin/run runs in each run worktree it creates; optional
   --worktree-teardown=<String>
       An executable, by its path from the repository root, that bin/clean runs in a run worktree before removal; optional
+  --tracker=<String[]>
+      Trackers whose prompts are seeded and whose run flag the launcher offers: beads (--epic), json (--prd); default: beads, json; choices: beads, json; repeatable
   --instructions=<String[]>
       A Markdown file, from the repository root, where the recipe gives the launcher's commands; optional; repeatable
 

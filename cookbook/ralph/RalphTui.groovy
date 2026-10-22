@@ -78,6 +78,9 @@ class RalphTui {
   /** The harnesses ralph-tui drives, by their ralph-tui agent plugin names. */
   static final List<String> HARNESSES = ['claude', 'codex']
 
+  /** The trackers a run takes tasks from: `beads` with `--epic`, `json` with `--prd`. */
+  static final List<String> TRACKERS = ['beads', 'json']
+
   /** Where `io.github.lmarqs.cookbook:agents#connect` renders each role's Claude settings, as `<role>.json`. */
   static final String ROLES = '.agents/adapters/claude/roles'
 
@@ -91,6 +94,7 @@ class RalphTui {
   ]
 
   private List<String> harnesses = []
+  private List<String> trackers = TRACKERS
   private String workerRole
   private String workerSettings
   private String worktreeSetup
@@ -114,6 +118,22 @@ class RalphTui {
     }
 
     harnesses = names.unique(false)
+  }
+
+  /**
+   * Narrows what is seeded and offered to the trackers in `names`, each `beads` or `json`: their prompts, the
+   * configuration's `tracker = "beads"`, and the run flags `bin/run`'s usage line and the instructions section name.
+   * Both by default. A run still picks its tracker with `--epic` or `--prd`.
+   */
+  void trackers(List<String> names) {
+    def unknown = names - TRACKERS
+
+    if (unknown || !names) {
+      throw new IllegalArgumentException("--tracker=${unknown ? unknown.first() : ''} is not one of: " +
+      TRACKERS.join(', '))
+    }
+
+    trackers = TRACKERS.findAll { it in names }
   }
 
   /**
@@ -213,9 +233,7 @@ class RalphTui {
       return null
     }
 
-    def lines = [
-      'configVersion = "2.1"',
-      'tracker = "beads"',
+    def lines = ['configVersion = "2.1"',] + ('beads' in trackers ? ['tracker = "beads"'] : []) + [
       "defaultAgent = \"${harnesses.first()}\"",
       '# ralph-tui stops a run after this many iterations, each one agent run on one task; 0 means no limit.',
       'maxIterations = 10',
@@ -248,7 +266,7 @@ class RalphTui {
    */
   @Seed(path = '.ralph-tui/templates/beads.hbs')
   String beadsPrompt() {
-    harnesses ? resource('templates/beads.hbs') : null
+    harnesses && 'beads' in trackers ? resource('templates/beads.hbs') : null
   }
 
   /**
@@ -257,7 +275,7 @@ class RalphTui {
    */
   @Seed(path = '.ralph-tui/templates/json.hbs')
   String jsonPrompt() {
-    harnesses ? resource('templates/json.hbs') : null
+    harnesses && 'json' in trackers ? resource('templates/json.hbs') : null
   }
 
   /**
@@ -270,7 +288,7 @@ class RalphTui {
       return null
     }
 
-    def script = resource('bin/run.sh')
+    def script = resource('bin/run.sh').replace('(--epic <id> | --prd <file>)', runFlags())
     worktreeSetup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(worktreeSetup)}\n") : script
   }
 
@@ -318,13 +336,19 @@ class RalphTui {
       return null
     }
 
+    def run = trackers == TRACKERS ? '`.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`,' :
+        "`.ralph-tui/bin/run <name> ${runFlags()}`"
     def lines = [
       "<!-- ${cookedWith} -->",
-      '- Loop runs: `.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`, runs ralph-tui in',
+      "- Loop runs: ${run} runs ralph-tui in",
       '  `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the',
       '  branch is delivered.',
     ]*.toString()
     instructions.collectEntries { [(it): lines] }
+  }
+
+  private String runFlags() {
+    trackers == TRACKERS ? '(--epic <id> | --prd <file>)' : trackers == ['beads'] ? '--epic <id>' : '--prd <file>'
   }
 
   private List<String> flags(String harness) {

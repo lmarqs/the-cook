@@ -322,11 +322,35 @@ roles:
     assert cook(kitchen, RALPH, arguments).actions == [:]
   }
 
+  @Test void aJsonOnlyCookSeedsOnlyTheJsonPromptAndOffersOnlyPrd() {
+    def kitchen = repository()
+    write(kitchen, 'AGENTS.md', '# Agents\n')
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['json'], instructions: ['AGENTS.md']]).commit()
+    commitAll(kitchen)
+
+    assert !new File(kitchen, '.ralph-tui/templates/beads.hbs').exists()
+    assert new File(kitchen, '.ralph-tui/templates/json.hbs').exists()
+    assert !new File(kitchen, '.ralph-tui/config.toml').text.contains('tracker')
+    assert new File(kitchen, 'AGENTS.md').text.contains('`.ralph-tui/bin/run <name> --prd <file>` runs ralph-tui in')
+    def usage = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--headless')
+    assert usage.output.startsWith('usage: .ralph-tui/bin/run <name> --prd <file> [--base <ref>]')
+    write(kitchen, 'tasks/prd.json', '{}\n')
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--prd', 'tasks/prd.json').exit == 0
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
     assert texts.params*.names ==
-    [['harness'], ['worker-role'], ['worker-settings'], ['worktree-setup'], ['worktree-teardown'], ['instructions']]
+    [
+      ['harness'],
+      ['worker-role'],
+      ['worker-settings'],
+      ['worktree-setup'],
+      ['worktree-teardown'],
+      ['tracker'],
+      ['instructions']
+    ]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
     assert texts.help.readLines().findAll { it.startsWith('## ') } == [
       '## API',

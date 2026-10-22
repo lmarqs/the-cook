@@ -17,6 +17,8 @@ sets up and cleans the run's worktree.
 # Claude workers in run worktrees the launcher sets up and tears down with the team's scripts
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup \
 --worktree-teardown=.worktrees/teardown
+# Only JSON PRDs: seeds only their prompt, and the launcher offers only --prd
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=json
 # Also giving agents and people the launcher's commands, in the files they read
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
@@ -24,8 +26,10 @@ sets up and cleans the run's worktree.
 The first `--harness` is the default agent. `--worker-role` and `--worker-settings` reach only the Claude entry, and
 only one of them is given. `--worktree-setup` and `--worktree-teardown` each name a committed executable by its path
 from the repository root, outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown.
-`--instructions` names a Markdown file by its path from the repository root, and repeats for each file; the file must
-exist. What it publishes for people, sessions and other recipes:
+`--tracker` is `beads`, run with `--epic`, or `json`, run with `--prd`, and repeats; both by default. It narrows the
+seeded prompts, the configuration's `tracker` line and the run flag the launcher offers. `--instructions` names a
+Markdown file by its path from the repository root, and repeats for each file; the file must exist. What it publishes
+for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -61,11 +65,12 @@ with `--prd` |
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"`, the first harness as `defaultAgent`, \
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` with the `beads` tracker, \
+the first harness as `defaultAgent`, \
 `maxIterations = 10`, `autoCommit = true`, \
 `[errorHandling] strategy = "skip"`, `[parallel] directMerge = true`, \
 and one `[[agents]]` entry per harness | Always, when absent | seed |
-| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts: stay in this worktree, \
+| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, \
 leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and \
 `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
@@ -126,7 +131,8 @@ fails, removing nothing. It removes the worktrees ralph-tui made for the run's p
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as `#
 io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup`. Cooking
 with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrites the launcher, and cooking without a
-file's `--instructions` removes its section. The seeds are never rewritten: to take other harnesses, a worker role or a
+file's `--instructions` removes its section. The seeds are never rewritten or removed, so a narrower `--tracker`
+leaves a prompt seeded earlier in place: to take other harnesses, a worker role or a
 newer version's configuration or prompts, edit them or delete them and cook again. A newer version rewrites the
 launcher and the sections.
 
@@ -142,6 +148,20 @@ launcher and the sections.
   started with `--dangerously-bypass-hook-trust`.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
 - ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
+- ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
+  under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
+- ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere,
+  even in a sentence saying it is not done, whatever the checks say. The artifact's README, under Gating completion,
+  says how a team wraps the agent to gate it on the checks.
+- ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
+  agent: a worker's checks that print such words to stderr look rate-limited.
+- ralph-tui 0.12 copies only `config.toml` into a parallel worker's worktree and runs no setup there.
+- ralph-tui commits with `git add -A`, so whatever a worker changes in the run worktree, `.beads/` included, rides in
+  the run branch.
+- A tracked PRD run with `--parallel` leaves its completion marks uncommitted: ralph-tui 0.12 writes them after merging
+  the workers' commits, and commits nothing after that.
+- An uncommitted or ignored `.ralph-tui/` never reaches the run worktree, so ralph-tui there runs without the team's
+  configuration: `bin/run` refuses while `.ralph-tui` has uncommitted changes, but cannot see ignored ones.
 ''')
 @yield('''
 Install ralph-tui and the runtimes it needs with `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`: npm needs node to
@@ -170,6 +190,9 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 @param(value = ['worktree-teardown'], default = [], path = true,
     doc = 'An executable, by its path from the repository root, that bin/clean runs in a run worktree before removal')
     String worktreeTeardown
+@param(value = ['tracker'], choices = ['beads', 'json'], many = true, sorted = true, default = ['beads', 'json'],
+    doc = 'Trackers whose prompts are seeded and whose run flag the launcher offers: beads (--epic), json (--prd)')
+    String[] tracker
 @param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = "A Markdown file, from the repository root, where the recipe gives the launcher's commands")
     String[] instructions
@@ -178,6 +201,7 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 @ingredient(RalphTui) def ralph
 
 ralph.harnesses(harness as List<String>)
+ralph.trackers(tracker as List<String>)
 
 if (workerSettings != null) {
   ralph.workerSettings(workerSettings)
