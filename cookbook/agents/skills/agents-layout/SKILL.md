@@ -89,6 +89,10 @@ AGENTS.md                         instructions for every agent; each harness rea
 
 Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it, this skill included, and `#connect`
 renders the policy and makes the links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
+`./cook --help` lists Cook's options and commands, and
+`./cook help io.github.lmarqs.cookbook:agents:<version>#<recipe>` prints a recipe's help with each parameter, its
+values and default, without running it. Read it before cooking with a parameter this skill does not show, such as
+`#connect`'s `--worktree-*`.
 
 The layout cannot decide how people work; anyone can override it on their own machine. It guides: shared changes
 reach every agent when they go where every agent reads them, and personal ones stay out of the team's files.

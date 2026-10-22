@@ -28,6 +28,9 @@ After editing `permission/policy.yaml`, cook the adapters again with every harne
 ./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
 ```
 
+`./cook help io.github.lmarqs.cookbook:agents:<version>#connect` lists its other parameters, and `./cook --help`
+Cook's own options.
+
 ## Ways of working
 
 | Axis | Examples | Chosen | Lives in |
