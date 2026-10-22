@@ -80,12 +80,80 @@ recipes:
     ].each { assert text.contains(it) }
   }
 
+  @Test void statesTheRuleInEachInstructionsFileWhereverTheTeamMovesItAndRemovesItWhenNoLongerNamed() {
+    def kitchen = kitchen()
+    def agents = new File(kitchen, 'AGENTS.md')
+    agents.text = '# Agents\n'
+    def readme = new File(kitchen, 'README.md')
+    readme.text = '# Project\n'
+    def both = [instructions: ['README.md', 'AGENTS.md']]
+    def line = 'io.github.lmarqs.cookbook:git#worktrees --instructions=AGENTS.md --instructions=README.md'
+    def section = { String opening ->
+      '<!-- cook:begin io.github.lmarqs.cookbook:git#worktrees/worktrees -->\n' +
+          "<!-- ${opening} -->\n" +
+          '- Worktrees: branch `<branch>` is checked out at `.worktrees/<branch>`; ' +
+          '`.worktrees/README.md` says how to\n' +
+          '  create one ready to run and remove it.\n' +
+          '<!-- cook:end io.github.lmarqs.cookbook:git#worktrees/worktrees -->\n'
+    }
+
+    cook(kitchen, WORKTREES, both).commit()
+
+    assert agents.text == '# Agents\n' + section(line)
+    assert readme.text == '# Project\n' + section(line)
+    assert new File(kitchen, '.gitignore').text.readLines()[1] == "# ${line}"
+    assert new File(kitchen, 'cook.lock').text.contains('''\
+        - file: "AGENTS.md"
+          id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
+        - file: "README.md"
+          id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
+''')
+    assert cook(kitchen, WORKTREES, both).actions == [:]
+
+    agents.text = section(line) + '# Agents\n'
+    assert cook(kitchen, WORKTREES, both).actions == [:]
+
+    cook(kitchen, WORKTREES, [instructions: ['AGENTS.md']]).commit()
+
+    assert agents.text == section('io.github.lmarqs.cookbook:git#worktrees --instructions=AGENTS.md') + '# Agents\n'
+    assert readme.text == '# Project\n'
+  }
+
+  @Test void refusesAnInstructionsFileOutsideTheRepositoryOrMissing() {
+    def kitchen = kitchen()
+    def outside = { String path ->
+      [
+        "${WORKTREES}: --instructions=${path} is outside the repository",
+        '  a recipe reads and writes only inside the repository',
+        '  name the file by its path from the repository root',
+      ]*.toString()
+    }
+    [
+      'AGENTS.md': [
+        "${WORKTREES}: AGENTS.md section io.github.lmarqs.cookbook:git#worktrees/worktrees",
+        '  AGENTS.md is missing',
+        '    the section goes into a file the team keeps, and the recipe never creates it',
+        '    create the file, or cook the recipe that writes it earlier in the same invocation',
+      ]*.toString(),
+      '/tmp/AGENTS.md': outside('/tmp/AGENTS.md'),
+      'docs/../../AGENTS.md': outside('docs/../../AGENTS.md'),
+      ' ': [
+        "${WORKTREES}: --instructions needs a path",
+        '  name the file by its path from the repository root',
+      ]*.toString(),
+    ].each { path, lines ->
+      def error = shouldFail(IllegalArgumentException) { cook(kitchen, WORKTREES, [instructions: [path]]) }
+      assert error.message.readLines() == lines
+    }
+    assert files(kitchen) == []
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(COOKBOOK, 'git/worktrees.groovy').text, 'worktrees.groovy')
 
-    assert texts.params == []
+    assert texts.params*.names == [['instructions']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.git.Git']
-    assert texts.help.readLines().findAll { it.startsWith('#') } ==
+    assert texts.help.readLines().findAll { it.startsWith('## ') } ==
     ['## API', '## Consumes', '## Produces', '## Connections', '## Re-cooking', '## Traps']
     assert texts.help.contains('Never touches')
     assert texts.yieldText
@@ -116,6 +184,17 @@ git.ignore('/build/', '/build/')
     def kitchen = folder.newFolder('kitchen')
     publishDirectory(kitchen, 'git')
     kitchen
+  }
+
+  private static Throwable shouldFail(Class<? extends Throwable> type, Closure action) {
+    try {
+      action()
+    } catch (Throwable error) {
+      assert type.isInstance(error)
+      return error
+    }
+
+    throw new AssertionError("Expected ${type.simpleName}")
   }
 
   // The kitchen's files, leaving out the published repository and Git's own directory.

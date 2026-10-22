@@ -6,9 +6,13 @@ worktree goes and how a new one is made runnable, so people, agents and loop run
 
 ```sh
 ./cook io.github.lmarqs.cookbook:git:<version>#worktrees
+# Also stating the rule where agents and people read
+./cook io.github.lmarqs.cookbook:git:<version>#worktrees --instructions=AGENTS.md --instructions=README.md
 ```
 
-No parameters. What it publishes for people and other recipes:
+`--instructions` names a Markdown file by its path from the repository root, and repeats for each file. The file must
+exist, written by the team or by a recipe cooked earlier in the same invocation. What it publishes for people and
+other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -21,7 +25,8 @@ the setup script and the traps, for people and agents to read |
 
 ## Consumes
 
-Nothing: it reads no file in the draft and needs no tool to cook. People and runners use `git worktree` at run time.
+Only the files `--instructions` names, which must exist; it needs no tool to cook. People and runners use
+`git worktree` at run time.
 
 ## Produces
 
@@ -30,8 +35,11 @@ Nothing: it reads no file in the draft and needs no tool to cook. People and run
 | `.gitignore` | The section `worktrees`: a comment naming the recipe, \
 then `/.worktrees/*` and `!/.worktrees/README.md` | Always | owned |
 | `.worktrees/README.md` | The rule, the commands, `.worktrees/setup` and the traps | Always | seed |
+| Each `--instructions` file | The section `worktrees`: the argument line as an HTML comment, then a list item \
+stating the rule and pointing at `.worktrees/README.md` | `--instructions` | owned |
 
-Never touches: `.worktrees/setup`, the worktrees and branches themselves, the rest of `.gitignore`, `AGENTS.md`.
+Never touches: `.worktrees/setup`, the worktrees and branches themselves, the rest of `.gitignore` and of each
+`--instructions` file.
 
 ## Connections
 
@@ -39,14 +47,17 @@ Never touches: `.worktrees/setup`, the worktrees and branches themselves, the re
 | --- | --- |
 | A loop runner's worktrees | The runner, by following the rule |
 | How a new worktree is set up | The team, in `.worktrees/setup`, which this recipe never writes |
-| The Worktrees line of the Quick reference in `AGENTS.md` | The team, pointing at `.worktrees/README.md` |
+| The rule in the files agents and people read | The person, by `--instructions`; the section is appended at the \
+file's end, and stays where the team moves it |
 | Which branch a worktree takes, and how it is delivered | The session that creates it |
 
 ## Re-cooking
 
-Cook it again with no arguments. An upgrade updates the `worktrees` section; the README is never rewritten, so delete
-it and cook again to take a newer one. No part is conditional, so `--check` reports drift only when the section was
-edited by hand or the README deleted.
+Repeat the arguments on the opening line of the `worktrees` section in `.gitignore`, such as
+`# io.github.lmarqs.cookbook:git#worktrees --instructions=AGENTS.md`. An upgrade updates the `worktrees` sections; the
+README is never rewritten, so delete it and cook again to take a newer one. Cooking without a file's `--instructions`
+removes its section. What it writes follows from its arguments alone, so `--check` reports drift only when a section
+was edited by hand or the README deleted.
 
 ## Traps
 
@@ -56,11 +67,18 @@ edited by hand or the README deleted.
 ''')
 @yield('''
 Commit `.gitignore` and `.worktrees/README.md`. When a new worktree needs more than a checkout to run, write
-`.worktrees/setup`, make it executable and commit it with `git add -f .worktrees/setup`. With an `AGENTS.md`, point
-its Worktrees line at `.worktrees/README.md`.
+`.worktrees/setup`, make it executable and commit it with `git add -f .worktrees/setup`. Cooked without
+`--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to state the rule where agents and people
+read.
 ''')
 import io.github.lmarqs.cookbook.git.Git
 
+@param(value = ['instructions'], many = true, default = [], path = true,
+    doc = 'A Markdown file, from the repository root, where the recipe states the worktree rule; repeatable')
+    String[] instructions
+
 @ingredient(Git) def git
 
-git.worktrees('io.github.lmarqs.cookbook:git#worktrees')
+List<String> files = (instructions as List<String>).unique(false).sort(false)
+git.instructions(files)
+git.worktrees((['io.github.lmarqs.cookbook:git#worktrees'] + files.collect { "--instructions=${it}" }).join(' '))

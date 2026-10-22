@@ -7,7 +7,8 @@ package io.github.lmarqs.cookbook.git
  * ## Writes for
  *
  * Git ignore syntax in `.gitignore`, with patterns relative to this instance's directory, and a Markdown
- * `.worktrees/README.md` for the worktrees `git worktree` makes at `.worktrees/<branch>`.
+ * `.worktrees/README.md` for the worktrees `git worktree` makes at `.worktrees/<branch>`. A Markdown section stating
+ * the worktree rule in each instruction file the recipe names, such as `AGENTS.md`.
  *
  * ## Instances
  *
@@ -22,7 +23,8 @@ package io.github.lmarqs.cookbook.git
  *
  * @ingredient(Git) def git
  *
- * git.worktrees('io.github.lmarqs.cookbook:git#worktrees')
+ * git.instructions(['AGENTS.md'])
+ * git.worktrees('io.github.lmarqs.cookbook:git#worktrees --instructions=AGENTS.md')
  * git.ignore('build/', '*.log')
  * ```
  *
@@ -38,6 +40,7 @@ class Git {
   static final String WORKTREES = '.worktrees'
 
   private List<String> patterns = []
+  private List<String> instructions = []
   private String worktreesCookedWith
   private String ignoreCookedWith
 
@@ -62,6 +65,15 @@ class Git {
     }
 
     worktreesCookedWith = cookedWith
+  }
+
+  /**
+   * Has the worktree rule stated in each Markdown file in `paths`, by its path from the repository root, in a
+   * `worktrees` section. A file the draft lacks is refused when the sections are written: the rule goes into a file the
+   * team keeps.
+   */
+  void instructions(List<String> paths) {
+    instructions = paths.unique(false)
   }
 
   /** Names the recipe and its arguments, which the `ignore` section opens with as a comment. */
@@ -93,6 +105,24 @@ class Git {
     }
 
     ["# ${worktreesCookedWith}".toString(), "/${WORKTREES}/*".toString(), "!/${WORKTREES}/README.md".toString()]
+  }
+
+  /**
+   * The `worktrees` section of each file `instructions` named, when the worktree root is requested: the recipe and its
+   * arguments as an HTML comment, then a list item stating the rule and pointing at `.worktrees/README.md`.
+   */
+  @Sections(path = '.', id = 'worktrees', comment = '<!--', missing = 'fail')
+  Map<String, List<String>> instructionsSections() {
+    if (!worktreesCookedWith || !instructions) {
+      return null
+    }
+
+    def lines = [
+      "<!-- ${worktreesCookedWith} -->",
+      "- Worktrees: branch `<branch>` is checked out at `${WORKTREES}/<branch>`; `${WORKTREES}/README.md` says how to",
+      '  create one ready to run and remove it.',
+    ]*.toString()
+    instructions.collectEntries { [(it): lines] }
   }
 
   /**
