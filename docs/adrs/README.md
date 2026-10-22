@@ -98,6 +98,10 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
 ## Writing rules
 
 - Present tense, no hedges.
+- An ADR names interfaces, not internals. Interfaces are what a user, a recipe or another module depends on:
+  commands, flags, published artifacts and their names, file formats, and the paths of files Cook reads or writes.
+  Internals are how the repository builds those interfaces: class names, build scripts, source paths. An internal
+  appears only as a link that gives a fact its source, never as part of the decision.
 - Prefer generic mechanism names: the wrapper, the batch, the lock, the destination, an ingredient,
   a recipe. Use concrete command, flag, setting, environment-variable, exit-code or file references when necessary
   to explain a decision, its boundary or its evidence, such as `--batch-approve` or `cook.lock` at the repository root.
