@@ -1,5 +1,8 @@
 # the-cook
 
+[![release](https://github.com/lmarqs/the-cook/actions/workflows/release.yml/badge.svg)](https://github.com/lmarqs/the-cook/actions/workflows/release.yml)
+[![version](https://img.shields.io/github/v/release/lmarqs/the-cook)](https://github.com/lmarqs/the-cook/releases/latest)
+
 <p align="center"><img src="docs/assets/the-cook.png" alt="the-cook: pixel-art portrait of a man in a black pork-pie hat lowering dark sunglasses" width="640"></p>
 
 **The cook: cook the best product without any source of contamination.**
