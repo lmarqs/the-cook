@@ -21,6 +21,8 @@ Program knowledge can evolve separately from the rules for reviewing and writing
   ([0010](0010-dependence-on-the-binary.md)).
 - Worked example: `acme/api` and `acme/infra` use the same agent but choose different project instructions. They can
   reuse its configuration model while supplying different choices through recipes.
+- Worked example: acme's cookbook has a recipe that writes a script starting acme's loop runner in a worktree. An acme
+  developer reviews the script in the diff, commits it and runs it from a terminal; Cook is not running then.
 
 ## Decision
 
@@ -43,10 +45,9 @@ Program knowledge can evolve separately from the rules for reviewing and writing
   guarantee compatible versions.
 - **2.** FR-3 limits batches to file operations. Contracts for launching and supervising programs would make a
   configuration engine run them. Native files let teams use their own runners without making Cook part of every run.
-  A script a recipe writes is such a file: Cook writes it through the batch and never runs it, so a cookbook can ship
-  the way a team launches a program, such as `io.github.lmarqs.cookbook:ralph#ralph-tui`'s `.ralph-tui/bin/run`,
-  while the engine stays out of every run. The trade is that Cook does not police how those programs run, and trusted
-  recipe code can act beyond the declared batch.
+  A script a recipe writes is such a file: in acme's loop-runner example, Cook writes it through the batch and never
+  runs it, so a cookbook ships how a team launches a program while the engine stays out of every run. The trade is
+  that Cook does not police how those programs run, and trusted recipe code can act beyond the declared batch.
 - **3.** FR-7 through FR-10 make requested targets and order the basis of composition, so in the acme example one model
   serves both repositories while each recipe's targets decide the result. Recorded ownership decides only what a
   recipe's later versions remove (FR-8). Reconciling earlier output would block requested changes instead (FR-9). The
