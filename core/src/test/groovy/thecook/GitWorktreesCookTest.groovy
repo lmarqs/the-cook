@@ -73,6 +73,7 @@ recipes:
       '`.worktrees/<branch>`',
       'git worktree add .worktrees/<branch> -b <branch>',
       'git worktree remove .worktrees/<branch>',
+      'git branch -d <branch>',
       'git worktree prune',
       '`.worktrees/setup`',
       'installs dependencies',
