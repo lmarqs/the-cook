@@ -65,6 +65,11 @@ refresh() {
   fi
 }
 
+# The file marking the worktree $1 as one this hook created, in the worktree's own Git directory, so it goes with it.
+marker() {
+  printf '%s/cook-worktree\n' "$(git -C "$1" rev-parse --absolute-git-dir)"
+}
+
 # Whether every patch on the branch $1 is on the commit $2, matched by patch, so a rebased or cherry-picked commit
 # counts.
 landed() {
@@ -87,6 +92,7 @@ case ${1:-} in
     worktree=$main/$root/$branch
     if git -C "$main" worktree list --porcelain | grep -qxF "worktree $worktree"; then
       if [ -d "$worktree" ]; then
+        [ -e "$(marker "$worktree")" ] || fail "$worktree is a worktree this hook did not create" 'name another'
         printf 'worktree: reusing %s\n' "$worktree" >&2
         printf '%s\n' "$worktree"
         exit 0
@@ -111,6 +117,7 @@ case ${1:-} in
       git -C "$main" worktree add --no-track -b "$branch" "$worktree" "${start:-HEAD}" >&2
       created=true
     fi
+    : >"$(marker "$worktree")"
     if [ -n "$setup" ] && ! (run_script "$worktree" "$setup"); then
       git -C "$main" worktree remove --force "$worktree" >&2
       if [ "$created" = true ]; then git -C "$main" branch -D "$branch" >&2; fi
@@ -128,6 +135,7 @@ case ${1:-} in
       *) branch='' ;;
     esac
     if [ -d "$worktree" ]; then
+      [ -e "$(marker "$worktree")" ] || fail "$worktree is a worktree this hook did not create" 'it is kept'
       if [ -n "$teardown" ]; then run_script "$worktree" "$teardown"; fi
       git -C "$main" worktree remove --force "$worktree" >&2
     else

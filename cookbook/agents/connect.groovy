@@ -149,22 +149,24 @@ harnesses add to the session. It prints nothing when the directory is missing or
 always exits 0. Name a script with a number first, such as `20-<tool>.sh`, to place it in the order.
 
 `.agents/hooks/worktree create` reads `name` from its input; the branch is `<branch-prefix><name>`, and its worktree
-`<root>/<branch>`, under the main checkout, the first entry of `git worktree list`. When that worktree exists, the hook
-prints its path and does nothing else, as Claude Code does when a name is used again; a worktree whose directory was
-deleted is pruned and added again. An existing branch is checked out as it is. A new branch starts, without tracking
-anything, at the remote's default branch under `fresh`, after fetching as `--worktree-fetch` says, and at the `HEAD` of
-the checkout named by the input's `cwd` under `head`. With no remote, or a remote whose default branch is unknown, it
-starts at the main checkout's `HEAD`, and the hook says so on standard error. With `--worktree-setup`, the hook then
-runs that executable from the worktree's root, with its output on standard error. If the executable is missing, not
-executable or fails, the hook removes the worktree, and the branch if it made it, and exits 1, so Claude Code creates
-nothing. Otherwise it prints the worktree's path last.
+`<root>/<branch>`, under the main checkout, the first entry of `git worktree list`. When the hook created that worktree,
+it prints its path and does nothing else, as Claude Code does when a name is used again; a worktree whose directory was
+deleted is pruned and added again. It marks each worktree it creates with a `cook-worktree` file in the worktree's Git
+directory, and exits 1 for a worktree at that path without one. An existing branch is checked out as it is. A new branch
+starts, without tracking anything, at the remote's default branch under `fresh`, after fetching as `--worktree-fetch`
+says, and at the `HEAD` of the checkout named by the input's `cwd` under `head`. With no remote, or a remote whose
+default branch is unknown, it starts at the main checkout's `HEAD`, and the hook says so on standard error. With
+`--worktree-setup`, the hook then runs that executable from the worktree's root, with its output on standard error. If
+the executable is missing, not executable or fails, the hook removes the worktree, and the branch if it made it, and
+exits 1, so Claude Code creates nothing. Otherwise it prints the worktree's path last.
 
-`.agents/hooks/worktree remove` reads `worktree_path`. With `--worktree-teardown`, it runs that executable from the
-worktree's root; if the executable is missing, not executable or fails, the hook exits 1 and keeps the worktree. It
-then removes the worktree and the directories under the root it leaves empty. It deletes the branch the worktree's path
-names, whichever branch the worktree had checked out, once `git cherry` finds every patch on it on the main checkout's
-`HEAD` or, fetched as `--worktree-fetch` says only when the branch is not on `HEAD`, on the remote's default branch,
-so a branch merged, rebased or cherry-picked there counts; otherwise it keeps the branch and says so on standard error.
+`.agents/hooks/worktree remove` reads `worktree_path`, and exits 1, keeping the worktree, when the hook did not create
+it. With `--worktree-teardown`, it runs that executable from the worktree's root; if the executable is missing, not
+executable or fails, the hook exits 1 and keeps the worktree. It then removes the worktree and the directories under the
+root it leaves empty. It deletes the branch the worktree's path names, whichever branch the worktree had checked out,
+once `git cherry` finds every patch on it on the main checkout's `HEAD` or, fetched as `--worktree-fetch` says only when
+the branch is not on `HEAD`, on the remote's default branch, so a branch merged, rebased or cherry-picked there counts;
+otherwise it keeps the branch and says so on standard error.
 
 A setup or teardown committed on the main checkout's `HEAD` but missing from the worktree is skipped with a line on
 standard error: the branch predates it. One missing from the main checkout's `HEAD` too still fails.
@@ -200,6 +202,9 @@ change once the policy gains roles or command rules, until the recipe is cooked 
 - Claude Code 2.1.308's `ExitWorktree` tool refuses `remove` for a worktree the hook created, even a clean one,
   saying it could not verify the worktree's state, until it is given `discard_changes: true` (tested).
   `claude --worktree -p` keeps the worktree on exit.
+- The hook neither reuses nor removes a worktree made another way, such as with `git worktree add` or by a ralph-tui
+  run under `<root>/ralph/`: a Claude Code worktree named after one fails to start. Remove such a worktree with
+  `git worktree remove`.
 - A reused worktree keeps its old tip, and its setup does not run again; Claude Code's own `fresh` reuse resets a
   clean worktree with no commits to the default branch instead.
 - A fetch has no time limit: a slow remote delays creating a worktree, and removing one whose branch is not on the

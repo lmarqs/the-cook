@@ -278,6 +278,28 @@ class AgentsWorktreeCookTest {
     assert !new File(kitchen, '.worktrees/feature').exists()
   }
 
+  @Test void leavesAWorktreeItDidNotCreateWhereverItIs() {
+    def kitchen = repository(NAMED) {
+      executable(it, '.worktrees/setup', '#!/bin/sh\n')
+      executable(it, '.worktrees/teardown', '#!/bin/sh\ntouch torn-down\n')
+    }
+    def run = new File(kitchen, '.worktrees/ralph/run')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph/run', run.path)
+    new File(run, 'work.txt').text = 'uncommitted\n'
+
+    def created = hook(kitchen, 'create', [name: 'ralph/run'])
+    def removed = hook(kitchen, 'remove', [worktree_path: run.canonicalPath])
+
+    assert created.exit == 1
+    assert created.output == ''
+    assert created.error.contains("worktree: ${run.canonicalPath} is a worktree this hook did not create\n")
+    assert removed.exit == 1
+    assert removed.error.contains("worktree: ${run.canonicalPath} is a worktree this hook did not create\n")
+    assert new File(run, 'work.txt').text == 'uncommitted\n'
+    assert !new File(run, 'torn-down').exists()
+    assert git(kitchen, 'show-ref', '--verify', 'refs/heads/ralph/run')
+  }
+
   @Test void removeFetchesOnlyWhenTheBranchHasNotLandedOnHead() {
     def kitchen = repository([harness: ['claude'], 'worktree-fetch': ['always']])
     remote(kitchen, 'origin')
