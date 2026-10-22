@@ -220,8 +220,10 @@ class AgentsWorktreeCookTest {
     def upstream = remote(always, 'upstream')
     assert hook(always, 'create', [name: 'one']).exit == 0
     def latest = push(upstream, 'latest')
+    git(new File(folder.root, "${upstream.name}-teammate"), 'push', '-q', 'origin', 'HEAD:other')
     assert hook(always, 'create', [name: 'two']).exit == 0
     assert git(always, 'rev-parse', 'two') == latest
+    assert launch(always, null, 'git', 'rev-parse', '--verify', '--quiet', 'upstream/other').exit == 1
 
     def never = repository([harness: ['claude'], 'worktree-fetch': ['never']], 'never')
     def unfetched = remote(never, 'origin')
@@ -236,6 +238,21 @@ class AgentsWorktreeCookTest {
     assert created.exit == 0
     assert created.error.contains("worktree: no default branch of origin is known, so local starts at HEAD\n")
     assert git(alone, 'rev-parse', 'local') == git(alone, 'rev-parse', 'HEAD')
+  }
+
+  @Test void givesUpOnAFetchThatStallsAfterTenSeconds() {
+    def kitchen = repository([harness: ['claude'], 'worktree-fetch': ['always']])
+    executable(folder.root, 'stalled-ssh', '#!/bin/sh\nsleep 60\n')
+    git(kitchen, 'config', 'core.sshCommand', new File(folder.root, 'stalled-ssh').path)
+    git(kitchen, 'remote', 'add', 'origin', 'ssh://example.invalid/stalled.git')
+    def started = System.nanoTime()
+
+    def created = hook(kitchen, 'create', [name: 'stalled'])
+
+    assert (System.nanoTime() - started) / 1_000_000_000 < 20
+    assert created.exit == 0
+    assert created.error.contains('worktree: could not fetch origin, so its branches are as last fetched\n')
+    assert git(kitchen, 'rev-parse', 'stalled') == git(kitchen, 'rev-parse', 'HEAD')
   }
 
   @Test void createWithBaseHeadStartsAtTheSessionsCheckoutOnTheBranchItsPrefixNames() {

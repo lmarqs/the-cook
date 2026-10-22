@@ -171,9 +171,11 @@ otherwise it keeps the branch and says so on standard error.
 A setup or teardown committed on the main checkout's `HEAD` but missing from the worktree is skipped with a line on
 standard error: the branch predates it. One missing from the main checkout's `HEAD` too still fails.
 
-A fetch and the lookup of the remote's default branch never wait for a password, a passphrase or a host key: they
-run with `GIT_TERMINAL_PROMPT=0` and, unless `GIT_SSH_COMMAND`, `GIT_SSH` or `core.sshCommand` names another, with
-`ssh -o BatchMode=yes`, and a failed fetch leaves the branches as last fetched.
+A fetch takes only the remote's default branch once `<remote>/HEAD` names it, and the whole remote before. A fetch and
+the lookup of the remote's default branch never wait for a password, a passphrase or a host key: they run with
+`GIT_TERMINAL_PROMPT=0` and, unless `GIT_SSH_COMMAND`, `GIT_SSH` or `core.sshCommand` names another, with
+`ssh -o BatchMode=yes`. Each is stopped after ten seconds. A failed or stopped fetch leaves the branches as last
+fetched, and the hook then skips the lookup.
 
 ## Re-cooking
 
@@ -210,9 +212,9 @@ change once the policy gains roles or command rules, until the recipe is cooked 
   `git worktree remove`.
 - A reused worktree keeps its old tip, and its setup does not run again; Claude Code's own `fresh` reuse resets a
   clean worktree with no commits to the default branch instead.
-- A fetch has no time limit: a slow remote delays creating a worktree, and removing one whose branch is not on the
-  main checkout's `HEAD`, up to the hook's 600 s timeout.
-  `--worktree-fetch=never` keeps the hook off the network.
+- A fetch slower than ten seconds, such as the first one of a large remote without `<remote>/HEAD`, is stopped every
+  time: run `git fetch <remote>` and `git remote set-head <remote> --auto` once by hand. `--worktree-fetch=never` keeps
+  the hook off the network.
 - `git cherry` matches patches, so a branch squash-merged, or whose commits changed while being delivered, counts as
   not merged and is kept.
 - Once `hooks.WorktreeCreate` is set, Claude Code no longer copies the files `.worktreeinclude` lists: the

@@ -37,26 +37,41 @@ run_script() {
   (cd "$1" && "./$2") >&2 || fail "$2 failed" "in $1"
 }
 
-# Runs a Git command that may reach the remote, failing instead of asking for a password, a passphrase or a host key.
+# Runs a Git command that may reach the remote for at most ten seconds, failing instead of asking for a password, a
+# passphrase or a host key. Its output reaches standard error once it ends, through a file, so an ssh it leaves behind
+# holds none of the hook's own output open.
 unprompted() {
+  log=$(mktemp)
   if [ -z "${GIT_SSH_COMMAND:-}${GIT_SSH:-}" ] && ! git -C "$main" config core.sshCommand >/dev/null; then
-    GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' "$@"
+    env GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' "$@" </dev/null >"$log" 2>&1 &
   else
-    GIT_TERMINAL_PROMPT=0 "$@"
+    env GIT_TERMINAL_PROMPT=0 "$@" </dev/null >"$log" 2>&1 &
   fi
+  pid=$!
+  (sleep 10 && kill "$pid") </dev/null >/dev/null 2>&1 &
+  watcher=$!
+  if wait "$pid"; then status=0; else status=$?; fi
+  kill "$watcher" 2>/dev/null || true
+  cat "$log" >&2
+  rm -f "$log"
+  return "$status"
 }
 
-# Fetches the remote as $fetch says, stale fetching once its last fetch is a day old, and sets $upstream to the
-# remote's default branch, such as origin/main, or to nothing when it is not known.
+# Fetches the remote as $fetch says, stale fetching once its last fetch is a day old, only its default branch once that
+# is known, and sets $upstream to the remote's default branch, such as origin/main, or to nothing when it is not known.
 refresh() {
   upstream=''
   git -C "$main" remote get-url "$remote" >/dev/null 2>&1 || return 0
   fetched=$(git -C "$main" rev-parse --absolute-git-dir)/FETCH_HEAD
+  reachable=true
   if [ "$fetch" = always ] || { [ "$fetch" = stale ] && [ -z "$(find "$fetched" -mmin -1440 2>/dev/null)" ]; }; then
-    unprompted git -C "$main" fetch --quiet "$remote" >&2 ||
+    known=$(git -C "$main" symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null) || known=''
+    if ! unprompted git -C "$main" fetch --quiet "$remote" ${known:+"${known#"$remote"/}"}; then
       printf 'worktree: could not fetch %s, so its branches are as last fetched\n' "$remote" >&2
+      reachable=false
+    fi
   fi
-  if [ "$fetch" != never ] && ! git -C "$main" symbolic-ref --quiet "refs/remotes/$remote/HEAD" >/dev/null; then
+  if [ "$fetch" != never ] && [ "$reachable" = true ] && ! git -C "$main" symbolic-ref --quiet "refs/remotes/$remote/HEAD" >/dev/null; then
     unprompted git -C "$main" remote set-head "$remote" --auto >/dev/null 2>&1 || true
   fi
   upstream=$(git -C "$main" symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null) || upstream=''
