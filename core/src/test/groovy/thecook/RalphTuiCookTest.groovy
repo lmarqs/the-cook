@@ -326,7 +326,7 @@ roles:
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
     assert texts.params*.names ==
-    [['harness'], ['worker-role'], ['worker-settings'], ['worktree-setup'], ['instructions']]
+    [['harness'], ['worker-role'], ['worker-settings'], ['worktree-setup'], ['worktree-teardown'], ['instructions']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
     assert texts.help.readLines().findAll { it.startsWith('## ') } == [
       '## API',
@@ -522,6 +522,80 @@ roles:
       ]*.toString()
     }
     assert files(kitchen) == []
+  }
+
+  @Test void refusesATeardownPathUnderRalphTui() {
+    def kitchen = kitchen()
+
+    def error = shouldFail(IllegalArgumentException) {
+      cook(kitchen, RALPH, [harness: ['claude'], 'worktree-teardown': ['.ralph-tui/teardown']])
+    }
+
+    assert error.message.readLines() == [
+      "${RALPH}: --worktree-teardown=.ralph-tui/teardown is under .ralph-tui/",
+      '  a run worktree has there only the configuration, prompts and launcher this recipe writes',
+      '  name a committed file outside .ralph-tui/, as --worktree-teardown=.worktrees/teardown',
+    ]*.toString()
+    assert files(kitchen) == []
+  }
+
+  @Test void cleanRunsTheTeardownFromTheRunWorktreesRootBeforeRemovingIt() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-teardown': ['.worktrees/teardown']]).commit()
+    executable(kitchen, '.worktrees/teardown', '#!/bin/sh\npwd -P >> ../../../teardown-ran\n')
+    commitAll(kitchen)
+    assert new File(kitchen, '.gitignore').readLines()[1] ==
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worktree-teardown=.worktrees/teardown'
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def worktree = new File(kitchen, '.worktrees/ralph/demo').canonicalPath
+
+    def clean = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
+
+    assert clean.exit == 0
+    assert new File(kitchen, 'teardown-ran').readLines() == [worktree]
+    assert !new File(worktree).exists()
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'demo').exit == 0
+    assert new File(kitchen, 'teardown-ran').readLines() == [worktree]
+  }
+
+  @Test void cleanStopsAndRemovesNothingWhenTheTeardownIsMissingNotExecutableOrFails() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-teardown': ['scripts/teardown']]).commit()
+    commitAll(kitchen)
+    ['missing', 'plain', 'failing'].each {
+      assert launch(kitchen, '.ralph-tui/bin/run', it, '--epic', 'ep-1').exit == 0
+    }
+    def worktree = { String name -> new File(kitchen, ".worktrees/ralph/${name}") }
+    write(worktree('plain'), 'scripts/teardown', '#!/bin/sh\nexit 0\n')
+    executable(worktree('failing'), 'scripts/teardown', '#!/bin/sh\nexit 3\n')
+    ['plain', 'failing'].each {
+      git(worktree(it), 'add', 'scripts/teardown')
+      git(worktree(it), 'commit', '-q', '-m', 'teardown')
+    }
+
+    def missing = launch(kitchen, '.ralph-tui/bin/clean', 'missing')
+    assert missing.exit == 1
+    assert missing.output.readLines() == [
+      "clean: scripts/teardown is not in ${worktree('missing').canonicalPath}",
+      '  a worktree holds only what is committed',
+      '  fix it, then run .ralph-tui/bin/clean missing again',
+    ]*.toString()
+    // --force passes the branches' unmerged commits, never the teardown.
+    def plain = launch(kitchen, '.ralph-tui/bin/clean', 'plain', '--force')
+    assert plain.exit == 1
+    assert plain.output.readLines()[0] == 'clean: scripts/teardown is not executable'
+    def failing = launch(kitchen, '.ralph-tui/bin/clean', 'failing', '--force')
+    assert failing.exit == 1
+    assert failing.output.readLines() == [
+      'clean: scripts/teardown failed',
+      "  in ${worktree('failing').canonicalPath}",
+      '  nothing was removed',
+      '  fix it, then run .ralph-tui/bin/clean failing again',
+    ]*.toString()
+    ['missing', 'plain', 'failing'].each {
+      assert worktree(it).exists()
+      assert git(kitchen, 'branch', '--list', "ralph/${it}")
+    }
   }
 
   @Test void runRefusesBothTrackersAndNeedsOne() {

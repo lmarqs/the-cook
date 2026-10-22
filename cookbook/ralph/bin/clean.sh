@@ -3,6 +3,9 @@
 # Written by io.github.lmarqs.cookbook:ralph#ralph-tui; cook it again to update it.
 set -eu
 
+# The file --worktree-teardown names, by its path from the repository root; empty without --worktree-teardown.
+teardown=''
+
 usage() {
   echo 'usage: .ralph-tui/bin/clean <name> [--force]' >&2
   exit 2
@@ -44,6 +47,14 @@ if [ "$force" = false ]; then
   if [ -e "$worktree/.git" ] && [ -n "$(git -C "$worktree" status --porcelain)" ]; then
     fail "$worktree has uncommitted changes" 'they would be lost' 'commit them, or run with --force to delete them'
   fi
+fi
+
+if [ -n "$teardown" ] && [ -e "$worktree/.git" ]; then
+  retry="fix it, then run .ralph-tui/bin/clean $name again"
+  [ -f "$worktree/$teardown" ] ||
+    fail "$teardown is not in $worktree" 'a worktree holds only what is committed' "$retry"
+  [ -x "$worktree/$teardown" ] || fail "$teardown is not executable" "in $worktree" "$retry"
+  (cd "$worktree" && "./$teardown") || fail "$teardown failed" "in $worktree" 'nothing was removed' "$retry"
 fi
 
 parallel=$(git -C "$root" worktree list --porcelain | awk '

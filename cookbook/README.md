@@ -258,17 +258,17 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=worker
 # Claude workers with a settings file the team writes
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-settings=ralph-worker.json
-# Claude workers in run worktrees the launcher sets up with the team's script
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup
+# Claude workers in run worktrees the launcher sets up and tears down with the team's scripts
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 # Also giving agents and people the launcher's commands, in the files they read
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
 
 The first `--harness` is the default agent. `--worker-role` and `--worker-settings` reach only the Claude entry, and
-only one of them is given. `--worktree-setup` names a committed executable by its path from the repository root,
-outside `.ralph-tui/`; without it, `bin/run` runs no setup. `--instructions` names a Markdown file by its path from the
-repository root, and repeats for each file; the file must exist. What it publishes for people, sessions and other
-recipes:
+only one of them is given. `--worktree-setup` and `--worktree-teardown` each name a committed executable by its path
+from the repository root, outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown.
+`--instructions` names a Markdown file by its path from the repository root, and repeats for each file; the file must
+exist. What it publishes for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -289,6 +289,9 @@ recipes:
   `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
 - The `--worktree-setup` file, at run time, only with `--worktree-setup`: `bin/run` runs it in each run worktree it
   creates and fails the run when it is missing there, not executable or fails. Never read or written at cook time.
+- The `--worktree-teardown` file, at run time, only with `--worktree-teardown`: `bin/clean` runs it in the run worktree
+  before removing anything, and stops when it is missing there, not executable or fails. Never read or written at cook
+  time.
 - The files `--instructions` names, which must exist, written by the team or by a recipe cooked earlier in the same
   invocation.
 - By hand first: nothing. By hand after: installing ralph-tui and the runtimes it needs, and for `--epic`, a Beads
@@ -320,6 +323,7 @@ tracker's state, and the rest of each `--instructions` file.
 | What a Codex worker may do | The team, in the seeded entry, which sets Codex's `workspace-write` sandbox |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
 | The run worktree's setup | The person, by `--worktree-setup`; the team writes the file |
+| The run worktree's teardown | The person, by `--worktree-teardown`; the team writes the file |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
 | Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry |
 | The launcher's commands in the files agents and people read | The person, by `--instructions`; the section is appended at the file's end, and stays where the team moves it |
@@ -343,17 +347,19 @@ worktree, with the remaining arguments, such as `--headless`, `--agent codex` or
 environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 `bin/clean <name>` refuses while `ralph/<name>` has commits `HEAD` does not, which includes a branch delivered by a
-squash merge, or while its worktree has changes; `--force` removes them anyway. It removes the worktree, every worktree
-on a `ralph-parallel/*` branch with that branch, then the branch `ralph/<name>`.
+squash merge, or while its worktree has changes; `--force` removes them anyway. With `--worktree-teardown`, it then
+runs that file from the root of the run worktree, when one exists, and stops when the file is missing, not executable
+or fails, removing nothing. It removes the worktree, every worktree on a `ralph-parallel/*` branch with that branch,
+then the branch `ralph/<name>`.
 
 ## Re-cooking
 
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as `#
 io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup`. Cooking
-with another `--worktree-setup`, or without it, rewrites the launcher, and cooking without a file's `--instructions`
-removes its section. The seeds are never rewritten: to take other harnesses, a worker role or a newer version's
-configuration or prompts, edit them or delete them and cook again. A newer version rewrites the launcher and the
-sections.
+with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrites the launcher, and cooking without a
+file's `--instructions` removes its section. The seeds are never rewritten: to take other harnesses, a worker role or a
+newer version's configuration or prompts, edit them or delete them and cook again. A newer version rewrites the
+launcher and the sections.
 
 ## Traps
 
@@ -379,6 +385,8 @@ Parameters
       A Claude settings file the claude entry passes with --settings; optional
   --worktree-setup=<String>
       An executable, by its path from the repository root, that bin/run runs in each run worktree it creates; optional
+  --worktree-teardown=<String>
+      An executable, by its path from the repository root, that bin/clean runs in a run worktree before removal; optional
   --instructions=<String[]>
       A Markdown file, from the repository root, where the recipe gives the launcher's commands; optional; repeatable
 

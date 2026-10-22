@@ -94,6 +94,7 @@ class RalphTui {
   private String workerRole
   private String workerSettings
   private String worktreeSetup
+  private String worktreeTeardown
   private String cookedWith
   private List<String> instructions = []
 
@@ -168,13 +169,16 @@ class RalphTui {
    * Refused under `.ralph-tui/`, which in a run worktree holds only what this recipe writes.
    */
   void worktreeSetup(String path) {
-    if (path.split('/').first() == '.ralph-tui') {
-      throw new IllegalArgumentException("--worktree-setup=${path} is under .ralph-tui/\n" +
-      '  a run worktree has there only the configuration, prompts and launcher this recipe writes\n' +
-      '  name a committed file outside .ralph-tui/, as --worktree-setup=.worktrees/setup')
-    }
+    worktreeSetup = outsideRalphTui('worktree-setup', path)
+  }
 
-    worktreeSetup = path
+  /**
+   * Has `bin/clean` run the file at `path`, by its path from the repository root, from the root of the run worktree
+   * before removing anything, and stop, removing nothing, when that file is missing, not executable or fails. Without
+   * it, `bin/clean` runs no teardown. Refused under `.ralph-tui/`, as `worktreeSetup` is.
+   */
+  void worktreeTeardown(String path) {
+    worktreeTeardown = outsideRalphTui('worktree-teardown', path)
   }
 
   /**
@@ -188,7 +192,7 @@ class RalphTui {
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `workerRole`, `workerSettings`, `worktreeSetup` and `instructions`.
+   * `harnesses`, `workerRole`, `workerSettings`, `worktreeSetup`, `worktreeTeardown` and `instructions`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -270,10 +274,18 @@ class RalphTui {
     worktreeSetup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(worktreeSetup)}\n") : script
   }
 
-  /** The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, when installed. */
+  /**
+   * The executable `.ralph-tui/bin/clean`, which removes a run's worktrees and branches, with the `worktreeTeardown`
+   * path shell-quoted into its `teardown` variable, when installed.
+   */
   @File(path = '.ralph-tui/bin/clean', mode = '0755')
   String clean() {
-    cookedWith ? resource('bin/clean.sh') : null
+    if (!cookedWith) {
+      return null
+    }
+
+    def script = resource('bin/clean.sh')
+    worktreeTeardown ? script.replace("\nteardown=''\n", "\nteardown=${shellQuoted(worktreeTeardown)}\n") : script
   }
 
   /**
@@ -332,6 +344,17 @@ class RalphTui {
     new IllegalArgumentException('--worker-role and --worker-settings are both given\n  each sets the one --settings ' +
         'file of the claude entry\n  give one of them; to combine a role with more settings, write a settings file ' +
         'that holds both')
+  }
+
+  // In a run worktree, .ralph-tui/ holds only what this recipe writes, so a team's script there would never be found.
+  private static String outsideRalphTui(String param, String path) {
+    if (path.split('/').first() == '.ralph-tui') {
+      throw new IllegalArgumentException("--${param}=${path} is under .ralph-tui/\n" +
+      '  a run worktree has there only the configuration, prompts and launcher this recipe writes\n' +
+      "  name a committed file outside .ralph-tui/, as --${param}=.worktrees/${param - 'worktree-'}")
+    }
+
+    path
   }
 
   private static String shellQuoted(String value) {
