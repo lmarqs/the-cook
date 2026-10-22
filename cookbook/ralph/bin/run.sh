@@ -103,7 +103,8 @@ copied=false
 if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/null 2>&1; then
   [ -f "$root/.ralph-tui/config.toml" ] ||
     fail ".ralph-tui/config.toml is not in $root" 'cook io.github.lmarqs.cookbook:ralph#ralph-tui again'
-  for file in "$root/.ralph-tui/config.toml" "$root/.ralph-tui/session.json" "$root"/.ralph-tui/templates/*.hbs; do
+  for file in "$root/.ralph-tui/config.toml" "$root/.ralph-tui/session.json" "$root"/.ralph-tui/templates/*.hbs \
+    "$root/.ralph-tui/bin/worker"; do
     path=.ralph-tui/${file#"$root/.ralph-tui/"}
     git -C "$worktree" check-ignore -q "$path" ||
       fail ".ralph-tui/config.toml is not committed on $branch, and Git does not ignore $path there" \
@@ -116,6 +117,11 @@ if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/nu
   cp "$root/.ralph-tui/config.toml" "$worktree/.ralph-tui/"
   [ ! -d "$root/.ralph-tui/templates" ] || cp -R "$root/.ralph-tui/templates" "$worktree/.ralph-tui/"
   echo "Copied .ralph-tui/config.toml and .ralph-tui/templates/ from $root: they are not committed on $branch."
+  if [ -f "$root/.ralph-tui/bin/worker" ]; then
+    mkdir -p "$worktree/.ralph-tui/bin"
+    cp -p "$root/.ralph-tui/bin/worker" "$worktree/.ralph-tui/bin/"
+    echo "Copied .ralph-tui/bin/worker too, which the configuration's agents run."
+  fi
   copied=true
 fi
 echo "worktree: $worktree"

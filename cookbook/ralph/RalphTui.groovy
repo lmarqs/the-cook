@@ -89,6 +89,9 @@ class RalphTui {
   /** Where `io.github.lmarqs.cookbook:agents#connect` renders each role's Claude settings, as `<role>.json`. */
   static final String ROLES = '.agents/adapters/claude/roles'
 
+  /** The worker wrapper `workerCheck` writes, which each seeded entry then names as its `command`. */
+  static final String WORKER = '.ralph-tui/bin/worker'
+
   private static final Map<String, List<String>> FLAGS = [
     claude: ['--permission-prompts', 'none', '--permission-mode', 'acceptEdits'],
     codex: ['-c', 'approval_policy=never', '-c', 'sandbox_workspace_write.network_access=false'],
@@ -105,6 +108,7 @@ class RalphTui {
   private String worktreeRoot = WORKTREE_ROOT
   private String worktreeSetup
   private String worktreeTeardown
+  private String workerCheck
   private String cookedWith
   private List<String> instructions = []
 
@@ -204,7 +208,7 @@ class RalphTui {
    * Refused under `.ralph-tui/`, which in a run worktree holds only what this recipe writes.
    */
   void worktreeSetup(String path) {
-    worktreeSetup = outsideRalphTui('worktree-setup', path)
+    worktreeSetup = outsideRalphTui('worktree-setup', path, '.worktrees/setup')
   }
 
   /**
@@ -213,7 +217,17 @@ class RalphTui {
    * it, `bin/clean` runs no teardown. Refused under `.ralph-tui/`, as `worktreeSetup` is.
    */
   void worktreeTeardown(String path) {
-    worktreeTeardown = outsideRalphTui('worktree-teardown', path)
+    worktreeTeardown = outsideRalphTui('worktree-teardown', path, '.worktrees/teardown')
+  }
+
+  /**
+   * Writes `.ralph-tui/bin/worker`, which runs the agent with its output held and hands that output to ralph-tui only
+   * once the file at `path`, by its path from the repository root, passes; and seeds each `[[agents]]` entry with the
+   * worker as its `command`, its harness as the worker's first argument, and retries for a failed iteration. Without
+   * it, no worker is written. Refused under `.ralph-tui/`, as `worktreeSetup` is.
+   */
+  void workerCheck(String path) {
+    workerCheck = outsideRalphTui('worker-check', path, 'scripts/check')
   }
 
   /**
@@ -227,7 +241,7 @@ class RalphTui {
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `workerRole`, `workerSettings`, `worktreeRoot`, `worktreeSetup`, `worktreeTeardown` and
+   * `harnesses`, `workerRole`, `workerSettings`, `worktreeRoot`, `worktreeSetup`, `worktreeTeardown`, `workerCheck` and
    * `instructions`.
    */
   void install(String cookedWith) {
@@ -240,8 +254,8 @@ class RalphTui {
 
   /**
    * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the `beads` tracker, the first
-   * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, direct merges in parallel mode,
-   * and one `[[agents]]` entry per harness, when harnesses are set.
+   * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it
+   * twice first, direct merges in parallel mode, and one `[[agents]]` entry per harness, when harnesses are set.
    */
   @Seed(path = '.ralph-tui/config.toml')
   String config() {
@@ -256,18 +270,15 @@ class RalphTui {
       'autoCommit = true',
       '',
       '[errorHandling]',
-      'strategy = "skip"',
-      '',
-      '[parallel]',
-      'directMerge = true',
-    ]
+    ] + errorHandling() + ['', '[parallel]', 'directMerge = true',]
     harnesses.each { harness ->
-      def defaultFlags = flags(harness).collect { quoted(it) }
+      def defaultFlags = ((workerCheck ? [harness] : []) + flags(harness)).collect { quoted(it) }
+      def plugin = "plugin = \"${harness}\"" + (workerCheck ? "\ncommand = \"${WORKER}\"" : '')
       lines += [
         '',
         '[[agents]]',
         "name = \"${harness}\"",
-        "plugin = \"${harness}\"",
+        plugin,
         "defaultFlags = [${defaultFlags.join(', ')}]",
         '',
         '[agents.options]',
@@ -323,6 +334,20 @@ class RalphTui {
   }
 
   /**
+   * The executable `.ralph-tui/bin/worker`, which gates each agent run on the `workerCheck` file, with that path and
+   * the harnesses shell-quoted into its `check` and `agents` variables, when installed with `workerCheck`.
+   */
+  @File(path = '.ralph-tui/bin/worker', mode = '0755')
+  String worker() {
+    if (!cookedWith || !workerCheck) {
+      return null
+    }
+
+    def script = resource('bin/worker.sh').replace("\ncheck=''\n", "\ncheck=${shellQuoted(workerCheck)}\n")
+    script.replace("\nagents=''\n", "\nagents=${shellQuoted(harnesses.join(' '))}\n")
+  }
+
+  /**
    * The `ralph-tui` section of `.gitignore`: a comment naming the recipe and its arguments, then everything under
    * `.ralph-tui/` but the configuration, prompts and launcher, and the run worktrees, when installed.
    */
@@ -367,6 +392,11 @@ class RalphTui {
     script.replace("\nworktrees='.worktrees'\n", "\nworktrees=${shellQuoted(worktreeRoot)}\n")
   }
 
+  // A failed check exits the worker non-zero, which ralph-tui retries only under the retry strategy.
+  private List<String> errorHandling() {
+    workerCheck ? ['strategy = "retry"', 'maxRetries = 2', 'continueOnNonZeroExit = false'] : ['strategy = "skip"']
+  }
+
   private String runFlags() {
     trackers == TRACKERS ? '(--epic <id> | --prd <file>)' : trackers == ['beads'] ? '--epic <id>' : '--prd <file>'
   }
@@ -391,11 +421,11 @@ class RalphTui {
   }
 
   // In a run worktree, .ralph-tui/ holds only what this recipe writes, so a team's script there would never be found.
-  private static String outsideRalphTui(String param, String path) {
+  private static String outsideRalphTui(String param, String path, String example) {
     if (path.split('/').first() == '.ralph-tui') {
       throw new IllegalArgumentException("--${param}=${path} is under .ralph-tui/\n" +
       '  a run worktree has there only the configuration, prompts and launcher this recipe writes\n' +
-      "  name a committed file outside .ralph-tui/, as --${param}=.worktrees/${param - 'worktree-'}")
+      "  name a committed file outside .ralph-tui/, as --${param}=${example}")
     }
 
     path

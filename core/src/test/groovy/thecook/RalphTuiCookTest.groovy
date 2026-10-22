@@ -12,6 +12,7 @@ import org.junit.rules.TemporaryFolder
 import thecook.cookbook.RecipeSource
 
 import java.nio.file.Files
+import java.util.concurrent.TimeUnit
 
 class RalphTuiCookTest {
   private static final String RALPH = 'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui'
@@ -244,9 +245,9 @@ roles:
 
   @Test void theLauncherScriptsAreExecutableAndPassShellSyntaxChecks() {
     def kitchen = kitchen()
-    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worker-check': ['scripts/check']]).commit()
 
-    ['run', 'clean'].each {
+    ['run', 'clean', 'worker'].each {
       assert Files.isExecutable(new File(kitchen, ".ralph-tui/bin/${it}").toPath())
       assert launch(kitchen, 'sh', '-n', ".ralph-tui/bin/${it}").exit == 0
     }
@@ -374,6 +375,7 @@ roles:
       ['worktree-root'],
       ['worktree-setup'],
       ['worktree-teardown'],
+      ['worker-check'],
       ['tracker'],
       ['instructions']
     ]
@@ -640,6 +642,145 @@ roles:
       '  name a committed file outside .ralph-tui/, as --worktree-teardown=.worktrees/teardown',
     ]*.toString()
     assert files(kitchen) == []
+  }
+
+  @Test void aWorkerCheckWritesTheWorkerAndPointsEachSeededEntryAtItWithRetries() {
+    def kitchen = kitchen()
+
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']]).commit()
+
+    def config = new File(kitchen, '.ralph-tui/config.toml').text
+    assert config.contains('[errorHandling]\nstrategy = "retry"\nmaxRetries = 2\ncontinueOnNonZeroExit = false\n\n')
+    assert config.contains('name = "claude"\nplugin = "claude"\ncommand = ".ralph-tui/bin/worker"\n' +
+    'defaultFlags = ["claude", "--permission-prompts", "none", "--permission-mode", "acceptEdits"]\n')
+    assert config.contains('name = "codex"\nplugin = "codex"\ncommand = ".ralph-tui/bin/worker"\n' +
+    'defaultFlags = ["codex", "-c", "approval_policy=never", "-c", ' +
+    '"sandbox_workspace_write.network_access=false"]\n')
+    def worker = new File(kitchen, '.ralph-tui/bin/worker')
+    assert Files.isExecutable(worker.toPath())
+    assert worker.text == new File(SOURCES, 'bin/worker.sh').text
+    .replace("\ncheck=''\n", "\ncheck='scripts/check'\n").replace("\nagents=''\n", "\nagents='claude codex'\n")
+    assert new File(kitchen, 'cook.lock').text.contains('        - ".ralph-tui/bin/worker"\n')
+    assert new File(kitchen, '.gitignore').readLines()[1].endsWith(' --worker-check=scripts/check')
+  }
+
+  @Test void aWorkerCheckLeavesAConfigurationSeededEarlierAsItIs() {
+    def kitchen = kitchen()
+    cook(kitchen, RALPH, [harness: ['claude', 'codex']]).commit()
+
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']]).commit()
+
+    assert new File(kitchen, '.ralph-tui/config.toml').text == CONFIG
+    assert new File(kitchen, '.ralph-tui/bin/worker').exists()
+  }
+
+  @Test void refusesAWorkerCheckUnderRalphTui() {
+    def kitchen = kitchen()
+
+    def error = shouldFail(IllegalArgumentException) {
+      cook(kitchen, RALPH, [harness: ['claude'], 'worker-check': ['.ralph-tui/check']])
+    }
+
+    assert error.message.readLines() == [
+      "${RALPH}: --worker-check=.ralph-tui/check is under .ralph-tui/",
+      '  a run worktree has there only the configuration, prompts and launcher this recipe writes',
+      '  name a committed file outside .ralph-tui/, as --worker-check=scripts/check',
+    ]*.toString()
+    assert files(kitchen) == []
+  }
+
+  @Test void theWorkerHandsTheAgentsOutputToRalphTuiOnlyOnceTheCheckPasses() {
+    def kitchen = workerRepository()
+    def worktree = new File(kitchen, '.worktrees/ralph/demo')
+    def log = new File(worktree, '.ralph-tui/worker-check.log')
+    def stderr = new File(folder.root, 'stderr')
+    def base = git(worktree, 'rev-parse', 'HEAD')
+
+    def passed = launch(worktree, 'sh', '-c', "echo the prompt | .ralph-tui/bin/worker claude --print 2>${stderr}")
+
+    assert passed.exit == 0
+    assert passed.output.readLines() == ['args --print', 'prompt the prompt', '<promise>COMPLETE</promise>']
+    assert stderr.text == ''
+    assert log.text == "check ${base}\nrate limit exceeded, 429, overloaded\n".toString()
+
+    def failed = launch(worktree, 'sh', '-c',
+        "echo the prompt | CHECK_FAILS=1 .ralph-tui/bin/worker claude 2>${stderr}")
+
+    assert failed.exit == 1
+    assert failed.output == ''
+    assert stderr.text == "worker: scripts/check did not pass, so the task stays open; its output is in " +
+    "${worktree.canonicalPath}/.ralph-tui/worker-check.log\n"
+    assert log.text.contains('rate limit exceeded')
+
+    log.delete()
+    def blocked = launch(worktree, 'sh', '-c', 'echo the prompt | AGENT_BLOCKED=1 .ralph-tui/bin/worker codex exec -')
+
+    assert blocked.exit == 0
+    assert blocked.output.readLines() == ['args exec -', 'prompt the prompt', 'BLOCKED: no tests']
+    assert !log.exists()
+
+    def broken = launch(worktree, 'sh', '-c', 'echo the prompt | AGENT_FAILS=1 .ralph-tui/bin/worker claude')
+
+    assert broken.exit == 3
+    assert broken.output == ''
+    assert !log.exists()
+    assert git(worktree, 'status', '--porcelain') == ''
+  }
+
+  @Test void theWorkerAsksEachHarnessForItsVersionAndRefusesTheMainCheckout() {
+    def kitchen = workerRepository()
+
+    def version = launch(new File(kitchen, '.worktrees/ralph/demo'), '.ralph-tui/bin/worker', '--version')
+
+    assert version.exit == 0
+    assert version.output == 'claude 2.1.306\ncodex-cli 0.160.1\n'
+
+    def main = launch(kitchen, '.ralph-tui/bin/worker', 'claude')
+
+    assert main.exit == 1
+    assert main.output == "worker: ${kitchen.canonicalPath} is the main checkout; the worker runs only in a run " +
+    'worktree, which .ralph-tui/bin/run creates\n'
+  }
+
+  @Test void stoppingTheWorkerStopsTheAgentsAndTheChecksProcessTrees() {
+    def kitchen = workerRepository()
+    def worktree = new File(kitchen, '.worktrees/ralph/demo')
+
+    ['AGENT_SLEEPS', 'CHECK_SLEEPS'].each { variable ->
+      def pid = new File(folder.root, variable)
+      def builder = new ProcessBuilder('.ralph-tui/bin/worker', 'claude').directory(worktree).redirectErrorStream(true)
+      builder.environment().putAll([
+        PATH: "${new File(folder.root, 'bin')}:${System.getenv('PATH')}".toString(),
+        (variable): pid.path,
+      ])
+      def worker = builder.start()
+      worker.outputStream.close()
+      eventually { pid.size() > 0 }
+      def sleeper = ProcessHandle.of(pid.text.trim() as long).get()
+
+      worker.destroy()
+
+      assert worker.waitFor(10, TimeUnit.SECONDS)
+      assert worker.exitValue() == 143
+      eventually { !sleeper.alive }
+    }
+  }
+
+  @Test void runCopiesTheWorkerWithAnIgnoredConfiguration() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worker-check': ['scripts/check']]).commit()
+    new File(kitchen, '.git/info/exclude') << '/.ralph-tui/\n'
+    commitAll(kitchen)
+    def worktree = new File(kitchen, '.worktrees/ralph/demo')
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+
+    assert run.exit == 0
+    assert run.output.readLines()[2] == 'Copied .ralph-tui/bin/worker too, which the configuration\'s agents run.'
+    def worker = new File(worktree, '.ralph-tui/bin/worker')
+    assert worker.text == new File(kitchen, '.ralph-tui/bin/worker').text
+    assert Files.isExecutable(worker.toPath())
+    assert git(worktree, 'status', '--porcelain') == ''
   }
 
   @Test void cleanRunsTheTeardownFromTheRunWorktreesRootBeforeRemovingIt() {
@@ -1092,6 +1233,36 @@ roles:
     def process = builder.start()
     def output = process.inputStream.text
     [exit: process.waitFor(), output: output]
+  }
+
+  // A repository cooked with --worker-check, whose check prints words ralph-tui takes for a rate limit, with the run
+  // worktree .worktrees/ralph/demo and fake claude and codex agents on the PATH launch gives.
+  private File workerRepository() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']]).commit()
+    executable(kitchen, 'scripts/check', '#!/bin/sh\necho "check $1"\necho "rate limit exceeded, 429, overloaded"\n' +
+        'if [ -n "${CHECK_SLEEPS:-}" ]; then sleep 60 & echo $! > "$CHECK_SLEEPS"; wait; fi\n' +
+        '[ -z "${CHECK_FAILS:-}" ]\n')
+    commitAll(kitchen)
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph/demo', '.worktrees/ralph/demo')
+    ['claude': 'claude 2.1.306', 'codex': 'codex-cli 0.160.1'].each { agent, version ->
+      executable(folder.root, "bin/${agent}", '#!/bin/sh\n' +
+          "if [ \"\$*\" = --version ]; then echo '${version}'; exit; fi\n" +
+          'echo "args $*"\necho "prompt $(cat)"\n[ -z "${AGENT_FAILS:-}" ] || exit 3\n' +
+          'if [ -n "${AGENT_SLEEPS:-}" ]; then sleep 60 & echo $! > "$AGENT_SLEEPS"; wait; fi\n' +
+          'if [ -n "${AGENT_BLOCKED:-}" ]; then echo "BLOCKED: no tests"\n' +
+          'else echo "<promise>COMPLETE</promise>"; fi\n')
+    }
+    kitchen
+  }
+
+  private static void eventually(Closure<Boolean> condition) {
+    def deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+
+    while (!condition()) {
+      assert System.nanoTime() < deadline: 'the condition did not hold within 10 seconds'
+      Thread.sleep(50)
+    }
   }
 
   private static void executable(File kitchen, String path, String text) {
