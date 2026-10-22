@@ -452,6 +452,59 @@ roles:
     assert reused.output.readLines()[3] == 'ralph-tui run --epic ep-1'
   }
 
+  @Test void runCopiesAnIgnoredUncommittedConfigurationAndPromptsIntoTheWorktreeOnEachRunAndPassesThePrompt() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    new File(kitchen, '.git/info/exclude') << '/.ralph-tui/\n'
+    write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
+    commitAll(kitchen)
+    def worktree = new File(kitchen, '.worktrees/ralph/demo').canonicalPath
+    def copied = "Copied .ralph-tui/config.toml and .ralph-tui/templates/ from ${kitchen.canonicalPath}: " +
+        'they are not committed on ralph/demo.'
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--headless')
+
+    assert run.exit == 0
+    assert run.output.readLines()[1] == copied.toString()
+    assert run.output.readLines()[4] ==
+    "ralph-tui run --epic ep-1 --prompt ${worktree}/.ralph-tui/templates/beads.hbs --headless".toString()
+    ['config.toml', 'templates/beads.hbs', 'templates/json.hbs'].each {
+      assert new File(worktree, ".ralph-tui/${it}").text == new File(kitchen, ".ralph-tui/${it}").text
+    }
+    assert git(new File(worktree), 'status', '--porcelain') == ''
+
+    write(kitchen, '.ralph-tui/config.toml', 'maxIterations = 3\n')
+    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--prd', 'tasks/prd.json')
+
+    assert reused.exit == 0
+    assert reused.output.readLines()[1] == copied.toString()
+    assert reused.output.readLines()[4] == ("ralph-tui run --prd ${kitchen.canonicalPath}/tasks/prd.json " +
+    "--prompt ${worktree}/.ralph-tui/templates/json.hbs").toString()
+    assert new File(worktree, '.ralph-tui/config.toml').text == 'maxIterations = 3\n'
+
+    def own = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--prompt', 'mine.hbs')
+
+    assert own.exit == 0
+    assert own.output.readLines()[4] == 'ralph-tui run --epic ep-1 --prompt mine.hbs'
+  }
+
+  @Test void runRefusesToCopyTheConfigurationIntoAWorktreeWhereGitWouldCommitIt() {
+    def kitchen = repository()
+    git(kitchen, 'branch', 'old')
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    def worktree = new File(kitchen, '.worktrees/ralph/demo')
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--base', 'old', '--epic', 'ep-1')
+
+    assert run.exit == 1
+    assert run.output.readLines()[1] ==
+    'run: .ralph-tui/config.toml is not committed on ralph/demo, and Git does not ignore ' +
+    '.ralph-tui/config.toml there'
+    assert run.output.contains("echo /.ralph-tui/ >> ${kitchen.canonicalPath}/.git/info/exclude")
+    assert !new File(worktree, '.ralph-tui').exists()
+  }
+
   @Test void runPassesThePrdByItsAbsolutePathAndStartsFromTheBase() {
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()

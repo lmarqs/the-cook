@@ -95,10 +95,41 @@ else
     (cd "$worktree" && "./$setup") || fail "$setup failed" "in $worktree" "$retry"
   fi
 fi
+
+# ralph-tui reads its configuration and prompts only from the worktree, and commits each task with git add -A, so a
+# configuration not committed on the branch is copied in on every run, and only where Git ignores it and the session
+# files ralph-tui writes beside it.
+copied=false
+if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/null 2>&1; then
+  [ -f "$root/.ralph-tui/config.toml" ] ||
+    fail ".ralph-tui/config.toml is not in $root" 'cook io.github.lmarqs.cookbook:ralph#ralph-tui again'
+  for file in "$root/.ralph-tui/config.toml" "$root/.ralph-tui/session.json" "$root"/.ralph-tui/templates/*.hbs; do
+    path=.ralph-tui/${file#"$root/.ralph-tui/"}
+    git -C "$worktree" check-ignore -q "$path" ||
+      fail ".ralph-tui/config.toml is not committed on $branch, and Git does not ignore $path there" \
+        'ralph-tui would commit a copy, and its session files, into the run' \
+        "commit .ralph-tui, or ignore it in this clone, then run again:" \
+        "echo /.ralph-tui/ >> $(git -C "$root" rev-parse --path-format=absolute --git-path info/exclude)"
+  done
+  rm -rf "$worktree/.ralph-tui/templates"
+  mkdir -p "$worktree/.ralph-tui"
+  cp "$root/.ralph-tui/config.toml" "$worktree/.ralph-tui/"
+  [ ! -d "$root/.ralph-tui/templates" ] || cp -R "$root/.ralph-tui/templates" "$worktree/.ralph-tui/"
+  echo "Copied .ralph-tui/config.toml and .ralph-tui/templates/ from $root: they are not committed on $branch."
+  copied=true
+fi
 echo "worktree: $worktree"
 echo "branch: $branch"
 
 cd "$worktree"
+if [ "$copied" = true ]; then
+  template=$worktree/.ralph-tui/templates/json.hbs
+  [ -z "$epic" ] || template=$worktree/.ralph-tui/templates/beads.hbs
+  prompt_given=false
+  for argument in "$@"; do [ "$argument" != --prompt ] || prompt_given=true; done
+  # A parallel worker gets only the copied configuration, so the prompt reaches it by its path.
+  if [ "$prompt_given" = false ] && [ -f "$template" ]; then set -- --prompt "$template" "$@"; fi
+fi
 if [ -n "$epic" ]; then
   exec ralph-tui run --epic "$epic" "$@"
 fi

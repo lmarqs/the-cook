@@ -159,6 +159,34 @@ avoid it without reading the source.
 - [x] Existing argument lines cook byte-identical scripts; a test cooks `--worktree-root=wt`, runs, adds a parallel
   worker, finds the main checkout clean, and cleans both.
 
+### US-007: `bin/run` copies an ignored `.ralph-tui/` into the run
+
+**Description:** As a developer who keeps `.ralph-tui/` out of the repository, I want `bin/run` to give each run my
+configuration and prompts, so a run never falls back to ralph-tui's setup wizard, its permission bypass or its
+built-in prompts.
+
+Decided at run time, not by a cook-time parameter, because whether `.ralph-tui/` is committed is a fact of the run's
+branch, which changes after cooking and with `--base`. A spike with the real ralph-tui 0.12.0, a fake `claude` and an
+isolated `HOME` showed:
+
+- A run worktree without the configuration runs Claude with `--dangerously-skip-permissions` and the built-in prompt.
+- A copied, ignored configuration gives the team's prompt and no bypass in a serial run; the branch holds only the
+  agent's change, since `.git/info/exclude` is shared by every worktree of a clone.
+- A copy Git does not ignore is committed into the run branch with `ralph.lock` and `session.json`.
+- With a copy, parallel workers get the built-in prompt: ralph-tui copies only `config.toml` into them. `--prompt`
+  with the copied prompt's path reaches them. With a committed configuration, workers find the prompts unaided.
+
+**Acceptance Criteria:**
+
+- [x] When `.ralph-tui/config.toml` is not committed on `ralph/<name>`, `bin/run` copies the main checkout's
+  `config.toml` and `templates/` into the worktree on every run, and says so.
+- [x] It refuses, before copying, when Git does not ignore the configuration, a prompt or `session.json` in the
+  worktree, and prints the line that ignores `.ralph-tui/` in the clone.
+- [x] With a copy, it passes `--prompt` with the copied `beads.hbs` for `--epic` or `json.hbs` for `--prd`, unless the
+  run gives `--prompt`.
+- [x] A committed configuration is never overwritten and gets no `--prompt`.
+- [x] The help's Run-time effects, Connections, Traps and After cooking describe both ways.
+
 ## Functional Requirements
 
 - FR-1: `bin/clean <name>` must remove only worktrees under the run's F9 directory, the run worktree and their

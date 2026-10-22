@@ -99,6 +99,8 @@ tracker's state, and the rest of each `--instructions` file.
 by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
 | What a Codex worker may do | The team, in the seeded entry, which sets Codex's `workspace-write` sandbox |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
+| Where a run's configuration and prompts come from | The team, by committing `.ralph-tui/`; otherwise each person, \
+by ignoring it in their clone, and `bin/run` copies it into each run |
 | Where run worktrees go | The person, by `--worktree-root` |
 | The run worktree's setup | The person, by `--worktree-setup`; the team writes the file |
 | The run worktree's teardown | The person, by `--worktree-teardown`; the team writes the file |
@@ -120,10 +122,15 @@ with the role defined in the policy.
 worktree holds only what is committed. It creates `<worktree root>/ralph/<name>` on a new branch `ralph/<name>` from
 `--base`, `HEAD` by default, or reuses the worktree or the branch when they exist. With `--worktree-setup`, it runs that
 file from the root of each worktree it creates, never one it reuses, and stops the run when the file is missing, not
-executable or fails, leaving the worktree for `bin/clean`; without `--worktree-setup`, it runs no setup. It prints the
-worktree's path and branch, then runs `ralph-tui run --epic <id>`, or `--prd` with the file's absolute path, in the
-worktree, with the remaining arguments, such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no
-environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
+executable or fails, leaving the worktree for `bin/clean`; without `--worktree-setup`, it runs no setup. When
+`ralph/<name>` has no committed `.ralph-tui/config.toml`, it copies the main checkout's `config.toml` and `templates/`
+into the worktree on every run, because ralph-tui reads them only from there. It first checks that Git ignores them
+and `session.json` in the worktree, because ralph-tui commits each task with `git add -A`; otherwise it refuses and
+prints the line that ignores `.ralph-tui/` in the clone. With a copy, it passes `--prompt` with the copied prompt of
+the run's tracker, unless the run gives `--prompt`, because ralph-tui copies only `config.toml` into a parallel
+worker. It prints the worktree's path and branch, then runs `ralph-tui run --epic <id>`, or `--prd` with the file's
+absolute path, in the worktree, with the remaining arguments, such as `--headless`, `--agent codex` or
+`--model opus`. It sets and strips no environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 `bin/clean <name>` refuses while `ralph/<name>` or a parallel worker's branch has a commit whose change neither `HEAD`
 nor `origin/HEAD` has. A merge, rebase or cherry-pick counts as delivered, except where it loses a change: a squash
@@ -172,18 +179,20 @@ launcher and the sections.
   the run branch.
 - A tracked PRD run with `--parallel` leaves its completion marks uncommitted: ralph-tui 0.12 writes them after merging
   the workers' commits, and commits nothing after that.
-- An uncommitted or ignored `.ralph-tui/` never reaches the run worktree, so ralph-tui there runs without the team's
-  configuration: `bin/run` refuses while `.ralph-tui` has uncommitted changes, but cannot see ignored ones.
+- A run branch with a committed `.ralph-tui/config.toml` takes the configuration and prompts committed there, so a
+  `--base` from before a change to them runs the earlier ones.
 ''')
 @yield('''
 Install ralph-tui and the runtimes it needs with `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`: npm needs node to
 install it, and its launcher runs on bun. Without `-g`, mise pins them in the project's `mise.toml` instead, which is
-the team's choice. Review `.ralph-tui/config.toml` and the prompts, and commit `.gitignore` and `.ralph-tui/`:
-`bin/run` refuses while `.ralph-tui` has uncommitted changes. Then run `.ralph-tui/bin/run <name> --epic <id>`, with a
-Beads database holding the epic, or `.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>` once
-the branch `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as
-`--instructions=AGENTS.md`, to give agents these commands, and with the agents layout, add them to the Launching
-table in `.agents/README.md`.
+the team's choice. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and `.ralph-tui/` to share them
+with the team, or keep `.ralph-tui/` to this clone by ignoring it with
+`echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`, and `bin/run` copies it into each run. `bin/run`
+refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
+`.ralph-tui/bin/run <name> --epic <id>`, with a Beads database holding the epic, or
+`.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch `ralph/<name>` is delivered.
+Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to give agents these commands,
+and with the agents layout, add them to the Launching table in `.agents/README.md`.
 ''')
 import io.github.lmarqs.cookbook.ralph.RalphTui
 
