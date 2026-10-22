@@ -23,12 +23,12 @@ Facts the stories rely on, from ralph-tui 0.12.0 (`dist/cli.js` of the npm packa
 | F3 | Tracker: `--tracker` > `tracker` > `defaultTracker` > built-in `beads-bv`; `--prd` switches to `json` only without `--tracker` | config resolution |
 | F4 | Prompt: `--prompt` > `prompt_template` > `<cwd>/.ralph-tui/templates/<type>.hbs` > user templates > built-in; parallel workers inherit it | `promptTemplate` resolution |
 | F5 | Built-in Beads prompts tell workers to run `bd close`, `br close` and `br sync` | built-in templates |
-| F6 | Serial: the task is completed, then auto-commit runs `git add -A`. Parallel: the task is completed after the merge and nothing commits it | engine `runIteration`, parallel merge |
+| F6 | Serial: the task is completed, then, with `autoCommit = true`, auto-commit runs `git add -A`. Parallel: the task is completed after the merge and nothing commits it | engine `runIteration`, parallel merge |
 | F7 | Beads trackers need `<cwd>/.beads`; bd in a worktree uses the main checkout's database and honours `BEADS_DIR`; ralph-tui calls `bd sync --flush-only`, which bd 1.3.1 lacks | Beads tracker plugins, bd 1.3.1 |
 | F8 | `run` matches flags exactly, so `--epic=x` is not parsed; it takes a repeated `--epic` and `--epics a,b` | `run` argument parser |
-| F9 | Parallel workers live at `.worktrees/ralph/.ralph-worktrees/<name>/worker-<id>` for a run at `.worktrees/ralph/<name>`, on `ralph-parallel/<session>/<task>` branches; only `config.toml` is copied in, no setup runs, and ralph-tui force-removes a worker path before reuse | `getWorktreeBaseDir`, `copyConfig`, `cleanupStaleWorktree` |
+| F9 | Parallel workers live at `.worktrees/ralph/.ralph-worktrees/<name>/worker-<id>` for a run at `.worktrees/ralph/<name>`, unless `[parallel] worktreeDir` is set, on `ralph-parallel/<session>/<task>` branches; only `config.toml` is copied in, no setup runs, and ralph-tui force-removes a worker path before reuse. The `.ralph-tui/worktrees` default in `DEFAULT_PARALLEL_CONFIG` never applies: `run` passes `worktreeDir: undefined`, which overrides it | `getWorktreeBaseDir`, `WorktreeManager`, `ParallelExecutor`, `copyConfig`, `cleanupStaleWorktree` |
 | F10 | `<promise>COMPLETE</promise>` in the agent's final stdout completes and commits the task at any exit code | `PROMISE_COMPLETE_PATTERN` |
-| F11 | `rate[- ]limit`, 429, `too many requests`, `quota exceeded` or `overloaded` on stderr makes the iteration rate-limited | `RateLimitDetector.detect` |
+| F11 | `rate[- ]limit`, 429, `too many requests`, `quota exceeded` or `overloaded` on stderr makes the iteration rate-limited at any exit code; with exit 1, 2 or 429, so do `throttl`, `limit…exceeded`, `exceeded…limit`, `capacity` and `backoff` | `RateLimitDetector.detect`, `looseRateLimitCheck` |
 | F12 | `ralph-tui setup` writes `agentOptions = {}` and never writes `prompt_template` | setup wizard |
 | F13 | Under `workspace-write`, `.git` is read-only to Codex, and `/tmp` is writable by default, so scratch repositories under `/tmp` give false passes | the-cook #42 US-002 |
 | F14 | `bin/clean` removes every `ralph-parallel/*` worktree in the clone with `--force`, for any `<name>`, and checks only its own worktree for changes | `cookbook/ralph/bin/clean.sh` |
@@ -80,7 +80,10 @@ These commands must pass for every user story:
 - [ ] Without `--force`, a worktree under that directory with uncommitted changes makes `clean` exit 1 before removing
   anything, naming the worktree and that `--force` deletes them.
 - [ ] With `--force`, those worktrees are removed and each removal is printed, as today.
-- [ ] Existing `RalphTuiCookTest` tests pass unchanged.
+- [ ] `cleanRemovesADeliveredRunAndEveryParallelWorktree` places its `ralph-parallel/*` worktrees under
+  `.worktrees/ralph/demo/.ralph-tui/worktrees/`, a path ralph-tui never uses (F9), and asserts `clean` removes them;
+  it encodes the defect. It is rewritten to place them at F9's path, and the foreign case moves to the new test. Every
+  other `RalphTuiCookTest` test passes unchanged.
 
 ### US-002: bin/clean recognises a cherry-picked or rebased delivery
 
@@ -95,6 +98,8 @@ delivered, so `--force` and its skipped dirty check are not the norm.
   conflicts, still needs `--force`.
 - [ ] Tests: a cherry-picked branch is cleaned without `--force`; a rebased branch is cleaned; an undelivered branch is
   refused; with `origin/HEAD` set ahead of a lagging `HEAD`, a branch delivered upstream is cleaned.
+- [ ] `cleanRefusesUndeliveredOrUncommittedWorkUnlessForced` asserts the 4.2.0 refusal text ("has commits that HEAD
+  does not", "a squash or rebase merge"); its assertions change to the new text, and it still asserts the refusal.
 
 ### US-003: Spike S1, a personal run
 
@@ -146,7 +151,7 @@ the run branch and an untracked one stays local.
 
 **Acceptance Criteria:**
 
-- [ ] Serial run with a tracked PRD passed as `<worktree>/<path>`: records whether one commit carries the code change
+- [ ] Serial run with `autoCommit = true` and a tracked PRD passed as `<worktree>/<path>`: records whether one commit carries the code change
   and the PRD mark, and that the main checkout stays clean.
 - [ ] Serial run with an untracked PRD passed by the main checkout's absolute path: records that it is updated in place
   and nothing about it is committed.
@@ -178,7 +183,8 @@ under ralph-tui, so the `ralph-tui-worker` skill is correct before teams rely on
 - [ ] Records: whether a relative and an absolute `command` resolve from a run worktree and from a parallel worker;
   that a failing check withholds the promise and the task stays open; that a non-zero exit with `strategy = "retry"`,
   `maxRetries = 2`, `continueOnNonZeroExit = false` is retried twice then skipped; whether an exit 0 without the
-  promise is retried up to `maxIterations` and what `--iterations 0` does; whether stopping ralph-tui kills a fake
+  promise is retried up to `maxIterations` and what `--iterations 0` does; that a check whose output says
+  `capacity` or `throttled` leaves the iteration a plain failure, not rate-limited (F11); whether stopping ralph-tui kills a fake
   agent's child process without the wrapper's own process group; whether a setup marker in `git rev-parse --git-dir`
   runs setup once in each parallel worker.
 - [ ] Results in `tasks/spikes/ralph-tui-matrix/S6.md`, with each pseudo-code line marked confirmed or corrected.
@@ -283,7 +289,7 @@ gives pseudo code for a wrapper, so we can write it in our own terms.
 - [ ] New `cookbook/ralph/skills/ralph-tui-worker/SKILL.md`, with frontmatter `name` and `description`, holding: the
   contract (F9, F10, F11, the `--version` probe, argv order with Codex's trailing `-` on stdin, the retry triple, the
   environment passthrough, no shell metacharacters in `command`); the pseudo code as S6 corrected it; the wiring for
-  team and personal setups; the fake-agent tests a team runs on its wrapper.
+  team and personal setups; the fake-agent tests a team runs on its wrapper. It follows `docs/ux/skills-standards.md`.
 - [ ] New param `--skills`, a path, default none: with it, the skill is written as owned files under
   `<dir>/ralph-tui-worker/`; without it, nothing is written.
 - [ ] Tests: the skill written under the named directory and recorded in `cook.lock`; nothing written without the
@@ -362,8 +368,9 @@ release is backed by observed results.
 - `bin/run` keeps `exec ralph-tui run`, so no step may need the launcher after ralph-tui starts.
 - Never hand-edit `cook.lock` or `build/`; never weaken a test.
 - Spike stories run `git init`, `ralph-tui`, `bd`, `bv` and shell scripts in scratch repositories. Under this
-  repository's policy (`.agents/permission/policy.yaml` allows only `git status|diff|log|push` and `./gradlew check`),
-  an unattended worker is refused those commands; run the spike stories with a policy that allows them, or by hand.
+  repository's policy (`.agents/permission/policy.yaml` allows only `git status|diff|log|push` and `./gradlew check`)
+  and its uncommitted `.ralph-tui/config.toml` (Claude with `--permission-mode acceptEdits` and
+  `skipPermissions = false`), an unattended worker is refused those commands; run the spike stories with a policy that allows them, or by hand.
   Codex workers cannot commit in a nested scratch repository (F13), so spikes run with Claude.
 - Pseudo code the skill and S6 start from:
 
@@ -379,7 +386,7 @@ release is backed by observed results.
   run the agent in its own process group, forwarding TERM, INT and HUP; stdout to a temporary file; stdin passed on
   if the agent exits non-zero: keep its output in an ignored log; exit with its code
   run <check> base, output to an ignored log, never stderr
-  if the check fails: keep the output; print one fixed line to stderr; exit 1
+  if the check fails: keep the output; print one fixed line, free of F11's words, to stderr; exit 1
   write the held stdout; exit 0
   ```
 
