@@ -1224,6 +1224,31 @@ text.text = self + '\\n'
     assert cook(kitchen, 'acme:text:1.0.0#setup', [:]).after('OUT.md') == 'acme:text#setup\n'
   }
 
+  @Test void aRecipeReadsItsArgumentLineWithGivenParamsInDeclarationOrderAndRepeatsDeduplicated() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
+@param(value = ['agent'], many = true, doc = 'Agents, the first by default') String[] agent
+@param(value = ['mode', 'm'], default = ['fast'], doc = 'The mode') String mode
+@param(value = ['note'], default = [], doc = 'A note') String note
+@param(value = ['file'], many = true, sorted = true, path = true, default = [], doc = 'Files') List<String> file
+@recipe(arguments = true) String cookedWith
+@ingredient(Text) def text
+text.text = [cookedWith, agent.join(','), file.join(',')].join('\\n') + '\\n'
+""")
+
+    def cooked = cook(kitchen, 'recipes/setup.groovy',
+        [agent: ['codex', 'claude', 'codex'], m: ['slow'], file: ['./b.md', 'a.md', 'b.md']])
+
+    assert cooked.after('OUT.md') == '''\
+recipes/setup --agent=codex --agent=claude --mode=slow --file=a.md --file=b.md
+codex,claude
+a.md,b.md
+'''
+    def defaulted = cook(kitchen, 'recipes/setup.groovy', [agent: ['claude']]).after('OUT.md')
+    assert defaulted.readLines()[0] == 'recipes/setup --agent=claude'
+  }
+
   @Test void refusesARecipeNameFieldThatIsNotAString() {
     def kitchen = kitchen()
     recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)

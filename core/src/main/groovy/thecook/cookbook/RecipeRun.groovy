@@ -10,8 +10,8 @@ import thecook.model.Diagnostic
 import java.lang.reflect.Field
 
 /**
- * Runs a compiled recipe: binds its `@param` fields from the arguments, sets its `@resource` and `@recipe` fields,
- * injects its ingredients, then runs its body.
+ * Runs a compiled recipe: binds its `@param` fields from the arguments, sets its `@resource` fields and its `@recipe`
+ * fields from its name and the arguments as bound, injects its ingredients, then runs its body.
  */
 final class RecipeRun {
   private RecipeRun() { }
@@ -39,7 +39,12 @@ final class RecipeRun {
       throw new IllegalArgumentException(Diagnostic.text("Unknown argument --${unknown.first()}", takes))
     }
 
-    params.each { field -> set(script, field, bind(field, arguments, recipe)) }
+    List<String> line = [name]
+    params.each { field ->
+      def bound = bind(field, arguments, recipe)
+      set(script, field, bound.value)
+      line.addAll(bound.given ? bound.values.collect { "${bound.option}=${it}".toString() } : [])
+    }
     fields.findAll { it.getAnnotation(Resource) }.each { field ->
       if (!(field.type in [String, CharSequence, Object])) {
         throw new IllegalArgumentException(
@@ -54,7 +59,7 @@ final class RecipeRun {
         "${field.name} has the type ${field.type.simpleName}, which the recipe name cannot have")
       }
 
-      set(script, field, name)
+      set(script, field, field.getAnnotation(Self).arguments() ? line.join(' ') : name)
     }
     def ingredients = fields.findAll { it.getAnnotation(Injected) }.collect { field ->
       def injected = field.getAnnotation(Injected)
@@ -66,7 +71,10 @@ final class RecipeRun {
     ingredients
   }
 
-  private static Object bind(Field field, List<Argument> arguments, CompiledRecipe recipe) {
+  /**
+   * The value of `field`, its option, the values it was bound from, and whether they were given rather than defaulted.
+   */
+  private static Map bind(Field field, List<Argument> arguments, CompiledRecipe recipe) {
     def declared = field.getAnnotation(Param)
     def name = "--${declared.value().first()}"
     def given = arguments.findAll { it.name in declared.value() }
@@ -84,8 +92,9 @@ final class RecipeRun {
     }
 
     List<String> values = given.collect { it.form == Argument.Form.BARE ? 'true' : it.value }
+    boolean defaulted = !values
 
-    if (!values) {
+    if (defaulted) {
       if (!recipe.hasDefault(field.name)) {
         throw new IllegalArgumentException("Missing ${name}: ${declared.doc()}")
       }
@@ -108,7 +117,13 @@ final class RecipeRun {
       values = values.collect { inRepository(name, it) }
     }
 
-    convert(name, field.type, values)
+    values = values.unique(false)
+
+    if (declared.sorted()) {
+      values = values.sort(false)
+    }
+
+    [value: convert(name, field.type, values), option: name, values: values, given: !defaulted]
   }
 
   private static String inRepository(String name, String value) {

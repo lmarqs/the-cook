@@ -28,8 +28,9 @@ import java.lang.annotation.Target
 }
 
 /**
- * An input bound from `--name=value`; required without a `default`, repeatable with `many`. With `path`, each value is
- * a path from the repository root, refused when blank, absolute or holding a `..` segment.
+ * An input bound from `--name=value`; required without a `default`, repeatable with `many`, which binds the values
+ * without duplicates, in the order given, or sorted with `sorted`. With `path`, each value is a path from the
+ * repository root, refused when blank, absolute or holding a `..` segment.
  */
 @Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
 @Retention(RetentionPolicy.RUNTIME)
@@ -39,6 +40,7 @@ import java.lang.annotation.Target
   String[] 'default'() default []
   String[] choices() default []
   boolean many() default false
+  boolean sorted() default false
   boolean path() default false
 }
 
@@ -59,9 +61,12 @@ import java.lang.annotation.Target
 
 /**
  * The recipe's own name, as its section markers and `cook.lock` carry it: its coordinates without the version, or its
- * place in the kitchen, such as `recipes/setup`. A recipe opens its argument lines with it.
+ * place in the kitchen, such as `recipes/setup`. With `arguments`, the name is followed by each param the recipe was
+ * given, in declaration order, as bound, such as `recipes/setup --agent=claude --file=a.md`: the argument line its
+ * owned sections open with.
  */
 @Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
 @Retention(RetentionPolicy.RUNTIME)
 @interface recipe {
+  boolean arguments() default false
 }
