@@ -70,16 +70,16 @@ These commands must pass for every user story:
 
 **Acceptance Criteria:**
 
-- [ ] A test in `core/src/test/groovy/thecook/RalphTuiCookTest.groovy` fails on the 4.2.0 `clean.sh`: it creates a
+- [x] A test in `core/src/test/groovy/thecook/RalphTuiCookTest.groovy` fails on the 4.2.0 `clean.sh`: it creates a
   `ralph-parallel/*` worktree outside `.worktrees/ralph/.ralph-worktrees/<name>/` with an uncommitted file, runs
   `bin/clean <name>`, and asserts that worktree, its file and its branch remain.
-- [ ] `cookbook/ralph/bin/clean.sh` removes only worktrees whose path is under
+- [x] `cookbook/ralph/bin/clean.sh` removes only worktrees whose path is under
   `<root>/.worktrees/ralph/.ralph-worktrees/<name>/`, and their branches; it never lists or removes others, with or
   without `--force`.
-- [ ] Without `--force`, a worktree under that directory with uncommitted changes makes `clean` exit 1 before removing
+- [x] Without `--force`, a worktree under that directory with uncommitted changes makes `clean` exit 1 before removing
   anything, naming the worktree and that `--force` deletes them.
-- [ ] With `--force`, those worktrees are removed and each removal is printed, as today.
-- [ ] `cleanRemovesADeliveredRunAndEveryParallelWorktree` places its `ralph-parallel/*` worktrees under
+- [x] With `--force`, those worktrees are removed and each removal is printed, as today.
+- [x] `cleanRemovesADeliveredRunAndEveryParallelWorktree` places its `ralph-parallel/*` worktrees under
   `.worktrees/ralph/demo/.ralph-tui/worktrees/`, a path ralph-tui never uses (F9), and asserts `clean` removes them;
   it encodes the defect. It is rewritten to place them at F9's path, and the foreign case moves to the new test. Every
   other `RalphTuiCookTest` test passes unchanged.
@@ -91,13 +91,13 @@ delivered, so `--force` and its skipped dirty check are not the norm.
 
 **Acceptance Criteria:**
 
-- [ ] `clean.sh` counts `ralph/<name>` as delivered when `git cherry <upstream> ralph/<name>` lists no line starting
+- [x] `clean.sh` counts `ralph/<name>` as delivered when `git cherry <upstream> ralph/<name>` lists no line starting
   with `+` for `<upstream>` `HEAD`, or for `refs/remotes/origin/HEAD` when it resolves; a `git cherry` error stops it.
-- [ ] Its refusal names the commits not found upstream and says a squash merge, or a cherry-pick that resolved
+- [x] Its refusal names the commits not found upstream and says a squash merge, or a cherry-pick that resolved
   conflicts, still needs `--force`.
-- [ ] Tests: a cherry-picked branch is cleaned without `--force`; a rebased branch is cleaned; an undelivered branch is
+- [x] Tests: a cherry-picked branch is cleaned without `--force`; a rebased branch is cleaned; an undelivered branch is
   refused; with `origin/HEAD` set ahead of a lagging `HEAD`, a branch delivered upstream is cleaned.
-- [ ] `cleanRefusesUndeliveredOrUncommittedWorkUnlessForced` asserts the 4.2.0 refusal text ("has commits that HEAD
+- [x] `cleanRefusesUndeliveredOrUncommittedWorkUnlessForced` asserts the 4.2.0 refusal text ("has commits that HEAD
   does not", "a squash or rebase merge"); its assertions change to the new text, and it still asserts the refusal.
 
 ### US-003: Gating completion, documented
@@ -107,11 +107,11 @@ and a wrapper's pseudo code in the artifact's README, so I can write the gate in
 
 **Acceptance Criteria:**
 
-- [ ] `cookbook/ralph/README.md` has a "Gating completion" section: F10; the `--version` probe; argument order and
+- [x] `cookbook/ralph/README.md` has a "Gating completion" section: F10; the `--version` probe; argument order and
   Codex's prompt on stdin; F11's words; the retry settings; the environment filter; the characters `command` refuses;
   F9's missing setup; the wrapper's pseudo code; a `config.toml` example with a relative `command`.
-- [ ] The relative `command` is observed working in a serial run with a fake agent.
-- [ ] `cookbook/README.md`'s rendered help matches.
+- [x] The relative `command` is observed working in a serial run with a fake agent.
+- [x] `cookbook/README.md`'s rendered help matches.
 
 ### US-004: `--tracker` narrows what is seeded and offered
 
@@ -120,10 +120,10 @@ tracker.
 
 **Acceptance Criteria:**
 
-- [ ] New param `--tracker`, `many`, `sorted`, choices `beads` and `json`, default both.
-- [ ] Only the chosen trackers' prompts are seeded; `tracker = "beads"` is written only with `beads`; `bin/run`'s usage
+- [x] New param `--tracker`, `many`, `sorted`, choices `beads` and `json`, default both.
+- [x] Only the chosen trackers' prompts are seeded; `tracker = "beads"` is written only with `beads`; `bin/run`'s usage
   line and the instructions section name only the chosen run flags. No refusals and no flag rewriting.
-- [ ] Existing argument lines cook unchanged; a test covers a JSON-only cook.
+- [x] Existing argument lines cook unchanged; a test covers a JSON-only cook.
 
 ### US-005: Traps for what the recipe does not fix
 
@@ -132,10 +132,10 @@ avoid it without reading the source.
 
 **Acceptance Criteria:**
 
-- [ ] Traps: F2's `skipPermissions` placement; F10, pointing to Gating completion; F11; F9's missing setup in parallel
+- [x] Traps: F2's `skipPermissions` placement; F10, pointing to Gating completion; F11; F9's missing setup in parallel
   workers; `git add -A` carrying `.beads/` changes; a tracked PRD with `--parallel` leaving its marks uncommitted (F6);
   an ignored or uncommitted `.ralph-tui/` never reaching the run worktree.
-- [ ] The help standard test and the rendered-help test pass.
+- [x] The help standard test and the rendered-help test pass.
 
 ### US-006: `--worktree-root` moves the run worktrees
 
@@ -144,12 +144,12 @@ avoid it without reading the source.
 
 **Acceptance Criteria:**
 
-- [ ] New param `--worktree-root`, a path from the repository root, default `.worktrees`, with
+- [x] New param `--worktree-root`, a path from the repository root, default `.worktrees`, with
   `agents#connect`'s name and meaning: a run's worktree is `<root>/ralph/<name>`, following `<root>/<branch>`.
-- [ ] `bin/run` and `bin/clean` read the root from one shell-quoted variable; ralph-tui's parallel workers follow it to
+- [x] `bin/run` and `bin/clean` read the root from one shell-quoted variable; ralph-tui's parallel workers follow it to
   `<root>/ralph/.ralph-worktrees/<name>/` (F9) with no `[parallel] worktreeDir`; `.gitignore` ignores `/<root>/ralph/`;
   the instructions section names `<root>/ralph/<name>`.
-- [ ] Existing argument lines cook byte-identical scripts; a test cooks `--worktree-root=wt`, runs, adds a parallel
+- [x] Existing argument lines cook byte-identical scripts; a test cooks `--worktree-root=wt`, runs, adds a parallel
   worker, finds the main checkout clean, and cleans both.
 
 ## Functional Requirements
