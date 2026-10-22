@@ -30,8 +30,22 @@ git worktree add .worktrees/<branch> -b <branch>
 cd .worktrees/<branch> && .worktrees/setup
 ```
 
-A loop runner runs it in each worktree it creates when its own configuration names the file. Without it, a worktree
-is used as checked out.
+Without it, a worktree is used as checked out.
+
+## Teardown
+
+When a worktree starts services or keeps local state outside Git, such as containers, databases or caches, the team
+writes `.worktrees/teardown`, an executable that stops and deletes them for the worktree it runs in. Commit it with
+`git add -f .worktrees/teardown`, and run it before removing the worktree:
+
+```sh
+(cd .worktrees/<branch> && .worktrees/teardown) && git worktree remove .worktrees/<branch>
+```
+
+Without it, removing a worktree removes only its files.
+
+A loop runner or an agent harness runs these scripts in the worktrees it creates and removes when its own configuration
+names them.
 
 ## Traps
 

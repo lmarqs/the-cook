@@ -76,6 +76,8 @@ recipes:
       'git branch -d <branch>',
       'git worktree prune',
       '`.worktrees/setup`',
+      '`.worktrees/teardown`',
+      '(cd .worktrees/<branch> && .worktrees/teardown) && git worktree remove .worktrees/<branch>',
       'installs dependencies',
       'the stash',
     ].each { assert text.contains(it) }

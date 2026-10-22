@@ -20,8 +20,10 @@ other recipes:
 so `fix/login` is at `.worktrees/fix/login` |
 | `.worktrees/setup` | An optional executable the team writes and commits; \
 a person or a runner runs it inside each new worktree to install dependencies and tools and create local files |
+| `.worktrees/teardown` | An optional executable the team writes and commits; \
+a person or a runner runs it inside a worktree before removing it, to stop its services and delete its local state |
 | `.worktrees/README.md` | The rule, the `git worktree add`, `remove` and `prune` commands, \
-the setup script and the traps, for people and agents to read |
+the setup and teardown scripts and the traps, for people and agents to read |
 
 ## Consumes
 
@@ -34,12 +36,13 @@ Only the files `--instructions` names, which must exist; it needs no tool to coo
 | --- | --- | --- | --- |
 | `.gitignore` | The section `worktrees`: a comment naming the recipe, \
 then `/.worktrees/*` and `!/.worktrees/README.md` | Always | owned |
-| `.worktrees/README.md` | The rule, the commands, `.worktrees/setup` and the traps | Always | seed |
+| `.worktrees/README.md` | The rule, the commands, `.worktrees/setup`, `.worktrees/teardown` and the traps | Always | \
+seed |
 | Each `--instructions` file | The section `worktrees`: the argument line as an HTML comment, then a list item \
 stating the rule and pointing at `.worktrees/README.md` | `--instructions` | owned |
 
-Never touches: `.worktrees/setup`, the worktrees and branches themselves, the rest of `.gitignore` and of each
-`--instructions` file.
+Never touches: `.worktrees/setup`, `.worktrees/teardown`, the worktrees and branches themselves, the rest of
+`.gitignore` and of each `--instructions` file.
 
 ## Connections
 
@@ -47,6 +50,7 @@ Never touches: `.worktrees/setup`, the worktrees and branches themselves, the re
 | --- | --- |
 | A loop runner's worktrees | The runner, by following the rule |
 | How a new worktree is set up | The team, in `.worktrees/setup`, which this recipe never writes |
+| How a worktree is torn down before removal | The team, in `.worktrees/teardown`, which this recipe never writes |
 | The rule in the files agents and people read | The person, by `--instructions`; the section is appended at the \
 file's end, and stays where the team moves it |
 | Which branch a worktree takes, and how it is delivered | The session that creates it |
@@ -63,11 +67,12 @@ was edited by hand or the README deleted.
 
 - Tools that walk the directory without reading `.gitignore`, such as a linter given a glob, see every worktree's copy
   of the sources: exclude `.worktrees/` in their own settings.
-- `/.worktrees/*` ignores `.worktrees/setup` too: commit it with `git add -f`.
+- `/.worktrees/*` ignores `.worktrees/setup` and `.worktrees/teardown` too: commit them with `git add -f`.
 ''')
 @yield('''
 Commit `.gitignore` and `.worktrees/README.md`. When a new worktree needs more than a checkout to run, write
-`.worktrees/setup`, make it executable and commit it with `git add -f .worktrees/setup`. Cooked without
+`.worktrees/setup`, make it executable and commit it with `git add -f .worktrees/setup`; when removing one needs more
+than `git worktree remove`, do the same with `.worktrees/teardown`. Cooked without
 `--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to state the rule where agents and people
 read.
 ''')

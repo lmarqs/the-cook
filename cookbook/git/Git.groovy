@@ -31,8 +31,8 @@ package io.github.lmarqs.cookbook.git
  * ## With other models
  *
  * Git consumes the ignore patterns other models expose, such as `git.ignore(node.ephemeralFiles())`. The recipe
- * passes them to the Git instance for the same directory. Other artifacts name `.worktrees/<branch>` and
- * `.worktrees/setup` only as path conventions.
+ * passes them to the Git instance for the same directory. Other artifacts name `.worktrees/<branch>`,
+ * `.worktrees/setup` and `.worktrees/teardown` only as path conventions.
  */
 @Ingredient
 class Git {
@@ -56,8 +56,8 @@ class Git {
 
   /**
    * Requests the worktree root: Git ignores everything under `.worktrees/` except the README, seeded to state the
-   * rule `.worktrees/<branch>` and the optional `.worktrees/setup`. `cookedWith` names the recipe and its arguments,
-   * which the section's first line records; it must not be blank.
+   * rule `.worktrees/<branch>` and the optional `.worktrees/setup` and `.worktrees/teardown`. `cookedWith` names the
+   * recipe and its arguments, which the section's first line records; it must not be blank.
    */
   void worktrees(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -126,8 +126,8 @@ class Git {
   }
 
   /**
-   * `.worktrees/README.md`, seeded when absent and never owned: the rule, the `git worktree` commands, the setup
-   * script and the state every worktree shares, when the worktree root is requested.
+   * `.worktrees/README.md`, seeded when absent and never owned: the rule, the `git worktree` commands, the setup and
+   * teardown scripts and the state every worktree shares, when the worktree root is requested.
    */
   @Seed(path = '.worktrees/README.md')
   String worktreesReadme() {
