@@ -49,7 +49,7 @@ recipes:
         - ".agents/skills/agents-layout/templates/policy.template.yaml"
   - name: "io.github.lmarqs.cookbook:git#worktrees"
     source: "io.github.lmarqs.cookbook:git:4.2.0#worktrees"
-    sha256: "1dd0832a171c8af621573d15cc58a809e2272f94a8ee1e5fa72f93ab7520ee2d"
+    sha256: "7f54416335486e268cdb40d66685e0a531bb999851a21c3c48897fec475bc3cb"
     owns:
       sections:
         - file: ".gitignore"

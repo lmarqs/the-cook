@@ -55,9 +55,9 @@ class Git {
   }
 
   /**
-   * Requests the worktree root: Git ignores everything under `.worktrees/` except the README, seeded to state the
-   * rule `.worktrees/<branch>` and the optional `.worktrees/setup` and `.worktrees/teardown`. `cookedWith` names the
-   * recipe and its arguments, which the section's first line records; it must not be blank.
+   * Requests the worktree root: Git ignores everything under `.worktrees/` except the README, which states the rule
+   * `.worktrees/<branch>`, and the `.worktrees/setup` and `.worktrees/teardown` scripts, all seeded. `cookedWith` names
+   * the recipe and its arguments, which the section's first line records; it must not be blank.
    */
   void worktrees(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -95,8 +95,8 @@ class Git {
   }
 
   /**
-   * The `worktrees` section of `.gitignore`: a comment naming the recipe, then `/.worktrees/*` and
-   * `!/.worktrees/README.md`, when the worktree root is requested.
+   * The `worktrees` section of `.gitignore`: a comment naming the recipe, then `/.worktrees/*` and a re-include of the
+   * README and both scripts, when the worktree root is requested.
    */
   @Section(path = '.gitignore', id = 'worktrees')
   List<String> worktreesSection() {
@@ -104,7 +104,13 @@ class Git {
       return null
     }
 
-    ["# ${worktreesCookedWith}".toString(), "/${WORKTREES}/*".toString(), "!/${WORKTREES}/README.md".toString()]
+    [
+      "# ${worktreesCookedWith}",
+      "/${WORKTREES}/*",
+      "!/${WORKTREES}/README.md",
+      "!/${WORKTREES}/setup",
+      "!/${WORKTREES}/teardown"
+    ]*.toString()
   }
 
   /**
@@ -132,5 +138,23 @@ class Git {
   @Seed(path = '.worktrees/README.md')
   String worktreesReadme() {
     worktreesCookedWith ? resource('templates/README.template.md') : null
+  }
+
+  /**
+   * `.worktrees/setup`, seeded executable when absent and never owned: a `sh` script that does nothing yet, with
+   * comments naming what a team adds, when the worktree root is requested.
+   */
+  @Seed(path = '.worktrees/setup', mode = '0755')
+  String worktreesSetup() {
+    worktreesCookedWith ? resource('templates/setup.sh') : null
+  }
+
+  /**
+   * `.worktrees/teardown`, seeded executable when absent and never owned: a `sh` script that does nothing yet, with
+   * comments naming what a team adds, when the worktree root is requested.
+   */
+  @Seed(path = '.worktrees/teardown', mode = '0755')
+  String worktreesTeardown() {
+    worktreesCookedWith ? resource('templates/teardown.sh') : null
   }
 }

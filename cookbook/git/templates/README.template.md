@@ -1,8 +1,8 @@
 # Worktrees
 
 This directory holds the repository's linked Git worktrees: extra checkouts of other branches that share this clone's
-history, branches and stash. Git ignores everything here except this file, so a worktree never shows up in the main
-checkout's `git status`.
+history, branches and stash. Git ignores everything here except this file and the two scripts below, so a worktree
+never shows up in the main checkout's `git status`.
 
 ## The rule
 
@@ -18,34 +18,22 @@ git branch -d <branch>                             # once merged; -D deletes an 
 git worktree prune                                 # forgets worktrees whose directory was deleted by hand
 ```
 
-## Setup
+## Setup and teardown
 
-A new worktree holds only the committed files. When a checkout needs more to run, the team writes `.worktrees/setup`,
-an executable that makes the worktree it runs in ready: it installs dependencies and tools, and copies or creates the
-local files the checkout needs, such as an untracked `.env`. Everything here but this file is ignored, so commit it
-with `git add -f .worktrees/setup`; each worktree then carries its own copy:
+A new worktree holds only the committed files. `.worktrees/setup` makes the worktree it runs in ready to run: the team
+adds the steps a fresh checkout needs, such as installing dependencies and tools, and copying or creating untracked
+local files like `.env`. `.worktrees/teardown` stops and deletes what a worktree keeps outside Git, such as
+containers, databases or caches. Both start out doing nothing, and both are committed, so each worktree carries its
+own copy. Each runs from the worktree's root:
 
 ```sh
 git worktree add .worktrees/<branch> -b <branch>
-cd .worktrees/<branch> && .worktrees/setup
-```
-
-Without it, a worktree is used as checked out.
-
-## Teardown
-
-When a worktree starts services or keeps local state outside Git, such as containers, databases or caches, the team
-writes `.worktrees/teardown`, an executable that stops and deletes them for the worktree it runs in. Commit it with
-`git add -f .worktrees/teardown`, and run it before removing the worktree:
-
-```sh
+(cd .worktrees/<branch> && .worktrees/setup)
 (cd .worktrees/<branch> && .worktrees/teardown) && git worktree remove .worktrees/<branch>
 ```
 
-Without it, removing a worktree removes only its files.
-
-A loop runner or an agent harness runs these scripts in the worktrees it creates and removes when its own configuration
-names them.
+A loop runner or an agent harness runs them in the worktrees it creates and removes when its own configuration names
+them.
 
 ## Traps
 

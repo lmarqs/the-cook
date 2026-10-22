@@ -11,6 +11,9 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import thecook.cookbook.RecipeSource
 
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
+
 class GitWorktreesCookTest {
   private static final String WORKTREES = 'io.github.lmarqs.cookbook:git:0.1.0#worktrees'
   private static final File README = new File(COOKBOOK, 'git/templates/README.template.md')
@@ -22,15 +25,26 @@ class GitWorktreesCookTest {
 
     cook(kitchen, WORKTREES).commit()
 
-    assert files(kitchen) == ['.gitignore', '.worktrees/README.md', 'cook.lock']
+    def seeded = ['.worktrees/README.md', '.worktrees/setup', '.worktrees/teardown']
+    assert files(kitchen) == ['.gitignore'] + seeded + ['cook.lock']
     assert new File(kitchen, '.gitignore').text == '''\
 # cook:begin io.github.lmarqs.cookbook:git#worktrees/worktrees
 # io.github.lmarqs.cookbook:git#worktrees
 /.worktrees/*
 !/.worktrees/README.md
+!/.worktrees/setup
+!/.worktrees/teardown
 # cook:end io.github.lmarqs.cookbook:git#worktrees/worktrees
 '''
     assert new File(kitchen, '.worktrees/README.md').bytes == README.bytes
+    ['setup', 'teardown'].each { name ->
+      def script = new File(kitchen, ".worktrees/${name}")
+      assert script.bytes == new File(COOKBOOK, "git/templates/${name}.sh").bytes
+      assert Files.getPosixFilePermissions(script.toPath()) == PosixFilePermissions.fromString('rwxr-xr-x')
+      def run = new ProcessBuilder(script.path).directory(kitchen).start()
+      assert run.waitFor() == 0
+      assert run.inputStream.text == ''
+    }
     assert new File(kitchen, 'cook.lock').text == """# Written by the-cook; do not edit by hand.
 version: 1
 recipes:
@@ -46,25 +60,28 @@ recipes:
     assert cook(kitchen, WORKTREES).actions == [:]
   }
 
-  @Test void keepsAHandEditedReadmeAndTheTeamsOwnIgnoreRules() {
+  @Test void keepsAHandEditedReadmeAndSetupAndTheTeamsOwnIgnoreRules() {
     def kitchen = kitchen()
     new File(kitchen, '.gitignore').text = '/build/\n'
     cook(kitchen, WORKTREES).commit()
     def readme = new File(kitchen, '.worktrees/README.md')
     readme.text = '# Our worktrees\n\nRun `.worktrees/setup` after `git worktree add`.\n'
+    def setup = new File(kitchen, '.worktrees/setup')
+    setup.text = '#!/bin/sh\nnpm ci\n'
 
     assert cook(kitchen, WORKTREES).actions == [:]
+    assert setup.text == '#!/bin/sh\nnpm ci\n'
     assert readme.text == '# Our worktrees\n\nRun `.worktrees/setup` after `git worktree add`.\n'
     assert new File(kitchen, '.gitignore').text.startsWith('/build/\n# cook:begin ')
   }
 
-  @Test void gitIgnoresEveryWorktreeAndKeepsTheReadme() {
+  @Test void gitIgnoresEveryWorktreeAndKeepsTheReadmeAndScripts() {
     def kitchen = kitchen()
     assert ['git', 'init', '-q', kitchen.path].execute().waitFor() == 0
     cook(kitchen, WORKTREES).commit()
 
-    ['.worktrees/x/a', '.worktrees/ralph/run/AGENTS.md', '.worktrees/setup'].each { assert ignored(kitchen, it) }
-    assert !ignored(kitchen, '.worktrees/README.md')
+    ['.worktrees/x/a', '.worktrees/ralph/run/AGENTS.md'].each { assert ignored(kitchen, it) }
+    ['.worktrees/README.md', '.worktrees/setup', '.worktrees/teardown'].each { assert !ignored(kitchen, it) }
   }
 
   @Test void theReadmeStatesTheRuleTheCommandsTheSetupScriptAndTheTraps() {
@@ -77,8 +94,9 @@ recipes:
       'git worktree prune',
       '`.worktrees/setup`',
       '`.worktrees/teardown`',
+      '(cd .worktrees/<branch> && .worktrees/setup)',
       '(cd .worktrees/<branch> && .worktrees/teardown) && git worktree remove .worktrees/<branch>',
-      'installs dependencies',
+      'installing dependencies',
       'the stash',
     ].each { assert text.contains(it) }
   }
