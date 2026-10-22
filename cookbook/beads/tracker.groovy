@@ -133,6 +133,7 @@ import io.github.lmarqs.cookbook.beads.Beads
     doc = 'A Markdown file, from the repository root, where the recipe tells agents Beads tracks the work')
     String[] instructions
 
+@recipe String self
 @ingredient(Beads) def beads
 
 if (sessionStart != null) {
@@ -144,4 +145,4 @@ beads.instructions(files)
 
 def arguments = ["--share=${share}"] + (sessionStart != null ? ["--session-start=${sessionStart}"] : []) +
 files.collect { "--instructions=${it}" }
-beads.track(share, (['io.github.lmarqs.cookbook:beads#tracker'] + arguments).join(' '))
+beads.track(share, ([self] + arguments).join(' '))

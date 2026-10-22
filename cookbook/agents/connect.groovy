@@ -203,13 +203,14 @@ import io.github.lmarqs.cookbook.agents.Codex
     doc = 'An executable, by its path from a worktree root, that the worktree hook runs before removing a worktree')
     String worktreeTeardown
 
+@recipe String self
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude
 @ingredient(Codex) def codex
 
 def selected = [claude, codex].findAll { it.name in harness }
 def worktreePaths = [root: worktreeRoot, setup: worktreeSetup, teardown: worktreeTeardown].findAll { it.value != null }
-def cookedWith = (['io.github.lmarqs.cookbook:agents#connect'] + selected.collect { "--harness=${it.name}" } +
+def cookedWith = ([self] + selected.collect { "--harness=${it.name}" } +
 worktreePaths.collect { name, path -> "--worktree-${name}=${path}" }).join(' ')
 agents.seedLayout()
 agents.permit(selected, cookedWith)

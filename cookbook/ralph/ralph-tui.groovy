@@ -175,6 +175,7 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
     doc = "A Markdown file, from the repository root, where the recipe gives the launcher's commands")
     String[] instructions
 
+@recipe String self
 @ingredient(RalphTui) def ralph
 
 List<String> harnesses = (harness as List<String>).unique(false)
@@ -205,4 +206,4 @@ def arguments = harnesses.collect { "--harness=${it}" } +
 (worktreeSetup != null ? ["--worktree-setup=${worktreeSetup}"] : []) +
 (worktreeTeardown != null ? ["--worktree-teardown=${worktreeTeardown}"] : []) +
 files.collect { "--instructions=${it}" }
-ralph.install((['io.github.lmarqs.cookbook:ralph#ralph-tui'] + arguments).join(' '))
+ralph.install(([self] + arguments).join(' '))

@@ -82,8 +82,9 @@ import io.github.lmarqs.cookbook.git.Git
     doc = 'A Markdown file, from the repository root, where the recipe states the worktree rule')
     String[] instructions
 
+@recipe String self
 @ingredient(Git) def git
 
 List<String> files = (instructions as List<String>).unique(false).sort(false)
 git.instructions(files)
-git.worktrees((['io.github.lmarqs.cookbook:git#worktrees'] + files.collect { "--instructions=${it}" }).join(' '))
+git.worktrees(([self] + files.collect { "--instructions=${it}" }).join(' '))

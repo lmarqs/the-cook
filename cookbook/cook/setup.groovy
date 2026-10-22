@@ -41,6 +41,7 @@ import io.github.lmarqs.cookbook.agents.Claude
 import io.github.lmarqs.cookbook.agents.Codex
 import io.github.lmarqs.cookbook.git.Git
 
+@recipe String self
 @ingredient(Agents) def agents
 @ingredient(Claude) def claude
 @ingredient(Codex) def codex
@@ -54,9 +55,8 @@ agents.instruct(
     '',
     'Core, infra, the CLI, and cookbook ingredients and recipes are Groovy.',
     'Build and verify changes with ./gradlew check cliBuild.')
-def cookedWith = 'io.github.lmarqs.cookbook:cook#setup'
-agents.permit(harnesses, cookedWith)
+agents.permit(harnesses, self)
 agents.connect(harnesses)
 
-git.ignoredBy(cookedWith)
+git.ignoredBy(self)
 git.ignore(claude.localFiles)
