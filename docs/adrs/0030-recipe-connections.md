@@ -15,8 +15,8 @@ recipes, programs and the repository can be read from the arguments a recipe was
 - Every section a recipe owns opens with a comment line naming the recipe and the arguments it was cooked with
   ([generated content](../ux/generated-content-standards.md)). Re-cooking repeats those arguments, and `--check`
   compares the result with the destination.
-- A model reads a file's content in the draft with `current(path)`, including a file another recipe in the same
-  invocation writes ([cookbook](../../cookbook/README.md)).
+- A model can read the current content of any file in the destination, including a file another recipe in the same
+  invocation writes.
 - Worked example: acme cooks a tracker recipe that adds a session-start script whenever it finds an agents layout's
   hooks directory. A later commit adds the layout. `./cook --check` with the tracker's unchanged arguments now reports
   the tracker as changed, and removing the layout makes the script disappear on the next cook, although nobody asked
@@ -26,12 +26,9 @@ recipes, programs and the repository can be read from the arguments a recipe was
 - When two recipes write the same section, key or file, the last one wins and becomes its owner
   ([0007](0007-ownership.md)), and a recipe rewrites what it owns on every cook. A recipe that owns a program's hook
   key therefore replaces the team's own edit to that key, and takes the key from another recipe or loses it to one.
-- People and agents learn a repository's rules from Markdown files the team keeps for them: agents from `AGENTS.md`,
-  or `CLAUDE.md` where a team has no `AGENTS.md`, people from `README.md`. A rule a recipe sets up, such as where
-  worktrees go, reaches them only through one of these files.
-- Cook appends a section new to a file at its end, and rewrites an existing section between its markers wherever they
-  stand ([generated content](../ux/generated-content-standards.md#sections-and-markers)), so a section the team moves
-  stays where they put it.
+- People and coding agents learn a repository's rules from instruction files the team keeps for them, such as a
+  README for people and an agent instruction file for agents. A rule a recipe sets up, such as where worktrees go,
+  reaches them only through those files.
 
 ## Decision
 
@@ -45,8 +42,8 @@ recipes, programs and the repository can be read from the arguments a recipe was
    another recipe that the person names by point 2.
 4. Cook connects automatically only files of one recipe, such as a link from the path a program reads to the file the
    recipe owns.
-5. A recipe states the rules it sets up in the instruction files the person names by a repeatable parameter: it owns
-   one section in each, which the team may move within the file. Without the parameter it writes in none.
+5. A recipe states the rules it sets up in each instruction file the person names by point 2, as a section
+   ([0018](0018-conventions.md)), and in none the person leaves unnamed.
 
 ## Reasons
 
@@ -64,9 +61,9 @@ recipes, programs and the repository can be read from the arguments a recipe was
 - **4.** Between files of one recipe the connection has one correct form and no other party to agree with.
 - **5.** The same few lines on where a recipe's files are and how to use them would otherwise be written by hand in
   every repository that cooks it, and drift from the recipe when it changes; owned, they change with the recipe's
-  arguments and version. Naming the files keeps point 1: the recipe never looks for `AGENTS.md`, and a repository
-  whose agents read another file names that one. A parameter that takes several files reaches agents and people in
-  one cook. The trade is a section the team does not edit by hand: an edit inside it shows in the next cook's diff.
+  arguments and version. Naming the files keeps point 1: the recipe never looks for an instruction file, and a
+  repository whose agents read another file names that one. Several files reach agents and people in one cook. The
+  trade is a section the team does not edit by hand, since the recipe owns it ([0007](0007-ownership.md)).
 
 ## Rejected alternatives
 
@@ -89,5 +86,3 @@ wrong one.
   and "Cook, automatically" only between its own files.
 - A recipe that offers a meeting point publishes its shape in API, such as a directory whose scripts run at session
   start, so other recipes' parameters can name it.
-- Every recipe that sets up a rule people or agents follow takes `--instructions=<path>`, repeatable, as the one name
-  for point 5, and its Connections section lists the instruction files as made by the person, by that parameter.
