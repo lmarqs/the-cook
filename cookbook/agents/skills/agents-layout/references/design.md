@@ -235,7 +235,7 @@ tested here. "Not verified" marks what the sources did not show:
 
 | Runner | Worktrees | Copies or setup | Launches by default | Launch configurable through | Source |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code `--worktree` | `.claude/worktrees/<name>/`; a `WorktreeCreate` hook replaces it | `.worktreeinclude` | Itself | Not applicable | [docs](https://code.claude.com/docs/en/worktrees) |
+| Claude Code `--worktree` | `.claude/worktrees/<name>/`; a `WorktreeCreate` hook replaces it, and `#connect --worktree-root` writes one that uses `<root>/<name>` | `.worktreeinclude`; with that hook, the `--worktree-setup` executable | Itself | Not applicable | [docs](https://code.claude.com/docs/en/worktrees) |
 | Codex `--worktree` | `$CODEX_HOME/worktrees` | `.worktreeinclude` in the app; setup scripts, key not verified | Itself | Not applicable | [docs](https://learn.chatgpt.com/docs/environments/git-worktrees) |
 | ralph-tui 0.12 | `../.ralph-worktrees/<project>/` in its code, `.ralph-tui/worktrees` in its docs; `[parallel].worktreeDir` | Its own configuration only | Claude with `--dangerously-skip-permissions`; `codex exec --full-auto`, an option `codex exec` rejects (tested) | `command`, `defaultFlags`, `skipPermissions`, `fullAuto` | [docs](https://ralph-tui.com/docs/parallel/configuration) |
 | Conductor | `~/conductor/workspaces/<repo>/<workspace>` | `.worktreeinclude` or `file_include_globs`; `[scripts] setup` | Not verified | Not verified | [docs](https://conductor.build/docs/concepts/git-worktrees) |

@@ -1,9 +1,10 @@
 @help('''
 Connects each selected harness to the shared agent layout: renders the shared policy into its settings under
 `.agents/adapters/<harness>/`, links its own directory, `.claude/` or `.codex/`, to those files and to the shared
-directories, and runs every script in `.agents/hooks/session-start.d/` when a session starts. Each harness reads
-`AGENTS.md` natively, and hooks and memory are reached by their paths. The links are committed, so a fresh clone needs
-no cooking; everything else in the harness directories is ignored in Git.
+directories, and runs every script in `.agents/hooks/session-start.d/` when a session starts. With a worktree root, it
+also has Claude Code create its worktrees there, set them up and tear them down with the team's scripts. Each harness
+reads `AGENTS.md` natively, and hooks and memory are reached by their paths. The links are committed, so a fresh clone
+needs no cooking; everything else in the harness directories is ignored in Git.
 
 ## API
 
@@ -15,7 +16,14 @@ no cooking; everything else in the harness directories is ignored in Git.
 # A new repository: the layout and its connection in one invocation
 ./cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect \
 --harness=claude
+# Claude Code's worktrees at .worktrees/<name>, set up and torn down by the team's scripts
+./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --worktree-root=.worktrees \
+--worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 ```
+
+`--worktree-root` names a directory by its path from the repository root, and needs `--harness=claude`.
+`--worktree-setup` and `--worktree-teardown` each name an executable by its path from a worktree's root, and need
+`--worktree-root`; without them, the hook runs no setup or teardown.
 
 Paths other recipes, launchers and people rely on:
 
@@ -29,6 +37,8 @@ rest |
 harness when a session starts, in name order, with the harness name, `claude` or `codex`, as `$1`. A tool recipe \
 writes its script there when the person names a path in it by a parameter of that recipe; the team writes its own \
 beside them |
+| `.agents/hooks/worktree` | Run as `worktree create` or `worktree remove` with Claude Code's `WorktreeCreate` or \
+`WorktreeRemove` input on standard input; `create` prints the worktree's absolute path as its last line |
 | `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
 | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
 
@@ -41,6 +51,8 @@ beside them |
   starter is seeded, which grants nothing.
 - `.agents/hooks/session-start.d/*.sh` at run time, from tool recipes and the team: the dispatcher runs each with `sh`.
   `sh`, `awk` and, for Codex, `git` must be on the path.
+- The `--worktree-setup` and `--worktree-teardown` executables at run time, committed by the team; the worktree hook
+  needs `sh`, `sed` and `git`. The worktree hooks are written for Claude Code 2.1.308.
 - A file or directory already at a link's path, such as a committed `.codex/config.toml` or `.claude/skills/`, is
   refused, and nothing is written: move its contents where the message says, delete it, and cook again. A link there
   is replaced.
@@ -58,6 +70,10 @@ beside them |
 `bypass` is `refuse` | `--harness=claude` | owned |
 | `.agents/adapters/claude/settings.json` | `hooks.SessionStart`, running \
 `"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude` | `--harness=claude` | owned |
+| `.agents/hooks/worktree` | The worktree hook, mode 0755, with the root, setup and teardown paths | \
+`--worktree-root` | owned |
+| `.agents/adapters/claude/settings.json` | `hooks.WorktreeCreate` and `hooks.WorktreeRemove`, running \
+`"$CLAUDE_PROJECT_DIR"/.agents/hooks/worktree create` and `... remove` | `--worktree-root` | owned |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` | link |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings \
 <file>` | `--harness=claude` and the policy has roles | owned |
@@ -76,7 +92,8 @@ command rules | owned |
 earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and \
 `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
 
-Cooking with fewer harnesses removes the outputs of the ones left out.
+Cooking with fewer harnesses removes the outputs of the ones left out, and cooking without `--worktree-root` removes
+the worktree hook and its keys.
 
 `.claude/` and `.codex/` hold only the links, and the links are committed: a clone, a worktree, a cloud session or a CI
 job reads the layout with no cooking and no Cook installed. Everything else a harness writes there for one machine,
@@ -85,6 +102,7 @@ such as `.claude/settings.local.json`, stays out of Git, so a file the team shar
 
 Never touches: `AGENTS.md`; every other key in the adapter files, such as the other events under `hooks`, `env` or
 `[mcp_servers]`, which the team writes in the file and cooking keeps; the scripts in `.agents/hooks/session-start.d/`;
+the `--worktree-setup` and `--worktree-teardown` executables;
 `.claude/settings.local.json` and anything else a harness writes in its own directory.
 
 ## Connections
@@ -100,6 +118,10 @@ Launching table in `.agents/README.md` lists the commands |
 | The team's other hooks to each harness | The team, under `hooks` in `.claude/settings.json` and \
 `.agents/adapters/codex/hooks.json` |
 | Shared skills and commands to Claude | Cook, by the `.claude/skills` and `.claude/commands` links |
+| Where Claude Code's worktrees go | The person, by `--worktree-root` |
+| What makes a new worktree ready to run | The person, by `--worktree-setup`, naming the team's executable |
+| What stops and deletes a worktree's local state | The person, by `--worktree-teardown`, naming the team's \
+executable |
 
 `io.github.lmarqs.cookbook:agents:<version>#seed` creates the layout this recipe connects: cook it first, or before
 this recipe in the same invocation. Every cook names every harness the team uses. Scripts in `session-start.d/` are
@@ -113,10 +135,20 @@ it once as `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalCon
 harnesses add to the session. It prints nothing when the directory is missing or the scripts print nothing, and
 always exits 0. Name a script with a number first, such as `20-<tool>.sh`, to place it in the order.
 
+`.agents/hooks/worktree create` reads `name` from its input and adds the worktree `<root>/<name>` under the main
+checkout, the first entry of `git worktree list`, on the branch `<name>`, made from the main checkout's `HEAD` unless it
+exists. With `--worktree-setup`, it then runs that executable from the worktree's root with its output on standard
+error; when the executable is missing, not executable or fails, it removes the worktree, and the branch when it made
+it, and exits 1, so Claude Code creates nothing. It prints the worktree's path last. `.agents/hooks/worktree remove`
+reads `worktree_path`; with `--worktree-teardown`, it runs that executable from the worktree's root and, when it is
+missing, not executable or fails, exits 1 and keeps the worktree. It then removes the worktree and deletes its branch
+with `git branch -d`, which keeps a branch not merged into the main checkout's `HEAD` and says so on standard error.
+
 ## Re-cooking
 
 Repeat the arguments on the opening line of the `harnesses` section in `.gitignore`, or of the `commands` section in
-`cook.rules`, such as `# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex`. Cook again after
+`cook.rules`, such as `# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex \
+--worktree-root=.worktrees`. Cook again after
 editing the policy, and after deleting `.claude/` or `.codex/` to recreate the links. A newer version rewrites the
 keys, links, files and sections it owns; the team's keys, the scripts in `session-start.d/` and the seeded files stay
 as they are. Under `--check`, a role file or `cook.rules` shows as a change once the policy gains roles or command
@@ -133,8 +165,15 @@ rules, until the recipe is cooked again.
   Code skip that `AGENTS.md`. Claude Code older than 2.1.277 reads no `AGENTS.md`.
 - Codex has no roles: a role's denies reach only Claude runs. `codex exec --ignore-rules`, `--approve-for-me` or an
   untrusted project skip or approve the Codex rules, and no setting refuses them.
-- `hooks.SessionStart` is Cook's in both harnesses: a session-start hook the team writes there is replaced on the next
-  cook. Write it as a script in `.agents/hooks/session-start.d/` instead.
+- The worktree hooks cover only worktrees Claude Code itself creates: a `git worktree add` an agent runs through Bash
+  bypasses them, and Codex's own worktrees go where Codex puts them.
+- Claude Code keeps the worktrees of subagents and workflows and never runs `WorktreeRemove` for them: remove them with
+  `git worktree remove`, after running the teardown by hand.
+- Once `hooks.WorktreeCreate` is set, Claude Code no longer copies the files `.worktreeinclude` lists: the
+  `--worktree-setup` executable copies what a worktree needs.
+- `hooks.SessionStart` is Cook's in both harnesses, and `hooks.WorktreeCreate` and `hooks.WorktreeRemove` Claude's
+  with `--worktree-root`: a hook the team writes there is replaced on the next cook. Write a session-start hook as a
+  script in `.agents/hooks/session-start.d/` instead.
 - With `core.symlinks` off, as is common on Windows, Git checks the links out as text files.
 
 The `agents-layout` skill's `references/investigate.md` lists more symptoms, with their checks and fixes.
