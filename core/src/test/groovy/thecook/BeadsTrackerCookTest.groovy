@@ -161,6 +161,32 @@ class BeadsTrackerCookTest {
     assert files(kitchen) == ['.beads/PRIME.md']
   }
 
+  @Test void tellsAgentsInEachInstructionsFileAndRefusesAMissingOne() {
+    def kitchen = kitchen()
+    def agents = new File(kitchen, 'AGENTS.md')
+    agents.text = '# Agents\n'
+    def arguments = [share: ['clone'], instructions: ['AGENTS.md']]
+
+    cook(kitchen, TRACKER, arguments).commit()
+
+    assert agents.text == '''\
+# Agents
+<!-- cook:begin io.github.lmarqs.cookbook:beads#tracker/beads -->
+<!-- io.github.lmarqs.cookbook:beads#tracker --share=clone --instructions=AGENTS.md -->
+- Issues: Beads tracks this project's work; `bd prime` prints its rules, which a session-start hook may already
+  have printed.
+<!-- cook:end io.github.lmarqs.cookbook:beads#tracker/beads -->
+'''
+    assert text(kitchen, '.gitignore').readLines()[1] ==
+    '# io.github.lmarqs.cookbook:beads#tracker --share=clone --instructions=AGENTS.md'
+    assert cook(kitchen, TRACKER, arguments).actions == [:]
+
+    def error = shouldFail(IllegalArgumentException) {
+      cook(kitchen, TRACKER, [share: ['clone'], instructions: ['CLAUDE.md']])
+    }
+    assert error.message.readLines()[1] == '  CLAUDE.md is missing'
+  }
+
   @Test void refusesABlankAbsoluteOrOutsideSessionStartPath() {
     def kitchen = kitchen()
     def next = '  name the file by its path from the repository root'
@@ -235,7 +261,7 @@ class BeadsTrackerCookTest {
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(BEADS, 'tracker.groovy').text, 'tracker.groovy')
 
-    assert texts.params*.names == [['share'], ['session-start']]
+    assert texts.params*.names == [['share'], ['session-start'], ['instructions']]
     assert texts.params[0].choices == ['team', 'clone']
     assert texts.ingredients == ['io.github.lmarqs.cookbook.beads.Beads']
     assert texts.help.readLines().findAll { it.startsWith('## ') } ==
@@ -258,7 +284,7 @@ class BeadsTrackerCookTest {
       'if command -v bd >/dev/null; then bd prime; fi',
       'bd setup claude',
       'bd setup codex',
-      'run `bd prime`',
+      '--instructions=AGENTS.md',
     ].each { assert texts.yieldText.contains(it) }
   }
 

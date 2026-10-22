@@ -9,7 +9,8 @@ package io.github.lmarqs.cookbook.beads
  * bd 1.3.1. Git ignore syntax in `.gitignore`. Markdown in `.beads/PRIME.md`, which `bd prime` prints in place of its
  * own workflow text. A POSIX `sh` script at the path the recipe names, for a session-start runner that runs it and adds
  * its standard output to the session. bd writes its own `.beads/config.yaml`, `metadata.json`, `.beads/.gitignore`,
- * git hooks and database, and this model none of them.
+ * git hooks and database, and this model none of them. A Markdown section in each instruction file the recipe names,
+ * such as `AGENTS.md`.
  *
  * ## Instances
  *
@@ -41,6 +42,7 @@ class Beads {
   private String share
   private String cookedWith
   private String sessionStart
+  private List<String> instructions = []
 
   /**
    * Has the tracker write its session-start script at `path`, by its path from the repository root. Without it, the
@@ -48,6 +50,14 @@ class Beads {
    */
   void sessionStart(String path) {
     sessionStart = path
+  }
+
+  /**
+   * Has the tracker's rule for agents stated in each Markdown file in `paths`, by its path from the repository root, in
+   * a `beads` section. A file the draft lacks is refused when the sections are written. Call before `track`.
+   */
+  void instructions(List<String> paths) {
+    instructions = paths.unique(false)
   }
 
   /**
@@ -80,6 +90,24 @@ class Beads {
 
     def rules = share == 'clone' ? ['/.beads/*', '!/.beads/PRIME.md'] : ['/.beads/issues.jsonl']
     (["# ${cookedWith}"] + rules)*.toString()
+  }
+
+  /**
+   * The `beads` section of each file `instructions` named, when the tracker is requested: the recipe and its arguments
+   * as an HTML comment, then a list item saying Beads tracks the work and `bd prime` prints its rules.
+   */
+  @Sections(path = '.', id = 'beads', comment = '<!--', missing = 'fail')
+  Map<String, List<String>> instructionsSections() {
+    if (!cookedWith || !instructions) {
+      return null
+    }
+
+    def lines = [
+      "<!-- ${cookedWith} -->",
+      "- Issues: Beads tracks this project's work; `bd prime` prints its rules, which a session-start hook may already",
+      '  have printed.',
+    ]*.toString()
+    instructions.collectEntries { [(it): lines] }
   }
 
   /**

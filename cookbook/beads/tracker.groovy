@@ -13,10 +13,14 @@ it, so `bd init` is the only step left by hand.
 # With the agents layout: its session-start runner prints the script's output in every harness it connects
 ./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone \
 --session-start=.agents/hooks/session-start.d/beads.sh
+# Also telling agents, in the files they read, that Beads tracks the work
+./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone --instructions=AGENTS.md
 ```
 
 `--session-start` names the file by its path from the repository root; the person picks its name, so a prefix such as
 `20-beads.sh` places it among a runner's other scripts. Without it, the recipe writes nothing for session start.
+`--instructions` names a Markdown file by its path from the repository root, and repeats for each file; the file must
+exist, written by the team or by a recipe cooked earlier in the same invocation.
 
 Paths and scripts other recipes, runners and people rely on:
 
@@ -30,7 +34,7 @@ executables and adds their standard output to the session can run it |
 ## Consumes
 
 - `bd` at run time, written for bd 1.3.1.
-- Nothing in the draft: what it writes follows from its arguments alone.
+- Only the files `--instructions` names, which must exist: what it writes follows from its arguments alone.
 - By hand first: nothing. By hand after: install bd and run `bd init`, as After cooking says.
 
 ## Produces
@@ -46,12 +50,15 @@ the export that carries whatever people paste into issues; bd's own `.beads/.git
 including that a worker never closes its bead or pushes | Always, when absent | seed |
 | The `--session-start` file | Mode 0755: prints `bd prime`, and nothing when bd or its database is missing | \
 `--session-start` | owned |
+| Each `--instructions` file | The section `beads`: the argument line as an HTML comment, then a list item saying \
+Beads tracks the work and `bd prime` prints its rules | `--instructions` | owned |
 
 `bd prime` prints `.beads/PRIME.md` and bd's stored memories, about 5.5 KB with bd's default text, on every session
 start that runs it, each worker iteration of a loop runner included.
 
-Never touches: `AGENTS.md`, `.beads/config.yaml`, `.beads/metadata.json`, `.beads/.gitignore`, bd's git hooks, the
-database, the Dolt remote, `core.hooksPath`, any harness's settings or hook files, and the rest of `.gitignore`.
+Never touches: `.beads/config.yaml`, `.beads/metadata.json`, `.beads/.gitignore`, bd's git hooks, the database, the
+Dolt remote, `core.hooksPath`, any harness's settings or hook files, and the rest of `.gitignore` and of each
+`--instructions` file.
 
 ## Connections
 
@@ -62,7 +69,8 @@ without it, the repository runs `bd prime` from its own session-start hooks |
 | The script's place among the runner's other scripts | The person, by the file name in `--session-start` |
 | What agents and workers do with the issues | The team, in the seeded `.beads/PRIME.md` |
 | Where the issues sync | The team, with `bd config set sync.remote <url>`, for `--share=team` |
-| The line on Beads in `AGENTS.md` | The team, from After cooking |
+| The tracker's rule in the files agents and people read | The person, by `--instructions`; the section is \
+appended at the file's end, and stays where the team moves it |
 | Which issue a session works on | The session |
 
 With the agents layout, `io.github.lmarqs.cookbook:agents:<version>#connect` runs every `*.sh` in
@@ -80,7 +88,8 @@ Repeat the arguments on the opening line of the `beads` section in `.gitignore`,
 `# io.github.lmarqs.cookbook:beads#tracker --share=clone --session-start=.agents/hooks/session-start.d/beads.sh`. A
 newer version rewrites the section and the script; `.beads/PRIME.md` keeps the team's edits, so delete it and cook
 again to take a newer one. Cooking with another `--session-start` moves the script, and cooking without it removes the
-script. Under `--check`, the script changes only with the arguments, never with other files in the draft.
+script; cooking without a file's `--instructions` removes its section. Under `--check`, the script changes only with
+the arguments, never with other files in the draft.
 
 ## Traps
 
@@ -109,8 +118,8 @@ and native hooks; `bd setup <agent> --check` shows what is installed, and `--rem
 layout, cook with `--session-start` instead: `io.github.lmarqs.cookbook:agents:<version>#connect` owns
 `hooks.SessionStart` in both harnesses, so a hook written there is replaced on its next cook.
 
-Add to `AGENTS.md`: "Beads tracks this project's work; its rules arrive from `bd prime` at session start. If they are
-missing, run `bd prime`."
+Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to tell agents that Beads
+tracks the work.
 ''')
 import io.github.lmarqs.cookbook.beads.Beads
 
@@ -120,6 +129,9 @@ import io.github.lmarqs.cookbook.beads.Beads
 @param(value = ['session-start'], default = [], path = true,
     doc = 'Where to write the script that prints bd prime for a session-start runner, from the repository root')
     String sessionStart
+@param(value = ['instructions'], many = true, default = [], path = true,
+    doc = 'A Markdown file, from the repository root, where the recipe tells agents Beads tracks the work')
+    String[] instructions
 
 @ingredient(Beads) def beads
 
@@ -127,5 +139,9 @@ if (sessionStart != null) {
   beads.sessionStart(sessionStart)
 }
 
-def arguments = ["--share=${share}"] + (sessionStart != null ? ["--session-start=${sessionStart}"] : [])
+List<String> files = (instructions as List<String>).unique(false).sort(false)
+beads.instructions(files)
+
+def arguments = ["--share=${share}"] + (sessionStart != null ? ["--session-start=${sessionStart}"] : []) +
+files.collect { "--instructions=${it}" }
 beads.track(share, (['io.github.lmarqs.cookbook:beads#tracker'] + arguments).join(' '))

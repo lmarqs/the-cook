@@ -74,7 +74,7 @@ read.
 import io.github.lmarqs.cookbook.git.Git
 
 @param(value = ['instructions'], many = true, default = [], path = true,
-    doc = 'A Markdown file, from the repository root, where the recipe states the worktree rule; repeatable')
+    doc = 'A Markdown file, from the repository root, where the recipe states the worktree rule')
     String[] instructions
 
 @ingredient(Git) def git

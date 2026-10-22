@@ -300,10 +300,33 @@ roles:
     assert lock.contains('  - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"\n')
   }
 
+  @Test void givesTheLauncherCommandsInEachInstructionsFile() {
+    def kitchen = kitchen()
+    def agents = new File(kitchen, 'AGENTS.md')
+    agents.text = '# Agents\n'
+    def arguments = [harness: ['claude'], instructions: ['AGENTS.md']]
+
+    cook(kitchen, RALPH, arguments).commit()
+
+    assert agents.text == '''\
+# Agents
+<!-- cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
+<!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --instructions=AGENTS.md -->
+- Loop runs: `.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`, runs ralph-tui in
+  `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the
+  branch is delivered.
+<!-- cook:end io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
+'''
+    assert new File(kitchen, '.gitignore').readLines()[1] ==
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --instructions=AGENTS.md'
+    assert cook(kitchen, RALPH, arguments).actions == [:]
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
-    assert texts.params*.names == [['harness'], ['worker-role'], ['worker-settings'], ['worktree-setup']]
+    assert texts.params*.names ==
+    [['harness'], ['worker-role'], ['worker-settings'], ['worktree-setup'], ['instructions']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
     assert texts.help.readLines().findAll { it.startsWith('## ') } == [
       '## API',

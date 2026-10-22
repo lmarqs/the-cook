@@ -46,6 +46,8 @@ package io.github.lmarqs.cookbook.ralph
  * deny rules are prefix rules that `git -C . push` gets past, a guardrail, and the structural limit is a worker without
  * push credentials.
  *
+ * A Markdown section in each instruction file the recipe names, such as `AGENTS.md`, gives the launcher's commands.
+ *
  * ## Instances
  *
  * One instance covers one repository's ralph-tui setup, at its root: the launcher puts run worktrees under the
@@ -93,6 +95,7 @@ class RalphTui {
   private String workerSettings
   private String worktreeSetup
   private String cookedWith
+  private List<String> instructions = []
 
   /**
    * Sets the `[[agents]]` entries the seeded configuration gets, one per harness in the order given, the first as
@@ -175,9 +178,17 @@ class RalphTui {
   }
 
   /**
+   * Has the launcher's commands stated in each Markdown file in `paths`, by its path from the repository root, in a
+   * `ralph-tui` section. A file the draft lacks is refused when the sections are written.
+   */
+  void instructions(List<String> paths) {
+    instructions = paths.unique(false)
+  }
+
+  /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, and the `ralph-tui` section of `.gitignore`. `cookedWith`
    * names the recipe and its arguments, which the section's first line records; it must not be blank. Call after
-   * `harnesses`, `workerRole`, `workerSettings` and `worktreeSetup`.
+   * `harnesses`, `workerRole`, `workerSettings`, `worktreeSetup` and `instructions`.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -283,6 +294,25 @@ class RalphTui {
       '!/.ralph-tui/bin/',
       '/.worktrees/ralph/',
     ]
+  }
+
+  /**
+   * The `ralph-tui` section of each file `instructions` named, when installed: the recipe and its arguments as an HTML
+   * comment, then a list item giving `bin/run` and `bin/clean` and where a run's worktree goes.
+   */
+  @Sections(path = '.', id = 'ralph-tui', comment = '<!--', missing = 'fail')
+  Map<String, List<String>> instructionsSections() {
+    if (!cookedWith || !instructions) {
+      return null
+    }
+
+    def lines = [
+      "<!-- ${cookedWith} -->",
+      '- Loop runs: `.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`, runs ralph-tui in',
+      '  `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the',
+      '  branch is delivered.',
+    ]*.toString()
+    instructions.collectEntries { [(it): lines] }
   }
 
   private List<String> flags(String harness) {

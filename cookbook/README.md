@@ -260,11 +260,15 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-settings=ralph-worker.json
 # Claude workers in run worktrees the launcher sets up with the team's script
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup
+# Also giving agents and people the launcher's commands, in the files they read
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
 
 The first `--harness` is the default agent. `--worker-role` and `--worker-settings` reach only the Claude entry, and
 only one of them is given. `--worktree-setup` names a committed executable by its path from the repository root,
-outside `.ralph-tui/`; without it, `bin/run` runs no setup. What it publishes for people, sessions and other recipes:
+outside `.ralph-tui/`; without it, `bin/run` runs no setup. `--instructions` names a Markdown file by its path from the
+repository root, and repeats for each file; the file must exist. What it publishes for people, sessions and other
+recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -285,6 +289,8 @@ outside `.ralph-tui/`; without it, `bin/run` runs no setup. What it publishes fo
   `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
 - The `--worktree-setup` file, at run time, only with `--worktree-setup`: `bin/run` runs it in each run worktree it
   creates and fails the run when it is missing there, not executable or fails. Never read or written at cook time.
+- The files `--instructions` names, which must exist, written by the team or by a recipe cooked earlier in the same
+  invocation.
 - By hand first: nothing. By hand after: installing ralph-tui and the runtimes it needs, and for `--epic`, a Beads
   database with the epic, as After cooking says.
 
@@ -303,8 +309,8 @@ any command the settings do not allow is refused rather than asked, with `skipPe
 sandbox_workspace_write.network_access=false exec --sandbox workspace-write`: no approvals, no network, writes only in
 the worktree. Neither sets a model or an effort.
 
-Never touches: `AGENTS.md`, `.agents/permission/policy.yaml`, any settings or role file, version pins, remotes, pull
-requests, and the tracker's state.
+Never touches: `.agents/permission/policy.yaml`, any settings or role file, version pins, remotes, pull requests, the
+tracker's state, and the rest of each `--instructions` file.
 
 ## Connections
 
@@ -316,7 +322,8 @@ requests, and the tracker's state.
 | The run worktree's setup | The person, by `--worktree-setup`; the team writes the file |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
 | Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry |
-| A line in `AGENTS.md` and the agents layout's Launching table | The team, from After cooking |
+| The launcher's commands in the files agents and people read | The person, by `--instructions`; the section is appended at the file's end, and stays where the team moves it |
+| The agents layout's Launching table | The team, from After cooking |
 | Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
 
 `io.github.lmarqs.cookbook:git#worktrees` ignores and documents `.worktrees/`; cook the two in either order.
@@ -343,9 +350,10 @@ on a `ralph-parallel/*` branch with that branch, then the branch `ralph/<name>`.
 
 Repeat the arguments on the opening line of the `ralph-tui` section in `.gitignore`, such as `#
 io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup`. Cooking
-with another `--worktree-setup`, or without it, rewrites the launcher. The seeds are never rewritten: to take other
-harnesses, a worker role or a newer version's configuration or prompts, edit them or delete them and cook again. A newer
-version rewrites the launcher and the section.
+with another `--worktree-setup`, or without it, rewrites the launcher, and cooking without a file's `--instructions`
+removes its section. The seeds are never rewritten: to take other harnesses, a worker role or a newer version's
+configuration or prompts, edit them or delete them and cook again. A newer version rewrites the launcher and the
+sections.
 
 ## Traps
 
@@ -371,6 +379,8 @@ Parameters
       A Claude settings file the claude entry passes with --settings; optional
   --worktree-setup=<String>
       An executable, by its path from the repository root, that bin/run runs in each run worktree it creates; optional
+  --instructions=<String[]>
+      A Markdown file, from the repository root, where the recipe gives the launcher's commands; optional; repeatable
 
 Ingredients
   io.github.lmarqs.cookbook.ralph.RalphTui
@@ -381,8 +391,9 @@ After cooking
   the team's choice. Review `.ralph-tui/config.toml` and the prompts, and commit `.gitignore` and `.ralph-tui/`:
   `bin/run` refuses while `.ralph-tui` has uncommitted changes. Then run `.ralph-tui/bin/run <name> --epic <id>`, with a
   Beads database holding the epic, or `.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>` once
-  the branch `ralph/<name>` is delivered. With an `AGENTS.md`, add these commands to it, and with the agents layout,
-  to the Launching table in `.agents/README.md`.
+  the branch `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as
+  `--instructions=AGENTS.md`, to give agents these commands, and with the agents layout, add them to the Launching
+  table in `.agents/README.md`.
 ````
 
 ## Layout
