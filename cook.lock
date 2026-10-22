@@ -2,8 +2,8 @@
 version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
-    source: "io.github.lmarqs.cookbook:agents:4.2.0#connect"
-    sha256: "0689f75758f4eae6716a3e0476f761f288b2c7ddb9911236fc70f74186ffa214"
+    source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
+    sha256: "d9d21828f833421d9f92321b25b3e7debd9f946d2cab1fa45506ccfade249d9f"
     owns:
       sections:
         - file: ".agents/adapters/codex/rules/cook.rules"
@@ -13,6 +13,10 @@ recipes:
       keys:
         - file: ".agents/adapters/claude/settings.json"
           path: ["hooks","SessionStart"]
+        - file: ".agents/adapters/claude/settings.json"
+          path: ["hooks","WorktreeCreate"]
+        - file: ".agents/adapters/claude/settings.json"
+          path: ["hooks","WorktreeRemove"]
         - file: ".agents/adapters/claude/settings.json"
           path: ["permissions"]
         - file: ".agents/adapters/codex/config.toml"
@@ -25,6 +29,7 @@ recipes:
           path: ["hooks","SessionStart"]
       files:
         - ".agents/hooks/session-start"
+        - ".agents/hooks/worktree"
       links:
         - ".claude/commands"
         - ".claude/settings.json"

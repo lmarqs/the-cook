@@ -1,5 +1,5 @@
 # cook:begin io.github.lmarqs.cookbook:agents#connect/commands
-# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex
+# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 prefix_rule(pattern = ["git", ["status", "diff", "log", "push"]], decision = "allow")
 prefix_rule(pattern = ["./gradlew", "check"], decision = "allow")
 prefix_rule(pattern = ["git", "reset", "--hard"], decision = "forbidden")

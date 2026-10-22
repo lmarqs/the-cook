@@ -1,7 +1,7 @@
 **/.gradle/
 **/build/
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
-# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex
+# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 !/.claude/
 /.claude/*
 !/.claude/settings.json

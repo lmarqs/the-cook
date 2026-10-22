@@ -1,0 +1,155 @@
+#!/bin/sh
+# Usage: worktree create|remove, with Claude Code's WorktreeCreate or WorktreeRemove input on standard input.
+# create prints the worktree's path as its last line; everything else goes to standard error.
+set -eu
+
+# Rendered by io.github.lmarqs.cookbook:agents#connect from its --worktree-* params. Paths are from the repository
+# root; setup, teardown and branch_prefix are empty when not named.
+root='.worktrees'
+setup='.worktrees/setup'
+teardown='.worktrees/teardown'
+base='fresh'
+fetch='stale'
+remote='origin'
+branch_prefix=''
+
+fail() {
+  printf 'worktree: %s\n' "$1" >&2
+  shift
+  for line in "$@"; do printf '  %s\n' "$line" >&2; done
+  exit 1
+}
+
+# The string field $1 of the JSON input; names and paths never hold a quote or a backslash, so none is unescaped.
+field() {
+  printf '%s\n' "$input" | sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\([^\"\\\\]*\)\".*/\1/p" | sed -n 1p
+}
+
+# Runs the script $2, by its path from the worktree $1's root, from that root, with its output on standard error. A
+# script committed on the main checkout's HEAD but missing from the worktree is skipped: the branch predates it.
+run_script() {
+  if [ ! -e "$1/$2" ] && git -C "$main" cat-file -e "HEAD:$2" 2>/dev/null; then
+    printf 'worktree: skipped %s, which this branch predates\n' "$2" >&2
+    return 0
+  fi
+  [ -f "$1/$2" ] || fail "$2 is not in $1" 'a worktree holds only what is committed'
+  [ -x "$1/$2" ] || fail "$2 is not executable" "in $1"
+  (cd "$1" && "./$2") >&2 || fail "$2 failed" "in $1"
+}
+
+# Runs a Git command that may reach the remote, failing instead of asking for a password, a passphrase or a host key.
+unprompted() {
+  if [ -z "${GIT_SSH_COMMAND:-}${GIT_SSH:-}" ] && ! git -C "$main" config core.sshCommand >/dev/null; then
+    GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' "$@"
+  else
+    GIT_TERMINAL_PROMPT=0 "$@"
+  fi
+}
+
+# Fetches the remote as $fetch says, stale fetching once its last fetch is a day old, and sets $upstream to the
+# remote's default branch, such as origin/main, or to nothing when it is not known.
+refresh() {
+  upstream=''
+  git -C "$main" remote get-url "$remote" >/dev/null 2>&1 || return 0
+  fetched=$(git -C "$main" rev-parse --absolute-git-dir)/FETCH_HEAD
+  if [ "$fetch" = always ] || { [ "$fetch" = stale ] && [ -z "$(find "$fetched" -mmin -1440 2>/dev/null)" ]; }; then
+    unprompted git -C "$main" fetch --quiet "$remote" >&2 ||
+      printf 'worktree: could not fetch %s, so its branches are as last fetched\n' "$remote" >&2
+  fi
+  if [ "$fetch" != never ] && ! git -C "$main" symbolic-ref --quiet "refs/remotes/$remote/HEAD" >/dev/null; then
+    unprompted git -C "$main" remote set-head "$remote" --auto >/dev/null 2>&1 || true
+  fi
+  upstream=$(git -C "$main" symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null) || upstream=''
+  if [ -n "$upstream" ] && ! git -C "$main" rev-parse --verify --quiet "$upstream^{commit}" >/dev/null; then
+    upstream=''
+  fi
+}
+
+# Whether every patch on the branch $1 is on the commit $2, matched by patch, so a rebased or cherry-picked commit
+# counts.
+landed() {
+  [ -n "$2" ] || return 1
+  cherry=$(git -C "$main" cherry "$2" "$1") || return 1
+  ! printf '%s\n' "$cherry" | grep -q '^+'
+}
+
+[ -n "$root" ] && [ -n "$base" ] && [ -n "$fetch" ] && [ -n "$remote" ] ||
+  fail 'the worktree hook has no settings' 'cook io.github.lmarqs.cookbook:agents#connect with a --worktree-* param'
+input=$(cat)
+main=$(git -C "$(dirname -- "$0")" worktree list --porcelain | sed -n '1s/^worktree //p')
+
+case ${1:-} in
+  create)
+    name=$(field name)
+    branch=$branch_prefix$name
+    [ -n "$name" ] && git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
+      fail "${branch:-an empty name} is not a branch name" 'the worktree goes on a branch of the same name'
+    worktree=$main/$root/$branch
+    if git -C "$main" worktree list --porcelain | grep -qxF "worktree $worktree"; then
+      if [ -d "$worktree" ]; then
+        printf 'worktree: reusing %s\n' "$worktree" >&2
+        printf '%s\n' "$worktree"
+        exit 0
+      fi
+      git -C "$main" worktree prune >&2
+    fi
+    created=false
+    if git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
+      git -C "$main" worktree add "$worktree" "$branch" >&2
+    else
+      start=''
+      if [ "$base" = head ]; then
+        cwd=$(field cwd)
+        start=$(git -C "${cwd:-$main}" rev-parse --verify --quiet 'HEAD^{commit}' 2>/dev/null) || start=''
+        git -C "$main" cat-file -e "$start^{commit}" 2>/dev/null || start=''
+      else
+        refresh
+        start=$upstream
+        [ -n "$start" ] ||
+          printf 'worktree: no default branch of %s is known, so %s starts at HEAD\n' "$remote" "$branch" >&2
+      fi
+      git -C "$main" worktree add --no-track -b "$branch" "$worktree" "${start:-HEAD}" >&2
+      created=true
+    fi
+    if [ -n "$setup" ] && ! (run_script "$worktree" "$setup"); then
+      git -C "$main" worktree remove --force "$worktree" >&2
+      if [ "$created" = true ]; then git -C "$main" branch -D "$branch" >&2; fi
+      fail "removed the worktree $worktree, whose setup failed"
+    fi
+    printf '%s\n' "$worktree"
+    ;;
+  remove)
+    worktree=$(field worktree_path)
+    [ -n "$worktree" ] || fail 'the input has no worktree_path'
+    [ "$worktree" != "$main" ] || fail "$worktree is the main checkout" 'only a linked worktree is removed'
+    # The branch create made is the worktree's path under the root, whichever branch it has checked out since.
+    case $worktree in
+      "$main/$root"/*) branch=${worktree#"$main/$root"/} ;;
+      *) branch='' ;;
+    esac
+    if [ -d "$worktree" ]; then
+      if [ -n "$teardown" ]; then run_script "$worktree" "$teardown"; fi
+      git -C "$main" worktree remove --force "$worktree" >&2
+    else
+      git -C "$main" worktree prune >&2
+    fi
+    if [ -n "$branch" ]; then
+      parent=$(dirname -- "$worktree")
+      while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
+    fi
+    if [ -n "$branch" ] && git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
+      refresh
+      if landed "$branch" HEAD || landed "$branch" "$upstream"; then
+        git -C "$main" branch -D "$branch" >&2 ||
+          printf 'worktree: kept the branch %s, which Git would not delete\n' "$branch" >&2
+      else
+        printf 'worktree: kept the branch %s, which has commits on neither HEAD nor %s\n' "$branch" \
+          "${upstream:-the default branch of $remote}" >&2
+      fi
+    fi
+    ;;
+  *)
+    echo 'usage: worktree create|remove' >&2
+    exit 2
+    ;;
+esac
