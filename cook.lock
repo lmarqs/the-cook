@@ -2,8 +2,8 @@
 version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
-    source: "io.github.lmarqs.cookbook:agents:4.0.0#connect"
-    sha256: "160d3b84a1b65ffff68c6603ab423b40ac4eab7e35fb9e7664f3a43a272fa748"
+    source: "io.github.lmarqs.cookbook:agents:4.2.0#connect"
+    sha256: "0689f75758f4eae6716a3e0476f761f288b2c7ddb9911236fc70f74186ffa214"
     owns:
       sections:
         - file: ".agents/adapters/codex/rules/cook.rules"
