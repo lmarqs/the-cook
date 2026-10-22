@@ -7,8 +7,10 @@ package io.github.lmarqs.cookbook.agents
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `allow`, `ask` and `deny` lists of `Bash(<prefix> *)`
- * rules and tool patterns, and `disableBypassPermissionsMode`; and `hooks.SessionStart` alone, a command hook whose
- * printed `hookSpecificOutput.additionalContext` Claude Code adds to the session. One file per policy role under
+ * rules and tool patterns, and `disableBypassPermissionsMode`; `hooks.SessionStart` alone, a command hook whose
+ * printed `hookSpecificOutput.additionalContext` Claude Code adds to the session; and `hooks.WorktreeCreate` and
+ * `hooks.WorktreeRemove` alone, command hooks that replace how Claude Code 2.1.308 makes and removes its worktrees: the
+ * first prints the worktree's path as its last line, and the second removes it. One file per policy role under
  * `.agents/adapters/claude/roles/`, holding only that role's `permissions.deny`, which a run adds with
  * `claude --settings <file>`. Symbolic links from `.claude/skills` and `.claude/commands` to the shared directories
  * complete the project setup: Claude Code finds skills and commands only there. Hooks and memory are reached by their
@@ -50,6 +52,7 @@ class Claude implements Harness {
   private Map<String, List<String>> roleDenies = [:]
   private Map<String, String> directoryLinks = [:]
   private List sessionStart = []
+  private Map<List<String>, List> worktreeHooks = [:]
 
   /** Destination-root ignore patterns for the local settings file Claude Code writes. */
   final List<String> localFiles = ['/.claude/settings.local.json']
@@ -109,6 +112,20 @@ class Claude implements Harness {
     sessionStart = [[hooks: [[type: 'command', command: "\"\$CLAUDE_PROJECT_DIR\"/${dispatcher} claude".toString()]]]]
   }
 
+  /**
+   * Sets `hooks.WorktreeCreate` and `hooks.WorktreeRemove` to run `hook`, a path relative to the project directory, as
+   * `"$CLAUDE_PROJECT_DIR"/<hook> create` and `... remove`; Claude Code then makes and removes its worktrees only
+   * through it. The rest of `hooks` stays the team's. Returns true.
+   */
+  @Override
+  boolean createWorktrees(String hook) {
+    worktreeHooks = [WorktreeCreate: 'create', WorktreeRemove: 'remove'].collectEntries { event, action ->
+      def command = "\"\$CLAUDE_PROJECT_DIR\"/${hook} ${action}".toString()
+      [(['hooks', event]): [[hooks: [[type: 'command', command: command]]]]]
+    }
+    true
+  }
+
   /** `settings.json` when settings are set, then each shared directory linked. */
   List<String> getLinkNames() {
     (written() ? ['settings.json'] : []) + directoryLinks.keySet()
@@ -116,7 +133,8 @@ class Claude implements Harness {
 
   /**
    * Each supplied top-level key of `.agents/adapters/claude/settings.json`, owned whole, when settings or permissions
-   * are set, and `hooks.SessionStart` alone once a session-start dispatcher is set.
+   * are set, `hooks.SessionStart` alone once a session-start dispatcher is set, and `hooks.WorktreeCreate` and
+   * `hooks.WorktreeRemove` alone once a worktree hook is set.
    */
   @Keys(path = '.agents/adapters/claude/settings.json')
   Map settingsKeys() {
@@ -145,7 +163,7 @@ class Claude implements Harness {
   }
 
   private Map written() {
-    settings + (sessionStart ? [(['hooks', 'SessionStart']): sessionStart] : [:])
+    settings + (sessionStart ? [(['hooks', 'SessionStart']): sessionStart] : [:]) + worktreeHooks
   }
 
   private static List<String> rules(Command command) {

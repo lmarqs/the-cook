@@ -1,0 +1,74 @@
+#!/bin/sh
+# Usage: worktree create|remove, with Claude Code's WorktreeCreate or WorktreeRemove input on standard input.
+# create prints the worktree's path as its last line; everything else goes to standard error.
+set -eu
+
+# Paths from the repository root, rendered by io.github.lmarqs.cookbook:agents#connect; empty when not named.
+root=''
+setup=''
+teardown=''
+
+fail() {
+  printf 'worktree: %s\n' "$1" >&2
+  shift
+  for line in "$@"; do printf '  %s\n' "$line" >&2; done
+  exit 1
+}
+
+# The string field $1 of the JSON input; names and paths never hold a quote or a backslash, so none is unescaped.
+field() {
+  printf '%s\n' "$input" | sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\([^\"\\\\]*\)\".*/\1/p" | sed -n 1p
+}
+
+# Runs the script $2, by its path from the worktree $1's root, from that root, with its output on standard error.
+run_script() {
+  [ -f "$1/$2" ] || fail "$2 is not in $1" 'a worktree holds only what is committed'
+  [ -x "$1/$2" ] || fail "$2 is not executable" "in $1"
+  (cd "$1" && "./$2") >&2 || fail "$2 failed" "in $1"
+}
+
+[ -n "$root" ] || fail 'no worktree root' 'cook io.github.lmarqs.cookbook:agents#connect with --worktree-root'
+input=$(cat)
+main=$(git -C "$(dirname -- "$0")" worktree list --porcelain | sed -n '1s/^worktree //p')
+
+case ${1:-} in
+  create)
+    name=$(field name)
+    git check-ref-format --branch "$name" >/dev/null 2>&1 ||
+      fail "${name:-an empty name} is not a branch name" 'the worktree goes on a branch of the same name'
+    worktree=$main/$root/$name
+    created=false
+    if git -C "$main" show-ref --verify --quiet "refs/heads/$name"; then
+      git -C "$main" worktree add "$worktree" "$name" >&2
+    else
+      git -C "$main" worktree add -b "$name" "$worktree" >&2
+      created=true
+    fi
+    if [ -n "$setup" ] && ! (run_script "$worktree" "$setup"); then
+      git -C "$main" worktree remove --force "$worktree" >&2
+      if [ "$created" = true ]; then git -C "$main" branch -D "$name" >&2; fi
+      fail "removed the worktree $worktree, whose setup failed"
+    fi
+    printf '%s\n' "$worktree"
+    ;;
+  remove)
+    worktree=$(field worktree_path)
+    [ -n "$worktree" ] || fail 'the input has no worktree_path'
+    [ "$worktree" != "$main" ] || fail "$worktree is the main checkout" 'only a linked worktree is removed'
+    if [ -d "$worktree" ]; then
+      branch=$(git -C "$worktree" symbolic-ref --quiet --short HEAD || true)
+      if [ -n "$teardown" ]; then run_script "$worktree" "$teardown"; fi
+      git -C "$main" worktree remove --force "$worktree" >&2
+    else
+      branch=''
+      git -C "$main" worktree prune >&2
+    fi
+    if [ -n "$branch" ] && ! git -C "$main" branch -d "$branch" >/dev/null 2>&1; then
+      printf 'worktree: kept the branch %s, which is not merged\n' "$branch" >&2
+    fi
+    ;;
+  *)
+    echo 'usage: worktree create|remove' >&2
+    exit 2
+    ;;
+esac

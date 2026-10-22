@@ -41,8 +41,8 @@ root I name, so Claude Code's worktrees follow the repository's rule.
   Claude Code's hook JSON on stdin; it needs only `sh`, `sed` and `git`, not `jq`.
 - [ ] The root, setup and teardown paths are rendered into the script at cook time, shell-quoted, as ralph's
   `bin/run` renders `setup=''` (`cookbook/ralph/bin/run.sh`).
-- [ ] It finds the main checkout from `git rev-parse --path-format=absolute --git-common-dir`, so a session already
-  inside a worktree creates the new one under the main checkout's root, never nested.
+- [ ] It finds the main checkout as the first entry of `git worktree list --porcelain`, so a session already inside a
+  worktree creates the new one under the main checkout's root, never nested.
 - [ ] `create` reads `name`, then runs `git worktree add <main>/<root>/<name> -b <name>`, or without `-b` when branch
   `<name>` exists; git's output goes to stderr.
 - [ ] With a setup path, `create` runs `<worktree>/<setup>` with the worktree's root as the working directory and its
@@ -167,7 +167,6 @@ holds for the version we name.
   path with `.` or `..` segments, and fails creation on a non-zero exit; a `WorktreeRemove` hook must delete the
   directory itself, and Claude Code never deletes the branch.
 - `.worktreeinclude` is not processed once a `WorktreeCreate` hook exists; copying local files is the setup script's.
-- `git rev-parse --path-format=absolute` needs git 2.31 or later.
 - Existing patterns: the session-start dispatcher (`Agents.sessionStartDispatcher`, `Claude.startSession`), path
   params (`@param(path = true)`), and ralph's rendered launcher (`RalphTui.run`).
 

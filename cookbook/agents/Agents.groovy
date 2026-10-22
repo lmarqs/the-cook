@@ -52,6 +52,9 @@ class Agents {
    */
   static final String SESSION_START = '.agents/hooks/session-start'
 
+  /** The hook Claude Code runs to create and remove its worktrees, once a worktree root is named. */
+  static final String WORKTREE_HOOK = '.agents/hooks/worktree'
+
   /** The seeded files' templates, inside the `agents-layout` skill so a review can compare the seeds with them. */
   static final String TEMPLATES = 'skills/agents-layout/templates'
 
@@ -61,6 +64,7 @@ class Agents {
   private boolean policyUsed = false
   private boolean layoutUsed = false
   private boolean sessionStarted = false
+  private Map<String, String> worktreePaths = [:]
   private List<Harness> ignoredHarnesses = []
   private String ignoredBy
 
@@ -152,6 +156,36 @@ class Agents {
 
     sessionStarted = true
     harnesses.each { it.startSession(reach(it, SESSION_START)) }
+  }
+
+  /**
+   * Has each harness that can run worktree hooks create its worktrees at `<root>/<name>` on the branch `<name>` and
+   * remove them, through `.agents/hooks/worktree`: after creating one, the hook runs `setup` from its root, and before
+   * removing one, `teardown`; each is a path from the repository root, or null for none. Refuses `setup` or `teardown`
+   * without `root`, and `root` when no harness runs worktree hooks.
+   */
+  void worktrees(Collection<Harness> harnesses, String root, String setup, String teardown) {
+    if (root == null) {
+      def orphan = [setup: setup, teardown: teardown].find { name, path -> path != null }
+
+      if (orphan) {
+        throw new IllegalArgumentException("--worktree-${orphan.key}=${orphan.value} needs --worktree-root\n" +
+        '  the worktree hook runs it, and the hook is written only for a worktree root\n' +
+        '  name the root too, as --worktree-root=.worktrees')
+      }
+
+      return
+    }
+
+    def hooked = harnesses.findAll { it.createWorktrees(reach(it, WORKTREE_HOOK)) }
+
+    if (!hooked) {
+      throw new IllegalArgumentException("--worktree-root=${root} needs a harness that runs worktree hooks\n" +
+      '  Claude Code runs them, and Codex 0.160.1 has no worktree hook event\n' +
+      '  add --harness=claude')
+    }
+
+    worktreePaths = [root: root, setup: setup, teardown: teardown]
   }
 
   /**
@@ -258,12 +292,35 @@ class Agents {
     sessionStarted ? resource('hooks/session-start') : null
   }
 
+  /**
+   * `.agents/hooks/worktree`, executable, once `worktrees` names a root: run as `worktree create` with Claude Code's
+   * `WorktreeCreate` input, it adds the worktree `<root>/<name>` under the main checkout on the branch `<name>`, runs
+   * the setup there and prints the worktree's path, or removes the worktree when the setup fails; run as
+   * `worktree remove` with `WorktreeRemove`'s input, it runs the teardown, keeping the worktree when that fails,
+   * removes the worktree, and deletes its branch once merged. The root, setup and teardown paths are shell-quoted into
+   * its variables; it needs only `sh`, `sed` and `git`.
+   */
+  @File(path = '.agents/hooks/worktree', mode = '0755')
+  String worktreeHook() {
+    if (!worktreePaths) {
+      return null
+    }
+
+    worktreePaths.findAll { name, path -> path }.inject(resource('hooks/worktree')) { String script, name, path ->
+      script.replace("\n${name}=''\n", "\n${name}=${shellQuoted(path)}\n")
+    }
+  }
+
   /** Whole files under `.agents/skills/<name>/`, when skills are added. */
   @Files(path = '.agents/skills')
   Map<String, String> skillFiles() {
     skills.collectEntries { name ->
       resources("skills/${name}").collectEntries { path, body -> ["${name}/${path}", body] }
     } ?: null
+  }
+
+  private static String shellQuoted(String value) {
+    "'${value.replace("'", "'\\''")}'"
   }
 
   private String keep() {
@@ -325,6 +382,12 @@ interface Harness {
    * start of every session, and take what it prints as session context.
    */
   void startSession(String dispatcher)
+
+  /**
+   * Makes the harness create and remove its worktrees by running `hook`, a path relative to its directory, with
+   * `create` or `remove`, and returns true; returns false and sets nothing when the harness has no worktree hook event.
+   */
+  boolean createWorktrees(String hook)
 }
 
 /**

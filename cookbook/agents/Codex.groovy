@@ -125,6 +125,12 @@ class Codex implements Harness {
     ]
   }
 
+  /** Returns false and sets nothing: Codex 0.160.1 has no hook event for creating or removing a worktree. */
+  @Override
+  boolean createWorktrees(String hook) {
+    false
+  }
+
   /**
    * Adds a whole rule file with `body` under `.agents/adapters/codex/rules/`, replacing an earlier rule with the same
    * name. The name accepts letters, digits, underscores, dots and hyphens; empty names, `.` and `..` are rejected.
