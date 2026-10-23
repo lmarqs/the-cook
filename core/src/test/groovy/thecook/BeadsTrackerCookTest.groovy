@@ -95,14 +95,21 @@ class BeadsTrackerCookTest {
     assert text(kitchen, '.gitignore').startsWith('/build/\n# cook:begin ')
   }
 
-  @Test void refusesAShareOutsideItsChoicesAndAMissingShare() {
+  @Test void refusesAShareOutsideItsChoices() {
     def kitchen = kitchen()
 
     def fork = shouldFail(IllegalArgumentException) { cook(kitchen, TRACKER, [share: ['fork']]) }
     assert fork.message == "${TRACKER}: --share=fork is not one of: team, clone"
-    def missing = shouldFail(IllegalArgumentException) { cook(kitchen, TRACKER) }
-    assert missing.message.startsWith("${TRACKER}: Missing --share: ")
     assert files(kitchen) == []
+  }
+
+  @Test void theTeamShareIsTheDefault() {
+    def kitchen = kitchen()
+
+    cook(kitchen, TRACKER).commit()
+
+    assert text(kitchen, '.gitignore').readLines()[2] == '/.beads/issues.jsonl'
+    assert text(kitchen, '.beads/PRIME.md') == new File(COOKBOOK, 'beads/templates/PRIME-team.template.md').text
   }
 
   @Test void writesTheSessionStartScriptAtTheNamedPath() {

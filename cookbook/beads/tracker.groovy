@@ -8,7 +8,7 @@ it. Installing bd, `bd init` and, for a shared tracker, bd's remote and hooks ar
 ```sh
 # Issues kept in each clone, with no remote
 ./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone
-# Issues the team shares through a Dolt remote
+# Issues the team shares through a Dolt remote; team is the default
 ./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=team
 # With the agents layout: its session-start runner prints the script's output in every harness it connects
 ./cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone \
@@ -123,7 +123,7 @@ tracks the work.
 ''')
 import io.github.lmarqs.cookbook.beads.Beads
 
-@param(value = ['share'], choices = ['team', 'clone'],
+@param(value = ['share'], choices = ['team', 'clone'], default = ['team'],
     doc = 'Who shares the issues: team syncs them through a Dolt remote; clone keeps them in this clone')
     String share
 @param(value = ['session-start'], default = [], path = true,
