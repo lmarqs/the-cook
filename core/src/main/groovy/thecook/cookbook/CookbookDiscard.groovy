@@ -14,7 +14,7 @@ final class CookbookDiscard {
     this.destination = destination
   }
 
-  /** The changes that discard the recipes `operands` name as cooking does; only `Proposal.commit` writes them. */
+  /** The changes that discard recipes by lock name, coordinates or path; only `Proposal.commit` writes them. */
   Proposal propose(List<String> operands) {
     def kitchen = destination.toPath().toRealPath()
     def draft = new Draft(destination)

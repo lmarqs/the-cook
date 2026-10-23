@@ -64,8 +64,9 @@ from its source without running it or resolving its imports. It is the one way t
 ./cook help ./recipes/project.groovy ./recipes/dependency.groovy
 ```
 
-Discard takes the same operands, without arguments, and matches each by its short name in `cook.lock`: coordinates
-match whatever version was cooked, and a path matches after its file is gone. Discard resolves no coordinates.
+Discard also accepts the short name in `cook.lock`, `group:artifact#recipe`, without a version. It takes no recipe
+arguments and matches each by its short name: versioned coordinates match whatever version was cooked, and a path
+matches after its file is gone. Discard resolves no coordinates.
 
 A first operand equal to `discard` or `help` selects that command. To cook a recipe file named `discard`,
 make its path explicit:

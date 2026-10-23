@@ -1690,6 +1690,28 @@ notes.set('kept')
     assert CookLock.parse(new File(kitchen, 'cook.lock').text).names == ['recipes/b'] as Set
   }
 
+  @Test void discardByLockNameRemovesTheSameTargetsAsVersionedCoordinates() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
+    def ignore = new File(kitchen, '.gitignore')
+    ignore.text = 'mine\n' + ignore.text
+    def policy = new File(kitchen, '.agents/permission/policy.yaml').text
+    def discard = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents#connect'])
+
+    ['0.0.0', '9.9.9'].each { version ->
+      def versioned = new CookbookDiscard(kitchen).propose(["io.github.lmarqs.cookbook:agents:${version}#connect"])
+      assert discard.actions == versioned.actions
+      discard.changes.each { path -> assert discard.after(path) == versioned.after(path) }
+    }
+    discard.commit()
+
+    assert ignore.text == 'mine\n'
+    assert new File(kitchen, '.agents/permission/policy.yaml').text == policy
+    assert !new File(kitchen, '.claude/settings.json').exists()
+    assert !new File(kitchen, 'cook.lock').exists()
+  }
+
   @Test void discardRefusesARecipeTheLockDoesNotListOrThatIsGivenTwice() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
@@ -1703,6 +1725,10 @@ notes.set('kept')
       ],
       [
         ['io.github.lmarqs.cookbook:agents:0.1.0#seed', 'io.github.lmarqs.cookbook:agents:0.2.0#seed'],
+        'io.github.lmarqs.cookbook:agents#seed is discarded twice\n  discard it once per invocation'
+      ],
+      [
+        ['io.github.lmarqs.cookbook:agents#seed', 'io.github.lmarqs.cookbook:agents:0.1.0#seed'],
         'io.github.lmarqs.cookbook:agents#seed is discarded twice\n  discard it once per invocation'
       ],
       [['../outside.groovy'], 'the recipe is outside the kitchen\n  move it into the kitchen'],

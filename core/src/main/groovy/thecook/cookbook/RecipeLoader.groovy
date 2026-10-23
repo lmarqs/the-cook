@@ -31,9 +31,13 @@ final class RecipeLoader {
 
   /**
    * The short name for markers and `cook.lock` of the recipe `operand` names, read from the operand alone: coordinates
-   * without their version, or the path's place in `kitchen` without `.groovy`.
+   * without their version, a lock name already in that form, or the path's place in `kitchen` without `.groovy`.
    */
   static String name(Path kitchen, String operand) {
+    if (operand ==~ /[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*:[a-z][a-z0-9-]*#[a-z][a-z0-9-]*/) {
+      return operand
+    }
+
     Coordinates.written(operand) ?
         Coordinates.parse(operand).recipeName :
         relative(kitchen, operand).replaceAll(/\.groovy$/, '')

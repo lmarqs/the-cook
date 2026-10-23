@@ -90,6 +90,6 @@ class DiscardArgs extends KitchenScoped {
   @Option(names = ['--batch-approve'], description = ['Show the diff, then write without asking.'])
   boolean batchApprove
 
-  @Parameters(paramLabel = 'RECIPE', description = ['A recipe as cooking takes it: coordinates or a .groovy path.'])
+  @Parameters(paramLabel = 'RECIPE', description = ['A recipe: its cook.lock name, coordinates or a .groovy path.'])
   List<String> recipes = []
 }

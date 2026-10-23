@@ -436,6 +436,32 @@ notes.add('local')
     }
   }
 
+  @Test void discardsByLockNameButCookingStillRequiresAVersion() {
+    workspace { root, repo ->
+      Fixtures.notesCookbook(repo)
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      assert cli.execute(['-C', repo.path, '--batch-approve', 'acme:notes#notes'] as String[]) == 1
+      assert stderr.toString('UTF-8') ==
+      'cook: Invalid recipe coordinates: acme:notes#notes\n' +
+      '  expected group:artifact:version[#recipe] with an exact release version, such as ' +
+      'io.github.lmarqs.cookbook:agents:1.2.3#seed\n'
+      stderr.reset()
+      def cooked = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes', '--line=first'] as String[]
+      assert cli.execute(cooked) == 0
+      def notes = new File(repo, 'NOTES.md')
+      notes.text += 'mine\n'
+
+      stdout.reset()
+      assert cli.execute(['discard', '-C', repo.path, '--batch-approve', 'acme:notes#notes'] as String[]) == 0 :
+      stderr.toString('UTF-8')
+
+      assert stdout.toString('UTF-8').endsWith('\nUpdated NOTES.md\nDeleted cook.lock\n')
+      assert notes.text == 'mine\n'
+      assert !new File(repo, 'cook.lock').exists()
+    }
+  }
+
   @Test void discardsWhatTheLockListsForEachRecipeAndKeepsTheRestOfTheFile() {
     workspace { root, repo ->
       Fixtures.notesCookbook(repo)

@@ -19,6 +19,7 @@ class CoordinatesTest {
     assert artifact.recipeAddress('permissions') == 'io.github.lmarqs.cookbook:agents:0.1.0#permissions'
     [
       'io.github.lmarqs.cookbook:agents',
+      'io.github.lmarqs.cookbook:agents#connect',
       'io.github.lmarqs.cookbook:agents:0.1',
       'io.github.lmarqs.cookbook:agents:0.1.0-SNAPSHOT',
       'io.github.lmarqs.cookbook:agents:[0.1,)',
