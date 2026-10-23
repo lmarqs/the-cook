@@ -42,7 +42,8 @@ skipPermissions = false
 [[agents]]
 name = "codex"
 plugin = "codex"
-defaultFlags = ["-c", "approval_policy=never", "-c", "sandbox_workspace_write.network_access=false"]
+defaultFlags = ["--dangerously-bypass-hook-trust", "-c", "approval_policy=never", "-c", \
+"sandbox_workspace_write.network_access=false"]
 
 [agents.options]
 fullAuto = false
@@ -934,7 +935,7 @@ roles:
     assert config.contains('name = "claude"\nplugin = "claude"\ncommand = ".ralph-tui/bin/worker"\n' +
     'defaultFlags = ["claude", "--permission-prompts", "none", "--permission-mode", "acceptEdits"]\n')
     assert config.contains('name = "codex"\nplugin = "codex"\ncommand = ".ralph-tui/bin/worker"\n' +
-    'defaultFlags = ["codex", "-c", "approval_policy=never", "-c", ' +
+    'defaultFlags = ["codex", "--dangerously-bypass-hook-trust", "-c", "approval_policy=never", "-c", ' +
     '"sandbox_workspace_write.network_access=false"]\n')
     def worker = new File(kitchen, '.ralph-tui/bin/worker')
     assert Files.isExecutable(worker.toPath())

@@ -101,7 +101,8 @@ class RalphTui {
       options: ['skipPermissions = false'],
     ],
     codex: [
-      flags: ['-c', 'approval_policy=never', '-c', 'sandbox_workspace_write.network_access=false'],
+      flags: ['--dangerously-bypass-hook-trust', '-c', 'approval_policy=never', '-c',
+        'sandbox_workspace_write.network_access=false'],
       options: ['fullAuto = false', 'sandbox = "workspace-write"'],
     ],
   ]

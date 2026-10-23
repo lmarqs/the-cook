@@ -107,9 +107,12 @@ prompts and launcher, and `/<worktree root>/ralph/` | Always | owned |
 The Claude entry runs `claude --permission-prompts none --permission-mode acceptEdits --print`: edits are accepted, and
 any command the settings do not allow is refused rather than asked, with `skipPermissions = false`.
 `--worker-role=claude:<role>` or `--worker-settings=claude:<path>` adds `--settings <file>` to it. The Codex entry runs
-`codex -c approval_policy=never -c sandbox_workspace_write.network_access=false exec --sandbox workspace-write`: no
-approvals, no network, writes only in the worktree; `--worker-settings=codex:<path>` adds one `-c <key>=<value>` for
-each key of the file. Neither sets a model or an effort.
+`codex --dangerously-bypass-hook-trust -c approval_policy=never -c sandbox_workspace_write.network_access=false exec
+--sandbox workspace-write`: no approvals, no network, writes only in the worktree, and the project's hooks run whether
+or not anyone trusted them, since Codex skips an untrusted or changed hook without a message and the session start
+would lose its context; the hooks are the main checkout's committed `.codex/hooks.json`.
+`--worker-settings=codex:<path>` adds one `-c <key>=<value>` for each key of the file, after the entry's own, so they
+win. Neither sets a model or an effort.
 
 Never touches: `.agents/permission/policy.yaml`, any settings or role file, version pins, remotes, pull requests, the
 tracker's state, and the rest of each `--instructions` file.
@@ -200,7 +203,8 @@ each `--harness`, the flags of each `--worker-role` or `--worker-settings`, the 
 for `--worker-check`, a beads `tracker` for `--tracker=beads`, and `tracker = "beads-bv"` for `--tracker=beads-bv`. Edit
 the file or delete it and cook again; a Codex settings file is copied into the configuration when seeding, so editing
 one means deleting `config.toml` and cooking again. A newer version's prompts are taken by deleting them and cooking
-again. A newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a team never
+again, and a newer version's entry flags, such as the Codex entry's `--dangerously-bypass-hook-trust`, by adding
+them to the entry by hand. A newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a team never
 edits it: to use scripts of its own, it runs its own launcher instead of `bin/run` and `bin/clean`, or points an agent
 entry's `command` at its own worker, such as `scripts/worker.py`, in the configuration, which is never rewritten.
 
