@@ -11,37 +11,18 @@ import static thecook.Kitchens.sourcesSha256
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import thecook.cookbook.Argument
-import thecook.cookbook.Coordinates
 import thecook.cookbook.CookbookCook
-import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookLock
 import thecook.cookbook.CookbookDiscard
-import thecook.cookbook.CookbookRepositories
-import thecook.cookbook.CookbookRepository
 import thecook.cookbook.ExistingSeed
 import thecook.cookbook.KeyTarget
-import thecook.cookbook.RecipeRequest
-import thecook.cookbook.SectionTarget
 
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
-import java.security.MessageDigest
-import java.util.jar.JarEntry
-import java.util.jar.JarOutputStream
 
 class AgentsLayoutCookTest {
   private static final File TEMPLATES = new File(COOKBOOK, 'agents/skills/agents-layout/templates')
-  private static final String TEXT_MODEL = '''package acme.text
-
-@Ingredient
-class Text {
-  String text
-  @File(path = 'OUT.md')
-  String file() { text }
-}
-'''
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
@@ -133,7 +114,6 @@ recipes:
     assert lines.any { it.contains('`(unverified)`') }
     def files = []
     new File(COOKBOOK, 'agents').eachFileRecurse(groovy.io.FileType.FILES) { files << it }
-    files.removeAll { it.path.startsWith(new File(COOKBOOK, 'agents/test').path) }
     assert files && !files.any { it.text.toLowerCase().contains('ask first') }
   }
 
@@ -856,7 +836,7 @@ agents.connect([claude])
   }
 
   private static String fixture(String name) {
-    AgentsLayoutCookTest.getResource("/agents-layout/${name}").text
+    AgentsLayoutCookTest.getResource("/agents/agents-layout/${name}").text
   }
 
   /** Runs a command in the kitchen with no global or system git configuration, returning its exit code and output. */
@@ -872,13 +852,6 @@ agents.connect([claude])
 
   private File kitchen() {
     folder.newFolder('kitchen')
-  }
-
-  private static File recipe(File kitchen, String path, String text) {
-    def file = new File(kitchen, path)
-    file.parentFile.mkdirs()
-    file.text = text
-    file
   }
 
   private static String sha256(File file) {

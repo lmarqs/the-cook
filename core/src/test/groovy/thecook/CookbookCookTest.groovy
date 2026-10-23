@@ -17,7 +17,6 @@ import thecook.cookbook.RecipeRequest
 import thecook.cookbook.SectionTarget
 
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
 import java.util.jar.JarEntry

@@ -65,9 +65,9 @@ class CookTomlTest {
   @Test void readsAnArtifactFromACookbookSourceDirectoryAtAnyVersion() {
     def kitchen = folder.newFolder('kitchen')
     source(new File(folder.root, 'book'), [
-      'notes/notes.groovy': 'source notes',
-      'notes/Note.groovy': 'class Note {}',
-      'notes/templates/NOTES.md': 'resource',
+      'src/notes/notes.groovy': 'source notes',
+      'src/notes/Note.groovy': 'class Note {}',
+      'src/notes/templates/NOTES.md': 'resource',
     ])
     new File(kitchen, 'cook.toml').text = 'repositories = ["../book"]\n'
 
@@ -82,8 +82,8 @@ class CookTomlTest {
 
   @Test void aCookbookSourceDirectoryServesOnlyItsGroupsArtifacts() {
     def kitchen = folder.newFolder('kitchen')
-    source(new File(kitchen, 'book'), ['other/other.groovy': 'source other'])
-    source(new File(kitchen, 'elsewhere'), ['notes/notes.groovy': 'other group notes'], 'other')
+    source(new File(kitchen, 'book'), ['src/other/other.groovy': 'source other'])
+    source(new File(kitchen, 'elsewhere'), ['src/notes/notes.groovy': 'other group notes'], 'other')
     publish(new File(kitchen, 'repository'), ['acme/notes/notes.groovy': 'published notes'])
     new File(kitchen, 'cook.toml').text = 'repositories = ["book", "elsewhere", "repository"]\n'
 

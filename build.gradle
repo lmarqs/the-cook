@@ -67,18 +67,16 @@ tasks.register('codenarc', JavaExec) {
 }
 
 // The Maven Central Portal takes one zip of a Maven-layout tree for a release. The published artifacts are the cookbook
-// artifacts `agents`, `git`, `beads` and `ralph`, the cookbook plugin and the plugin's marker.
+// artifacts `agents`, `git`, `beads` and `ralph`.
 def releaseVersion = findProperty('releaseVersion') ?: '0.0.0'
 def cookbookArtifacts = ['agents', 'git', 'beads', 'ralph']
 def centralBundle = tasks.register('centralBundle', Zip) {
   group = 'publishing'
-  description = 'Bundle the cookbook artifacts, the cookbook plugin and its marker, with their checksums, for the ' +
-      'Central Portal.'
+  description = 'Bundle the cookbook artifacts, with their checksums, for the Central Portal.'
   cookbookArtifacts.each {
     dependsOn gradle.includedBuild('cookbook').task(":publish${it.capitalize()}PublicationToCentralRepository")
   }
-  dependsOn gradle.includedBuild('plugin').task(':publishAllPublicationsToCentralRepository')
-  from('cookbook/build/central', 'plugin/build/central')
+  from('cookbook/build/central')
   exclude '**/maven-metadata.xml*'
   includeEmptyDirs = false
   archiveFileName = 'central-bundle.zip'
@@ -94,12 +92,9 @@ tasks.register('centralBundleTest') {
     def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
     def v = releaseVersion
     def cookbook = cookbookArtifacts.collect { "io/github/lmarqs/cookbook/${it}/${v}/${it}-${v}" }
-    def plugin = "io/github/lmarqs/the-cook-plugin/${v}/the-cook-plugin-${v}"
-    def marker = "io/github/lmarqs/cookbook/io.github.lmarqs.cookbook.gradle.plugin/${v}/" +
-        "io.github.lmarqs.cookbook.gradle.plugin-${v}"
     def expected = ['', '-sources', '-javadoc'].collectMany { suffix ->
-      cookbook.collect { "${it}${suffix}.jar" } + ["${plugin}${suffix}.jar", "${marker}${suffix}.jar"]
-    } + cookbook.collect { "${it}.pom" } + ["${plugin}.pom", "${plugin}.module", "${marker}.pom"]
+      cookbook.collect { "${it}${suffix}.jar" }
+    } + cookbook.collect { "${it}.pom" }
     def files = entries.findAll { !it.endsWith('/') && !(it ==~ /.*\.(md5|sha1|sha256|sha512|asc)/) }
     def missing = files.findAll { !(entries.contains(it + '.md5') && entries.contains(it + '.sha1')) }
 
@@ -114,7 +109,7 @@ tasks.named('check') {
   dependsOn 'codenarc', 'centralBundleTest'
   dependsOn gradle.includedBuild('core').task(':check'), gradle.includedBuild('infra').task(':check')
   dependsOn gradle.includedBuild('cli').task(':check')
-  dependsOn gradle.includedBuild('docs').task(':check'), gradle.includedBuild('plugin').task(':check')
+  dependsOn gradle.includedBuild('docs').task(':check')
   dependsOn gradle.includedBuild('cookbook').task(':check')
 }
 

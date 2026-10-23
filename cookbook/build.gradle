@@ -1,7 +1,13 @@
 plugins {
-  id 'io.github.lmarqs.cookbook'
   id 'groovy'
+  id 'maven-publish'
 }
+
+description = 'Recipes and models for the-cook, a recipe driven configuration tool'
+
+// cookbook.toml names the group, which cooking a source directory reads too.
+group = (file('cookbook.toml').text =~ /(?m)^group\s*=\s*"([^"]+)"/)[0][1]
+version = findProperty('releaseVersion') ?: '0.0.0'
 
 repositories {
   mavenCentral()
@@ -11,13 +17,9 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 sourceSets {
   test {
-    groovy {
-      // An artifact's tests sit in its test/ directory, which cooking never reads.
-      srcDirs = ['.']
-      include '*/test/**/*.groovy', 'Cookbook.groovy'
-    }
+    groovy.srcDirs = ['test']
     resources {
-      srcDirs = file('.').listFiles().findAll { new File(it, 'test').isDirectory() }.collect { new File(it, 'test') }
+      srcDirs = ['test']
       exclude '**/*.groovy'
     }
   }
@@ -30,15 +32,42 @@ dependencies {
 
 tasks.named('test') {
   useJUnit()
-  systemProperty 'cook.cookbook', projectDir.absolutePath
+  systemProperty 'cook.cookbook', file('src').absolutePath
   // The tests cook the recipes and read their files, so a change to any of them must rerun the tests.
-  inputs.files(fileTree('.') { exclude 'build/**', '.gradle/**' })
-  .withPathSensitivity(PathSensitivity.RELATIVE)
-  .withPropertyName('cookbook')
+  inputs.files(fileTree('src'))
+      .withPathSensitivity(PathSensitivity.RELATIVE)
+      .withPropertyName('cookbook')
   testLogging { events 'failed' }
 }
 
-description = 'Recipes and models for the-cook, a recipe driven configuration tool'
+// The tests are the build's only classes; the artifacts are packaged below.
+tasks.named('jar') { enabled = false }
+
+// Each directory under src/ is one artifact: a jar of its files under its package path, <group>/<artifact>/, which the
+// engine compiles when one of its recipes is cooked.
+def packagePath = project.group.toString().replace('.', '/')
+def artifacts = file('src')
+    .listFiles()
+    .findAll { it.isDirectory() && !it.name.startsWith('.') }
+    *.name
+    .sort()
+
+artifacts.each { artifact ->
+  def jar = tasks.register("${artifact}Jar", Jar) {
+    group = 'build'
+    description = "Package the ${artifact} artifact"
+    archiveBaseName = artifact
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    from(file("src/${artifact}")) { into("${packagePath}/${artifact}") }
+  }
+  tasks.named('assemble') { dependsOn jar }
+  publishing.publications.create(artifact, MavenPublication) {
+    artifactId = artifact
+    it.artifact(jar)
+  }
+}
 
 apply from: '../gradle/central.gradle'
 
@@ -49,13 +78,13 @@ apply from: '../gradle/central.gradle'
     archiveBaseName = artifact
     archiveClassifier = 'sources'
     destinationDirectory = layout.buildDirectory.dir('libs')
-    from(file(artifact)) { into("${project.group.toString().replace('.', '/')}/${artifact}") }
+    from(file("src/${artifact}")) { into("${packagePath}/${artifact}") }
   }
   def javadoc = tasks.register("${artifact}JavadocJar", Jar) {
     archiveBaseName = artifact
     archiveClassifier = 'javadoc'
     destinationDirectory = layout.buildDirectory.dir('libs')
-    from(file("${artifact}/README.md"))
+    from(file("src/${artifact}/README.md"))
   }
 
   publishing.publications.named(artifact, MavenPublication) {
