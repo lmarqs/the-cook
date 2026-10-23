@@ -133,9 +133,9 @@ command starts from `$CLAUDE_PROJECT_DIR`.
 
 Codex trusts hooks per absolute path of `.codex/hooks.json`, recorded in `~/.codex/config.toml`, not per clone. A
 repository at a new path runs none of its hooks until they are trusted there, and `codex exec` skips them without a
-warning; `--dangerously-bypass-hook-trust` runs them for one run (tested in a new repository). A worktree has a path
-of its own, so the same holds there. Claude runs the project's hooks even in a workspace nobody trusted (tested with
-`claude --print`).
+warning; `--dangerously-bypass-hook-trust` runs them for one run (tested in a new repository). A worktree, inside the
+checkout or beside it, runs the hooks trusted at its main checkout's path ([tested](#how-codex-trust-is-tested) with codex-cli 0.160.1). Claude
+runs the project's hooks even in a workspace nobody trusted (tested with `claude --print`).
 
 ## Why roles only deny
 
@@ -209,14 +209,12 @@ the clone, not the directory:
 - Claude Code keys trust on the main checkout. In an untrusted worktree its warning names
   `projects["<main checkout>"]`, and in a worktree of a trusted clone it reads the main checkout's
   `.claude/settings.local.json` (tested, with a deny, in a worktree that had no local file of its own).
-- Codex applies `.codex/rules` in a worktree inside the trusted checkout and in one beside it, and skips them
-  in a plain clone nobody trusted (tested).
-- Codex hooks are the exception: Codex trusts them per absolute path of `.codex/hooks.json`, so a worktree runs none
-  of them, the session start included, without `--dangerously-bypass-hook-trust`
-  ([why](#tools-that-add-session-context)).
+- Codex applies `.codex/rules` and runs the hooks trusted in the main checkout in a worktree inside it and in one
+  beside it, and skips both in a plain clone nobody trusted ([tested](#how-codex-trust-is-tested) with codex-cli 0.160.1). A clone trusted as a
+  project still runs none of its hooks until they are trusted at its own path ([why](#tools-that-add-session-context)).
 
-So trusting the main checkout once covers every worktree of it, wherever the runner puts it, except for Codex hooks;
-a fresh clone needs its own trust.
+So trusting the main checkout once, its hooks included, covers every worktree of it, wherever the runner puts it; a
+fresh clone needs its own trust.
 
 Where worktrees go is left to the project and its runner, because each location has a cost:
 
@@ -253,6 +251,41 @@ tested here. "Not verified" marks what the sources did not show:
 Most of them launch with flags that skip a harness's asks, and nearly all let the command be changed. Point the
 command at the unattended line of the contract; [Why bypass is refused by default](#why-bypass-is-refused-by-default)
 says what each harness does when a runner keeps its bypass flags.
+
+## How Codex trust is tested
+
+The Codex trust claims above come from one probe, which anyone can rerun when Codex changes. It needs a Codex login
+and costs one short model call per row.
+
+1. Point `CODEX_HOME` at a new directory holding a copy of `~/.codex/auth.json` and an empty `config.toml`, so no
+   trust from the person's own configuration leaks in. A trusted parent directory, such as the home directory, would
+   otherwise trust every repository under it.
+2. Create a repository outside `/tmp` and commit three files: `.codex/rules/probe.rules` with
+   `prefix_rule(pattern = ["touch", "rule-probe"], decision = "forbidden")`; `.codex/hooks.json` with a `SessionStart`
+   hook running `sh -c 'touch "$(git rev-parse --show-toplevel)/hook-probe"'`; and `.codex/config.toml` with
+   `sandbox_mode = "workspace-write"` and `approval_policy = "never"`.
+3. Add a worktree inside it and one beside it with `git worktree add`, and `git clone` it to a third path.
+4. Start `codex` interactively in the main checkout, in a terminal, and accept both the project and the hook trust
+   questions. `config.toml` then holds `projects."<path>"` and
+   `hooks.state."<path>/.codex/hooks.json:session_start:0:0"`.
+5. In each checkout, run `codex exec --json -C <dir> "Run exactly this shell command and nothing else: touch
+   rule-probe ."`. A missing `rule-probe` with a `rejected: policy forbids` error means the rules applied; a
+   `hook-probe` file means the hook ran. Delete both files between runs.
+
+Results with codex-cli 0.160.1:
+
+| Checkout | `.codex/rules` applied | Hook ran |
+| --- | --- | --- |
+| Main checkout, project and hooks trusted | Yes | Yes |
+| Worktree inside it | Yes | Yes |
+| Worktree beside it | Yes | Yes |
+| Worktree, with `--dangerously-bypass-hook-trust` | Yes | Yes |
+| Clone nobody trusted | No, and the read-only default sandbox applied, so its `config.toml` was skipped too | No |
+| Clone trusted as a project in `config.toml`, hooks never accepted, same `hooks.json` | Yes | No |
+
+Hook trust is keyed by path, not by content, and a worktree takes the key of its main checkout: no `hooks.state`
+entry appears for a worktree. Trust given with `-c 'projects."<path>".trust_level="trusted"'` does not count, because
+codex-cli 0.160.1 ignores that key and prints `unrecognized configuration setting`.
 
 ## Why bypass is refused by default
 

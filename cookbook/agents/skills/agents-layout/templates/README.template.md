@@ -60,7 +60,7 @@ Codex has no roles: it has no option that adds a rules file to one run, so every
 Claude applies the project's allow rules only in a workspace someone has trusted, so start `claude` here once,
 interactively, before relying on unattended runs. Codex loads `.codex/rules` only in a trusted project. A worktree of
 this clone, inside it or beside it, needs no setup of its own: the layout is committed, both harnesses take its trust
-from this checkout, and Claude reads this checkout's `.claude/settings.local.json` there.
+from this checkout, Codex's hook trust included, and Claude reads this checkout's `.claude/settings.local.json` there.
 
 ## Loop runners
 

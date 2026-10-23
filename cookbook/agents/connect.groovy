@@ -190,9 +190,9 @@ change once the policy gains roles or command rules, until the recipe is cooked 
 
 - Claude Code applies the project's allow rules only in a workspace someone has trusted, and Codex loads `.codex/rules`
   only in a trusted project: start each once, interactively, in the main checkout.
-- Codex trusts hooks per absolute path of `.codex/hooks.json`, recorded in `~/.codex/config.toml`, so a worktree runs
-  none of them, the session start included, without `--dangerously-bypass-hook-trust`, and Codex prints no warning
-  when it skips them.
+- Codex trusts hooks per absolute path of the main checkout's `.codex/hooks.json`, recorded in `~/.codex/config.toml`
+  and shared by its worktrees, so a new clone runs none of them, the session start included, until they are trusted
+  there or without `--dangerously-bypass-hook-trust`, and Codex prints no warning when it skips them.
 - A `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the directory of an `AGENTS.md` or one above makes Claude
   Code skip that `AGENTS.md`. Claude Code older than 2.1.277 reads no `AGENTS.md`.
 - Codex has no roles: a role's denies reach only Claude runs. `codex exec --ignore-rules`, `--approve-for-me` or an

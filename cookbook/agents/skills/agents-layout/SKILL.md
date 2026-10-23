@@ -139,7 +139,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
 | Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
 | Share a skill, slash command, hook script or durable fact | `.agents/skills/`, `commands/`, `hooks/` or `memory/` | Commit; the links expose it |
-| Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; a Codex worktree runs it only with `--dangerously-bypass-hook-trust`, [design.md](references/design.md#tools-that-add-session-context) |
+| Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; Codex runs it once the hooks are trusted in the main checkout, its worktrees included, [design.md](references/design.md#tools-that-add-session-context) |
 | Run a shared hook script on another harness event | The `hooks` key of `.claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |
 | Change another shared harness setting, such as `env` or an MCP server | That key in `.claude/settings.json` or `.codex/config.toml` | Commit |
 | Change something for yourself | `.claude/settings.local.json` | Nothing to commit |
