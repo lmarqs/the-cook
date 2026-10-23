@@ -161,8 +161,8 @@ An agent entry whose `command` is `.ralph-tui/bin/worker`, as `--worker-check` s
 `.ralph-tui/bin/worker <agent> [arguments…]` for each task, from the run worktree or a parallel worker's. The worker
 refuses every task without `--worker-check`, and in the main checkout, and passes `--version` alone to every seeded
 harness. It runs the agent with ralph-tui's stdin and holds the agent's stdout in `.ralph-tui/worker-output.log`; an
-agent that exits non-zero ends the worker with its exit code, its output withheld. When that output holds
-`<promise>COMPLETE</promise>`, it runs the check with the commit the agent started from, writing the check's output to
+agent that exits non-zero ends the worker with its exit code, its output withheld. When that output holds the promise
+in any form ralph-tui accepts, it runs the check with the commit the agent started from, writing the check's output to
 `.ralph-tui/worker-check.log`, never to stderr. A failed check prints one line to stderr and exits 1, so the task stays
 open and ralph-tui retries it, then skips it. Otherwise it writes the held output for ralph-tui. Stopping the worker
 stops the agent's or the check's processes. `bin/run` copies the worker with a copied configuration.
@@ -199,9 +199,10 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
 - Claude Code ignores the project's `permissions.allow` in a workspace nobody has trusted, and a fresh clone or a new
   worktree may be one: an unattended Claude worker's allows come through `--worker-role=claude:<role>` or
   `--worker-settings=claude:<path>`.
-- ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere,
-  even in a sentence saying it is not done, whatever the checks say. `--worker-check` gates it on the team's check;
-  the artifact's README, under Gating completion, says how a team writes a wrapper of its own.
+- ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere, in
+  any case and with any whitespace inside the tags, even in a sentence saying it is not done, whatever the checks say.
+  `--worker-check` gates it on the team's check; the artifact's README, under Gating completion, says how a team writes
+  a wrapper of its own.
 - ralph-tui 0.12 runs an installed plugin with no options for an `--agent` that matches no entry, and for Claude that
   means no permission checks. `bin/run` refuses it; `ralph-tui run` started by hand does not.
 - ralph-tui commits with `git add -A`, so whatever a worker changes in the run worktree, `.beads/` included, rides in

@@ -5,12 +5,12 @@ sets it up so each run works unattended in a worktree of its own, `.worktrees/ra
 
 ## Gating completion
 
-ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere, at
-any exit code, even in a sentence saying it is not done; it never runs the project's checks itself. `#ralph-tui`
-always writes `.ralph-tui/bin/worker`, a wrapper that follows the pseudo code below. Cooking it with
-`--worker-check=<path>` names the committed check the worker runs and seeds each agent entry to run the worker;
-without that flag, the worker refuses every task. The check gets the commit the agent started from as its argument,
-and exits 0 when the task's work passes.
+ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere, in any
+case and with any whitespace inside the tags, at any exit code, even in a sentence saying it is not done; it never runs
+the project's checks itself. `#ralph-tui` always writes `.ralph-tui/bin/worker`, a wrapper that follows the pseudo code
+below. Cooking it with `--worker-check=<path>` names the committed check the worker runs and seeds each agent entry to
+run the worker; without that flag, the worker refuses every task. The check gets the commit the agent started from as
+its argument, and exits 0 when the task's work passes.
 
 A team that wants another gate points an agent entry's `command` at a wrapper of its own, such as
 `scripts/worker.py`, and leaves `.ralph-tui/bin/` as written: every cook rewrites it. What ralph-tui does to that
@@ -38,7 +38,7 @@ base = git rev-parse HEAD                    # ralph-tui commits each task, so e
 on a stop signal: stop the agent's or the checks' processes and their children, then exit
 run the agent with the arguments, stdin passed on, stdout held in an ignored file
 if the agent exits non-zero: exit with its code
-if the held stdout holds <promise>COMPLETE</promise>:
+if the held stdout holds <promise>COMPLETE</promise> in any case, with any whitespace inside the tags:
   run the project's checks against base, output to an ignored log file, never stderr
   if the checks fail: print one line to stderr, free of the words above; exit 1
 print the held stdout; exit 0
