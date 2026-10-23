@@ -1162,7 +1162,7 @@ config.migrated = migrated
           .relativize(it.toPath())
           .toString()
     }
-    sourcesSha256(directory, paths.findAll { !it.startsWith('test/') })
+    sourcesSha256(directory, paths)
   }
 
   private static String sourcesSha256(File directory, List<String> paths) {
