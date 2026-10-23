@@ -135,3 +135,14 @@ jobs:
         run: $SEMANTIC_RELEASE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # The site follows the release it documents, so it is published only once the release exists.
+  pages:
+    needs: [version, publish]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+    with:
+      tag: v${{ needs.version.outputs.version }}

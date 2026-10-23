@@ -80,7 +80,8 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
   `chore(lint)`.
 - Deploy: the maintainer starts the `release` workflow; semantic-release takes the version from the commits since the
   last `v*` tag, and the release publishes only after the Linux and macOS builds pass. It shows in the workflow run and
-  on the GitHub releases page. No rollback: Maven Central cannot take a release back.
+  on the GitHub releases page, and the `pages` workflow then publishes its docs to GitHub Pages. No rollback: Maven
+  Central cannot take a release back.
 
 ## Gotchas
 
