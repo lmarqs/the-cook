@@ -575,18 +575,17 @@ Ingredients
 After cooking
   Install ralph-tui and the runtimes it needs with `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`: npm needs node to
   install it, and its launcher runs on bun. Without `-g`, mise pins them in the project's `mise.toml` instead, which is
-  the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with
-  `brew install dicklesworthstone/tap/bv`. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and,
-  with `--share=team`, `.ralph-tui/` to share them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/`
-  out of commits. In a new clone, run `./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
-  `.ralph-tui/` to one clone of a team that shares it, ignore it
-  with `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted
-  `.ralph-tui/` into each run. `bin/run`
-  refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
+  the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with `brew install dicklesworthstone/tap/bv`.
+  Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and, with `--share=team`, `.ralph-tui/` to share
+  them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/` out of commits. In a new clone, run
+  `./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
+  `.ralph-tui/` to one clone of a team that shares it, ignore it with
+  `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted `.ralph-tui/` into
+  each run. `bin/run` refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
   `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, with a Beads database holding the epic, or
   `.ralph-tui/bin/run <name> --agent <entry> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch
-  `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`,
-  to give agents these commands, and with the agents layout, add them to the Launching table in `.agents/README.md`.
+  `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to
+  give agents these commands, and with the agents layout, add them to the Launching table in `.agents/README.md`.
 ````
 
 ## Layout
