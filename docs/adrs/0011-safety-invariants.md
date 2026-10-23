@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    A developer needs to understand both the changes being approved and the limits of that approval.
+    Calling configuration editing safe without stating those limits can suggest protection from executable code or from
+    programs the configuration controls.
+  goal: >-
+    Developers can review requested file changes and recover from a failed write without mistaking those
+    mechanisms for protection from arbitrary recipe execution or agent sessions.
+---
 # 0011. Cook's guarantees cover declared batch operations
-
-## Objective
-
-**Problem.** A developer needs to understand both the changes being approved and the limits of that approval.
-Calling configuration editing safe without stating those limits can suggest protection from executable code or from
-programs the configuration controls.
-
-**Goal.** Developers can review requested file changes and recover from a failed write without mistaking those
-mechanisms for protection from arbitrary recipe execution or agent sessions.
 
 ## Context
 

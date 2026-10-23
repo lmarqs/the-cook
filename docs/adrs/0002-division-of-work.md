@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Sharing setup mixes mechanical file editing with choices about a project's prose, permissions and way of
+    working. Hand copying loses consistency, while guessing a team's intent can silently rewrite configuration it wanted
+    to keep.
+  goal: >-
+    Developers can review the concrete effect of shared setup while retaining control over its content and
+    choices.
+---
 # 0002. Cook separates recipe choices from batch execution
-
-## Objective
-
-**Problem.** Sharing setup mixes mechanical file editing with choices about a project's prose, permissions and way of
-working. Hand copying loses consistency, while guessing a team's intent can silently rewrite configuration it wanted
-to keep.
-
-**Goal.** Developers can review the concrete effect of shared setup while retaining control over its content and
-choices.
 
 ## Context
 

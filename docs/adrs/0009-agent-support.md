@@ -1,11 +1,12 @@
+---
+objective:
+  problem: >-
+    Coding agents use different configuration formats. Maintaining the same repository setup by hand for
+    several agents duplicates work, and a change made for one can be missed for another.
+  goal: >-
+    Teams can reuse configuration choices across agents while seeing what each agent will actually receive.
+---
 # 0009. Ingredients model each agent's native configuration
-
-## Objective
-
-**Problem.** Coding agents use different configuration formats. Maintaining the same repository setup by hand for
-several agents duplicates work, and a change made for one can be missed for another.
-
-**Goal.** Teams can reuse configuration choices across agents while seeing what each agent will actually receive.
 
 ## Context
 

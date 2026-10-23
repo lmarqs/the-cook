@@ -38,11 +38,12 @@ that reads the corpus before making a change is that reader on every run.
 
 Every ADR opens with its objective, before any fact or decision, so a reader knows why the subject is on the table and
 what it must achieve before reading how it is settled ([philosophy](../philosophy.md#start-from-the-objective)). The
-Objective section has two parts:
+objective is the reason the ADR is written, not part of its content, so it lives in the `objective` front matter
+before the title, and the site shows it under the title. It has two parts:
 
-- **Problem.** Who has the problem, and what goes wrong for them or what they need and lack, in at most four
+- **`problem`.** Who has the problem, and what goes wrong for them or what they need and lack, in at most four
   sentences.
-- **Goal.** The outcome that holds once the problem is solved, stated so that anyone can tell whether it holds, in at
+- **`goal`.** The outcome that holds once the problem is solved, stated so that anyone can tell whether it holds, in at
   most two sentences.
 
 Neither part names a solution: no mechanism the decision introduces, none of the tool's commands, files or settings.
@@ -58,7 +59,7 @@ in force only because nobody asked why it was there.
 A decision without its reasons cannot be applied to a case it did not foresee, and cannot be changed safely, because
 nobody can tell which facts it depends on. So every ADR justifies every point it decides:
 
-- Each numbered point of the Decision serves the Objective and has at least one reason in Reasons.
+- Each numbered point of the Decision serves the objective and has at least one reason in Reasons.
 - A reason ties a fact from Context, or another ADR, to the point, and states what the decision trades away.
 - Context holds the facts and examples that make the objective concrete, and a reader with only this repository and
   public sources can check or follow every one of them: a third-party tool's documented behavior, with the version it
@@ -117,13 +118,14 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
 ## Template
 
 ```markdown
+---
+objective:
+  problem: >-
+    Who has the problem, and what goes wrong for them or what they need and lack. No solution.
+  goal: >-
+    The outcome that holds once the problem is solved, stated so anyone can tell whether it holds.
+---
 # NNNN. <The decision, one present-tense sentence>
-
-## Objective
-
-**Problem.** Who has the problem, and what goes wrong for them or what they need and lack. No solution.
-
-**Goal.** The outcome that holds once the problem is solved, stated so anyone can tell whether it holds.
 
 ## Context
 

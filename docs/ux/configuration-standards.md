@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    Shared configuration can hide conflicting values, mistyped inputs, and credentials. When the scope of a
+    change is unclear, reviewers cannot tell what it replaces or how to recover it.
+  goal: >-
+    [Recipe](../features/glossary.md) inputs and native output are understandable, the proposed changes are
+    visible before writes, and `cook.lock` records which recipe owns each part.
+---
 # Configuration standards
-
-## Objective
-
-**Problem.** Shared configuration can hide conflicting values, mistyped inputs, and credentials. When the scope of a
-change is unclear, reviewers cannot tell what it replaces or how to recover it.
-
-**Goal.** [Recipe](../features/glossary.md) inputs and native output are understandable, the proposed changes are
-visible before writes, and `cook.lock` records which recipe owns each part.
 
 ## Overview
 

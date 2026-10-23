@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Developers and CI can run different engine releases against the same repository. Changes to recipe
+    evaluation or file operations then depend on which release a machine happens to have, and a newcomer must find and
+    install the repository's chosen version before running recipes.
+  goal: >-
+    The repository chooses the engine version its developers and CI invoke, and a newcomer can obtain that
+    version through the repository's entry point without installing Java or Gradle separately.
+---
 # 0017. Each repository pins its engine release through a committed wrapper
-
-## Objective
-
-**Problem.** Developers and CI can run different engine releases against the same repository. Changes to recipe
-evaluation or file operations then depend on which release a machine happens to have, and a newcomer must find and
-install the repository's chosen version before running recipes.
-
-**Goal.** The repository chooses the engine version its developers and CI invoke, and a newcomer can obtain that
-version through the repository's entry point without installing Java or Gradle separately.
 
 ## Context
 

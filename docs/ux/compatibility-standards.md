@@ -1,14 +1,15 @@
+---
+objective:
+  problem: >-
+    Repositories upgrade at different times. Changes to command grammar or native configuration can break
+    scripts and programs, while broad replacements can erase settings maintained by teammates or other tools. Pinning an
+    engine release alone does not control [cookbook](../features/glossary.md) sources or the effects of executable
+    recipes.
+  goal: >-
+    Users can review compatibility changes deliberately, preserve unrelated content, and distinguish engine
+    versions, cookbook sources and native program behavior.
+---
 # Compatibility standards
-
-## Objective
-
-**Problem.** Repositories upgrade at different times. Changes to command grammar or native configuration can break
-scripts and programs, while broad replacements can erase settings maintained by teammates or other tools. Pinning an
-engine release alone does not control [cookbook](../features/glossary.md) sources or the effects of executable
-recipes.
-
-**Goal.** Users can review compatibility changes deliberately, preserve unrelated content, and distinguish engine
-versions, cookbook sources and native program behavior.
 
 ## Overview
 

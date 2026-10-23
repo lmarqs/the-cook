@@ -10,10 +10,21 @@
   {% include sidebar.html %}
   <main id="main" class="content" tabindex="-1">
     <article class="prose">
-{%- unless content contains "<h1" %}
-      <h1>{{ page_title }}</h1>
-{%- endunless %}
+{%- capture objective %}
+{%- if page.objective %}
+      <dl class="objective" aria-label="Objective">
+        <div><dt>Problem</dt><dd>{{ page.objective.problem | replace: ".md)", ".html)" | replace: ".md#", ".html#" | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
+        <div><dt>Goal</dt><dd>{{ page.objective.goal | replace: ".md)", ".html)" | replace: ".md#", ".html#" | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
+      </dl>
+{%- endif %}
+{%- endcapture %}
+{%- if content contains "<h1" %}
+{%- assign title_end = "</h1>" | append: objective %}
+{{ content | replace_first: "</h1>", title_end }}
+{%- else %}
+      <h1>{{ page_title }}</h1>{{ objective }}
 {{ content }}
+{%- endif %}
     </article>
     <p class="page-source">
       <a href="{{ site.source_url }}/blob/{{ release_ref }}/{{ page.path }}">This page on GitHub</a>

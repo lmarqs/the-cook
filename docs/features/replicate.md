@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    A fresh clone keeps `cook.lock` but can lack a recipe's ignored output. A developer wants to recreate
+    those files without finding and retyping the arguments used to cook them.
+  goal: >-
+    Replicating named recipes cooks them again from the sources and arguments recorded in `cook.lock`, with
+    one diff and approval for the whole batch.
+---
 # Replicate recipes
-
-## Objective
-
-**Problem.** A fresh clone keeps `cook.lock` but can lack a recipe's ignored output. A developer wants to recreate
-those files without finding and retyping the arguments used to cook them.
-
-**Goal.** Replicating named recipes cooks them again from the sources and arguments recorded in `cook.lock`, with
-one diff and approval for the whole batch.
 
 This page follows the intended [architecture](../architecture.md#cooking-and-discard), which owns the requirements. For
 current execution, see the [root README](../../README.md).

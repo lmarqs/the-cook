@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Teams configure different agents, editors, version control tools and loop runners. Each program has its
+    own files and configuration conventions, which change independently. Mixing that knowledge into the configuration
+    engine makes program changes harder to maintain and confuses configuring a program with controlling its execution.
+  goal: >-
+    Teams reuse program-specific setup without making their chosen programs part of the engine's workflow.
+    Program knowledge can evolve separately from the rules for reviewing and writing file changes.
+---
 # 0022. Ingredients model programs' native configuration
-
-## Objective
-
-**Problem.** Teams configure different agents, editors, version control tools and loop runners. Each program has its
-own files and configuration conventions, which change independently. Mixing that knowledge into the configuration
-engine makes program changes harder to maintain and confuses configuring a program with controlling its execution.
-
-**Goal.** Teams reuse program-specific setup without making their chosen programs part of the engine's workflow.
-Program knowledge can evolve separately from the rules for reviewing and writing file changes.
 
 ## Context
 

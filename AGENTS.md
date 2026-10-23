@@ -1,7 +1,7 @@
 # the-cook
 
 This repository builds the-cook, a recipe driven configuration tool, and the `agents`, `git`, `beads` and `ralph`
-cookbook artifacts it cooks. The [README](README.md#objective) says who it is for, and
+cookbook artifacts it cooks. The [README](README.md) says who it is for, and
 [Quick start](README.md#quick-start) how to try it.
 
 Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-wrapper.properties`), JUnit 4

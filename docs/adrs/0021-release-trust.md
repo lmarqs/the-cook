@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    A repository's entry point downloads executable engine content that runs with the person's credentials.
+    A replaced or corrupted download must not silently run as the release the repository chose. Detecting a mismatch with
+    that choice does not establish that the chosen package came from its claimed publisher or is free of malicious code.
+  goal: >-
+    What runs matches the engine release the repository reviewed, and maintainers understand what that check
+    proves and what trust remains their responsibility.
+---
 # 0021. Reviewed engine pins verify package integrity without proving publisher identity
-
-## Objective
-
-**Problem.** A repository's entry point downloads executable engine content that runs with the person's credentials.
-A replaced or corrupted download must not silently run as the release the repository chose. Detecting a mismatch with
-that choice does not establish that the chosen package came from its claimed publisher or is free of malicious code.
-
-**Goal.** What runs matches the engine release the repository reviewed, and maintainers understand what that check
-proves and what trust remains their responsibility.
 
 ## Context
 

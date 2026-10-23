@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Setup changes touch repositories that already contain program configuration, shared agent content and
+    local state. Misplacing those files prevents programs from finding their settings, and a tool that leaves its own
+    files behind adds state every repository must ignore, clean up or explain.
+  goal: >-
+    Programs find the configuration intended for them, reviewers can inspect shared changes, and every file
+    Cook writes in a repository is one that repository commits, without relocating unrelated files.
+---
 # 0014. Native output and recipe ownership are the only files Cook writes
-
-## Objective
-
-**Problem.** Setup changes touch repositories that already contain program configuration, shared agent content and
-local state. Misplacing those files prevents programs from finding their settings, and a tool that leaves its own
-files behind adds state every repository must ignore, clean up or explain.
-
-**Goal.** Programs find the configuration intended for them, reviewers can inspect shared changes, and every file
-Cook writes in a repository is one that repository commits, without relocating unrelated files.
 
 ## Context
 

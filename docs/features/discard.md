@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    A developer who stops using a recipe wants its output gone from the repository, without hunting through
+    shared files for what it wrote and without losing the content written by hand or by other recipes.
+  goal: >-
+    Discarding a recipe proposes the removal of exactly what the recipe owns, and everything else in the same
+    files stays.
+---
 # Discard recipes
-
-## Objective
-
-**Problem.** A developer who stops using a recipe wants its output gone from the repository, without hunting through
-shared files for what it wrote and without losing the content written by hand or by other recipes.
-
-**Goal.** Discarding a recipe proposes the removal of exactly what the recipe owns, and everything else in the same
-files stays.
 
 This page follows the intended [architecture](../architecture.md#cooking-and-discard), which owns the requirements. For
 current execution, see the [root README](../../README.md).

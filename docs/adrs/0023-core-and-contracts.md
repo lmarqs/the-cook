@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    When rules for reviewing and writing configuration are mixed with filesystem access, source loading and
+    terminal interaction, a mechanism change can alter the operation contract. Maintainers also struggle to reason about
+    failure recovery without exercising every external dependency.
+  goal: >-
+    Maintainers can reason about file-operation rules independently of the mechanisms that read, present and
+    write their inputs and results.
+---
 # 0023. The core separates operation rules from external mechanisms
-
-## Objective
-
-**Problem.** When rules for reviewing and writing configuration are mixed with filesystem access, source loading and
-terminal interaction, a mechanism change can alter the operation contract. Maintainers also struggle to reason about
-failure recovery without exercising every external dependency.
-
-**Goal.** Maintainers can reason about file-operation rules independently of the mechanisms that read, present and
-write their inputs and results.
 
 ## Context
 

@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    People who change one repository each work their own way: their own editor, coding agents, settings,
+    plugins, loop runner, and task list, or none of these. A tool that requires everyone to work one way gets in the way
+    of those whose choices differ. A tool that claims control over programs people can start directly misleads those
+    who rely on its guarantees.
+  goal: >-
+    Nobody has to change how they work to use the tool, and each guarantee names the operations it covers.
+---
 # 0028. Cook supports shared setup without controlling how people work
-
-## Objective
-
-**Problem.** People who change one repository each work their own way: their own editor, coding agents, settings,
-plugins, loop runner, and task list, or none of these. A tool that requires everyone to work one way gets in the way
-of those whose choices differ. A tool that claims control over programs people can start directly misleads those
-who rely on its guarantees.
-
-**Goal.** Nobody has to change how they work to use the tool, and each guarantee names the operations it covers.
 
 ## Context
 

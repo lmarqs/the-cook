@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Teams and developers reuse configuration across repositories, but copying setup by hand makes it hard to
+    share improvements, review changes, and preserve unrelated configuration. A contributor needs to understand which
+    part of that problem Cook solves before proposing another responsibility for it.
+  goal: >-
+    Readers can judge proposals against Cook's purpose: turn reusable [recipes](features/glossary.md) into
+    visible, approved changes to native program files, while keeping program-specific setup separate from the engine.
+---
 # Philosophy
-
-## Objective
-
-**Problem.** Teams and developers reuse configuration across repositories, but copying setup by hand makes it hard to
-share improvements, review changes, and preserve unrelated configuration. A contributor needs to understand which
-part of that problem Cook solves before proposing another responsibility for it.
-
-**Goal.** Readers can judge proposals against Cook's purpose: turn reusable [recipes](features/glossary.md) into
-visible, approved changes to native program files, while keeping program-specific setup separate from the engine.
 
 [Cook architecture](architecture.md) states the intended design. This philosophy explains its goals and tenets;
 [ADRs](adrs/README.md) record the supporting reasoning. Both follow the architecture. Documentation of the current

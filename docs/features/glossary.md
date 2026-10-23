@@ -1,11 +1,12 @@
+---
+objective:
+  problem: >-
+    A reader may arrive through a search or cross-reference and need the meaning of a term without reading
+    the pages that use it.
+  goal: >-
+    Readers can find the meaning of Cook's terms and the reference that explains each responsibility.
+---
 # Glossary
-
-## Objective
-
-**Problem.** A reader may arrive through a search or cross-reference and need the meaning of a term without reading
-the pages that use it.
-
-**Goal.** Readers can find the meaning of Cook's terms and the reference that explains each responsibility.
 
 ## Terms
 

@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    Programs read configuration from files people and other tools also edit. Replacing a shared file to
+    change one setting can erase unrelated settings, and rewriting its formatting can hide the meaningful change.
+  goal: >-
+    A developer can review a native configuration change without losing unrelated settings or obscuring the
+    change with unrelated formatting edits.
+---
 # 0008. Declared native-file targets preserve unrelated content
-
-## Objective
-
-**Problem.** Programs read configuration from files people and other tools also edit. Replacing a shared file to
-change one setting can erase unrelated settings, and rewriting its formatting can hide the meaningful change.
-
-**Goal.** A developer can review a native configuration change without losing unrelated settings or obscuring the
-change with unrelated formatting edits.
 
 ## Context
 

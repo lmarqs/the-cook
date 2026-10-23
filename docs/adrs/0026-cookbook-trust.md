@@ -1,14 +1,15 @@
+---
+objective:
+  problem: >-
+    Shared setup can come from sources outside the destination repository. Replaced source content or
+    unreviewed code can act with the caller's credentials, while a preview of file changes shows only part of what
+    executable code can do. Confusing package integrity, source trust and output approval gives users assurances those
+    mechanisms do not provide.
+  goal: >-
+    Users understand which content they trust and what approving a configuration change covers, while retaining
+    an inspectable record of the sources actually used.
+---
 # 0026. Cookbook execution requires trust beyond batch approval
-
-## Objective
-
-**Problem.** Shared setup can come from sources outside the destination repository. Replaced source content or
-unreviewed code can act with the caller's credentials, while a preview of file changes shows only part of what
-executable code can do. Confusing package integrity, source trust and output approval gives users assurances those
-mechanisms do not provide.
-
-**Goal.** Users understand which content they trust and what approving a configuration change covers, while retaining
-an inspectable record of the sources actually used.
 
 ## Context
 

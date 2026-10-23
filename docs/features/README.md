@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    A newcomer needs a clear account of Cook's purpose, a route to the relevant reference, and a way to tell
+    target requirements from behavior available in the implementation.
+  goal: >-
+    Readers understand the file-operation engine, can find its operating contract, and can locate instructions
+    for the implementation they can run today.
+---
 # the-cook
-
-## Objective
-
-**Problem.** A newcomer needs a clear account of Cook's purpose, a route to the relevant reference, and a way to tell
-target requirements from behavior available in the implementation.
-
-**Goal.** Readers understand the file-operation engine, can find its operating contract, and can locate instructions
-for the implementation they can run today.
 
 ## Overview
 

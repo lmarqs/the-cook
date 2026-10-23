@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    People and coding agents act on messages and documentation literally. Vague wording, inconsistent names
+    or a missing next step leads them to guess. Contradictory descriptions of commands and approval make it harder to
+    judge what Cook will change.
+  goal: >-
+    A reader understands the requested operation, what approval covers and what to do next. Documentation gives
+    the intended design and current execution instructions in the places where readers expect them.
+---
 # Messages and documentation
-
-## Objective
-
-**Problem.** People and coding agents act on messages and documentation literally. Vague wording, inconsistent names
-or a missing next step leads them to guess. Contradictory descriptions of commands and approval make it harder to
-judge what Cook will change.
-
-**Goal.** A reader understands the requested operation, what approval covers and what to do next. Documentation gives
-the intended design and current execution instructions in the places where readers expect them.
 
 ## Overview
 
@@ -149,14 +150,22 @@ in issues. See the [UX authority](README.md#authority) and [ADR index](../adrs/R
 
 ### Every document opens with its objective
 
-Every page under `docs/` opens with an `## Objective` section immediately after the title, because a reader arriving
-from search needs the purpose before the detail. ADRs follow the
-[ADR writing guide](../adrs/README.md#the-objective-comes-first). The section has two parts:
+Every page under `docs/` opens with an objective, because a reader arriving from search needs the purpose before the
+detail. The objective says why the page is written, not what it covers, so it lives in the page's front matter, before
+the title, and the site shows it under the title, apart from the content. ADRs follow the
+[ADR writing guide](../adrs/README.md#the-objective-comes-first). The objective has two parts:
 
-- **Problem.** Who has the problem and what goes wrong or is missing.
-- **Goal.** The outcome that addresses it, stated so a reader can tell whether it holds.
+```yaml
+---
+objective:
+  problem: >-
+    Who has the problem and what goes wrong or is missing.
+  goal: >-
+    The outcome that addresses it, stated so a reader can tell whether it holds.
+---
+```
 
-Keep the Objective independent of design details, so readers understand the purpose before judging a solution.
+Keep the objective independent of design details, so readers understand the purpose before judging a solution.
 
 Two pages state their objective in an opening paragraph instead, because readers open them for lookup rather than
 motivation: `docs/architecture.md` (the authority that other pages cite) and `docs/features/cli.md` (command syntax).
@@ -168,11 +177,10 @@ use the outline to find each kind of information.
 ### Feature pages
 
 Use these sections where relevant, in this order, so readers find the same kind of information in the same place.
-Omit empty sections other than Objective, apart from the pages named above.
+Omit empty sections.
 
 | Section | Content |
 | --- | --- |
-| Objective | Who has the problem and the outcome the feature serves |
 | Overview | What it is and what it does |
 | When to use | Situations it addresses and relevant alternatives |
 | Reference | Decided commands, options, inputs, defaults and affected files |

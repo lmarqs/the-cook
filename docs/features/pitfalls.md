@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Recipe evaluation, native permission settings, source paths and reversal can behave differently from a
+    reader's expectations. A correct-looking setting or successful file write does not establish that a program loaded
+    the setting, enforced the rule or tested the work.
+  goal: >-
+    Explain the relevant traps, the boundary of Cook's responsibility and what to review before relying on a
+    setup.
+---
 # Pitfalls, gaps and traps
-
-## Objective
-
-**Problem.** Recipe evaluation, native permission settings, source paths and reversal can behave differently from a
-reader's expectations. A correct-looking setting or successful file write does not establish that a program loaded
-the setting, enforced the rule or tested the work.
-
-**Goal.** Explain the relevant traps, the boundary of Cook's responsibility and what to review before relying on a
-setup.
 
 ## Overview
 

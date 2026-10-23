@@ -1,11 +1,12 @@
+---
+objective:
+  problem: >-
+    Teams repeat setup choices across repositories and adapt shared configuration to each project. Hand
+    copies drift, and a reviewer needs to see what a requested update changes in the project's existing files.
+  goal: >-
+    Teams reuse setup choices while reviewing their combined effect on current content before approving writes.
+---
 # 0025. Trusted Groovy recipes describe reusable file changes
-
-## Objective
-
-**Problem.** Teams repeat setup choices across repositories and adapt shared configuration to each project. Hand
-copies drift, and a reviewer needs to see what a requested update changes in the project's existing files.
-
-**Goal.** Teams reuse setup choices while reviewing their combined effect on current content before approving writes.
 
 ## Context
 

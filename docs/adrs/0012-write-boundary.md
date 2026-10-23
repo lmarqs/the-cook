@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    Repositories contain configuration, prose, and state that people and other tools depend on. Unrequested
+    normalization or cleanup can break their work, while refusing every change to existing content prevents useful setup
+    updates. People need to see the actual requested changes and keep unrelated content intact.
+  goal: >-
+    Requested changes are reviewable and recoverable, and content outside their scope remains intact.
+---
 # 0012. Cook confines declared batch operations to reviewed destination targets
-
-## Objective
-
-**Problem.** Repositories contain configuration, prose, and state that people and other tools depend on. Unrequested
-normalization or cleanup can break their work, while refusing every change to existing content prevents useful setup
-updates. People need to see the actual requested changes and keep unrelated content intact.
-
-**Goal.** Requested changes are reviewable and recoverable, and content outside their scope remains intact.
 
 ## Context
 

@@ -1,12 +1,13 @@
+---
+objective:
+  problem: >-
+    People and automation need to understand what a command will change, what approval covers, and how to
+    withdraw or reverse configuration. Inconsistent argument scope and hidden approval rules make those decisions hard.
+  goal: >-
+    Cook presents predictable commands and the actual combined diff before target writes. Interactive users
+    approve the whole [batch](../features/glossary.md); unattended callers explicitly preapprove it.
+---
 # CLI standards
-
-## Objective
-
-**Problem.** People and automation need to understand what a command will change, what approval covers, and how to
-withdraw or reverse configuration. Inconsistent argument scope and hidden approval rules make those decisions hard.
-
-**Goal.** Cook presents predictable commands and the actual combined diff before target writes. Interactive users
-approve the whole [batch](../features/glossary.md); unattended callers explicitly preapprove it.
 
 ## Overview
 

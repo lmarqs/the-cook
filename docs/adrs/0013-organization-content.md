@@ -1,13 +1,14 @@
+---
+objective:
+  problem: >-
+    Organizations reuse setup across repositories, but their services, permissions and conventions differ.
+    Putting those choices in a shared engine couples its releases to individual teams; copying setup by hand makes
+    improvements hard to share and review.
+  goal: >-
+    Teams share setup without forking the engine, and reviewers can see the configuration changes each
+    repository accepts while preserving choices outside those changes.
+---
 # 0013. Cookbooks carry organization choices separately from the engine
-
-## Objective
-
-**Problem.** Organizations reuse setup across repositories, but their services, permissions and conventions differ.
-Putting those choices in a shared engine couples its releases to individual teams; copying setup by hand makes
-improvements hard to share and review.
-
-**Goal.** Teams share setup without forking the engine, and reviewers can see the configuration changes each
-repository accepts while preserving choices outside those changes.
 
 ## Context
 
