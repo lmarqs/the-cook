@@ -317,8 +317,7 @@ publishes:
 
 - on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
   package with its `.sha256`, and the `cook` wrapper with its `.sha256`;
-- on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:git`, `:beads` and `:ralph`, and the
-  cookbook Gradle plugin with its marker.
+- on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:git`, `:beads` and `:ralph`.
 
 A repository commits the release's executable `./cook` wrapper, which pins the engine version and the checksum of
 each package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
@@ -337,7 +336,8 @@ repository; the build that publishes a release sets its version. The destination
 Maven-layout repositories coordinates resolve from, in order; without a `cook.toml`, Maven Central. A path entry
 starting with `~/` is relative to the user's home, so a developer lists `~/.m2/repository`, last, to cook their own
 cookbooks published to Maven local. A path entry to a cookbook's source directory, the one holding `cookbook.toml`,
-serves that cookbook's artifacts at any version straight from their files, so its author cooks an edit with no build.
+serves that cookbook's artifacts at any version straight from their files under `src/<artifact>/`, so its author
+cooks an edit with no build; the cookbook's tests sit apart under `test/`.
 Coordinates name exact releases only.
 
 `cook.lock` records a hash of the artifact's sources, so two builds of one release have one hash, and a different

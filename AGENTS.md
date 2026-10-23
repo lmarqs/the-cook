@@ -43,7 +43,7 @@ Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-w
 
 - Commit secrets or credentials, or put personal data in logs, fixtures or commits.
 - Edit generated files by hand: `cook.lock`; `.agents/skills/agents-layout/`, cooked from
-  `cookbook/agents/skills/agents-layout/`; the keys Cook renders from `.agents/permission/policy.yaml` into
+  `cookbook/src/agents/skills/agents-layout/`; the keys Cook renders from `.agents/permission/policy.yaml` into
   `.agents/adapters/`; `build/` directories.
 - Make a check pass by weakening it: skipping a test, suppressing a warning, loosening an assertion.
 
@@ -55,10 +55,10 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 ## Where things go
 
 - New code: in its existing module: `core/` the engine, `infra/` the kitchen's `cook.toml` and cookbook fetching,
-  `cli/` the command line, `plugin/` the cookbook Gradle plugin, `cookbook/<artifact>/` recipes. The design is
+  `cli/` the command line, `cookbook/src/<artifact>/` recipes. The design is
   [docs/architecture.md](docs/architecture.md).
 - Tests: `<module>/src/test/groovy/thecook/`, one `<Subject>Test.groovy` per subject, as
-  `core/src/test/groovy/thecook/CoordinatesTest.groovy`.
+  `core/src/test/groovy/thecook/CoordinatesTest.groovy`; recipe tests in `cookbook/test/<artifact>/`, never in core.
 - Settings: build options are Gradle `-P` properties, as `releaseVersion`; release secrets are the GitHub Actions
   secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and `SIGNING_PASSWORD`.
 - Decisions and domain rules: [docs/adrs/](docs/adrs/README.md); feature behavior in `docs/features/`, interface

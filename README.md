@@ -35,11 +35,11 @@ Each recipe's help, read with `./cook help <coordinates>`, says what it writes.
 
 | Need | What runs | Read |
 | --- | --- | --- |
-| One set of instructions and permissions for every harness | `agents#seed` creates `AGENTS.md` and `.agents/permission/policy.yaml`. `agents#connect` renders the policy into Claude Code's `permissions` and Codex's sandbox and approval settings and `cook.rules`, with roles that narrow it for Claude Code | [agents](cookbook/agents/README.md) |
-| A fresh clone, a cloud session or CI that reads the setup without cooking | The `.claude/` and `.codex/` links into `.agents/` are committed, so a fresh checkout already holds each harness's settings, hooks and skills, and each harness reads `AGENTS.md` natively | [agents](cookbook/agents/README.md) |
-| Context when a session starts | Both harnesses run `.agents/hooks/session-start`, which adds the output of each `session-start.d/*.sh` to the session; `beads#tracker` can write one that prints the Beads prime text | [beads](cookbook/beads/README.md) |
-| A worktree for each agent | `git#worktrees` ignores `.worktrees/`, states the rule `.worktrees/<branch>` in `AGENTS.md` and seeds the `setup` and `teardown` scripts the team fills in. `agents#connect --worktree-setup=...` wires Claude Code's worktree hooks: a new worktree runs setup and is removed when setup fails, and removing one runs teardown and deletes its branch only once every commit on it has landed | [worktrees](cookbook/git/worktrees.groovy), [connect](cookbook/agents/connect.groovy) |
-| Unattended loop runs | `ralph#ralph-tui` writes `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>` on the branch `ralph/<name>`, and `bin/clean`, which without `--force` refuses to delete commits that have not landed. With `--worker-check`, a task completes only once the team's check passes | [ralph](cookbook/ralph/README.md) |
+| One set of instructions and permissions for every harness | `agents#seed` creates `AGENTS.md` and `.agents/permission/policy.yaml`. `agents#connect` renders the policy into Claude Code's `permissions` and Codex's sandbox and approval settings and `cook.rules`, with roles that narrow it for Claude Code | [agents](cookbook/src/agents/README.md) |
+| A fresh clone, a cloud session or CI that reads the setup without cooking | The `.claude/` and `.codex/` links into `.agents/` are committed, so a fresh checkout already holds each harness's settings, hooks and skills, and each harness reads `AGENTS.md` natively | [agents](cookbook/src/agents/README.md) |
+| Context when a session starts | Both harnesses run `.agents/hooks/session-start`, which adds the output of each `session-start.d/*.sh` to the session; `beads#tracker` can write one that prints the Beads prime text | [beads](cookbook/src/beads/README.md) |
+| A worktree for each agent | `git#worktrees` ignores `.worktrees/`, states the rule `.worktrees/<branch>` in `AGENTS.md` and seeds the `setup` and `teardown` scripts the team fills in. `agents#connect --worktree-setup=...` wires Claude Code's worktree hooks: a new worktree runs setup and is removed when setup fails, and removing one runs teardown and deletes its branch only once every commit on it has landed | [worktrees](cookbook/src/git/worktrees.groovy), [connect](cookbook/src/agents/connect.groovy) |
+| Unattended loop runs | `ralph#ralph-tui` writes `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>` on the branch `ralph/<name>`, and `bin/clean`, which without `--force` refuses to delete commits that have not landed. With `--worker-check`, a task completes only once the team's check passes | [ralph](cookbook/src/ralph/README.md) |
 | Output kept to one clone | With `--share=clone`, `ralph#ralph-tui` keeps ralph-tui's configuration out of commits and `beads#tracker` keeps the Beads issues out of them. `replicate` cooks ralph-tui's configuration again in a fresh clone from the source and arguments `cook.lock` records | [replicate](docs/features/replicate.md) |
 | A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](docs/architecture.md#ownership-and-the-lock) |
 | Drift caught in CI | `--check` exits 1 when cooking would change anything, such as a policy edited and not cooked | [batch options](docs/features/cli.md#batch-options-and-approval) |
@@ -139,9 +139,10 @@ notes.add('Run the tests before committing.')
 A path outside the kitchen, through a symbolic link too, is refused.
 
 Of the [cookbook](cookbook/README.md), the `agents`, `git`, `beads` and `ralph` artifacts run; the other directories
-are a design sketch that has not been compiled. `./gradlew :cookbook:publish` packages the cookbook with the `io.github.lmarqs.cookbook` Gradle
-plugin, built from [`plugin`](plugin) apart from the engine: a jar and a POM per directory and the
-`io.github.lmarqs:cookbook` BOM. Packaging compiles nothing; the engine compiles an artifact's sources when one of its recipes is cooked.
+are a design sketch that has not been compiled. `./gradlew -p cookbook publishToMavenLocal` packages the cookbook with
+plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the engine compiles an
+artifact's sources when one of its recipes is cooked. `./gradlew -p cookbook test` runs the recipes' tests, under
+`cookbook/test/`.
 
 ### Development tooling
 

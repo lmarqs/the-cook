@@ -5,15 +5,13 @@ This directory shows the shape of recipes and ingredients. The engine runs the `
 
 ## Units
 
-A cookbook directory is one artifact holding its models, recipes, resources and one `README.md`. A model describes
+A directory under the cookbook's `src/` is one artifact holding its models, recipes, resources and one `README.md`. A model describes
 how a program reads its files, or supplies content another model consumes; a recipe chooses a setup through models.
 Models may depend on other models for their types and on ordinary libraries. Recipes depend on models.
 
-A cookbook releases as jars in a Maven-layout repository. The `io.github.lmarqs.cookbook` Gradle plugin packages one
-jar per directory into a Maven-layout repository, with a POM for each jar and a bill of materials (BOM),
-`<group>:cookbook:<version>`, listing the artifacts at that release, so no directory is named `cookbook`. Each jar
+A cookbook releases as jars in a Maven-layout repository, one jar with a POM per directory under `src/`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
-everything a reader needs without the source checkout. Each release of this repository publishes the `agents`,
+everything a reader needs without the source checkout. This cookbook's `build.gradle` writes them with plain Gradle. Each release of this repository publishes the `agents`,
 `git`, `beads` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
 with no `cook.toml`; the other directories are not published.
 
@@ -53,7 +51,7 @@ in its own classloader. A recipe never composes another recipe.
 
 ## Names
 
-A model's package is its cookbook's group plus its directory name: `cookbook/docker/Compose.groovy` declares
+A model's package is its cookbook's group plus its directory name: `cookbook/src/docker/Compose.groovy` declares
 `io.github.lmarqs.cookbook.docker.Compose` in the artifact `io.github.lmarqs.cookbook:docker`. A recipe imports every type it injects, so
 its imports are its visible dependency list and `@ingredient(Compose)` resolves through them.
 
@@ -591,15 +589,16 @@ After cooking
 ## Layout
 
 ```text
-<dir>/<Model>.groovy     the model or content, in the package <group>.<dir>
-<dir>/<recipe>.groovy    the recipe, opening with its texts
-<dir>/README.md          the artifact's front page
-<dir>/...               resources beside the models and recipes
-cookbook.toml           the cookbook manifest at the cookbook root
-build.gradle            applies the io.github.lmarqs.cookbook plugin at the cookbook root
+src/<dir>/<Model>.groovy     the model or content, in the package <group>.<dir>
+src/<dir>/<recipe>.groovy    the recipe, opening with its texts
+src/<dir>/README.md          the artifact's front page
+src/<dir>/...               resources beside the models and recipes
+test/<dir>/<Subject>Test.groovy  a test of the artifact's recipes, with its fixtures beside it
+cookbook.toml               the cookbook manifest at the cookbook root
+build.gradle                packages each src/<dir>/ as a jar and runs the tests under test/
 ```
 
-Each topic directory is one artifact. Skill content lives under `<dir>/skills/<name>/`, with `SKILL.md` and its
+Each directory under `src/` is one artifact; nothing under `test/` is part of one. Skill content lives under `<dir>/skills/<name>/`, with `SKILL.md` and its
 supporting files together. The templates for seeded files live in the `templates/` directory of the skill that
 explains them, so a seeded skill can compare a repository's files with the release's templates. Each is named
 `<name>.template.<ext>`, as in `agents/skills/agents-layout/templates/AGENTS.template.md`: under the file's own name,
@@ -617,32 +616,41 @@ api = 1
 
 ## A cookbook outside this repository
 
-A developer's own recipes live in their own cookbook, packaged by the same plugin and cooked by coordinates from Maven
-local. Each release publishes the `io.github.lmarqs.cookbook` plugin to Maven Central. In a checkout of this
-repository, `./gradlew -p plugin publishToMavenLocal` publishes it to Maven local as version `0.0.0`.
-
-The cookbook's root holds `cookbook.toml`, as above, one directory per artifact, and these two build files. Plugin
-resolution lists Maven local and Maven Central:
+A developer's own recipes live in their own cookbook, packaged by any build that writes, for each artifact, a jar of
+its files under its package path, `<group path>/<artifact>/`, with a POM, and cooked by coordinates from Maven local.
+The cookbook's root holds `cookbook.toml`, as above, one directory per artifact under `src/`, and, with Gradle, these
+two build files:
 
 ```groovy
 // settings.gradle
-pluginManagement {
-  repositories {
-    mavenLocal()
-    mavenCentral()
-  }
-}
 rootProject.name = 'my-cookbook'
 ```
 
 ```groovy
 // build.gradle
 plugins {
-  id 'io.github.lmarqs.cookbook' version '<version>'
+  id 'base'
+  id 'maven-publish'
+}
+
+group = (file('cookbook.toml').text =~ /(?m)^group\s*=\s*"([^"]+)"/)[0][1]
+version = findProperty('releaseVersion') ?: '0.0.0'
+
+file('src').listFiles().findAll { it.isDirectory() }.each { artifact ->
+  def jar = tasks.register("${artifact.name}Jar", Jar) {
+    archiveBaseName = artifact.name
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    from(artifact) { into("${project.group.replace('.', '/')}/${artifact.name}") }
+  }
+  publishing.publications.create(artifact.name, MavenPublication) {
+    artifactId = artifact.name
+    it.artifact(jar)
+  }
 }
 ```
 
-`./gradlew publishToMavenLocal -PreleaseVersion=<version>` publishes each artifact's jar and the BOM to
+`./gradlew publishToMavenLocal -PreleaseVersion=<version>` publishes each artifact's jar and POM to
 `~/.m2/repository` at that version, or at `0.0.0` without the property. A kitchen that
 cooks from there lists it in its `cook.toml`, last so that shared repositories come first:
 
@@ -658,7 +666,7 @@ repositories = [
 ```
 
 While developing a cookbook, a kitchen lists its source directory instead, and cooks each edit with no build. The
-directory serves `<group>:<artifact>:<any version>` from the files of `<artifact>/`, leaving out hidden files:
+directory serves `<group>:<artifact>:<any version>` from the files of `src/<artifact>/`, leaving out hidden files:
 
 ```toml
 repositories = ["../../../cookbook"]
