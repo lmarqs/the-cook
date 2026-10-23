@@ -23,8 +23,6 @@ import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
 class CookbookCookTest {
-  private static final File COOKBOOK = new File(System.getProperty('cook.cookbook'))
-  private static final File TEMPLATES = new File(COOKBOOK, 'agents/skills/agents-layout/templates')
   private static final String TEXT_MODEL = '''package acme.text
 
 @Ingredient
@@ -33,6 +31,39 @@ class Text {
   @File(path = 'OUT.md')
   String file() { text }
 }
+'''
+  // A model with one target of each kind: a section, JSON and TOML keys, a seed and links.
+  private static final String CFG_MODEL = '''package acme.cfg
+
+@Ingredient
+class Cfg {
+  List<String> ignore
+  Map settings
+  Map config
+  String seed
+  Map<String, String> links
+  @Section(path = '.gitignore', id = 'ignore')
+  List<String> ignored() { ignore }
+  @Keys(path = 'conf/settings.json')
+  Map settingsKeys() { settings }
+  @Keys(path = 'conf/config.toml')
+  Map configKeys() { config }
+  @Seed(path = 'SEED.md')
+  String seeded() { seed }
+  @Links(path = '.tool')
+  Map<String, String> linked() { links }
+}
+'''
+  private static final String CFG_SETTINGS = '''@help('Sets the settings.')
+import acme.cfg.Cfg
+@ingredient(Cfg) def cfg
+cfg.settings = [permissions: [allow: ['Read']]]
+'''
+  private static final String CFG_BOTH = '''@help('Sets the settings and the policy.')
+import acme.cfg.Cfg
+@ingredient(Cfg) def cfg
+cfg.settings = [permissions: [allow: ['Read']]]
+cfg.config = [approval_policy: 'on-request']
 '''
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
@@ -79,91 +110,79 @@ starters.second = 'second'
 
   @Test void refusesToWriteASectionOrKeyThroughASymbolicLink() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
+    publishCfg(kitchen)
     def link = { String path, String target ->
       def file = new File(kitchen, path); file.parentFile.mkdirs()
       Files.createSymbolicLink(file.toPath(), java.nio.file.Paths.get(target))
     }
     link('.gitignore', 'OURS')
-    def section = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    }
-    assert section.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .gitignore section ' +
-    'io.github.lmarqs.cookbook:agents#connect/harnesses\n  .gitignore is a symbolic link to OURS\n' +
-    '    Cook writes sections and keys only into regular files'
+    def section = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#ignore', [:]) }
+    assert section.message == 'acme:cfg:1.0.0#ignore: .gitignore section acme:cfg#ignore/ignore\n' +
+    '  .gitignore is a symbolic link to OURS\n    Cook writes sections and keys only into regular files'
     assert Files.isSymbolicLink(new File(kitchen, '.gitignore').toPath())
 
-    new File(kitchen, '.gitignore').delete()
-    new File(kitchen, '.agents/adapters/claude').mkdirs()
-    new File(kitchen, '.agents/adapters/claude/shared.json').text = '{}\n'
-    link('.agents/adapters/claude/settings.json', 'shared.json')
-    def key = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    }
-    assert key.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/claude/settings.json ' +
-    'key permissions\n  .agents/adapters/claude/settings.json is a symbolic link to shared.json\n' +
-    '    Cook writes sections and keys only into regular files'
-    assert new File(kitchen, '.agents/adapters/claude/shared.json').text == '{}\n'
+    new File(kitchen, 'conf').mkdirs()
+    new File(kitchen, 'conf/shared.json').text = '{}\n'
+    link('conf/settings.json', 'shared.json')
+    def key = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#settings', [:]) }
+    assert key.message == 'acme:cfg:1.0.0#settings: conf/settings.json key permissions\n' +
+    '  conf/settings.json is a symbolic link to shared.json\n    Cook writes sections and keys only into regular files'
+    assert new File(kitchen, 'conf/shared.json').text == '{}\n'
     assert !new File(kitchen, 'cook.lock').exists()
   }
 
   @Test void refusesToReplaceAFileOrDirectoryItDoesNotOwnWithALink() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    def config = new File(kitchen, '.codex/config.toml'); config.parentFile.mkdirs()
+    publishCfg(kitchen)
+    def config = new File(kitchen, '.tool/config.toml'); config.parentFile.mkdirs()
     config.text = '[features]\nhooks = true\n'
-    def codex = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
-    }
-    assert codex.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .codex/config.toml link\n' +
-    '  .codex/config.toml is a file, and this ' +
-    'recipe makes it a link to ../.agents/adapters/codex/config.toml\n    its contents would stop being read\n' +
-    '    move its contents into .agents/adapters/codex/config.toml, delete it, and cook again'
+    def file = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#link', [:]) }
+    assert file.message == 'acme:cfg:1.0.0#link: .tool/config.toml link\n' +
+    '  .tool/config.toml is a file, and this recipe makes it a link to ../shared/config.toml\n' +
+    '    its contents would stop being read\n' +
+    '    move its contents into shared/config.toml, delete it, and cook again'
     def forced = shouldFail(IllegalArgumentException) {
       new CookbookCook(kitchen, repositories(kitchen), ExistingSeed.REPLACE)
-          .propose([request('io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])])
+          .propose([request('acme:cfg:1.0.0#link', [:])])
     }
-    assert forced.message == codex.message
+    assert forced.message == file.message
     assert config.text == '[features]\nhooks = true\n'
 
     config.delete()
-    new File(kitchen, '.claude/skills/ours').mkdirs()
-    new File(kitchen, '.claude/skills/ours/SKILL.md').text = '# Ours\n'
-    def claude = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    }
-    assert claude.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: .claude/skills link\n' +
-    '  .claude/skills is a directory, and ' +
-    'this recipe makes it a link to ../.agents/skills\n    its files would stop being read\n' +
-    '    move its files into .agents/skills/, delete it, and cook again'
-    assert new File(kitchen, '.claude/skills/ours/SKILL.md').text == '# Ours\n'
-    assert !new File(kitchen, '.agents').exists()
+    new File(kitchen, '.tool/skills/ours').mkdirs()
+    new File(kitchen, '.tool/skills/ours/SKILL.md').text = '# Ours\n'
+    def directory = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#link', [:]) }
+    assert directory.message == 'acme:cfg:1.0.0#link: .tool/skills link\n' +
+    '  .tool/skills is a directory, and this recipe makes it a link to ../shared/skills\n' +
+    '    its files would stop being read\n' +
+    '    move its files into shared/skills/, delete it, and cook again'
+    assert new File(kitchen, '.tool/skills/ours/SKILL.md').text == '# Ours\n'
+    assert !new File(kitchen, 'shared').exists()
     assert !new File(kitchen, 'cook.lock').exists()
   }
 
   @Test void replacesALinkThatPointsElsewhereAndKeepsOneItOwns() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    def config = new File(kitchen, '.codex/config.toml'); config.parentFile.mkdirs()
+    publishCfg(kitchen)
+    def config = new File(kitchen, '.tool/config.toml'); config.parentFile.mkdirs()
     Files.createSymbolicLink(config.toPath(), java.nio.file.Paths.get('../OURS.toml'))
 
-    def proposal = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
-    assert '.codex/config.toml' in proposal.changes
+    def proposal = cook(kitchen, 'acme:cfg:1.0.0#link', [:])
+    assert '.tool/config.toml' in proposal.changes
     proposal.commit()
-    assert Files.readSymbolicLink(config.toPath()).toString() == '../.agents/adapters/codex/config.toml'
-    assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).changes == []
+    assert Files.readSymbolicLink(config.toPath()).toString() == '../shared/config.toml'
+    assert cook(kitchen, 'acme:cfg:1.0.0#link', [:]).changes == []
   }
 
   @Test void aTargetThatFailsToWriteIsNamedAboveItsCause() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    def settings = new File(kitchen, '.agents/adapters/claude/settings.json'); settings.parentFile.mkdirs()
+    publishCfg(kitchen)
+    def settings = new File(kitchen, 'conf/settings.json'); settings.parentFile.mkdirs()
     settings.text = '{\n  // ours\n  "model": "opus"\n}\n'
     def json = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
+      cook(kitchen, 'acme:cfg:1.0.0#settings', [:])
     }.message.readLines()
-    assert json[0] ==
-    'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/claude/settings.json key permissions'
+    assert json[0] == 'acme:cfg:1.0.0#settings: conf/settings.json key permissions'
     assert json[1].startsWith('  JSON: ')
     assert json[2] == '    settings files are strict JSON: remove comments and trailing commas'
     assert json.size() == 3
@@ -192,13 +211,10 @@ notes.set(features: [hooks: true])
     '    Cook owns features whole and writes it as one inline table\n' +
     '    replace it with features = { … } above the first [table], then cook again'
 
-    def config = new File(kitchen, '.agents/adapters/codex/config.toml'); config.parentFile.mkdirs()
+    def config = new File(kitchen, 'conf/config.toml')
     config.text = '[approval_policy]\nx = 1\n'
-    def scalar = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']])
-    }
-    assert scalar.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: ' +
-    '.agents/adapters/codex/config.toml key approval_policy\n' +
+    def scalar = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#policy', [:]) }
+    assert scalar.message == 'acme:cfg:1.0.0#policy: conf/config.toml key approval_policy\n' +
     '  key approval_policy is written as a [approval_policy] table\n' +
     '    Cook owns approval_policy whole and writes it as one line, approval_policy = …\n' +
     '    replace it with approval_policy = … above the first [table], then cook again'
@@ -206,47 +222,42 @@ notes.set(features: [hooks: true])
 
   @Test void aTargetFileThatIsNotARegularFileIsNamedRelativeToTheKitchen() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    new File(kitchen, '.agents/adapters/claude/settings.json').mkdirs()
-    def directory = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    }
-    assert directory.message == 'io.github.lmarqs.cookbook:agents:0.1.0#connect: ' +
-    '.agents/adapters/claude/settings.json key permissions\n  Not a regular file: .agents/adapters/claude/settings.json'
+    publishCfg(kitchen)
+    new File(kitchen, 'conf/settings.json').mkdirs()
+    def directory = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#settings', [:]) }
+    assert directory.message == 'acme:cfg:1.0.0#settings: conf/settings.json key permissions\n' +
+    '  Not a regular file: conf/settings.json'
 
-    new File(kitchen, '.agents/adapters/claude/settings.json').deleteDir()
-    new File(kitchen, '.agents/adapters/claude/settings.json').bytes = [0xC3, 0x28] as byte[]
-    def encoding = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    }
-    assert encoding.message.readLines()[1] == '  Invalid UTF-8 file: .agents/adapters/claude/settings.json'
+    new File(kitchen, 'conf/settings.json').deleteDir()
+    new File(kitchen, 'conf/settings.json').bytes = [0xC3, 0x28] as byte[]
+    def encoding = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#settings', [:]) }
+    assert encoding.message.readLines()[1] == '  Invalid UTF-8 file: conf/settings.json'
   }
 
   @Test void aTargetThatFailsToWithdrawIsNamedAboveItsCause() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
-    def config = new File(kitchen, '.agents/adapters/codex/config.toml')
+    publishCfg(kitchen)
+    publishCfg(kitchen, '1.1.0', ['both.groovy': CFG_SETTINGS])
+    cook(kitchen, 'acme:cfg:1.0.0#both', [:]).commit()
+    def config = new File(kitchen, 'conf/config.toml')
     def cooked = config.text
     config.text = cooked.replace('approval_policy = "on-request"\n', '') + '\n[approval_policy]\nx = 1\n'
 
-    def withdrawn = shouldFail(IllegalArgumentException) {
-      cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']])
-    }
+    def withdrawn = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.1.0#both', [:]) }
     assert withdrawn.message.readLines() == [
-      'io.github.lmarqs.cookbook:agents:0.1.0#connect: .agents/adapters/codex/config.toml key approval_policy',
+      'acme:cfg:1.1.0#both: conf/config.toml key approval_policy',
       '  key approval_policy is written as a [approval_policy] table',
       '    Cook owns approval_policy whole as one line, approval_policy = …',
       '    replace it with approval_policy = … above the first [table], then cook again'
     ]
 
     config.text = cooked
-    def settings = new File(kitchen, '.agents/adapters/claude/settings.json')
+    def settings = new File(kitchen, 'conf/settings.json')
     settings.text = '// ours\n' + settings.text
     def discarded = shouldFail(IllegalArgumentException) {
-      new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect'])
+      new CookbookDiscard(kitchen).propose(['acme:cfg:1.0.0#both'])
     }
-    assert discarded.message.readLines()[0] == '.agents/adapters/claude/settings.json key hooks.SessionStart'
+    assert discarded.message.readLines()[0] == 'conf/settings.json key permissions'
   }
 
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
@@ -254,10 +265,10 @@ notes.set(features: [hooks: true])
     def linked = new File(folder.root, 'linked')
     Files.createSymbolicLink(linked.toPath(), real.toPath())
     def kitchen = new File(linked, 'kitchen'); kitchen.mkdirs()
-    publishDirectory(kitchen, 'agents')
+    publishCfg(kitchen)
 
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
-    assert new File(real, 'kitchen/.claude/settings.json').text.contains('"permissions"')
+    cook(kitchen, 'acme:cfg:1.0.0#settings', [:]).commit()
+    assert new File(real, 'kitchen/conf/settings.json').text.contains('"permissions"')
   }
 
   @Test void cooksARecipePathWithTheModelBesideItAndHashesTheModelWithTheRecipe() {
@@ -288,50 +299,55 @@ text.text = 'first\\n'
 
   @Test void aModelBesideARecipePathReadsTheFilesOfItsDirectory() {
     def kitchen = kitchen()
-    def source = new File(COOKBOOK, 'agents')
-    source.eachFileRecurse(groovy.io.FileType.FILES) { file ->
-      def copy = new File(kitchen, "agents/${source.toPath().relativize(file.toPath())}")
-      copy.parentFile.mkdirs()
-      copy.bytes = file.bytes
-    }
-    recipe(kitchen, 'agents/skill-check.groovy', """@help('Links one skill.')
-import io.github.lmarqs.cookbook.agents.Agents
-import io.github.lmarqs.cookbook.agents.Claude
-@ingredient(Agents) def agents
-@ingredient(Claude) def claude
-agents.instruct('Run the tests.')
-agents.skills('agents-layout')
-agents.connect([claude])
+    recipe(kitchen, 'recipes/pages/a.md', 'first\n')
+    recipe(kitchen, 'recipes/pages/sub/b.md', 'second\n')
+    recipe(kitchen, 'recipes/Pages.groovy', """package acme.pages
+
+@Ingredient
+class Pages {
+  boolean published
+  @Files(path = 'docs')
+  Map<String, String> pages() { published ? resources('pages') : null }
+}
+""")
+    recipe(kitchen, 'recipes/pages.groovy', """@help('Publishes the pages.')
+import acme.pages.Pages
+@ingredient(Pages) def pages
+pages.published = true
 """)
 
-    cook(kitchen, 'agents/skill-check.groovy', [:]).commit()
+    cook(kitchen, 'recipes/pages.groovy', [:]).commit()
 
-    assert new File(kitchen, 'AGENTS.md').text.startsWith(new File(TEMPLATES, 'AGENTS.template.md').text)
-    assert new File(kitchen, '.agents/skills/agents-layout/SKILL.md').text ==
-    new File(COOKBOOK, 'agents/skills/agents-layout/SKILL.md').text
+    assert new File(kitchen, 'docs/a.md').text == 'first\n'
+    assert new File(kitchen, 'docs/sub/b.md').text == 'second\n'
   }
 
   @Test void reportsAChangedSourceUnderARecordedVersionButNotAnEditedPath() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    Map<String, Object> published = ['Text.groovy': TEXT_MODEL, 'packaged.groovy': """@help('Writes a file.')
+import acme.text.Text
+@ingredient(Text) def text
+text.text = 'packaged\\n'
+"""]
+    publish(kitchen, 'acme:text:1.0.0', published)
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL.replace("'OUT.md'", "'PATH.md'"))
     def path = recipe(kitchen, 'recipes/setup.groovy', """@help('Writes a file.')
 import acme.text.Text
 @ingredient(Text) def text
 text.text = 'first\\n'
 """)
-    def requests = [request('io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]), request('recipes/setup.groovy', [:]),]
+    def requests = [request('acme:text:1.0.0#packaged', [:]), request('recipes/setup.groovy', [:]),]
     def first = new CookbookCook(kitchen, repositories(kitchen)).propose(requests)
     assert first.changedSources.empty
     first.commit()
 
-    publishDirectory(kitchen, 'agents', ['NOTICE.md': 'changed under the same version'])
+    publish(kitchen, 'acme:text:1.0.0', published + ['NOTICE.md': 'changed under the same version'])
     path.text += '// edited\n'
     def again = new CookbookCook(kitchen, repositories(kitchen)).propose(requests)
 
-    assert again.changedSources*.address == ['io.github.lmarqs.cookbook:agents:0.1.0#seed']
+    assert again.changedSources*.address == ['acme:text:1.0.0#packaged']
     def changed = again.changedSources.first()
-    assert changed.recorded == sourcesSha256(new File(COOKBOOK, 'agents'))
+    assert changed.recorded == sourcesSha256(published)
     assert changed.current != changed.recorded
     assert again.after('cook.lock').contains(changed.current)
   }
@@ -567,7 +583,10 @@ text.text = self.toString()
 
   @Test void composesARecipePathWithCoordinatesUnderItsShortName() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
+    publishText(kitchen, ['setup.groovy': """import acme.text.Text
+@ingredient(Text) def text
+text.text = 'packaged\\n'
+"""])
     // A model and a recipe whose names differ only in case would be one file on macOS.
     recipe(kitchen, 'NotesModel.groovy', '''package acme.notes
 
@@ -585,23 +604,20 @@ class Notes {
 notes.add(line)
 """)
 
-    def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose([
-      request('io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]),
-      request('notes.groovy', [line: ['first']]),
-    ])
+    def requests = [request('acme:text:1.0.0#setup', [:]), request('notes.groovy', [line: ['first']])]
+    def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose(requests)
 
-    assert proposal.recipes*.address == ['io.github.lmarqs.cookbook:agents:0.1.0#seed', 'notes.groovy']
+    assert proposal.recipes*.address == ['acme:text:1.0.0#setup', 'notes.groovy']
     proposal.commit()
     assert new File(kitchen, 'NOTES.md').text ==
     '<!-- cook:begin notes/notes -->\nfirst\n<!-- cook:end notes/notes -->\n'
     def lock = new File(kitchen, 'cook.lock').text
-    assert lock.contains('- name: "io.github.lmarqs.cookbook:agents#seed"')
+    assert lock.contains('- name: "acme:text#setup"')
     assert lock.contains('- name: "notes"\n    source: "notes.groovy"')
   }
 
   @Test void refusesARecipePathOrAModelOutsideTheKitchen() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
     def outside = new File(kitchen.parentFile, 'outside.groovy')
     outside.text = "@help('Outside.')\nimport java.util.List\n"
     Files.createSymbolicLink(new File(kitchen, 'linked.groovy').toPath(), outside.toPath())
@@ -739,19 +755,18 @@ config.migrated = migrated
 
   @Test void discardRemovesTheSectionsARecipeOwnsAndLeavesTheRestOfTheFile() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
+    publishCfg(kitchen)
+    cook(kitchen, 'acme:cfg:1.0.0#all', [:]).commit()
     def ignore = new File(kitchen, '.gitignore')
     ignore.text = 'mine\n' + ignore.text
-    def policy = new File(kitchen, '.agents/permission/policy.yaml').text
 
-    def discard = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:9.9.9#connect'])
+    def discard = new CookbookDiscard(kitchen).propose(['acme:cfg:9.9.9#all'])
 
     assert discard.actions['.gitignore'] == 'update'
     assert discard.actions['cook.lock'] == 'delete'
     discard.commit()
     assert ignore.text == 'mine\n'
-    assert new File(kitchen, '.agents/permission/policy.yaml').text == policy
+    assert new File(kitchen, 'SEED.md').text == 'seeded\n'
     assert !new File(kitchen, 'cook.lock').exists()
   }
 
@@ -912,44 +927,44 @@ notes.set('kept')
 
   @Test void discardByLockNameRemovesTheSameTargetsAsVersionedCoordinates() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
+    publishCfg(kitchen)
+    cook(kitchen, 'acme:cfg:1.0.0#all', [:]).commit()
     def ignore = new File(kitchen, '.gitignore')
     ignore.text = 'mine\n' + ignore.text
-    def policy = new File(kitchen, '.agents/permission/policy.yaml').text
-    def discard = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents#connect'])
+    def discard = new CookbookDiscard(kitchen).propose(['acme:cfg#all'])
 
     ['0.0.0', '9.9.9'].each { version ->
-      def versioned = new CookbookDiscard(kitchen).propose(["io.github.lmarqs.cookbook:agents:${version}#connect"])
+      def versioned = new CookbookDiscard(kitchen).propose(["acme:cfg:${version}#all"])
       assert discard.actions == versioned.actions
       discard.changes.each { path -> assert discard.after(path) == versioned.after(path) }
     }
     discard.commit()
 
     assert ignore.text == 'mine\n'
-    assert new File(kitchen, '.agents/permission/policy.yaml').text == policy
-    assert !new File(kitchen, '.claude/settings.json').exists()
+    assert new File(kitchen, 'SEED.md').text == 'seeded\n'
+    assert !new File(kitchen, 'conf/settings.json').exists()
+    assert !Files.exists(new File(kitchen, '.tool/config.toml').toPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS)
     assert !new File(kitchen, 'cook.lock').exists()
   }
 
   @Test void discardRefusesARecipeTheLockDoesNotListOrThatIsGivenTwice() {
     def kitchen = kitchen()
-    publishDirectory(kitchen, 'agents')
-    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    publishCfg(kitchen)
+    cook(kitchen, 'acme:cfg:1.0.0#ignore', [:]).commit()
     [
       [
-        ['io.github.lmarqs.cookbook:agents:0.1.0#connect'],
-        'cook.lock lists no recipe io.github.lmarqs.cookbook:agents#connect; nothing was written\n' +
+        ['acme:cfg:1.0.0#all'],
+        'cook.lock lists no recipe acme:cfg#all; nothing was written\n' +
         '  discard removes only what cook.lock records for a recipe\n' +
-        '  check the recipe\'s name; cook.lock lists io.github.lmarqs.cookbook:agents#seed'
+        '  check the recipe\'s name; cook.lock lists acme:cfg#ignore'
       ],
       [
-        ['io.github.lmarqs.cookbook:agents:0.1.0#seed', 'io.github.lmarqs.cookbook:agents:0.2.0#seed'],
-        'io.github.lmarqs.cookbook:agents#seed is discarded twice\n  discard it once per invocation'
+        ['acme:cfg:1.0.0#ignore', 'acme:cfg:0.2.0#ignore'],
+        'acme:cfg#ignore is discarded twice\n  discard it once per invocation'
       ],
       [
-        ['io.github.lmarqs.cookbook:agents#seed', 'io.github.lmarqs.cookbook:agents:0.1.0#seed'],
-        'io.github.lmarqs.cookbook:agents#seed is discarded twice\n  discard it once per invocation'
+        ['acme:cfg#ignore', 'acme:cfg:1.0.0#ignore'],
+        'acme:cfg#ignore is discarded twice\n  discard it once per invocation'
       ],
       [['../outside.groovy'], 'the recipe is outside the kitchen\n  move it into the kitchen'],
       [
@@ -1112,17 +1127,20 @@ config.migrated = migrated
     })
   }
 
-  private static File publishDirectory(File kitchen, String name, Map<String, Object> extra = [:]) {
-    def directory = new File(COOKBOOK, name)
-    Map<String, Object> files = [:] + extra
-    directory.eachFileRecurse { file ->
-      if (file.isFile()) {
-        files[directory.toPath()
-              .relativize(file.toPath())
-              .toString()] = file.bytes
-      }
+  private static File publishCfg(File kitchen, String version = '1.0.0', Map<String, Object> extra = [:]) {
+    def recipe = { String body ->
+      "@help('Writes configuration.')\nimport acme.cfg.Cfg\n@ingredient(Cfg) def cfg\n${body}\n"
     }
-    publish(kitchen, "io.github.lmarqs.cookbook:${name}:0.1.0", files)
+    publish(kitchen, "acme:cfg:${version}", [
+      'Cfg.groovy': CFG_MODEL,
+      'ignore.groovy': recipe("cfg.ignore = ['build/']"),
+      'settings.groovy': CFG_SETTINGS,
+      'policy.groovy': recipe("cfg.config = [approval_policy: 'on-request']"),
+      'both.groovy': CFG_BOTH,
+      'link.groovy': recipe("cfg.links = ['config.toml': '../shared/config.toml', skills: '../shared/skills']"),
+      'all.groovy': CFG_BOTH + "cfg.ignore = ['build/']\ncfg.seed = 'seeded\\n'\n" +
+      "cfg.links = ['config.toml': '../shared/config.toml']\n",
+    ] + extra)
   }
 
   private static File publishText(File kitchen, Map<String, Object> extra = [:]) {
@@ -1155,14 +1173,14 @@ config.migrated = migrated
   }
 
   // The definition in docs/architecture.md: one line `<sha256 of the file>  <path>` per file, in path order.
-  private static String sourcesSha256(File directory) {
-    List<String> paths = []
-    directory.eachFileRecurse(groovy.io.FileType.FILES) {
-      paths << directory.toPath()
-          .relativize(it.toPath())
-          .toString()
-    }
-    sourcesSha256(directory, paths)
+  private static String sourcesSha256(Map<String, Object> files) {
+    sha256(files.keySet()
+        .sort()
+        .collect {
+          "${sha256(files[it].toString().getBytes('UTF-8'))}  ${it}\n"
+        }
+        .join()
+        .getBytes('UTF-8'))
   }
 
   private static String sourcesSha256(File directory, List<String> paths) {
