@@ -16,10 +16,10 @@ package io.github.lmarqs.cookbook.ralph
  * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`); ralph-tui 0.12's Claude plugin accepts
  * only `sonnet`, `opus` and `haiku`. Claude's effort goes per run through `CLAUDE_CODE_EFFORT_LEVEL`, which the
  * launcher and ralph-tui pass to every worker; Codex's goes per entry, as `"-c", "model_reasoning_effort=high"` in
- * `defaultFlags`. Entries a team may add, launched with `ralph-tui run --agent <name>`:
+ * `defaultFlags`. Entries a team may add, launched with `.ralph-tui/bin/run <run> --agent <name>`:
  *
  * ```toml
- * # A Claude worker bound to a role's denies, beside the default entry.
+ * # A Claude worker bound to a role's denies, beside the seeded entries.
  * [[agents]]
  * name = "claude-worker"
  * plugin = "claude"
@@ -122,8 +122,8 @@ class RalphTui {
   private List<String> instructions = []
 
   /**
-   * Sets the `[[agents]]` entries the seeded configuration gets, one per harness in the order given, the first as
-   * `defaultAgent`; a repeated harness counts once. `null` means none.
+   * Sets the `[[agents]]` entries the seeded configuration gets, one per harness in the order given; a repeated
+   * harness counts once. `null` means none.
    */
   void harnesses(List<String> names) {
     harnesses = names ?: []
@@ -245,9 +245,9 @@ class RalphTui {
   }
 
   /**
-   * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the `beads` tracker, the first
-   * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it
-   * twice first, direct merges in parallel mode, and one `[[agents]]` entry per harness, when installed.
+   * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the `beads` tracker, ten
+   * iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it twice first, direct merges in
+   * parallel mode, and one `[[agents]]` entry per harness, when installed.
    */
   @Seed(path = CONFIG_PATH)
   String config() {
@@ -256,7 +256,6 @@ class RalphTui {
     }
 
     def lines = ['configVersion = "2.1"',] + ('beads' in trackers ? ['tracker = "beads"'] : []) + [
-      "defaultAgent = \"${harnesses.first()}\"",
       '# ralph-tui stops a run after this many iterations, each one agent run on one task; 0 means no limit.',
       'maxIterations = 10',
       'autoCommit = true',
@@ -360,8 +359,8 @@ class RalphTui {
       return null
     }
 
-    def run = trackers == TRACKERS ? '`.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`,' :
-        "`.ralph-tui/bin/run <name> ${runFlags()}`"
+    def run = trackers == TRACKERS ? '`.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, or `--prd <file>`,' :
+        "`.ralph-tui/bin/run <name> --agent <entry> ${runFlags()}`"
     def lines = [
       "<!-- ${cookedWith} -->",
       "- Loop runs: ${run} runs ralph-tui in",

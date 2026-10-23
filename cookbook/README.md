@@ -308,7 +308,7 @@ sets up and cleans the run's worktree.
 ```sh
 # Claude Code workers, limited by the project's denies, and its allows where the checkout is trusted
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
-# Claude Code and Codex workers, Claude by default
+# Claude Code and Codex workers, each run picking one with --agent
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
 # Claude workers bound to the agents layout's role worker
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=claude:worker
@@ -326,23 +326,23 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
 
-The first `--harness` is the default agent. `--worker-role` and `--worker-settings` each take `<harness>:<x>`, once
-per harness, and the harness is one `--harness` gives: `claude:<path>` makes the Claude entry pass `--settings <path>`,
-and `codex:<path>` makes the Codex entry pass one `-c <key>=<value>` for each key of the TOML file at `<path>`, which
-is read when cooking. A role and a settings file do not bind the same harness; to combine them, write a settings file
-that holds both. `--worktree-root` names the directory, by its path from the repository root, under whose
-`ralph/` run worktrees go, as `io.github.lmarqs.cookbook:agents#connect --worktree-root` does for Claude Code's;
-`.worktrees` by default. `--worktree-setup` and `--worktree-teardown` each name a committed executable by its path
-from the repository root, outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown.
-`--worker-check` names one too, the check a task must pass to complete; without it, the worker refuses every task.
-`--tracker` is `beads`, run with `--epic`, or `json`, run with `--prd`, and repeats; both by default. It narrows the
-seeded prompts, the configuration's `tracker` line and the run flag the launcher offers. `--instructions` names a
-Markdown file by its path from the repository root, and repeats for each file; the file must exist. What it publishes
-for people, sessions and other recipes:
+`--worker-role` and `--worker-settings` each take `<harness>:<x>`, once per harness, and the harness is one `--harness`
+gives: `claude:<path>` makes the Claude entry pass `--settings <path>`, and `codex:<path>` makes the Codex entry pass
+one `-c <key>=<value>` for each key of the TOML file at `<path>`, which is read when cooking. A role and a settings
+file do not bind the same harness; to combine them, write a settings file that holds both. `--worktree-root` names the
+directory, by its path from the repository root, under whose `ralph/` run worktrees go, as
+`io.github.lmarqs.cookbook:agents#connect --worktree-root` does for Claude Code's; `.worktrees` by default.
+`--worktree-setup` and `--worktree-teardown` each name a committed executable by its path from the repository root,
+outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown. `--worker-check` names one
+too, the check a task must pass to complete; without it, the worker refuses every task. `--tracker` is `beads`, run
+with `--epic`, or `json`, run with `--prd`, and repeats; both by default. It narrows the seeded prompts, the
+configuration's `tracker` line and the run flag the launcher offers. `--instructions` names a Markdown file by its path
+from the repository root, and repeats for each file; the file must exist. What it publishes for people, sessions and
+other recipes:
 
 | Name | What it is |
 | --- | --- |
-| `.ralph-tui/bin/run <name> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | Runs ralph-tui in the run's worktree, as Run-time effects says |
+| `.ralph-tui/bin/run <name> --agent <entry> (--epic <id> \| --prd <file>) [--base <ref>] [ralph-tui run arguments…]` | Runs ralph-tui in the run's worktree, as Run-time effects says |
 | `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and its parallel workers' worktrees and branches |
 | `.ralph-tui/bin/worker <agent> [agent arguments…]` | Runs the agent for ralph-tui, as Run-time effects says |
 | `<worktree root>/ralph/<name>` on branch `ralph/<name>` | The rule for a run's worktree, following `<worktree root>/<branch>` |
@@ -378,7 +378,7 @@ for people, sessions and other recipes:
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` with the `beads` tracker, the first harness as `defaultAgent`, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, or with `--worker-check` `strategy = "retry"`, `maxRetries = 2` and `continueOnNonZeroExit = false`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness, with `--worker-check` running `.ralph-tui/bin/worker` with the harness as its first argument | Always, when absent | seed |
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` with the `beads` tracker, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, or with `--worker-check` `strategy = "retry"`, `maxRetries = 2` and `continueOnNonZeroExit = false`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness, with `--worker-check` running `.ralph-tui/bin/worker` with the harness as its first argument | Always, when absent | seed |
 | `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
 | `.ralph-tui/bin/worker` | The worker wrapper, executable | Always | owned |
@@ -398,8 +398,8 @@ tracker's state, and the rest of each `--instructions` file.
 
 | Contact | Made by |
 | --- | --- |
-| What a Claude worker may do | The person, by `--worker-role=claude:<role>` or `--worker-settings=claude:<path>`; the team, by adding entries to the configuration; the session, by `ralph-tui run --agent <entry>` |
-| What a Codex worker may do | The person, by `--worker-role=codex:<role>` or `--worker-settings=codex:<path>`; the team, in the seeded entry, which sets Codex's `workspace-write` sandbox |
+| What a Claude worker may do | The person, by `--worker-role=claude:<role>` or `--worker-settings=claude:<path>`; the team, by adding entries to the configuration; the session, by `bin/run --agent <entry>` |
+| What a Codex worker may do | The person, by `--worker-role=codex:<role>` or `--worker-settings=codex:<path>`; the team, in the seeded entry, which sets Codex's `workspace-write` sandbox; `--agent codex` runs with only what `--worker-*=codex:` gave the Codex entry |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
 | Where a run's configuration and prompts come from | The team, by committing `.ralph-tui/`; otherwise each person, by ignoring it in their clone, and `bin/run` copies it into each run |
 | Whether a task completes only once the checks pass | The person, by `--worker-check`; the team writes the file, or points an entry's `command` at a wrapper of its own |
@@ -421,18 +421,20 @@ this recipe in the same invocation, with the role defined in the policy.
 
 `bin/run <name>` refuses while `git status --porcelain .ralph-tui` in the main checkout lists anything, because a
 worktree holds only what is committed. It creates `<worktree root>/ralph/<name>` on a new branch `ralph/<name>` from
-`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist; it refuses a `--base` when the branch
-exists, and a `--epic`, `--prd` or `--base` given twice. With `--worktree-setup`, it runs that file from the root of
-each worktree it creates, never one it reuses, and stops the run when the file is missing, not executable or fails,
-leaving the worktree for `bin/clean`; without `--worktree-setup`, it runs no setup. When `ralph/<name>` has no committed
-`.ralph-tui/config.toml`, it copies the main checkout's `config.toml` and `templates/` into the worktree on every run,
-because ralph-tui reads them only from there. It first checks that Git ignores them and `session.json` in the worktree,
-because ralph-tui commits each task with `git add -A`; otherwise it refuses and prints the line that ignores
-`.ralph-tui/` in the clone. With a copy, it passes `--prompt` with the copied prompt of the run's tracker, unless the
-run gives `--prompt`, because ralph-tui copies only `config.toml` into a parallel worker. It prints the worktree's path
-and branch, then runs `ralph-tui run --epic <id>`, or `--prd` with the file's absolute path, in the worktree, with the
-remaining arguments, such as `--headless`, `--agent codex` or `--model opus`. It sets and strips no environment
-variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
+`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist; it refuses a `--base` when the
+branch exists, and a `--agent`, `--epic`, `--prd` or `--base` given twice. It requires `--agent <entry>`, and after the
+worktree is ready, and any copy of the configuration is made, refuses an entry that no `name` or `plugin` line of the
+worktree's `.ralph-tui/config.toml` equals, listing the entry names. With `--worktree-setup`, it runs that file from
+the root of each worktree it creates, never one it reuses, and stops the run when the file is missing, not executable
+or fails, leaving the worktree for `bin/clean`; without `--worktree-setup`, it runs no setup. When `ralph/<name>` has
+no committed `.ralph-tui/config.toml`, it copies the main checkout's `config.toml` and `templates/` into the worktree
+on every run, because ralph-tui reads them only from there. It first checks that Git ignores them and `session.json` in
+the worktree, because ralph-tui commits each task with `git add -A`; otherwise it refuses and prints the line that
+ignores `.ralph-tui/` in the clone. With a copy, it passes `--prompt` with the copied prompt of the run's tracker,
+unless the run gives `--prompt`, because ralph-tui copies only `config.toml` into a parallel worker. It prints the
+worktree's path and branch, then runs `ralph-tui run --epic <id> --agent <entry>`, or `--prd` with the file's absolute
+path, in the worktree, with the remaining arguments, such as `--headless` or `--model opus`. It sets and strips no
+environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 An agent entry whose `command` is `.ralph-tui/bin/worker`, as `--worker-check` seeds, has ralph-tui run
 `.ralph-tui/bin/worker <agent> [arguments…]` for each task, from the run worktree or a parallel worker's. The worker
@@ -489,6 +491,8 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
 - ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere,
   even in a sentence saying it is not done, whatever the checks say. `--worker-check` gates it on the team's check;
   the artifact's README, under Gating completion, says how a team writes a wrapper of its own.
+- ralph-tui 0.12 runs an installed plugin with no options for an `--agent` that matches no entry, and for Claude that
+  means no permission checks. `bin/run` refuses it; `ralph-tui run` started by hand does not.
 - With `.ralph-tui/` not committed, parallel workers find no `.ralph-tui/bin/worker`, because ralph-tui copies only
   `config.toml` into them: run serially, or commit `.ralph-tui/`.
 - ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
@@ -510,7 +514,7 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
 
 Parameters
   --harness=<String[]>
-      Harnesses ralph-tui drives, one agent entry each; the first is the default; required; choices: claude, codex; repeatable
+      Harnesses ralph-tui drives, one agent entry each; each run picks one with --agent; required; choices: claude, codex; repeatable
   --worker-role=<String[]>
       <harness>:<role>, a role of the agents layout whose rendered settings that harness's entry passes; optional; repeatable
   --worker-settings=<String[]>
@@ -538,10 +542,10 @@ After cooking
   with the team, or keep `.ralph-tui/` to this clone by ignoring it with
   `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`, and `bin/run` copies it into each run. `bin/run`
   refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
-  `.ralph-tui/bin/run <name> --epic <id>`, with a Beads database holding the epic, or
-  `.ralph-tui/bin/run <name> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch `ralph/<name>` is delivered.
-  Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to give agents these commands,
-  and with the agents layout, add them to the Launching table in `.agents/README.md`.
+  `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, with a Beads database holding the epic, or
+  `.ralph-tui/bin/run <name> --agent <entry> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch
+  `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`,
+  to give agents these commands, and with the agents layout, add them to the Launching table in `.agents/README.md`.
 ````
 
 ## Layout

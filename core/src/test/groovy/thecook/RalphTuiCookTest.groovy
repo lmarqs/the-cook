@@ -21,7 +21,6 @@ class RalphTuiCookTest {
   private static final String CONFIG = '''\
 configVersion = "2.1"
 tracker = "beads"
-defaultAgent = "claude"
 # ralph-tui stops a run after this many iterations, each one agent run on one task; 0 means no limit.
 maxIterations = 10
 autoCommit = true
@@ -107,13 +106,13 @@ recipes:
     assert cook(kitchen, RALPH, [harness: ['claude', 'codex']]).actions == [:]
   }
 
-  @Test void theFirstHarnessIsTheDefaultAgentAndEachGetsOneEntry() {
+  @Test void eachHarnessGetsOneEntryAndNoDefaultAgent() {
     def kitchen = kitchen()
 
     cook(kitchen, RALPH, [harness: ['codex', 'codex']]).commit()
 
     def config = new File(kitchen, '.ralph-tui/config.toml').text
-    assert config.contains('defaultAgent = "codex"\n')
+    assert !config.contains('defaultAgent')
     assert config.count('[[agents]]') == 1
     assert !config.contains('claude')
     assert new File(kitchen, '.gitignore').readLines()[1] ==
@@ -447,7 +446,7 @@ roles:
 # Agents
 <!-- cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
 <!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --instructions=AGENTS.md -->
-- Loop runs: `.ralph-tui/bin/run <name> --epic <id>`, or `--prd <file>`, runs ralph-tui in
+- Loop runs: `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, or `--prd <file>`, runs ralph-tui in
   `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the
   branch is delivered.
 <!-- cook:end io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
@@ -466,11 +465,12 @@ roles:
     assert !new File(kitchen, '.ralph-tui/templates/beads.hbs').exists()
     assert new File(kitchen, '.ralph-tui/templates/json.hbs').exists()
     assert !new File(kitchen, '.ralph-tui/config.toml').text.contains('tracker')
-    assert new File(kitchen, 'AGENTS.md').text.contains('`.ralph-tui/bin/run <name> --prd <file>` runs ralph-tui in')
-    def usage = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--headless')
-    assert usage.output.startsWith('usage: .ralph-tui/bin/run <name> --prd <file> [--base <ref>]')
+    assert new File(kitchen, 'AGENTS.md').text.contains(
+    '`.ralph-tui/bin/run <name> --agent <entry> --prd <file>` runs ralph-tui in')
+    def usage = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--headless')
+    assert usage.output.startsWith('usage: .ralph-tui/bin/run <name> --agent <entry> --prd <file> [--base <ref>]')
     write(kitchen, 'tasks/prd.json', '{}\n')
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--prd', 'tasks/prd.json').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'tasks/prd.json').exit == 0
   }
 
   @Test void aWorktreeRootMovesTheRunWorktreesTheirParallelWorkersAndTheIgnoreLine() {
@@ -481,7 +481,7 @@ roles:
 
     assert new File(kitchen, '.gitignore').readLines().contains('/wt/ralph/')
     assert new File(kitchen, 'AGENTS.md').text.contains('`wt/ralph/<name>` on branch `ralph/<name>`')
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
     assert run.exit == 0
     assert run.output.readLines()[1] == "worktree: ${kitchen.canonicalPath}/wt/ralph/demo".toString()
     def workers = new File(kitchen, 'wt/ralph/.ralph-worktrees/demo')
@@ -572,29 +572,30 @@ roles:
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
 
-    def refused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    def refused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
     assert refused.exit == 1
     assert refused.output.startsWith('run: .ralph-tui has uncommitted changes\n')
     assert !new File(kitchen, '.worktrees').exists()
 
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo').canonicalPath
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--headless', '--model', 'opus')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1', '--headless',
+        '--model', 'opus')
     assert run.exit == 0
     assert run.output.readLines() == [
       "Created the worktree ${kitchen.canonicalPath}/.worktrees/ralph/demo on ralph/demo.",
       "worktree: ${kitchen.canonicalPath}/.worktrees/ralph/demo",
       'branch: ralph/demo',
-      'ralph-tui run --epic ep-1 --headless --model opus',
+      'ralph-tui run --epic ep-1 --agent claude --headless --model opus',
       "cwd ${worktree}",
       'effort high',
     ]*.toString()
     assert git(kitchen, 'rev-parse', 'ralph/demo') == git(kitchen, 'rev-parse', 'HEAD')
 
-    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic=ep-1')
+    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic=ep-1')
     assert reused.exit == 0
     assert reused.output.readLines()[0] == "Reusing the worktree ${worktree} on ralph/demo."
-    assert reused.output.readLines()[3] == 'ralph-tui run --epic ep-1'
+    assert reused.output.readLines()[3] == 'ralph-tui run --epic ep-1 --agent claude'
   }
 
   @Test void runCopiesAnIgnoredUncommittedConfigurationAndPromptsIntoTheWorktreeOnEachRunAndPassesThePrompt() {
@@ -607,30 +608,32 @@ roles:
     def copied = "Copied .ralph-tui/config.toml, templates/ and bin/worker from ${kitchen.canonicalPath}: " +
         'they are not committed on ralph/demo.'
 
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--headless')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1', '--headless')
 
     assert run.exit == 0
     assert run.output.readLines()[1] == copied.toString()
     assert run.output.readLines()[4] ==
-    "ralph-tui run --epic ep-1 --prompt ${worktree}/.ralph-tui/templates/beads.hbs --headless".toString()
+    "ralph-tui run --epic ep-1 --agent claude --prompt ${worktree}/.ralph-tui/templates/beads.hbs --headless".toString()
     ['config.toml', 'templates/beads.hbs', 'templates/json.hbs'].each {
       assert new File(worktree, ".ralph-tui/${it}").text == new File(kitchen, ".ralph-tui/${it}").text
     }
     assert git(new File(worktree), 'status', '--porcelain') == ''
 
-    write(kitchen, '.ralph-tui/config.toml', 'maxIterations = 3\n')
-    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--prd', 'tasks/prd.json')
+    def edited = 'maxIterations = 3\n\n[[agents]]\nname = "claude"\nplugin = "claude"\n'
+    write(kitchen, '.ralph-tui/config.toml', edited)
+    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'tasks/prd.json')
 
     assert reused.exit == 0
     assert reused.output.readLines()[1] == copied.toString()
     assert reused.output.readLines()[4] == ("ralph-tui run --prd ${kitchen.canonicalPath}/tasks/prd.json " +
-    "--prompt ${worktree}/.ralph-tui/templates/json.hbs").toString()
-    assert new File(worktree, '.ralph-tui/config.toml').text == 'maxIterations = 3\n'
+    "--agent claude --prompt ${worktree}/.ralph-tui/templates/json.hbs").toString()
+    assert new File(worktree, '.ralph-tui/config.toml').text == edited
 
-    def own = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--prompt', 'mine.hbs')
+    def own = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1', '--prompt',
+        'mine.hbs')
 
     assert own.exit == 0
-    assert own.output.readLines()[4] == 'ralph-tui run --epic ep-1 --prompt mine.hbs'
+    assert own.output.readLines()[4] == 'ralph-tui run --epic ep-1 --agent claude --prompt mine.hbs'
   }
 
   @Test void runRefusesToCopyTheConfigurationIntoAWorktreeWhereGitWouldCommitIt() {
@@ -640,7 +643,7 @@ roles:
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
 
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--base', 'old', '--epic', 'ep-1')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--base', 'old', '--epic', 'ep-1')
 
     assert run.exit == 1
     assert run.output.readLines()[1] ==
@@ -660,10 +663,12 @@ roles:
     commitAll(kitchen)
 
     def tasks = new File(kitchen, 'tasks')
-    def run = launch(tasks, '../.ralph-tui/bin/run', 'story', '--base', 'base', '--prd', 'prd.json')
+    def run = launch(tasks, '../.ralph-tui/bin/run', 'story', '--agent', 'claude', '--base', 'base', '--prd',
+        'prd.json')
 
     assert run.exit == 0
-    assert run.output.readLines()[3] == "ralph-tui run --prd ${kitchen.canonicalPath}/tasks/prd.json".toString()
+    assert run.output.readLines()[3] ==
+    "ralph-tui run --prd ${kitchen.canonicalPath}/tasks/prd.json --agent claude".toString()
     assert git(kitchen, 'rev-parse', 'ralph/story') == git(kitchen, 'rev-parse', 'base')
   }
 
@@ -673,10 +678,10 @@ roles:
     executable(kitchen, '.worktrees/setup', '#!/bin/sh\ntouch setup-ran\n')
     commitAll(kitchen)
 
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
 
     assert run.exit == 0
-    assert run.output.readLines()[3] == 'ralph-tui run --epic ep-1'
+    assert run.output.readLines()[3] == 'ralph-tui run --epic ep-1 --agent claude'
     assert !new File(kitchen, '.worktrees/ralph/demo/setup-ran').exists()
     assert !new File(kitchen, 'setup-ran').exists()
   }
@@ -688,14 +693,14 @@ roles:
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
 
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
 
     assert run.exit == 0
-    assert run.output.readLines()[3] == 'ralph-tui run --epic ep-1'
+    assert run.output.readLines()[3] == 'ralph-tui run --epic ep-1 --agent claude'
     assert new File(worktree, 'setup-ran').readLines() == [worktree.canonicalPath]
     assert !new File(kitchen, 'setup-ran').exists()
 
-    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    def reused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
     assert reused.exit == 0
     assert new File(worktree, 'setup-ran').readLines() == [worktree.canonicalPath]
   }
@@ -710,7 +715,7 @@ roles:
     assert new File(kitchen, '.ralph-tui/bin/run').readLines().contains("setup='tools/it'\\''s \$HOME `set` up'")
     assert new File(kitchen, '.gitignore').readLines()[1] ==
     "# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worktree-setup=${path}".toString()
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     assert new File(kitchen, '.worktrees/ralph/demo/setup-ran').exists()
   }
 
@@ -719,7 +724,7 @@ roles:
     cook(kitchen, RALPH, [harness: ['claude'], 'worktree-setup': ['scripts/setup']]).commit()
     commitAll(kitchen)
 
-    def missing = launch(kitchen, '.ralph-tui/bin/run', 'missing', '--epic', 'ep-1')
+    def missing = launch(kitchen, '.ralph-tui/bin/run', 'missing', '--agent', 'claude', '--epic', 'ep-1')
     assert missing.exit == 1
     def worktree = new File(kitchen, '.worktrees/ralph/missing').canonicalPath
     assert missing.output.readLines()[1..-1] == [
@@ -730,13 +735,13 @@ roles:
 
     write(kitchen, 'scripts/setup', '#!/bin/sh\nexit 0\n')
     commitAll(kitchen)
-    def plain = launch(kitchen, '.ralph-tui/bin/run', 'plain', '--epic', 'ep-1')
+    def plain = launch(kitchen, '.ralph-tui/bin/run', 'plain', '--agent', 'claude', '--epic', 'ep-1')
     assert plain.exit == 1
     assert plain.output.readLines()[1] == 'run: scripts/setup is not executable'
 
     executable(kitchen, 'scripts/setup', '#!/bin/sh\nexit 3\n')
     commitAll(kitchen)
-    def failing = launch(kitchen, '.ralph-tui/bin/run', 'failing', '--epic', 'ep-1')
+    def failing = launch(kitchen, '.ralph-tui/bin/run', 'failing', '--agent', 'claude', '--epic', 'ep-1')
     assert failing.exit == 1
     assert failing.output.readLines()[1..-1] == [
       'run: scripts/setup failed',
@@ -1050,7 +1055,7 @@ skipPermissions = false
     commitAll(kitchen)
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
 
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
 
     assert run.exit == 0
     assert run.output.readLines()[1].startsWith('Copied .ralph-tui/config.toml, templates/ and bin/worker from ')
@@ -1067,7 +1072,7 @@ skipPermissions = false
     commitAll(kitchen)
     assert new File(kitchen, '.gitignore').readLines()[1] ==
     '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worktree-teardown=.worktrees/teardown'
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worktree = new File(kitchen, '.worktrees/ralph/demo').canonicalPath
 
     def clean = launch(kitchen, '.ralph-tui/bin/clean', 'demo')
@@ -1084,7 +1089,7 @@ skipPermissions = false
     cook(kitchen, RALPH, [harness: ['claude'], 'worktree-teardown': ['scripts/teardown']]).commit()
     commitAll(kitchen)
     ['missing', 'plain', 'failing'].each {
-      assert launch(kitchen, '.ralph-tui/bin/run', it, '--epic', 'ep-1').exit == 0
+      assert launch(kitchen, '.ralph-tui/bin/run', it, '--agent', 'claude', '--epic', 'ep-1').exit == 0
     }
     def worktree = { String name -> new File(kitchen, ".worktrees/ralph/${name}") }
     write(worktree('plain'), 'scripts/teardown', '#!/bin/sh\nexit 0\n')
@@ -1125,15 +1130,66 @@ skipPermissions = false
     commitAll(kitchen)
     write(kitchen, 'prd.json', '{}\n')
 
-    def both = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1', '--prd', 'prd.json')
+    def both = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1', '--prd', 'prd.json')
     assert both.exit == 1
     assert both.output.startsWith('run: --epic and --prd are both given\n')
-    def neither = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--headless')
+    def neither = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--headless')
     assert neither.exit == 2
-    assert neither.output.startsWith('usage: .ralph-tui/bin/run <name>')
-    def missing = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--prd', 'none.json')
+    assert neither.output.startsWith('usage: .ralph-tui/bin/run <name> --agent <entry> (--epic <id> | --prd <file>)')
+    def missing = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'none.json')
     assert missing.exit == 1
     assert !new File(kitchen, '.worktrees').exists()
+  }
+
+  @Test void runRequiresAnAgent() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
+
+    assert run.exit == 2
+    assert run.output.readLines() == [
+      'usage: .ralph-tui/bin/run <name> --agent <entry> (--epic <id> | --prd <file>) [--base <ref>] ' +
+      '[ralph-tui run arguments...]',
+    ]
+    assert !new File(kitchen, '.worktrees').exists()
+    assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
+  @Test void runRefusesAnAgentTheConfigurationHasNoEntryFor() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['codex']]).commit()
+    commitAll(kitchen)
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
+
+    assert run.exit == 1
+    assert run.output.readLines().drop(1) == [
+      'run: --agent claude matches no entry in .ralph-tui/config.toml',
+      '  ralph-tui would run an installed plugin of that name with no options, and Claude without permission checks',
+      '  give one of: codex',
+    ]
+  }
+
+  @Test void runTakesTheAgentByEntryNameOrPluginInEitherForm() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    def config = new File(kitchen, '.ralph-tui/config.toml')
+    config.text = config.text.replace('name = "claude"', 'name = "shim"')
+    commitAll(kitchen)
+
+    [['--agent', 'claude'], ['--agent=claude'], ['--agent', 'shim'], ['--agent=shim']].eachWithIndex { agent, index ->
+      def run = launch(kitchen, '.ralph-tui/bin/run', "run${index}".toString(), *agent, '--epic', 'ep-1')
+
+      assert run.exit == 0
+      assert run.output.readLines()[3] ==
+      "ralph-tui run --epic ep-1 --agent ${agent.last().replace('--agent=', '')}".toString()
+    }
+    def other = launch(kitchen, '.ralph-tui/bin/run', 'other', '--agent', 'shi', '--epic', 'ep-1')
+
+    assert other.exit == 1
+    assert other.output.readLines().last() == '  give one of: shim'
   }
 
   @Test void runRefusesARepeatedEpicPrdOrBase() {
@@ -1142,6 +1198,7 @@ skipPermissions = false
     commitAll(kitchen)
 
     [
+      '--agent': ['--agent', 'claude', '--agent=codex', '--epic', 'ep-1'],
       '--epic': ['--epic', 'ep-1', '--epic', 'ep-2'],
       '--epic ': ['--epic=ep-1', '--epic=ep-2'],
       '--prd': ['--prd', 'a.json', '--prd=b.json'],
@@ -1149,7 +1206,7 @@ skipPermissions = false
       '--base ': ['--base=HEAD', '--epic', 'ep-1', '--base', 'HEAD'],
     ].each { flag, arguments ->
       flag = flag.trim()
-      def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', *arguments)
+      def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', *arguments)
 
       assert run.exit == 1
       assert run.output.readLines() == ["run: ${flag} is given twice", "  a run takes one ${flag}"]*.toString()
@@ -1161,10 +1218,10 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def branch = git(kitchen, 'rev-parse', 'ralph/demo')
 
-    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--base', 'HEAD', '--epic', 'ep-1')
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--base', 'HEAD', '--epic', 'ep-1')
 
     assert run.exit == 1
     assert run.output.readLines() == [
@@ -1179,7 +1236,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
     write(worktree, 'work.txt', 'done\n')
     git(worktree, 'add', 'work.txt')
@@ -1212,7 +1269,7 @@ skipPermissions = false
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
     def run = { String name ->
-      assert launch(kitchen, '.ralph-tui/bin/run', name, '--epic', 'ep-1').exit == 0
+      assert launch(kitchen, '.ralph-tui/bin/run', name, '--agent', 'claude', '--epic', 'ep-1').exit == 0
       def worktree = new File(kitchen, ".worktrees/ralph/${name}")
       write(worktree, "${name}.txt", "${name}\n")
       git(worktree, 'add', '-A')
@@ -1252,8 +1309,8 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
-    assert launch(kitchen, '.ralph-tui/bin/run', 'other', '--epic', 'ep-2').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'other', '--agent', 'claude', '--epic', 'ep-2').exit == 0
     def workers = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo')
     git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', new File(workers, 'worker-1').path)
     git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t2', new File(workers, 'worker 2').path)
@@ -1287,7 +1344,7 @@ skipPermissions = false
     }
 
     ['', '--force'].each { force ->
-      assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+      assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
       def clean = launch(kitchen, *(['.ralph-tui/bin/clean', 'demo'] + (force ? [force] : [])))
 
       assert clean.exit == 0
@@ -1304,7 +1361,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def feature = new File(kitchen, '.worktrees/feature')
     git(kitchen, 'worktree', 'add', '-q', '-b', 'feature', feature.path)
     write(feature, 'wip.txt', 'not committed\n')
@@ -1324,7 +1381,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worker = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo/worker-1')
     git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path)
     write(worker, 'draft.txt', 'not yet\n')
@@ -1351,7 +1408,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worker = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo/worker-1')
     git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path, 'ralph/demo')
     write(worker, 'unmerged.txt', 'committed, never merged\n')
@@ -1380,7 +1437,7 @@ skipPermissions = false
     // A run whose branch merges a worker's branch, as ralph-tui's parallel mode does, with or without a change of the
     // merge's own, such as a resolved conflict.
     def run = { String name, boolean resolved ->
-      assert launch(kitchen, '.ralph-tui/bin/run', name, '--epic', 'ep-1').exit == 0
+      assert launch(kitchen, '.ralph-tui/bin/run', name, '--agent', 'claude', '--epic', 'ep-1').exit == 0
       def worktree = new File(kitchen, ".worktrees/ralph/${name}")
       git(worktree, 'checkout', '-q', '-b', "worker/${name}")
       write(worktree, "${name}-worker.txt", 'worker\n')
@@ -1431,7 +1488,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worktree = new File(kitchen, '.worktrees/ralph/demo')
     ['picked', 'pushed', 'neither'].each { subject ->
       write(worktree, "${subject}.txt", "${subject}\n")
@@ -1459,7 +1516,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'team/demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'team/demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worker = new File(kitchen, '.worktrees/ralph/team/.ralph-worktrees/demo/worker-1')
     git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path)
     write(worker, 'draft.txt', 'not yet\n')
@@ -1479,7 +1536,7 @@ skipPermissions = false
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     commitAll(kitchen)
-    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1').exit == 0
     def worker = new File(kitchen, '.worktrees/ralph/.ralph-worktrees/demo/worker-1')
     git(kitchen, 'worktree', 'add', '-q', '-b', 'ralph-parallel/s1/t1', worker.path)
     write(worker, 'draft.txt', 'not yet\n')

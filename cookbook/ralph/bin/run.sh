@@ -11,7 +11,7 @@ setup=''
 flags='(--epic <id> | --prd <file>)'
 
 usage() {
-  echo "usage: .ralph-tui/bin/run <name> $flags [--base <ref>] [ralph-tui run arguments...]" >&2
+  echo "usage: .ralph-tui/bin/run <name> --agent <entry> $flags [--base <ref>] [ralph-tui run arguments...]" >&2
   exit 2
 }
 
@@ -32,20 +32,20 @@ branch=ralph/$name
 git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
   fail "$name is not a run name" "ralph/$name must be a valid branch name"
 
-epic='' prd='' base=HEAD seen=' '
+epic='' prd='' agent='' base=HEAD seen=' '
 count=$#
 while [ "$count" -gt 0 ]; do
   argument=$1
   shift
   count=$((count - 1))
   case $argument in
-    --epic | --prd | --base)
+    --agent | --epic | --prd | --base)
       [ "$count" -gt 0 ] || fail "$argument needs a value"
       value=$1
       shift
       count=$((count - 1))
       ;;
-    --epic=* | --prd=* | --base=*)
+    --agent=* | --epic=* | --prd=* | --base=*)
       value=${argument#*=}
       argument=${argument%%=*}
       ;;
@@ -59,6 +59,7 @@ while [ "$count" -gt 0 ]; do
   esac
   seen="$seen$argument "
   case $argument in
+    --agent) agent=$value ;;
     --epic) epic=$value ;;
     --prd) prd=$value ;;
     --base) base=$value ;;
@@ -69,6 +70,7 @@ if [ -n "$epic" ] && [ -n "$prd" ]; then
   fail '--epic and --prd are both given' 'a run takes its tasks from one tracker' 'give one of them'
 fi
 [ -n "$epic" ] || [ -n "$prd" ] || usage
+[ -n "$agent" ] || usage
 
 case $seen in
   *' --base '*)
@@ -137,6 +139,16 @@ if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/nu
   echo "Copied .ralph-tui/config.toml, templates/ and bin/worker from $root: they are not committed on $branch."
   copied=true
 fi
+
+# ralph-tui runs an installed plugin of the --agent name with no options when no entry matches, and Claude then runs
+# without permission checks.
+if ! grep -Fxq -e "name = \"$agent\"" -e "plugin = \"$agent\"" "$worktree/.ralph-tui/config.toml" 2>/dev/null; then
+  entries=$(sed -n 's/^name = "\(.*\)"$/\1/p' "$worktree/.ralph-tui/config.toml" 2>/dev/null |
+    paste -sd, - | sed 's/,/, /g')
+  fail "--agent $agent matches no entry in .ralph-tui/config.toml" \
+    'ralph-tui would run an installed plugin of that name with no options, and Claude without permission checks' \
+    "give one of: $entries"
+fi
 echo "worktree: $worktree"
 echo "branch: $branch"
 
@@ -150,6 +162,6 @@ if [ "$copied" = true ]; then
   if [ "$prompt_given" = false ] && [ -f "$template" ]; then set -- --prompt "$template" "$@"; fi
 fi
 if [ -n "$epic" ]; then
-  exec ralph-tui run --epic "$epic" "$@"
+  exec ralph-tui run --epic "$epic" --agent "$agent" "$@"
 fi
-exec ralph-tui run --prd "$prd" "$@"
+exec ralph-tui run --prd "$prd" --agent "$agent" "$@"
