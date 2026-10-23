@@ -1,0 +1,9 @@
+{%- comment -%} Sets page_title: the page's sidebar title, else its first heading, else the file's folder. {%- endcomment -%}
+{%- assign page_title = nil -%}
+{%- for section in site.data.nav -%}
+  {%- for item in section.pages -%}
+    {%- if item.path == page.path -%}{%- assign page_title = item.title -%}{%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- unless page_title -%}{%- assign page_title = page.title -%}{%- endunless -%}
+{%- unless page_title -%}{%- assign page_title = page.dir | split: "/" | last -%}{%- endunless -%}

@@ -1,0 +1,28 @@
+{%- include title.html -%}
+{%- capture full_title -%}{% if page.path == "site/index.html" %}the-cook: recipe driven configuration{% else %}{{ page_title | strip_html }} · the-cook{% endif %}{%- endcapture -%}
+{%- assign summary = page.summary | default: site.description -%}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ full_title }}</title>
+<meta name="description" content="{{ summary | escape }}">
+<meta name="color-scheme" content="dark light">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ full_title | escape }}">
+<meta property="og:description" content="{{ summary | escape }}">
+<meta property="og:url" content="{{ page.url | absolute_url }}">
+<meta property="og:image" content="{{ '/docs/assets/the-lab.png' | absolute_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="{{ page.url | absolute_url }}">
+<link rel="icon" href="{{ '/site/assets/hat.svg' | relative_url }}" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=Pixelify+Sans:wght@500&family=Silkscreen&display=swap">
+<link rel="stylesheet" href="{{ '/site/assets/site.css' | relative_url }}">
+<script>
+  window.THE_COOK = {
+    base: {{ site.baseurl | jsonify }},
+    source: {{ site.source_url | append: "/blob/" | append: release_ref | append: "/" | jsonify }},
+    pages: {{ site.pages | map: "url" | jsonify }}
+  };
+</script>
+<script src="{{ '/site/assets/site.js' | relative_url }}" defer></script>

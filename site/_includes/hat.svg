@@ -1,0 +1,5 @@
+<svg class="hat" viewBox="0 0 16 9" width="32" height="18" aria-hidden="true" shape-rendering="crispEdges">
+  <path fill="currentColor" d="M5 0h6v1H5zM4 1h8v4H4zM0 6h16v1H0zM1 7h14v1H1z"/>
+  <path fill="var(--accent)" d="M4 4h8v2H4z"/>
+  <path fill="currentColor" d="M3 5h10v1H3z"/>
+</svg>

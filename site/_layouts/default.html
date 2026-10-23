@@ -1,0 +1,26 @@
+<!doctype html>
+{%- include context.html %}
+<html lang="en">
+<head>
+{% include head.html %}
+</head>
+<body class="docs">
+{% include header.html %}
+<div class="docs-shell">
+  {% include sidebar.html %}
+  <main id="main" class="content" tabindex="-1">
+    <article class="prose">
+{%- unless content contains "<h1" %}
+      <h1>{{ page_title }}</h1>
+{%- endunless %}
+{{ content }}
+    </article>
+    <p class="page-source">
+      <a href="{{ site.source_url }}/blob/{{ release_ref }}/{{ page.path }}">This page on GitHub</a>
+    </p>
+  </main>
+  <aside class="toc" aria-label="On this page"></aside>
+</div>
+{% include footer.html %}
+</body>
+</html>

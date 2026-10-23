@@ -1,0 +1,44 @@
+# The Pages site. Jekyll renders the repository's Markdown from the root, so links between the README, docs/ and the
+# cookbook resolve on the site; .github/workflows/pages.yml runs site/prepare on one release's checkout, which copies
+# this file to the root with release set to its tag, and builds. The layouts, includes, data, assets and landing
+# page live beside it in site/.
+title: the-cook
+description: Recipe driven configuration for repositories worked by people and coding agents.
+url: https://lmarqs.github.io
+baseurl: /the-cook
+repository: lmarqs/the-cook
+source_url: https://github.com/lmarqs/the-cook
+release:
+
+layouts_dir: site/_layouts
+includes_dir: site/_includes
+data_dir: site/_data
+
+# Source, build and agent files are not documentation; a link to one opens it on GitHub at the release.
+exclude:
+  - AGENTS.md
+  - tasks
+  - gradle
+  - gradlew
+  - gradlew.bat
+  - build.gradle
+  - settings.gradle
+  - mise.toml
+  - cook.toml
+  - cook.lock
+  - cli/src
+  - core/src
+  - infra/src
+  - plugin/src
+  - cookbook/agents/skills/agents-layout/templates
+  - cookbook/beads/templates
+  - cookbook/git/templates
+  - site/preview
+  - site/prepare
+  - site/README.md
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

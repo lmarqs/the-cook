@@ -1,0 +1,16 @@
+<input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
+<label for="nav-toggle" class="nav-toggle-label">Contents</label>
+<nav class="sidebar" aria-label="Documentation">
+  {%- for section in site.data.nav %}
+  <p class="sidebar-section">{{ section.section }}</p>
+  <ul>
+    {%- for item in section.pages %}
+    {%- assign target = site.pages | where: "path", item.path | first -%}
+    {%- assign current = false -%}
+    {%- if item.path == page.path -%}{%- assign current = true -%}
+    {%- elsif item.match and page.path contains item.match -%}{%- assign current = true -%}{%- endif %}
+    <li><a href="{{ target.url | relative_url }}"{% if current %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+    {%- endfor %}
+  </ul>
+  {%- endfor %}
+</nav>

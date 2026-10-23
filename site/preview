@@ -1,0 +1,29 @@
+#!/bin/sh
+# Usage: site/preview [<release tag>]
+# Builds the Pages site from this working tree, committed or not, into build/site/_site with the image
+# actions/jekyll-build-pages runs, then serves it at http://localhost:4000/the-cook/. Needs Docker and Python 3.
+set -eu
+
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+release=${1:-}
+image=ghcr.io/actions/jekyll-build-pages:v1.0.13
+work=$root/build/site
+
+rm -rf "$work"
+mkdir -p "$work/source"
+# Only what Git would commit, as the workflow's checkout holds.
+git -C "$root" -c core.quotePath=false ls-files --cached --others --exclude-standard | while IFS= read -r file; do
+  if [ -e "$root/$file" ] || [ -L "$root/$file" ]; then
+    mkdir -p "$work/source/$(dirname -- "$file")"
+    cp -P "$root/$file" "$work/source/$file"
+  fi
+done
+(cd "$work/source" && ./site/prepare "$release")
+
+docker run --rm -v "$work:/github/workspace" -e GITHUB_WORKSPACE=/github/workspace -e INPUT_SOURCE=source \
+  -e INPUT_DESTINATION=_site -e GITHUB_REPOSITORY=lmarqs/the-cook --user "$(id -u):$(id -g)" "$image"
+
+mkdir -p "$work/serve"
+ln -sfn "$work/_site" "$work/serve/the-cook"
+echo "Serving http://localhost:4000/the-cook/"
+exec python3 -m http.server 4000 --bind 127.0.0.1 --directory "$work/serve"

@@ -1,0 +1,72 @@
+# The docs sidebar, in reading order. A page's title on the site comes from here when it has an entry, and from its
+# first heading otherwise; match names the folder whose pages belong under the entry.
+- section: Start here
+  pages:
+    - title: Overview
+      path: README.md
+    - title: Philosophy
+      path: docs/philosophy.md
+    - title: Architecture
+      path: docs/architecture.md
+    - title: Guide to the docs
+      path: docs/features/README.md
+- section: Using Cook
+  pages:
+    - title: CLI reference
+      path: docs/features/cli.md
+    - title: Cooking recipes
+      path: docs/features/cook.md
+    - title: Discard
+      path: docs/features/discard.md
+    - title: Replicate
+      path: docs/features/replicate.md
+    - title: The cook wrapper
+      path: docs/features/wrapper.md
+    - title: Pitfalls
+      path: docs/features/pitfalls.md
+    - title: Glossary
+      path: docs/features/glossary.md
+- section: Cookbook
+  pages:
+    - title: Cookbooks
+      path: cookbook/README.md
+    - title: agents
+      path: cookbook/agents/README.md
+      match: cookbook/agents/
+    - title: git
+      path: cookbook/git/README.md
+    - title: beads
+      path: cookbook/beads/README.md
+    - title: ralph
+      path: cookbook/ralph/README.md
+- section: Inside Cook
+  pages:
+    - title: Core
+      path: core/README.md
+    - title: Infra
+      path: infra/README.md
+- section: Standards
+  pages:
+    - title: User experience
+      path: docs/ux/README.md
+    - title: Principles
+      path: docs/ux/principles.md
+    - title: CLI
+      path: docs/ux/cli-standards.md
+    - title: Messages and docs
+      path: docs/ux/messages-and-docs.md
+    - title: Configuration
+      path: docs/ux/configuration-standards.md
+    - title: Generated content
+      path: docs/ux/generated-content-standards.md
+    - title: Compatibility
+      path: docs/ux/compatibility-standards.md
+    - title: Skills
+      path: docs/ux/skills-standards.md
+    - title: CLI or skill
+      path: docs/ux/when-cli-when-skill.md
+- section: Decisions
+  pages:
+    - title: Decision records
+      path: docs/adrs/README.md
+      match: docs/adrs/

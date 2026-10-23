@@ -1,0 +1,9 @@
+{%- comment -%} Values every layout and include reads: the Git ref source links open, and the top-bar section. {%- endcomment -%}
+{%- assign release_ref = site.release | default: "main" -%}
+{%- if page.path == "site/index.html" -%}
+  {%- assign section_name = "home" -%}
+{%- elsif page.path contains "cookbook/" -%}
+  {%- assign section_name = "cookbook" -%}
+{%- else -%}
+  {%- assign section_name = "docs" -%}
+{%- endif -%}
