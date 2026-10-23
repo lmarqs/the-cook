@@ -301,7 +301,7 @@ text.text = 'first\\n'
     def kitchen = kitchen()
     recipe(kitchen, 'recipes/pages/a.md', 'first\n')
     recipe(kitchen, 'recipes/pages/sub/b.md', 'second\n')
-    recipe(kitchen, 'recipes/Pages.groovy', """package acme.pages
+    recipe(kitchen, 'recipes/PagesModel.groovy', """package acme.pages
 
 @Ingredient
 class Pages {
