@@ -74,7 +74,7 @@ role's files. A role only adds denies, so a run in a role does at most what any 
 | Harness | Renders | Run in the role |
 | --- | --- | --- |
 | Claude | `.agents/adapters/claude/roles/<role>.json`, holding only `permissions.deny` | `claude --settings .agents/adapters/claude/roles/<role>.json` |
-| Codex | Nothing | Not possible: Codex has no option that adds a rules file to one run, so a Codex run gets `commands` only |
+| Codex | Nothing | Not possible: Codex has no option that adds a rules file to one run, so a Codex run gets `commands` only ([codex.md](codex.md#no-roles)) |
 
 A deny from `--settings` wins over an allow in the project settings (tested).
 

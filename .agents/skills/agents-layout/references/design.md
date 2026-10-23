@@ -1,8 +1,8 @@
 # Why the layout is shaped this way
 
 Read this before changing the layout or arguing against one of its rules. Each decision states what it gains and what
-it costs. Tested with Claude Code 2.1.303 or 2.1.304 (2.1.304 for skill arguments, worktrees, bypass flags and
-`--setting-sources`) and Codex 0.160.1.
+it costs. The harness facts a decision rests on, with the versions they were tested with, are in
+[claude.md](claude.md) and [codex.md](codex.md).
 
 ## Axes
 
@@ -45,9 +45,10 @@ without hiding the team's.
 | Claude | `.claude/skills`, `.claude/commands` | Claude finds skills and commands only there; it does not read `.agents/skills` (tested) |
 | Codex | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Codex reads project configuration only there |
 
-Codex reads `AGENTS.md` and `.agents/skills/` natively, so it needs no link for them. Hook scripts and memory files are
-reached by their paths from the repository root, so neither harness needs a link for them. Each link is one more
-thing to break, so there is no link a harness does not need.
+Codex reads `AGENTS.md` and `.agents/skills/` natively, so it needs no link for them;
+[claude.md](claude.md#what-it-reads) and [codex.md](codex.md#what-it-reads) list what each harness reads. Hook scripts
+and memory files are reached by their paths from the repository root, so neither harness needs a link for them. Each
+link is one more thing to break, so there is no link a harness does not need.
 
 ## Links and adapters are committed
 
@@ -127,21 +128,9 @@ dispatcher encodes the JSON with `sh` and `awk` alone, so the layout adds no dep
 encoding round-trips quotes, backslashes, control characters and UTF-8 under dash and bash, with gawk and mawk
 (tested).
 
-Codex runs a relative hook command from the session's directory, so a session started in a subdirectory fails to find
-`.agents/hooks/session-start` (tested). Its command starts from `git rev-parse --show-toplevel` instead. Claude's
-command starts from `$CLAUDE_PROJECT_DIR`.
-
-Codex trusts each hook entry per absolute path of `.codex/hooks.json` and the entry's place in it, recorded in
-`~/.codex/config.toml` with a `trusted_hash` of the entry, not per clone. A repository at a new path runs none of its
-hooks until they are trusted there, an entry whose content changed since it was trusted runs nowhere until someone
-trusts it again, and `codex exec` skips both without a warning; `--dangerously-bypass-hook-trust` runs them for one run
-(tested in a new repository). So a cook that changes `hooks.SessionStart`, such as the first one in a repository whose
-team had its own entry, turns the session start off in every person's Codex until each of them trusts it again, in
-an interactive `codex` in the main checkout: codex-cli 0.160.1 has no command that trusts hooks. A worktree, inside the
-checkout or beside it, runs the hook list of its main checkout's `.codex/hooks.json`, not its own, with the trust
-given at the main checkout's path ([tested](#how-codex-trust-is-tested) with codex-cli 0.160.1), while it reads
-`.codex/rules` from its own checkout; a hook change reaches a worktree only once the main checkout has it. Claude
-runs the project's hooks even in a workspace nobody trusted (tested with `claude --print`).
+Each harness reaches the dispatcher its own way, and Codex runs it only while its hook entry is trusted, or under
+`--dangerously-bypass-hook-trust`:
+[claude.md](claude.md#hooks), [codex.md](codex.md#hooks) and [codex.md](codex.md#trust).
 
 ## Why roles only deny
 
@@ -149,21 +138,9 @@ A role narrows `commands` for one kind of run; it never widens it. So no run, ho
 person at the keyboard, and the policy's `commands` is the whole answer to "what can an agent here do at most".
 Widening for one kind of run would make that answer depend on launch flags nobody reviews.
 
-Claude merges a role's file over the project settings, and a deny there wins over a project allow (tested). The
-role file holds only `permissions.deny`, so it cannot loosen anything else.
-
-## Why Codex has no roles
-
-A role needs a way for one run to add rules that another run does not get. Codex, in the version above, has none:
-
-- `CODEX_PERMISSION_PROFILE` is a variable Codex sets for the commands it runs, not one that selects a profile.
-- `prefix_rules` in configuration exist only in `requirements.toml`, which an administrator controls.
-- `--profile <name>` layers a profile from the person's own configuration, not from the repository.
-- No option names a rules file; Codex loads the project's `.codex/rules` whole, or skips them with `--ignore-rules`.
-
-So Cook renders no Codex role, and a Codex run gets `commands` only. A team that runs Codex only as a worker can move
-the worker's denies into `commands.deny`, at the cost of binding people at the keyboard too, or rely on Codex's
-sandbox for workers.
+The role file holds only `permissions.deny`, so it cannot loosen anything else; Claude merges it over the project
+settings, and a deny there wins over a project allow ([claude.md](claude.md#permissions)). Codex has no way for one run
+to add rules, so it has no roles ([codex.md](codex.md#no-roles)).
 
 ## Why mode is not a policy field
 
@@ -210,24 +187,10 @@ nothing behind, in the Worktrees line of the Quick reference in `AGENTS.md`.
 
 Every file of the layout is committed and every link is relative, so a worktree carries the whole setup: the links
 resolve inside it and git reports it clean, with nothing to cook or copy (tested). Trust and personal settings follow
-the clone, not the directory:
-
-- Claude Code keys trust on the main checkout. In an untrusted worktree its warning names
-  `projects["<main checkout>"]`, and in a worktree of a trusted clone it reads the main checkout's
-  `.claude/settings.local.json` (tested, with a deny, in a worktree that had no local file of its own).
-- Codex applies `.codex/rules` and runs the hooks trusted in the main checkout in a worktree inside it and in one
-  beside it, and skips both in a plain clone nobody trusted ([tested](#how-codex-trust-is-tested) with codex-cli 0.160.1). A clone trusted as a
-  project still runs none of its hooks until they are trusted at its own path ([why](#tools-that-add-session-context)).
-
-So trusting the main checkout once, its hooks included, covers every worktree of it, wherever the runner puts it; a
-fresh clone needs its own trust.
-
-Where worktrees go is left to the project and its runner, because each location has a cost:
-
-| Location | What follows (Claude Code, tested) |
-| --- | --- |
-| Inside the main checkout | The main checkout's `git status` lists the directory until the project ignores it. Claude reads the worktree's own `AGENTS.md`, not the main checkout's `AGENTS.md` or `CLAUDE.md`. A `CLAUDE.local.md` in the main checkout, or in any directory between it and the worktree, reaches the worktree and turns its `AGENTS.md` off |
-| Beside the repository or elsewhere | Nothing in the main checkout's directory reaches it; trust and Claude's local settings still follow the main checkout |
+the clone's main checkout, not the directory, so trusting the main checkout once, Codex's hooks included, covers every
+worktree of it, wherever the runner puts it; a fresh clone needs its own trust. Where a worktree goes still changes
+what reaches it: [claude.md](claude.md#worktrees) and [codex.md](codex.md#worktrees) say what, and the project and
+its runner choose the location.
 
 Some state is shared by every worktree of a clone: git keeps one set of branches and one stash per clone, and an
 issue tracker kept in the clone, Docker volumes and ports are shared too. A worker that stashes or deletes a branch
@@ -258,71 +221,19 @@ Most of them launch with flags that skip a harness's asks, and nearly all let th
 command at the unattended line of the contract; [Why bypass is refused by default](#why-bypass-is-refused-by-default)
 says what each harness does when a runner keeps its bypass flags.
 
-## How Codex trust is tested
-
-The Codex trust claims above come from one probe, which anyone can rerun when Codex changes. It needs a Codex login
-and costs one short model call per row.
-
-1. Point `CODEX_HOME` at a new directory holding a copy of `~/.codex/auth.json` and an empty `config.toml`, so no
-   trust from the person's own configuration leaks in. A trusted parent directory, such as the home directory, would
-   otherwise trust every repository under it.
-2. Create a repository outside `/tmp` and commit three files: `.codex/rules/probe.rules` with
-   `prefix_rule(pattern = ["touch", "rule-probe"], decision = "forbidden")`; `.codex/hooks.json` with a `SessionStart`
-   hook running `sh -c 'touch "$(git rev-parse --show-toplevel)/hook-probe"'`; and `.codex/config.toml` with
-   `sandbox_mode = "workspace-write"` and `approval_policy = "never"`.
-3. Add a worktree inside it and one beside it with `git worktree add`, and `git clone` it to a third path.
-4. Start `codex` interactively in the main checkout, in a terminal, and accept both the project and the hook trust
-   questions. `config.toml` then holds `projects."<path>"` and
-   `hooks.state."<path>/.codex/hooks.json:session_start:0:0"`.
-5. In each checkout, run `codex exec --json -C <dir> "Run exactly this shell command and nothing else: touch
-   rule-probe ."`. A missing `rule-probe` with a `rejected: policy forbids` error means the rules applied; a
-   `hook-probe` file means the hook ran. Delete both files between runs.
-
-Results with codex-cli 0.160.1:
-
-| Checkout | `.codex/rules` applied | Hook ran |
-| --- | --- | --- |
-| Main checkout, project and hooks trusted | Yes | Yes |
-| Worktree inside it | Yes | Yes |
-| Worktree beside it | Yes | Yes |
-| Worktree, with `--dangerously-bypass-hook-trust` | Yes | Yes |
-| Clone nobody trusted | No, and the read-only default sandbox applied, so its `config.toml` was skipped too | No |
-| Clone trusted as a project in `config.toml`, hooks never accepted, same `hooks.json` | Yes | No |
-| Main checkout, after its trusted `SessionStart` entry changed | Yes | No, until trusted again |
-| Worktree whose own `hooks.json` differs from the main checkout's (codex-cli 0.159.0) | Yes | The main checkout's hook ran, not the worktree's |
-
-Hook trust is keyed by path and entry, and holds the entry's hash, as
-`hooks.state."<path>/.codex/hooks.json:session_start:0:0".trusted_hash = "sha256:<hash>"`; a worktree takes the key
-of its main checkout: no `hooks.state` entry appears for a worktree. To check a checkout, run
-`codex exec --sandbox read-only "<any prompt>" </dev/null 2>err.log` there, without the bypass flag: a trusted
-`SessionStart` prints `hook: SessionStart` and `hook: SessionStart Completed` to `err.log`, an untrusted one neither. Trust given with `-c 'projects."<path>".trust_level="trusted"'` does not count, because
-codex-cli 0.160.1 ignores that key and prints `unrecognized configuration setting`.
-
 ## Why bypass is refused by default
 
 A harness's bypass mode runs every command that is not denied, without asking. Most loop runners start agents in it
 by default, so a policy that only asks would mean nothing to their workers. While `policy.yaml` says `bypass: refuse`,
 or says nothing, `#connect` writes `permissions.disableBypassPermissionsMode: "disable"` into the shared Claude
-settings. Claude Code, tested in an untrusted workspace, and the first row in a trusted one too:
-
-| Run | Without the key | With it |
-| --- | --- | --- |
-| `claude -p --dangerously-skip-permissions`, a command the policy does not allow | Runs | Refused: it needs approval, and nobody can give it |
-| `--permission-mode bypassPermissions`, or `=bypassPermissions` | Runs | Refused |
-| A command the policy denies, under `--dangerously-skip-permissions` | Refused | Refused |
-| `--setting-sources user --dangerously-skip-permissions` | Runs | Runs: the project's settings, the key included, are skipped |
-
-The key works from a `--settings` layer too (tested), and Claude's docs say it works from any scope
-([permissions](https://code.claude.com/docs/en/permissions)).
+settings, and Claude then refuses its bypass flags ([claude.md](claude.md#unattended-runs)).
 
 It is a policy field, not a fixed rule, because teams differ: a team that runs every agent in a container may want
 its workers in bypass mode, and `bypass: allow` leaves the key out. The choice is made once, in review, like the rest
 of the policy.
 
-Codex has no such setting, and needs one less: its rules hold under `--dangerously-bypass-approvals-and-sandbox`, which
-refuses a `prompt` rule instead of running it (tested). What does step outside the rules is listed in
-`cook.rules` itself, in a comment, while `bypass` is `refuse`: `--ignore-rules`, an untrusted project and
-`--approve-for-me`.
+Codex has no such setting, and needs one less: its rules hold under its bypass flag, and what steps outside them is
+listed in `cook.rules` itself while `bypass` is `refuse` ([codex.md](codex.md#unattended-runs)).
 
 There is no launcher, a script that would start each harness with the right flags. Claude already refuses bypass
 from its settings, whatever starts it. Codex keeps its rules under its bypass flag, and has no roles for a launcher to
@@ -336,15 +247,9 @@ step outside it:
 
 | Route | Effect | How it is known |
 | --- | --- | --- |
-| `claude --dangerously-skip-permissions`, `--permission-mode bypassPermissions` | Refused while `bypass` is `refuse`; with `allow`, runs every command not denied | Tested |
-| `claude --setting-sources user` | Skips the project's settings: the policy and the bypass refusal | Tested |
-| `codex exec --ignore-rules` | Skips `cook.rules` | Tested |
-| An untrusted Codex project, including a run with `--ignore-user-config` | Skips `.codex/`, so the rules and the sandbox settings | Tested |
-| `codex exec --approve-for-me` | An automatic reviewer approves `prompt` rules; `forbidden` still holds | Tested |
-| `codex exec --dangerously-bypass-approvals-and-sandbox`, `--sandbox danger-full-access` | The rules hold; the sandbox is gone | Rules tested; sandbox from `codex exec --help` |
-| `codex exec -c <key>=<value>` | Sets any configuration key for one run, the sandbox and approval keys included | `codex exec --help`; not tested |
+| A harness's own flags and settings | Each harness has runs that skip or loosen the policy: [claude.md](claude.md#what-steps-outside-the-policy), [codex.md](codex.md#what-steps-outside-the-policy) | Tested, except where those tables say not |
 | `git -C sub push`, `env X=1 git push`, `bash -c '...'`, a script that runs the command | Starts with other words, so no prefix matches | How prefixes match ([policy.md](policy.md#prefix)) |
-| A loop runner's default command | Most pass the bypass flags above | The runner table above, from docs and source |
+| A loop runner's default command | Most pass the bypass flags of each harness | The runner table above, from docs and source |
 
 Containment comes from the harness's sandbox: Cook sets Codex to `workspace-write` with no network, and leaves Claude's
 sandbox to each person. Rules every contribution must obey belong where nobody can skip them: the organization's

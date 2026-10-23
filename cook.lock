@@ -3,7 +3,7 @@ version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
-    sha256: "103f92aaa0020cc1bf07bf8c88e843b669259568e1b9295ea8845d1f3d692efa"
+    sha256: "f66f2557e76b46d5568c8d6414986dc10c7e841f03c445b2d8a1f8f43e8fc610"
     owns:
       sections:
         - file: ".agents/adapters/codex/rules/cook.rules"
@@ -39,12 +39,14 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "103f92aaa0020cc1bf07bf8c88e843b669259568e1b9295ea8845d1f3d692efa"
+    sha256: "f66f2557e76b46d5568c8d6414986dc10c7e841f03c445b2d8a1f8f43e8fc610"
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
         - ".agents/skills/agents-layout/references/adopt.md"
         - ".agents/skills/agents-layout/references/agents-md.md"
+        - ".agents/skills/agents-layout/references/claude.md"
+        - ".agents/skills/agents-layout/references/codex.md"
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
