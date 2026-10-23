@@ -140,7 +140,7 @@ cook, in the [error message](messages-and-docs.md#error-messages) order, because
 connection without reading the recipe. For example, the intended wording for a role file a recipe names:
 
 ```text
-cook: io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui: --worker-role=worker needs .agents/adapters/claude/roles/worker.json
+cook: io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui: --worker-role=claude:worker needs .agents/adapters/claude/roles/worker.json
   the role file is not in the draft
   define roles.worker in .agents/permission/policy.yaml, then cook io.github.lmarqs.cookbook:agents#connect --harness=claude
 ```

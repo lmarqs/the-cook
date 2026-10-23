@@ -42,7 +42,8 @@ package io.github.lmarqs.cookbook.ralph
  * than three tasks; Codex runs no project hooks in a worktree, because it trusts hooks per checkout path, unless
  * started with `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor write the Beads
  * database, nor write `.git`, so it cannot commit; Claude Code ignores the project's `permissions.allow` in a workspace
- * nobody has trusted, so an unattended Claude worker's allows come through `--worker-role` or `--worker-settings`;
+ * nobody has trusted, so an unattended Claude worker's allows come through `--worker-role=claude:<role>` or
+ * `--worker-settings=claude:<path>`;
  * deny rules are prefix rules that `git -C . push` gets past, a guardrail, and the structural limit is a worker without
  * push credentials.
  *
@@ -61,11 +62,13 @@ package io.github.lmarqs.cookbook.ralph
  * @ingredient(RalphTui) def ralph
  *
  * ralph.harnesses(['claude', 'codex'])
- * ralph.workerRole('worker')
+ * ralph.workerRoles(['claude:worker'])
+ * ralph.workerSettings(['codex:ralph-codex.toml'])
  * ralph.worktreeRoot('.worktrees')
  * ralph.worktreeSetup('.worktrees/setup')
- * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worker-role=worker ' +
- *     '--worktree-root=.worktrees --worktree-setup=.worktrees/setup')
+ * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex ' +
+ *     '--worker-role=claude:worker --worker-settings=codex:ralph-codex.toml --worktree-root=.worktrees ' +
+ *     '--worktree-setup=.worktrees/setup')
  * ```
  *
  * ## With other models
@@ -73,7 +76,8 @@ package io.github.lmarqs.cookbook.ralph
  * None: ralph-tui names the other tools only by path. Run worktrees follow `io.github.lmarqs.cookbook:git#worktrees`'s
  * rule `.worktrees/<branch>` by default, and `worktreeRoot` moves them as `io.github.lmarqs.cookbook:agents#connect
  * --worktree-root` moves Claude Code's; the launcher runs a setup file only when `setup` names one, such as that
- * recipe's `.worktrees/setup`; `--worker-role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders.
+ * recipe's `.worktrees/setup`; `--worker-role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders
+ * for each harness.
  */
 @Ingredient
 class RalphTui {
@@ -86,8 +90,8 @@ class RalphTui {
   /** Where run worktrees go when `worktreeRoot` is not called, following `.worktrees/<branch>`. */
   static final String WORKTREE_ROOT = '.worktrees'
 
-  /** Where `io.github.lmarqs.cookbook:agents#connect` renders each role's Claude settings, as `<role>.json`. */
-  static final String ROLES = '.agents/adapters/claude/roles'
+  /** The extension of the role file `io.github.lmarqs.cookbook:agents#connect` renders for each harness. */
+  static final Map<String, String> ROLE_EXTENSIONS = [claude: 'json', codex: 'toml']
 
   /** The worker wrapper `workerCheck` writes, which each seeded entry then names as its `command`. */
   static final String WORKER = '.ralph-tui/bin/worker'
@@ -105,8 +109,9 @@ class RalphTui {
 
   private List<String> harnesses = []
   private List<String> trackers = TRACKERS
-  private String workerRole
-  private String workerSettings
+  private List<String> workerRoles = []
+  private List<String> workerSettings = []
+  private Map<String, List<String>> workerFlags = [:]
   private String worktreeRoot = WORKTREE_ROOT
   private String worktreeSetup
   private String worktreeTeardown
@@ -132,19 +137,23 @@ class RalphTui {
   }
 
   /**
-   * Adds `"--settings", ".agents/adapters/claude/roles/<name>.json"` to the Claude entry's `defaultFlags`. `null` adds
-   * none.
+   * Binds roles to harnesses, each value `<harness>:<role>`: the entry of that harness passes the settings
+   * `io.github.lmarqs.cookbook:agents#connect` renders for the role, `.agents/adapters/claude/roles/<role>.json` as
+   * `"--settings", "<that path>"` for `claude`, and `.agents/adapters/codex/roles/<role>.toml` as one
+   * `"-c", "<key>=<value>"` per key for `codex`. `null` binds none. Stored as given; `install` resolves them.
    */
-  void workerRole(String name) {
-    workerRole = name
+  void workerRoles(List<String> roles) {
+    workerRoles = roles ?: []
   }
 
   /**
-   * Adds `"--settings", "<path>"` to the Claude entry's `defaultFlags`; the file is the team's, and nothing reads or
-   * writes it at cook time. `null` adds none.
+   * Binds settings files to harnesses, each value `<harness>:<path>`, the path from the repository root: the `claude`
+   * entry passes `"--settings", "<path>"`, and nothing reads or writes the file at cook time; the `codex` entry passes
+   * one `"-c", "<key>=<value>"` per key of the TOML file, which is read from the draft when cooking. `null` binds none.
+   * Stored as given; `install` resolves them.
    */
-  void workerSettings(String path) {
-    workerSettings = path
+  void workerSettings(List<String> files) {
+    workerSettings = files ?: []
   }
 
   /**
@@ -200,12 +209,14 @@ class RalphTui {
    * 1. `cookedWith` is blank;
    * 2. a harness is not `claude` or `codex`, or none is given;
    * 3. a tracker is not `beads` or `json`, or none is given;
-   * 4. the worker role is not a role name;
-   * 5. the worker role or settings is given with no `claude` harness;
-   * 6. both the worker role and the worker settings are given;
-   * 7. the role's `.agents/adapters/claude/roles/<name>.json` is not in the draft;
-   * 8. the worker settings path is blank;
-   * 9. the worktree setup, worktree teardown or worker check is under `.ralph-tui/`, which in a run worktree holds only
+   * 4. a worker role or settings value is not `<harness>:<x>`, or names a harness no `--harness` gives, or one param
+   *    names a harness twice;
+   * 5. a role and a settings file both bind one harness;
+   * 6. a role name is not a role name, or its `.agents/adapters/<harness>/roles/<name>.<json|toml>` is not in the
+   *    draft;
+   * 7. a settings path is absolute or has a `..` segment, or a `codex` settings file is not in the draft, is not TOML,
+   *    or holds a value `-c <key>=<value>` cannot carry;
+   * 8. the worktree setup, worktree teardown or worker check is under `.ralph-tui/`, which in a run worktree holds only
    *    what this recipe writes.
    */
   void install(String cookedWith) {
@@ -215,7 +226,7 @@ class RalphTui {
 
     checkHarnesses()
     checkTrackers()
-    checkWorker()
+    workerFlags = resolveWorkers()
     outsideRalphTui('worktree-setup', worktreeSetup, '.worktrees/setup')
     outsideRalphTui('worktree-teardown', worktreeTeardown, '.worktrees/teardown')
     outsideRalphTui('worker-check', workerCheck, 'scripts/check')
@@ -381,12 +392,7 @@ class RalphTui {
   }
 
   private List<String> flags(String harness) {
-    AGENTS[harness].flags + (extraFlags()[harness] ?: [])
-  }
-
-  private Map<String, List<String>> extraFlags() {
-    def settings = workerRole ? "${ROLES}/${workerRole}.json".toString() : workerSettings
-    settings ? [claude: ['--settings', settings]] : [:]
+    AGENTS[harness].flags + (workerFlags[harness] ?: [])
   }
 
   private void checkHarnesses() {
@@ -410,51 +416,168 @@ class RalphTui {
     }
   }
 
-  private void checkWorker() {
-    if (workerRole != null && !(workerRole ==~ /[a-z][a-z0-9-]*/)) {
-      throw new IllegalArgumentException("--worker-role=${workerRole} is not a role name\n" +
+  /** One binding of a worker role or settings file to a harness, with the argument as the person gave it. */
+  private static class Binding {
+    String param
+    String value
+    String harness
+    String operand
+
+    String argument() {
+      "--${param}=${value}"
+    }
+  }
+
+  private Map<String, List<String>> resolveWorkers() {
+    def roles = bindings('worker-role', workerRoles, '<role>', 'the role binds', 'claude:worker')
+    def settings = bindings('worker-settings', workerSettings, '<path>', 'the file binds', 'claude:ralph-claude.json')
+
+    (roles + settings).each { binding ->
+      if (!(binding.harness in harnesses)) {
+        throw new IllegalArgumentException("${binding.argument()} names ${binding.harness}, which no --harness " +
+        'gives\n  add --harness=' + binding.harness + ', or leave it out')
+      }
+    }
+
+    [roles, settings].each { checkOnePerHarness(it) }
+    checkRoleAndSettingsOverlap(roles, settings)
+
+    def flags = [:].withDefault { [] }
+    roles.each { flags[it.harness] += roleFlags(it) }
+    settings.each { flags[it.harness] += settingsFlags(it, it.operand) }
+    new LinkedHashMap<String, List<String>>(flags)
+  }
+
+  private static List<Binding> bindings(String param, List<String> values, String operand, String binds,
+      String example) {
+    values.collect { value ->
+      def colon = value.indexOf(':')
+      def harness = colon < 0 ? '' : value.substring(0, colon)
+      def rest = colon < 0 ? '' : value.substring(colon + 1)
+
+      if (!harness || !rest) {
+        throw new IllegalArgumentException("--${param}=${value} is not <harness>:${operand}\n  name the harness " +
+        "${binds}, as --${param}=${example}")
+      }
+
+      new Binding(param: param, value: value, harness: harness, operand: rest)
+    }
+  }
+
+  private static void checkOnePerHarness(List<Binding> bindings) {
+    def twice = bindings.countBy { it.harness }.find { it.value > 1 }
+
+    if (twice) {
+      throw new IllegalArgumentException("--${bindings.first().param} names ${twice.key} twice\n" +
+      '  give one file per harness')
+    }
+  }
+
+  private static void checkRoleAndSettingsOverlap(List<Binding> roles, List<Binding> settings) {
+    def role = roles.find { binding ->
+      settings.any {
+        it.harness == binding.harness
+      }
+    }
+
+    if (role) {
+      def file = settings.find { it.harness == role.harness }
+      throw new IllegalArgumentException("${role.argument()} and ${file.argument()} both set ${role.harness}'s " +
+      'settings\n  give one of them; to combine a role with more settings, write a settings file that holds both')
+    }
+  }
+
+  private List<String> roleFlags(Binding binding) {
+    def role = binding.operand
+
+    if (!(role ==~ /[a-z][a-z0-9-]*/)) {
+      throw new IllegalArgumentException("${binding.argument()} is not a role name\n" +
       '  a role is a key under roles in .agents/permission/policy.yaml: lower-case letters, digits and hyphens, ' +
       'starting with a letter')
     }
 
-    if (workerRole != null) {
-      claudeOnly("--worker-role=${workerRole}")
+    def file = ".agents/adapters/${binding.harness}/roles/${role}.${ROLE_EXTENSIONS[binding.harness]}".toString()
+
+    if (current(file) == null) {
+      throw new IllegalArgumentException("${binding.argument()} needs ${file}\n  the role file is not in the " +
+      "draft\n  define roles.${role} in .agents/permission/policy.yaml, then cook " +
+      "io.github.lmarqs.cookbook:agents#connect --harness=${binding.harness}")
     }
 
-    if (workerSettings != null) {
-      claudeOnly("--worker-settings=${workerSettings}")
+    settingsFlags(binding, file)
+  }
+
+  private List<String> settingsFlags(Binding binding, String given) {
+    def segments = given.split('/').findAll { it && it != '.' }
+
+    if (given.startsWith('/') || '..' in segments || !segments) {
+      throw new IllegalArgumentException("${binding.argument()} is not a path from the repository root\n" +
+      '  name a file inside the repository, without .. segments')
     }
 
-    if (workerRole != null && workerSettings != null) {
-      throw exclusive()
+    def path = segments.join('/')
+    binding.harness == 'claude' ? ['--settings', path] : codexFlags(binding, path)
+  }
+
+  private List<String> codexFlags(Binding binding, String path) {
+    def text = current(path)
+
+    if (text == null) {
+      throw new IllegalArgumentException("${binding.argument()} needs ${path} in the draft\n" +
+      '  Codex settings are read when cooking\n  write the file, then cook again')
     }
 
-    if (workerRole != null) {
-      def file = "${ROLES}/${workerRole}.json"
+    def table
 
-      if (current(file) == null) {
-        throw new IllegalArgumentException("--worker-role=${workerRole} needs ${file}\n  the role file is not in the " +
-        "draft\n  define roles.${workerRole} in .agents/permission/policy.yaml, then cook " +
-        'io.github.lmarqs.cookbook:agents#connect --harness=claude')
+    try {
+      table = new TomlSlurper().parseText(text)
+    } catch (Exception e) {
+      throw new IllegalArgumentException("${path} is not valid TOML\n  ${(e.message ?: e.class.name).readLines()[0]}")
+    }
+
+    def flags = []
+    flatten(table, '').each { key, value ->
+      def rendered = render(value)
+
+      if (rendered == null) {
+        throw new IllegalArgumentException("${path}: ${key} cannot be passed as -c ${key}=<value>\n" +
+        '  use strings, numbers, booleans or lists of them')
+      }
+
+      flags += ['-c', "${key}=${rendered}".toString()]
+    }
+    flags
+  }
+
+  private static Map<String, Object> flatten(Map table, String prefix) {
+    def flat = [:]
+    table.each { key, value ->
+      def name = "${prefix}${key}".toString()
+
+      if (value instanceof Map) {
+        flat += flatten(value, "${name}.")
+      } else {
+        flat[name] = value
       }
     }
-
-    if (workerSettings != null && !workerSettings.trim()) {
-      throw new IllegalArgumentException('--worker-settings needs a path')
-    }
+    flat
   }
 
-  private void claudeOnly(String argument) {
-    if (!('claude' in harnesses)) {
-      throw new IllegalArgumentException("${argument} applies to the claude entry\n  no --harness=claude is given\n" +
-      '  add --harness=claude, or leave it out')
+  private static String render(Object value) {
+    if (value instanceof CharSequence) {
+      return groovy.json.JsonOutput.toJson(value.toString())
     }
-  }
 
-  private static IllegalArgumentException exclusive() {
-    new IllegalArgumentException('--worker-role and --worker-settings are both given\n  each sets the one --settings ' +
-        'file of the claude entry\n  give one of them; to combine a role with more settings, write a settings file ' +
-        'that holds both')
+    if (value instanceof Number || value instanceof Boolean) {
+      return value.toString()
+    }
+
+    if (value instanceof List) {
+      def items = value.collect { it instanceof List ? null : render(it) }
+      return null in items ? null : "[${items.join(', ')}]".toString()
+    }
+
+    null
   }
 
   // In a run worktree, .ralph-tui/ holds only what this recipe writes, so a team's script there would never be found.
