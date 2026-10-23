@@ -15,15 +15,19 @@ final class CookbookCook {
   private final File destination
   private final CookbookRepositories repositories
   private final ExistingSeed existing
+  private final boolean replicate
 
   /**
    * Coordinates resolve from `repositories`; `existing` decides what cooking a recipe the first time does with a
-   * file its `existing = 'fail'` seed writes.
+   * file its `existing = 'fail'` seed writes. `replicate` reports changed path sources and failures to bind recorded
+   * arguments when replaying requests from `cook.lock`.
    */
-  CookbookCook(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE) {
+  CookbookCook(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE,
+  boolean replicate = false) {
     this.destination = destination
     this.repositories = repositories
     this.existing = existing
+    this.replicate = replicate
   }
 
   /** Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`. */
@@ -59,7 +63,7 @@ final class CookbookCook {
         cook(name, declared, draft, lock, seeds)
         def recorded = lock.sha256(name, recipe.address)
 
-        if (Coordinates.written(recipe.address) && recorded != null && recorded != recipe.sha256) {
+        if ((replicate || Coordinates.written(recipe.address)) && recorded != null && recorded != recipe.sha256) {
           changedSources.add(new ChangedSource(recipe.address, recorded, recipe.sha256))
         }
 
@@ -68,7 +72,15 @@ final class CookbookCook {
         recipes.add(new CookedRecipe(recipe.address, texts?.confirm, texts?.yieldText))
       } catch (Exception error) {
         def cause = error instanceof InvocationTargetException && error.cause instanceof Exception ? error.cause : error
-        throw new IllegalArgumentException("${label}: ${cause.message ?: cause.class.simpleName}", cause)
+        def message = cause.message ?: cause.class.simpleName
+
+        if (replicate && cause instanceof ArgumentBindingException) {
+          def line = request.arguments.collect { "--${it.name}=${it.value}" }.join(' ')
+          message = Diagnostic.text(message, "arguments recorded in ${CookLock.PATH}: ${line}",
+              'cook it with its arguments')
+        }
+
+        throw new IllegalArgumentException("${label}: ${message}", cause)
       }
     }
     seeds.refuse()
@@ -165,8 +177,8 @@ final class CookedRecipe {
 }
 
 /**
- * A release whose sources differ from those `cook.lock` recorded under the same coordinates, as when its tag moved:
- * its address and the sha256 the lock recorded and the one it has now.
+ * A recipe whose sources differ from those `cook.lock` recorded at the same address, as when a release's tag moved
+ * or a replicated path was edited: its address and the sha256 the lock recorded and the one it has now.
  */
 final class ChangedSource {
   final String address

@@ -33,19 +33,25 @@ final class RecipeRun {
           .value()
           .toList()
     }
-    def unknown = arguments*.name.findAll { !(it in names) }
-
-    if (unknown) {
-      def takes = names ? 'its arguments are ' + names.collect { "--${it}" }.join(', ') : 'it takes no arguments'
-      throw new IllegalArgumentException(Diagnostic.text("Unknown argument --${unknown.first()}", takes))
-    }
-
     List<String> line = [name]
-    params.each { field ->
-      def bound = bind(field, arguments, recipe)
-      set(script, field, bound.value)
-      line.addAll(bound.given ? bound.values.collect { "${bound.option}=${it}".toString() } : [])
+
+    try {
+      def unknown = arguments*.name.findAll { !(it in names) }
+
+      if (unknown) {
+        def takes = names ? 'its arguments are ' + names.collect { "--${it}" }.join(', ') : 'it takes no arguments'
+        throw new IllegalArgumentException(Diagnostic.text("Unknown argument --${unknown.first()}", takes))
+      }
+
+      params.each { field ->
+        def bound = bind(field, arguments, recipe)
+        set(script, field, bound.value)
+        line.addAll(bound.given ? bound.values.collect { "${bound.option}=${it}".toString() } : [])
+      }
+    } catch (IllegalArgumentException error) {
+      throw new ArgumentBindingException(error)
     }
+
     fields.findAll { it.getAnnotation(Resource) }.each { field ->
       if (!(field.type in [String, CharSequence, Object])) {
         throw new IllegalArgumentException(
@@ -180,5 +186,12 @@ final class RecipeRun {
   private static void set(Script script, Field field, Object value) {
     field.accessible = true
     field.set(script, value)
+  }
+}
+
+/** An argument rejected while binding params, before the recipe's body runs. */
+final class ArgumentBindingException extends IllegalArgumentException {
+  ArgumentBindingException(IllegalArgumentException cause) {
+    super(cause.message, cause)
   }
 }

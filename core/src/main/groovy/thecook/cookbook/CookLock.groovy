@@ -58,6 +58,11 @@ final class CookLock {
     entries[name]?.source == source ? entries[name].sha256 : null
   }
 
+  /** The source `name` was last cooked from, or `null` when it was not cooked. */
+  String source(String name) {
+    entries[name]?.source
+  }
+
   /** The normalized arguments `name` was last cooked with, or `null` when they were not recorded. */
   List<String> arguments(String name) {
     entries[name]?.arguments
