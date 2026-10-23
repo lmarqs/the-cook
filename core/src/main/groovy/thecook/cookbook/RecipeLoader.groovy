@@ -125,7 +125,7 @@ final class RecipeLoader {
 
   // The rule CookbookArtifact applies to an artifact's files, so a directory and its jar hold the same models.
   private static boolean model(String fileName) {
-    fileName.endsWith('.groovy') && Character.isUpperCase(fileName.charAt(0))
+    fileName.endsWith('.groovy') && Character.isUpperCase(fileName.charAt(0)) && !CookbookArtifact.isTest(fileName)
   }
 
   // A resource resolves from the recipe's directory and, like the recipe, stays inside the kitchen.
