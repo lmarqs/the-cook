@@ -518,6 +518,13 @@ entry's `command` at its own worker, such as `scripts/worker.py`, in the configu
 - Codex has no roles: it loads no rules for one run, so a role's denies reach Claude workers only, and
   `--worker-role=codex:<role>` is refused. A Codex worker's limits come from its sandbox and the project's rules, and
   `--worker-settings=codex:<path>` sets its sandbox.
+- A Codex `workspace-write` worker has no network, localhost included, so tests that reach local services fail, and
+  writes only in the worktree and `/tmp`, so a tool that caches under the home directory fails: every `mise run`
+  stops with `Read-only file system (os error 30)`. A `--worker-settings=codex:<path>` file with
+  `sandbox_workspace_write.network_access = true` and `shell_environment_policy.set.MISE_CACHE_DIR = "/tmp/<name>"`
+  opens both; its flags follow the entry's `network_access=false`, and Codex takes the last.
+- Codex runs the hooks of the main checkout's `.codex/hooks.json`, not the run worktree's, so a hook changed on the
+  run branch takes effect only once the main checkout has the change.
 - A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
   and closes beads for it, and the prompts ask for neither.
 - Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a
