@@ -7,9 +7,11 @@ set -eu
 worktrees='.worktrees'
 # The file --worktree-setup names, by its path from the repository root; empty without --worktree-setup.
 setup=''
+# The arguments that choose the tasks, by tracker; set by the cook.
+flags='(--epic <id> | --prd <file>)'
 
 usage() {
-  echo 'usage: .ralph-tui/bin/run <name> (--epic <id> | --prd <file>) [--base <ref>] [ralph-tui run arguments...]' >&2
+  echo "usage: .ralph-tui/bin/run <name> $flags [--base <ref>] [ralph-tui run arguments...]" >&2
   exit 2
 }
 

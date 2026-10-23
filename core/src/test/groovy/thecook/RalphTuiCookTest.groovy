@@ -413,6 +413,15 @@ roles:
     ].each { assert text.contains(it) }
   }
 
+  @Test void everyVariableTheModelSetsIsInItsScript() {
+    def scripts = [run: ['worktrees', 'setup', 'flags'], clean: ['worktrees', 'teardown'], worker: ['check', 'agents']]
+
+    scripts.each { script, names ->
+      def lines = new File(SOURCES, "bin/${script}.sh").readLines()
+      names.each { name -> assert lines.any { it.startsWith("${name}=") }: "${script}.sh lacks ${name}=" }
+    }
+  }
+
   @Test void thePromptsLeaveCommittingClosingAndPushingToOthers() {
     def common = [
       'Stay in this worktree',

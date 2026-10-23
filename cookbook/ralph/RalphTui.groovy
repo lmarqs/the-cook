@@ -268,7 +268,8 @@ class RalphTui {
 
   /**
    * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `<worktreeRoot>/ralph/<name>`, with the `worktreeRoot`
-   * and `worktreeSetup` paths shell-quoted into its `worktrees` and `setup` variables, when installed.
+   * and `worktreeSetup` paths and the tracker arguments shell-quoted into its `worktrees`, `setup` and `flags`
+   * variables, when installed.
    */
   @File(path = '.ralph-tui/bin/run', mode = '0755')
   String run() {
@@ -276,8 +277,9 @@ class RalphTui {
       return null
     }
 
-    def script = withWorktreeRoot(resource('bin/run.sh')).replace('(--epic <id> | --prd <file>)', runFlags())
-    worktreeSetup ? script.replace("\nsetup=''\n", "\nsetup=${shellQuoted(worktreeSetup)}\n") : script
+    def script = assign(resource('bin/run.sh'), 'worktrees', worktreeRoot)
+    script = assign(script, 'setup', worktreeSetup ?: '')
+    assign(script, 'flags', runFlags())
   }
 
   /**
@@ -290,8 +292,8 @@ class RalphTui {
       return null
     }
 
-    def script = withWorktreeRoot(resource('bin/clean.sh'))
-    worktreeTeardown ? script.replace("\nteardown=''\n", "\nteardown=${shellQuoted(worktreeTeardown)}\n") : script
+    def script = assign(resource('bin/clean.sh'), 'worktrees', worktreeRoot)
+    assign(script, 'teardown', worktreeTeardown ?: '')
   }
 
   /**
@@ -305,8 +307,8 @@ class RalphTui {
       return null
     }
 
-    def script = resource('bin/worker.sh').replace("\nagents=''\n", "\nagents=${shellQuoted(harnesses.join(' '))}\n")
-    workerCheck ? script.replace("\ncheck=''\n", "\ncheck=${shellQuoted(workerCheck)}\n") : script
+    def script = assign(resource('bin/worker.sh'), 'check', workerCheck ?: '')
+    assign(script, 'agents', harnesses.join(' '))
   }
 
   /**
@@ -350,8 +352,16 @@ class RalphTui {
     instructions.collectEntries { [(it): lines] }
   }
 
-  private String withWorktreeRoot(String script) {
-    script.replace("\nworktrees='.worktrees'\n", "\nworktrees=${shellQuoted(worktreeRoot)}\n")
+  private static String assign(String script, String variable, String value) {
+    def lines = script.split('\n', -1).toList()
+    def index = lines.findIndexOf { it.startsWith("${variable}=") }
+
+    if (index < 0) {
+      throw new IllegalStateException("${variable}= is not in the script")
+    }
+
+    lines[index] = "${variable}=${shellQuoted(value)}".toString()
+    lines.join('\n')
   }
 
   // A failed check exits the worker non-zero, which ralph-tui retries only under the retry strategy.
