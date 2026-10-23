@@ -58,6 +58,8 @@ Claude applies the project's allow rules only in a workspace someone has trusted
 interactively, before relying on unattended runs. Codex loads `.codex/rules` only in a trusted project. A worktree of
 this clone, inside it or beside it, needs no setup of its own: the layout is committed, both harnesses take its trust
 from this checkout, Codex's hook trust included, and Claude reads this checkout's `.claude/settings.local.json` there.
+Codex trusts each hook as it was when accepted: after a cook or a pull changes `.codex/hooks.json`, start `codex` here
+interactively and accept the hook review again, or Codex skips the changed hooks without a message.
 
 ## Loop runners
 
