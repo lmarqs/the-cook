@@ -1,0 +1,59 @@
+name: pages
+
+# The site shows the docs of one release, so a reader never sees what main has and the release lacks. The release
+# workflow calls this one with the tag it just made; a manual run publishes the tag it names, or the latest release.
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The release tag to publish, such as v6.1.0; empty publishes the latest release
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: tag
+        run: |
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
+      - uses: actions/configure-pages@v6
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v5
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
