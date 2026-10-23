@@ -67,8 +67,8 @@ package io.github.lmarqs.cookbook.ralph
  * None: ralph-tui names the other tools only by path. Run worktrees follow `io.github.lmarqs.cookbook:git#worktrees`'s
  * rule `.worktrees/<branch>` by default, and `worktreeRoot` moves them as `io.github.lmarqs.cookbook:agents#connect
  * --worktree-root` moves Claude Code's; the launcher runs a setup file only when `setup` names one, such as that
- * recipe's `.worktrees/setup`; `--worker-role` reads the role files `io.github.lmarqs.cookbook:agents#connect` renders
- * for each harness.
+ * recipe's `.worktrees/setup`; `--worker-role` reads the Claude role files `io.github.lmarqs.cookbook:agents#connect`
+ * renders.
  */
 @Ingredient
 class RalphTui {
@@ -89,9 +89,6 @@ class RalphTui {
 
   /** Where run worktrees go when `worktreeRoot` is not called, following `.worktrees/<branch>`. */
   static final String WORKTREE_ROOT = '.worktrees'
-
-  /** The extension of the role file `io.github.lmarqs.cookbook:agents#connect` renders for each harness. */
-  static final Map<String, String> ROLE_EXTENSIONS = [claude: 'json', codex: 'toml']
 
   private static final String CONFIG_PATH = '.ralph-tui/config.toml'
 
@@ -140,10 +137,10 @@ class RalphTui {
   }
 
   /**
-   * Binds roles to harnesses, each value `<harness>:<role>`: the entry of that harness passes the settings
-   * `io.github.lmarqs.cookbook:agents#connect` renders for the role, `.agents/adapters/claude/roles/<role>.json` as
-   * `"--settings", "<that path>"` for `claude`, and `.agents/adapters/codex/roles/<role>.toml` as one
-   * `"-c", "<key>=<value>"` per key for `codex`. `null` binds none. Stored as given; `install` resolves them.
+   * Binds roles to harnesses, each value `<harness>:<role>`, where the harness is `claude`: the Claude entry passes
+   * the settings `io.github.lmarqs.cookbook:agents#connect` renders for the role,
+   * `.agents/adapters/claude/roles/<role>.json`, as `"--settings", "<that path>"`. Codex has no roles, since it loads
+   * no rules for one run. `null` binds none. Stored as given; `install` resolves them.
    */
   void workerRoles(List<String> roles) {
     workerRoles = roles ?: []
@@ -213,10 +210,9 @@ class RalphTui {
    * 2. a harness is not `claude` or `codex`, or none is given;
    * 3. a tracker is not `beads`, `beads-bv` or `json`, or none is given, or both `beads` and `beads-bv` are;
    * 4. a worker role or settings value is not `<harness>:<x>`, or names a harness that is not `claude` or `codex` or
-   *    that no `--harness` gives, or one param names a harness twice;
+   *    that no `--harness` gives, or a role binds `codex`, or one param names a harness twice;
    * 5. a role and a settings file both bind one harness;
-   * 6. a role name is not a role name, or its `.agents/adapters/<harness>/roles/<name>.<json|toml>` is not in the
-   *    draft;
+   * 6. a role name is not a role name, or its `.agents/adapters/claude/roles/<name>.json` is not in the draft;
    * 7. a settings path is absolute or has a `..` segment, or a `codex` settings file is not in the draft, is not TOML,
    *    or holds a key or value `-c <key>=<value>` cannot carry;
    * 8. the worktree setup, worktree teardown or worker check is under `.ralph-tui/`, which in a run worktree holds only
@@ -545,6 +541,12 @@ class RalphTui {
         throw new IllegalArgumentException("${binding.argument()} names ${binding.harness}, which no --harness " +
         'gives\n  add --harness=' + binding.harness + ', or leave it out')
       }
+
+      if (binding.param == 'worker-role' && binding.harness == 'codex') {
+        throw new IllegalArgumentException("${binding.argument()} binds a role to codex, which has no roles\n" +
+        '  Codex loads no rules for one run, so a role\'s denies reach Claude only\n' +
+        '  give the Codex entry settings with --worker-settings=codex:<path>')
+      }
     }
 
     checkOnePerHarness(roles + settings)
@@ -593,12 +595,12 @@ class RalphTui {
       'starting with a letter')
     }
 
-    def file = ".agents/adapters/${binding.harness}/roles/${role}.${ROLE_EXTENSIONS[binding.harness]}".toString()
+    def file = ".agents/adapters/claude/roles/${role}.json".toString()
 
     if (current(file) == null) {
       throw new IllegalArgumentException("${binding.argument()} needs ${file}\n  the role file is not in the " +
       "draft\n  define roles.${role} in .agents/permission/policy.yaml, then cook " +
-      "io.github.lmarqs.cookbook:agents#connect --harness=${binding.harness}")
+      'io.github.lmarqs.cookbook:agents#connect --harness=claude')
     }
 
     settingsFlags(binding, file)

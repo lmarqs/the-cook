@@ -245,33 +245,21 @@ roles:
     '"-c", "sandbox_workspace_write.writable_roots=[\\"/var/cache\\"]"]')
   }
 
-  @Test void aCodexRoleReadsTheRoleTomlAgentsConnectWouldRender() {
+  @Test void refusesACodexRoleEvenWithARoleFileInTheDraft() {
     def kitchen = kitchen()
-    write(kitchen, '.agents/adapters/codex/roles/worker.toml', 'approval_policy = "untrusted"\nretries = 3\n' +
-        'flags = [true, 2]\n')
-
-    cook(kitchen, RALPH, [harness: ['codex'], 'worker-role': ['codex:worker']]).commit()
-
-    assert new File(kitchen, '.ralph-tui/config.toml').text.contains(
-    '"-c", "sandbox_workspace_write.network_access=false", "-c", "approval_policy=\\"untrusted\\"", ' +
-    '"-c", "retries=3", "-c", "flags=[true, 2]"]')
-  }
-
-  @Test void refusesACodexRoleWhoseFileIsNotInTheDraft() {
-    def kitchen = kitchen()
+    write(kitchen, '.agents/adapters/codex/roles/worker.toml', 'approval_policy = "untrusted"\n')
 
     def error = shouldFail(IllegalArgumentException) {
       cook(kitchen, RALPH, [harness: ['codex'], 'worker-role': ['codex:worker']])
     }
 
     assert error.message.readLines() == [
-      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-role=codex:worker needs ' +
-      '.agents/adapters/codex/roles/worker.toml',
-      '  the role file is not in the draft',
-      '  define roles.worker in .agents/permission/policy.yaml, then cook ' +
-      'io.github.lmarqs.cookbook:agents#connect --harness=codex',
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-role=codex:worker binds a role to codex, which has ' +
+      'no roles',
+      '  Codex loads no rules for one run, so a role\'s denies reach Claude only',
+      '  give the Codex entry settings with --worker-settings=codex:<path>',
     ]
-    assert files(kitchen) == []
+    assert files(kitchen) == ['.agents/adapters/codex/roles/worker.toml']
   }
 
   @Test void refusesAWorkerValueWithoutAHarness() {
