@@ -131,10 +131,16 @@ Codex runs a relative hook command from the session's directory, so a session st
 `.agents/hooks/session-start` (tested). Its command starts from `git rev-parse --show-toplevel` instead. Claude's
 command starts from `$CLAUDE_PROJECT_DIR`.
 
-Codex trusts hooks per absolute path of `.codex/hooks.json`, recorded in `~/.codex/config.toml`, not per clone. A
-repository at a new path runs none of its hooks until they are trusted there, and `codex exec` skips them without a
-warning; `--dangerously-bypass-hook-trust` runs them for one run (tested in a new repository). A worktree, inside the
-checkout or beside it, runs the hooks trusted at its main checkout's path ([tested](#how-codex-trust-is-tested) with codex-cli 0.160.1). Claude
+Codex trusts each hook entry per absolute path of `.codex/hooks.json` and the entry's place in it, recorded in
+`~/.codex/config.toml` with a `trusted_hash` of the entry, not per clone. A repository at a new path runs none of its
+hooks until they are trusted there, an entry whose content changed since it was trusted runs nowhere until someone
+trusts it again, and `codex exec` skips both without a warning; `--dangerously-bypass-hook-trust` runs them for one run
+(tested in a new repository). So a cook that changes `hooks.SessionStart`, such as the first one in a repository whose
+team had its own entry, turns the session start off in every person's Codex until each of them trusts it again, in
+an interactive `codex` in the main checkout: codex-cli 0.160.1 has no command that trusts hooks. A worktree, inside the
+checkout or beside it, runs the hook list of its main checkout's `.codex/hooks.json`, not its own, with the trust
+given at the main checkout's path ([tested](#how-codex-trust-is-tested) with codex-cli 0.160.1), while it reads
+`.codex/rules` from its own checkout; a hook change reaches a worktree only once the main checkout has it. Claude
 runs the project's hooks even in a workspace nobody trusted (tested with `claude --print`).
 
 ## Why roles only deny
@@ -282,9 +288,14 @@ Results with codex-cli 0.160.1:
 | Worktree, with `--dangerously-bypass-hook-trust` | Yes | Yes |
 | Clone nobody trusted | No, and the read-only default sandbox applied, so its `config.toml` was skipped too | No |
 | Clone trusted as a project in `config.toml`, hooks never accepted, same `hooks.json` | Yes | No |
+| Main checkout, after its trusted `SessionStart` entry changed | Yes | No, until trusted again |
+| Worktree whose own `hooks.json` differs from the main checkout's (codex-cli 0.159.0) | Yes | The main checkout's hook ran, not the worktree's |
 
-Hook trust is keyed by path, not by content, and a worktree takes the key of its main checkout: no `hooks.state`
-entry appears for a worktree. Trust given with `-c 'projects."<path>".trust_level="trusted"'` does not count, because
+Hook trust is keyed by path and entry, and holds the entry's hash, as
+`hooks.state."<path>/.codex/hooks.json:session_start:0:0".trusted_hash = "sha256:<hash>"`; a worktree takes the key
+of its main checkout: no `hooks.state` entry appears for a worktree. To check a checkout, run
+`codex exec --sandbox read-only "<any prompt>" </dev/null 2>err.log` there, without the bypass flag: a trusted
+`SessionStart` prints `hook: SessionStart` and `hook: SessionStart Completed` to `err.log`, an untrusted one neither. Trust given with `-c 'projects."<path>".trust_level="trusted"'` does not count, because
 codex-cli 0.160.1 ignores that key and prints `unrecognized configuration setting`.
 
 ## Why bypass is refused by default

@@ -183,16 +183,20 @@ Repeat the arguments on the opening line of the `harnesses` section in `.gitigno
 `cook.rules`, such as `# io.github.lmarqs.cookbook:agents#connect --harness=claude --harness=codex \
 --worktree-setup=.worktrees/setup`. Cook again after editing the policy, and after deleting `.claude/` or `.codex/` to
 recreate the links. A newer version rewrites the keys, links, files and sections it owns; the team's keys, the scripts
-in `session-start.d/` and the seeded files stay as they are. Under `--check`, a role file or `cook.rules` shows as a
-change once the policy gains roles or command rules, until the recipe is cooked again.
+in `session-start.d/` and the seeded files stay as they are. A cook that changes the `hooks.SessionStart` entry in
+Codex's `hooks.json` leaves it untrusted for every person until each accepts it again, as Traps says. Under `--check`, a
+role file or `cook.rules` shows as a change once the policy gains roles or command rules, until the recipe is cooked
+again.
 
 ## Traps
 
 - Claude Code applies the project's allow rules only in a workspace someone has trusted, and Codex loads `.codex/rules`
   only in a trusted project: start each once, interactively, in the main checkout.
-- Codex trusts hooks per absolute path of the main checkout's `.codex/hooks.json`, recorded in `~/.codex/config.toml`
-  and shared by its worktrees, so a new clone runs none of them, the session start included, until they are trusted
-  there or without `--dangerously-bypass-hook-trust`, and Codex prints no warning when it skips them.
+- Codex trusts each hook per absolute path of the main checkout's `.codex/hooks.json` and by the entry's hash,
+  recorded in `~/.codex/config.toml` and shared by its worktrees, so a new clone runs none of them, the session start
+  included, and a cook that changes an entry turns it off for everyone, until each person trusts it again in an
+  interactive `codex` in the main checkout, or a run passes `--dangerously-bypass-hook-trust`; Codex prints no
+  warning when it skips them. Worktrees run the main checkout's hook list, not their own.
 - A `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the directory of an `AGENTS.md` or one above makes Claude
   Code skip that `AGENTS.md`. Claude Code older than 2.1.277 reads no `AGENTS.md`.
 - Codex has no roles: a role's denies reach only Claude runs. `codex exec --ignore-rules`, `--approve-for-me` or an
