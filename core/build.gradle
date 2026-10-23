@@ -1,6 +1,7 @@
 plugins {
   id 'groovy'
   id 'java-library'
+  id 'java-test-fixtures'
 }
 
 group = 'io.github.lmarqs'
@@ -31,6 +32,7 @@ dependencies {
     }
   }
   testImplementation 'junit:junit:4.13.2'
+  testFixturesApi 'junit:junit:4.13.2'
 }
 
 tasks.named('test') {

@@ -1,5 +1,37 @@
 plugins {
   id 'io.github.lmarqs.cookbook'
+  id 'groovy'
+}
+
+repositories {
+  mavenCentral()
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+sourceSets {
+  test {
+    groovy {
+      // A recipe's test sits beside it as <name>.test.groovy, which cooking never reads.
+      srcDirs = ['.']
+      include '*/*.test.groovy', 'Cookbook.groovy'
+    }
+  }
+}
+
+dependencies {
+  testImplementation 'io.github.lmarqs:the-cook-core'
+  testImplementation testFixtures('io.github.lmarqs:the-cook-core')
+}
+
+tasks.named('test') {
+  useJUnit()
+  systemProperty 'cook.cookbook', projectDir.absolutePath
+  // The tests cook the recipes and read their files, so a change to any of them must rerun the tests.
+  inputs.files(fileTree('.') { exclude 'build/**', '.gradle/**' })
+  .withPathSensitivity(PathSensitivity.RELATIVE)
+  .withPropertyName('cookbook')
+  testLogging { events 'failed' }
 }
 
 description = 'Recipes and models for the-cook, a recipe driven configuration tool'

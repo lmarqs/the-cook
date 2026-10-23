@@ -2,4 +2,6 @@ pluginManagement {
   includeBuild('../plugin')
 }
 
+includeBuild('../core')
+
 rootProject.name = 'cookbook'

@@ -115,6 +115,7 @@ tasks.named('check') {
   dependsOn gradle.includedBuild('core').task(':check'), gradle.includedBuild('infra').task(':check')
   dependsOn gradle.includedBuild('cli').task(':check')
   dependsOn gradle.includedBuild('docs').task(':check'), gradle.includedBuild('plugin').task(':check')
+  dependsOn gradle.includedBuild('cookbook').task(':check')
 }
 
 tasks.register('cliBuild') { dependsOn gradle.includedBuild('cli').task(':installDist') }
