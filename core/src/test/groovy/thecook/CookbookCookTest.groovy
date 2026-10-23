@@ -513,7 +513,7 @@ notes.set(features: [hooks: true])
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
     def dispatch = { String harness ->
       def process = new ProcessBuilder('.agents/hooks/session-start', harness).directory(kitchen).start()
-      def output = process.inputStream.text
+      def output = process.inputStream.getText('UTF-8')
       [process.waitFor(), output]
     }
     def scripts = new File(kitchen, '.agents/hooks/session-start.d')
@@ -522,14 +522,16 @@ notes.set(features: [hooks: true])
     scripts.mkdirs()
     assert dispatch('claude') == [0, '']
 
-    new File(scripts, '20-text.sh').text = 'printf \'quote " backslash \\\\ tab \\t end\\nsecond line\\n\'\n'
+    new File(scripts, '20-text.sh').setText('printf \'quote " backslash \\\\ tab \\t end\\nsecond line\\n\'\n' +
+        'printf \'cr \\r ctl \\001 unit \\037 del \\177 utf8 \u00e9 \u2713\\n\'\n', 'UTF-8')
     new File(scripts, '10-harness.sh').text = 'echo "harness $1"\n'
     new File(scripts, '30-skipped.txt').text = 'echo never\n'
     def (status, output) = dispatch('codex')
 
     assert status == 0
     assert new groovy.json.JsonSlurper().parseText(output) == [hookSpecificOutput: [hookEventName: 'SessionStart',
-        additionalContext: 'harness codex\nquote " backslash \\ tab \t end\nsecond line']]
+        additionalContext: 'harness codex\nquote " backslash \\ tab \t end\nsecond line\n' +
+        'cr \r ctl \u0001 unit \u001f del \u007f utf8 \u00e9 \u2713']]
   }
 
   @Test void cooksAKitchenWhosePathPassesThroughASymbolicLink() {
