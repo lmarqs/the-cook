@@ -2,7 +2,7 @@
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="{{ '/' | relative_url }}" aria-label="the-cook home">
-      {% include hat.svg %}
+      <img class="hat" src="{{ '/site/assets/hat.svg' | relative_url }}" width="28" height="28" alt="">
       <span class="brand-name">THE COOK</span>
     </a>
     <a class="release" href="{{ site.source_url }}/releases/{% if site.release %}tag/{{ site.release }}{% else %}latest{% endif %}" title="The release these docs describe">{% include icons/tag.svg %}{{ site.release | default: "unreleased" }}</a>

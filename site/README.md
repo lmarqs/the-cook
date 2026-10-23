@@ -12,7 +12,7 @@ into the site:
 | `_includes/` | The head, top bar, sidebar and footer the layouts share |
 | `_includes/icons/` | Inline SVG icons, `{% include icons/<name>.svg %}`, drawn in the colour of the text around them |
 | `_data/nav.yml` | The docs sidebar in reading order, and the title each page shows on the site |
-| `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons and source links; `hat.svg`, the icon |
+| `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons and source links; `hat.svg`, the favicon and the brand mark in the top bar |
 | `index.html` | The landing page, served at `/` |
 | `prepare` | Readies a checkout for the build: copies `_config.yml` to the root with the release tag, and gives the root `README.md` front matter so Jekyll renders it as a page |
 | `preview` | Builds the working tree with the image `actions/jekyll-build-pages` runs and serves it locally |

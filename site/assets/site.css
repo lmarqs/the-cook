@@ -92,7 +92,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 }
 .brand { display: flex; align-items: center; gap: 10px; color: #e7e4dc; text-decoration: none; }
 .brand:hover { color: #fff; }
-.brand .hat { color: #e7e4dc; --accent: #f5c518; }
+.brand .hat { display: block; image-rendering: pixelated; }
 .icon { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.18em; }
 .brand-name { font: 400 18px/1 var(--font-label); letter-spacing: 1px; }
 .release {
