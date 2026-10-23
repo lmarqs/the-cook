@@ -1,0 +1,4 @@
+# GitHub Pages renders this repository's Markdown with Jekyll from the root, so links from docs/ to the README, the
+# core guide and the cookbook resolve on the site; .github/workflows/pages.yml publishes one release's docs.
+title: the-cook
+description: Recipe driven configuration for repositories worked by people and coding agents.
