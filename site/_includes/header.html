@@ -5,11 +5,11 @@
       {% include hat.svg %}
       <span class="brand-name">THE COOK</span>
     </a>
-    <a class="release" href="{{ site.source_url }}/releases/{% if site.release %}tag/{{ site.release }}{% else %}latest{% endif %}" title="The release these docs describe">{{ site.release | default: "unreleased" }}</a>
+    <a class="release" href="{{ site.source_url }}/releases/{% if site.release %}tag/{{ site.release }}{% else %}latest{% endif %}" title="The release these docs describe">{% include icons/tag.svg %}{{ site.release | default: "unreleased" }}</a>
     <nav class="topnav" aria-label="Site">
-      <a href="{{ '/README.html' | relative_url }}"{% if section_name == "docs" %} aria-current="true"{% endif %}>Docs</a>
-      <a href="{{ '/cookbook/' | relative_url }}"{% if section_name == "cookbook" %} aria-current="true"{% endif %}>Cookbook</a>
-      <a href="{{ site.source_url }}">GitHub</a>
+      <a href="{{ '/README.html' | relative_url }}"{% if section_name == "docs" %} aria-current="true"{% endif %}>{% include icons/book-open.svg %}Docs</a>
+      <a href="{{ '/cookbook/' | relative_url }}"{% if section_name == "cookbook" %} aria-current="true"{% endif %}>{% include icons/chef-hat.svg %}Cookbook</a>
+      <a href="{{ site.source_url }}">{% include icons/github.svg %}GitHub</a>
     </nav>
   </div>
   <div class="hazard" aria-hidden="true"></div>

@@ -5,6 +5,6 @@
       {% if site.release %}These pages document <a href="{{ site.source_url }}/releases/tag/{{ site.release }}">{{ site.release }}</a>.{% else %}These pages document an unreleased build.{% endif %}
       the-cook is licensed under the <a href="{{ site.source_url }}/blob/{{ release_ref }}/LICENSE">Apache License 2.0</a>.
     </p>
-    <p><a href="{{ site.source_url }}">Source</a> · <a href="{{ site.source_url }}/releases">Releases</a> · <a href="{{ site.source_url }}/issues">Issues</a></p>
+    <p class="footer-links"><a href="{{ site.source_url }}">{% include icons/github.svg %}Source</a> <a href="{{ site.source_url }}/releases">{% include icons/tag.svg %}Releases</a> <a href="{{ site.source_url }}/issues">{% include icons/circle-dot.svg %}Issues</a> <a href="{{ site.source_url }}/blob/{{ release_ref }}/LICENSE">{% include icons/scale.svg %}License</a></p>
   </div>
 </footer>

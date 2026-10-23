@@ -93,14 +93,17 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .brand { display: flex; align-items: center; gap: 10px; color: #e7e4dc; text-decoration: none; }
 .brand:hover { color: #fff; }
 .brand .hat { color: #e7e4dc; --accent: #f5c518; }
+.icon { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.18em; }
 .brand-name { font: 400 18px/1 var(--font-label); letter-spacing: 1px; }
 .release {
+  display: inline-flex; align-items: center; gap: 5px;
   font: 600 12px/1 var(--font-mono); color: #f5c518; text-decoration: none;
   border: 1px solid #5a4a10; padding: 5px 8px; background: #17150b;
 }
 .release:hover { color: #111318; background: #f5c518; }
 .topnav { margin-left: auto; display: flex; gap: 4px; }
 .topnav a {
+  display: inline-flex; align-items: center; gap: 7px;
   color: #c9ccd4; text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 12px;
   border-bottom: 3px solid transparent;
 }
@@ -204,6 +207,8 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .footer-inner { max-width: 1400px; margin: 0 auto; padding: 22px 20px 30px; display: flex; flex-wrap: wrap; gap: 8px 32px; justify-content: space-between; }
 .footer p { margin: 0; }
 .footer a { color: #f5c518; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.footer-links a { display: inline-flex; align-items: center; gap: 6px; }
 
 /* Landing page */
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
@@ -235,8 +240,22 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .button.primary:hover { color: #111318; background: #ffd84a; }
 .button.ghost { background: transparent; color: #e7e4dc; border-color: #e7e4dc; box-shadow: 4px 4px 0 #000; }
 .button.ghost:hover { color: #fff; }
-.hero-meta { margin: 22px 0 0; font: 13px/1.4 var(--font-mono); color: #8b919e; }
+.hero-meta {
+  list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px;
+  font: 13px/1.4 var(--font-mono); color: #8b919e;
+}
+.hero-meta li, .hero-meta a { display: inline-flex; align-items: center; gap: 7px; }
+.hero-meta .icon { width: 16px; height: 16px; color: #c9ccd4; }
 .hero-meta a { color: #c9ccd4; }
+
+/* Icon chips */
+.works-with, .platforms { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.works-with li, .platforms li {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px;
+  font: 600 13.5px/1 var(--font-mono); color: var(--text); background: var(--bg-raised); border: 1px solid var(--line);
+}
+.works-with .icon, .platforms .icon { width: 18px; height: 18px; color: var(--link); }
+.platforms { margin: 0 0 24px; }
 
 /* The lab, read */
 .lab-map { position: relative; border: 2px solid var(--line-strong); }
@@ -321,7 +340,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 
 /* Install */
 .install { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.install h3 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+.install h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 6px; font-size: 18px; font-weight: 600; }
 .install p { margin: 0 0 12px; color: var(--text-muted); font-size: 15px; }
 .install .prose { max-width: none; }
 
@@ -332,6 +351,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   box-shadow: 0 0 0 var(--shadow); transition: transform .08s, box-shadow .08s, border-color .08s;
 }
 .map a:hover { border-color: var(--accent); transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--shadow); color: var(--text); }
+.map a > .icon { display: block; width: 24px; height: 24px; margin-bottom: 12px; color: var(--link); }
 .map strong { display: block; font: 700 18px/1.2 var(--font-body); color: var(--link); margin-bottom: 6px; }
 .map span { font-size: 14.5px; color: var(--text-muted); }
 
@@ -367,6 +387,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .topbar-inner { padding: 0 16px; gap: 10px; }
   .brand-name { font-size: 17px; }
   .topnav a { padding: 8px 7px; font-size: 14px; }
+  .topnav .icon { display: none; }
   .wrap { padding: 0 16px; }
   .section { padding: 56px 0; }
   .section h2 { font-size: 27px; }

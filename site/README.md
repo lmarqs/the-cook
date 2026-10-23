@@ -10,6 +10,7 @@ into the site:
 | `_config.yml` | The Jekyll configuration: titles, the excluded source and build files, and `release`, which `prepare` sets |
 | `_layouts/` | `default`, every Markdown page with the docs sidebar, and `home`, the landing page |
 | `_includes/` | The head, top bar, sidebar and footer the layouts share |
+| `_includes/icons/` | Inline SVG icons, `{% include icons/<name>.svg %}`, drawn in the colour of the text around them |
 | `_data/nav.yml` | The docs sidebar in reading order, and the title each page shows on the site |
 | `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons and source links; `hat.svg`, the icon |
 | `index.html` | The landing page, served at `/` |
@@ -18,6 +19,10 @@ into the site:
 
 The theme reads `docs/assets/the-lab.png`: steel and night for surfaces, hazmat yellow for what to act on, the four
 tank colours for categories. Text and headings are IBM Plex Sans; the pixel face, Silkscreen, is kept to short uppercase labels, the brand and numbers, where it stays readable.
+
+Brand icons, such as `github.svg`, `linux.svg` and `claude.svg`, are [Simple Icons](https://simpleicons.org) 16.35.0,
+under CC0. The rest are [Lucide](https://lucide.dev) 1.61.0, under the licence in `_includes/icons/LICENSE-lucide`. A
+new icon takes the path data from the same package, in the markup of the icons already here.
 
 ## Publishing
 

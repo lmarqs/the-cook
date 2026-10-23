@@ -19,7 +19,13 @@ summary: the-cook writes the setup a repository shares, such as agent instructio
         <a class="button ghost" href="#install">Install</a>
         <a class="button ghost" href="{{ '/docs/philosophy.html' | relative_url }}">Why it exists</a>
       </div>
-      <p class="hero-meta">Groovy recipes · Linux and macOS · Apache-2.0 · <a href="{{ site.source_url }}">lmarqs/the-cook</a></p>
+      <ul class="hero-meta">
+        <li>{% include icons/apachegroovy.svg %}Groovy recipes</li>
+        <li>{% include icons/linux.svg %}Linux</li>
+        <li>{% include icons/apple.svg %}macOS</li>
+        <li>{% include icons/apache.svg %}Apache-2.0</li>
+        <li><a href="{{ site.source_url }}">{% include icons/github.svg %}lmarqs/the-cook</a></li>
+      </ul>
     </div>
     <div class="lab-map">
       <img src="{{ '/docs/assets/the-lab.png' | relative_url }}" width="1536" height="1024" alt="Pixel-art lab: workers in yellow hazmat suits work at their own stations, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK. Numbered pins mark the parts the lab section explains.">
@@ -53,6 +59,14 @@ summary: the-cook writes the setup a repository shares, such as agent instructio
       <li id="pin-6" data-pin="6"><span class="num">6</span><div><h3>The conveyor: cookbooks</h3>
         <p>Recipes ship in cookbook jars on Maven Central and are cooked by coordinates, <code>group:artifact:version#recipe</code>.</p></div></li>
     </ol>
+    <ul class="works-with" aria-label="Works with">
+      <li>{% include icons/claude.svg %}Claude Code</li>
+      <li>{% include icons/bot.svg %}Codex</li>
+      <li>{% include icons/git.svg %}Git worktrees</li>
+      <li>{% include icons/circle-dot.svg %}Beads</li>
+      <li>{% include icons/repeat.svg %}ralph-tui</li>
+      <li>{% include icons/apachemaven.svg %}Maven Central</li>
+    </ul>
   </div>
 </section>
 
@@ -223,9 +237,15 @@ Already cooked.</pre>
     <h2>Pin the engine in the repository</h2>
     <p class="lede">Each release publishes Cook for Linux x64 and arm64 and macOS arm64, a complete package with its own
       Java runtime, and the <code>cook</code> wrapper.</p>
+    <ul class="platforms">
+      <li>{% include icons/linux.svg %}Linux x64</li>
+      <li>{% include icons/linux.svg %}Linux arm64</li>
+      <li>{% include icons/apple.svg %}macOS arm64</li>
+      <li>{% include icons/openjdk.svg %}Java runtime included</li>
+    </ul>
     <div class="install">
       <div>
-        <h3>The wrapper</h3>
+        <h3>{% include icons/terminal.svg %}The wrapper</h3>
         <p>Commit it to pin the engine version. On first use it downloads the package for the machine and refuses it
           unless its sha256 matches the one written in the wrapper.</p>
         <div class="prose">
@@ -236,7 +256,7 @@ git add cook</code></pre></div></div>
         </div>
       </div>
       <div>
-        <h3>mise</h3>
+        <h3>{% include icons/package.svg %}mise</h3>
         <p>Installs a release package and puts its <code>cook</code> launcher on <code>PATH</code>.</p>
         <div class="prose">
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook@{{ version }}
@@ -254,14 +274,14 @@ cook --help</code></pre></div></div>
     <p class="kicker">Read next</p>
     <h2>The docs</h2>
     <div class="map">
-      <a href="{{ '/README.html' | relative_url }}"><strong>Overview</strong><span>What runs today, the quick start and the install options.</span></a>
-      <a href="{{ '/docs/philosophy.html' | relative_url }}"><strong>Philosophy</strong><span>Why the project exists, what it is trying to achieve, and its tenets.</span></a>
-      <a href="{{ '/docs/architecture.html' | relative_url }}"><strong>Architecture</strong><span>The intended design: responsibilities, operations, commands and distribution.</span></a>
-      <a href="{{ '/docs/features/cli.html' | relative_url }}"><strong>CLI reference</strong><span>Every command, option and message of <code>./cook</code>.</span></a>
-      <a href="{{ '/cookbook/' | relative_url }}"><strong>Cookbook</strong><span>How recipes and models are shaped, released and resolved.</span></a>
-      <a href="{{ '/docs/features/glossary.html' | relative_url }}"><strong>Glossary</strong><span>Recipe, ingredient, kitchen, lock and the rest of the vocabulary.</span></a>
-      <a href="{{ '/docs/ux/' | relative_url }}"><strong>Standards</strong><span>How the CLI, messages, generated content and skills behave.</span></a>
-      <a href="{{ '/docs/adrs/' | relative_url }}"><strong>Decisions</strong><span>The architecture decision records and the reasoning behind each one.</span></a>
+      <a href="{{ '/README.html' | relative_url }}">{% include icons/book-open.svg %}<strong>Overview</strong><span>What runs today, the quick start and the install options.</span></a>
+      <a href="{{ '/docs/philosophy.html' | relative_url }}">{% include icons/lightbulb.svg %}<strong>Philosophy</strong><span>Why the project exists, what it is trying to achieve, and its tenets.</span></a>
+      <a href="{{ '/docs/architecture.html' | relative_url }}">{% include icons/layers.svg %}<strong>Architecture</strong><span>The intended design: responsibilities, operations, commands and distribution.</span></a>
+      <a href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<strong>CLI reference</strong><span>Every command, option and message of <code>./cook</code>.</span></a>
+      <a href="{{ '/cookbook/' | relative_url }}">{% include icons/chef-hat.svg %}<strong>Cookbook</strong><span>How recipes and models are shaped, released and resolved.</span></a>
+      <a href="{{ '/docs/features/glossary.html' | relative_url }}">{% include icons/book-a.svg %}<strong>Glossary</strong><span>Recipe, ingredient, kitchen, lock and the rest of the vocabulary.</span></a>
+      <a href="{{ '/docs/ux/' | relative_url }}">{% include icons/ruler.svg %}<strong>Standards</strong><span>How the CLI, messages, generated content and skills behave.</span></a>
+      <a href="{{ '/docs/adrs/' | relative_url }}">{% include icons/gavel.svg %}<strong>Decisions</strong><span>The architecture decision records and the reasoning behind each one.</span></a>
     </div>
   </div>
 </section>
