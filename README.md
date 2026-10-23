@@ -3,24 +3,48 @@
 [![release](https://github.com/lmarqs/the-cook/actions/workflows/release.yml/badge.svg)](https://github.com/lmarqs/the-cook/actions/workflows/release.yml)
 [![version](https://img.shields.io/github/v/release/lmarqs/the-cook)](https://github.com/lmarqs/the-cook/releases/latest)
 
-<p align="center"><img src="docs/assets/the-cook.png" alt="the-cook: pixel-art portrait of a man in a black pork-pie hat lowering dark sunglasses" width="640"></p>
+<p align="center"><img src="docs/assets/the-lab.png" alt="the-cook: pixel-art lab where workers in yellow hazmat suits each work at their own station while a man in a black pork-pie hat watches from a glass office marked THE COOK" width="960"></p>
 
 **The cook: cook the best product without any source of contamination.**
+
+The lab is a repository worked by coding agents. Each agent works at its own station, a worktree of its own. Each
+recipe keeps to the parts of a file it owns, and one person approves one diff before anything is written.
 
 ## Objective
 
 **Problem.** Teams reuse setup across repositories: agent instructions and permissions, editor settings, ignore rules,
 build and CI files. Copied by hand, the copies drift. Those files are shared: a setup that replaces one whole loses
 what teammates and other tools wrote in it, and nobody can tell which part came from where or remove a part cleanly.
+Coding agents widen the problem. Several agents and people work in one repository at once, each agent harness reads
+its own files for instructions, permissions, hooks and skills, and each agent's worktree needs the same setup to run.
 
 **Goal.** A setup learned once reaches every repository through one reviewed change, lives beside hand-written content
 in the same files, and is withdrawn the same way. Contributors who do not run Cook need nothing to contribute: their
 programs read the native files directly, and the lock and markers Cook leaves are reviewed like any other change.
+Every agent harness and every worktree reads the same reviewed setup from what its branch commits.
 
 ## Current implementation
 
 This section describes what runs on `main`. The [architecture](docs/architecture.md) defines the intended design, and
 [issue #15](https://github.com/lmarqs/the-cook/issues/15) tracks implementing it.
+
+### Repositories worked by agents
+
+The `agents`, `git`, `beads` and `ralph` artifacts set a repository up for several coding agents and people at once.
+Each recipe's help, read with `./cook help <coordinates>`, says what it writes.
+
+| Need | What runs | Read |
+| --- | --- | --- |
+| One set of instructions and permissions for every harness | `agents#seed` creates `AGENTS.md` and `.agents/permission/policy.yaml`. `agents#connect` renders the policy into Claude Code's `permissions` and Codex's sandbox and approval settings and `cook.rules`, with roles that narrow it for Claude Code | [agents](cookbook/agents/README.md) |
+| A fresh clone, a cloud session or CI that reads the setup without cooking | The `.claude/` and `.codex/` links into `.agents/` are committed, so a fresh checkout already holds each harness's settings, hooks and skills, and each harness reads `AGENTS.md` natively | [agents](cookbook/agents/README.md) |
+| Context when a session starts | Both harnesses run `.agents/hooks/session-start`, which adds the output of each `session-start.d/*.sh` to the session; `beads#tracker` can write one that prints the Beads prime text | [beads](cookbook/beads/README.md) |
+| A worktree for each agent | `git#worktrees` ignores `.worktrees/`, states the rule `.worktrees/<branch>` in `AGENTS.md` and seeds the `setup` and `teardown` scripts the team fills in. `agents#connect --worktree-setup=...` wires Claude Code's worktree hooks: a new worktree runs setup and is removed when setup fails, and removing one runs teardown and deletes its branch only once every commit on it has landed | [worktrees](cookbook/git/worktrees.groovy), [connect](cookbook/agents/connect.groovy) |
+| Unattended loop runs | `ralph#ralph-tui` writes `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>` on the branch `ralph/<name>`, and `bin/clean`, which without `--force` refuses to delete commits that have not landed. With `--worker-check`, a task completes only once the team's check passes | [ralph](cookbook/ralph/README.md) |
+| Output kept to one clone | With `--share=clone`, `ralph#ralph-tui` keeps ralph-tui's configuration out of commits and `beads#tracker` keeps the Beads issues out of them. `replicate` cooks ralph-tui's configuration again in a fresh clone from the source and arguments `cook.lock` records | [replicate](docs/features/replicate.md) |
+| A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](docs/architecture.md#ownership-and-the-lock) |
+| Drift caught in CI | `--check` exits 1 when cooking would change anything, such as a policy edited and not cooked | [batch options](docs/features/cli.md#batch-options-and-approval) |
+
+Every change in this table goes through the review, the lock and the recovery that [What runs](#what-runs) lists.
 
 ### Quick start
 
