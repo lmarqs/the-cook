@@ -1319,21 +1319,25 @@ text.text = mode
     assert CookLock.parse(rendered).arguments('recipes/setup') == arguments
   }
 
-  @Test void refusesALockWhoseArgumentsAreNotNamesWithListsOfValues() {
-    ['["--mode=fast"]', '{"mode": "fast"}', '{"mode": [1]}',].each { arguments ->
-      def text = """version: 1
+  @Test void keepsArgumentsThatAreNotNamesWithListsOfValuesUntilTheRecipeIsCookedAgain() {
+    ['["--mode=fast"]', '{"mode":"fast"}', '{"mode":[1]}'].each { arguments ->
+      def lock = CookLock.parse("""version: 1
 recipes:
   - name: "recipes/setup"
     source: "recipes/setup.groovy"
     sha256: "abc"
     arguments: ${arguments}
     owns: {}
-"""
-      def error = shouldFail(IllegalArgumentException) { CookLock.parse(text) }
+""")
+
+      def error = shouldFail(IllegalArgumentException) { lock.arguments('recipes/setup') }
 
       assert error.message == 'cook.lock records the arguments of recipes/setup in a form Cook cannot read\n' +
       '  each argument is a name with a list of values, such as "mode": ["fast"]\n' +
-      '  remove the arguments field of recipes/setup, then cook it again with its arguments'
+      '  cook recipes/setup again with its arguments, or discard it'
+      assert lock.render().contains("    arguments: ${arguments}\n")
+      lock.record('recipes/setup', 'recipes/setup.groovy', 'abc', [mode: ['fast']], [])
+      assert lock.arguments('recipes/setup') == [mode: ['fast']]
     }
   }
 

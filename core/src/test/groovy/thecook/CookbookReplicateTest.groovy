@@ -10,6 +10,7 @@ import thecook.cookbook.Argument
 import thecook.cookbook.Coordinates
 import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookbookCook
+import thecook.cookbook.CookbookDiscard
 import thecook.cookbook.CookbookReplicate
 import thecook.cookbook.CookbookRepositories
 import thecook.cookbook.CookbookRepository
@@ -231,6 +232,24 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
 
     assert error.message == "${SOURCE}: Missing --required: A new requirement\n" +
     '  arguments recorded in cook.lock: \n  cook it with its arguments'
+  }
+
+  @Test void refusesUnreadableArgumentsWhichCookingAgainOrDiscardingReplaces() {
+    cook(SOURCE, [Argument.inline('value', 'original')])
+    def lock = new File(kitchen, 'cook.lock')
+    def recorded = lock.text
+    lock.text = recorded.replace('      "value": ["original"]', '      "value": "original"')
+
+    def error = assertThrows(IllegalArgumentException) { replicate([NAME]) }
+
+    assert error.message == "cook.lock records the arguments of ${NAME} in a form Cook cannot read\n" +
+    '  each argument is a name with a list of values, such as "mode": ["fast"]\n' +
+    "  cook ${NAME} again with its arguments, or discard it"
+    cook(SOURCE, [Argument.inline('value', 'original')])
+    assert lock.text == recorded
+    lock.text = recorded.replace('      "value": ["original"]', '      "value": "original"')
+    new CookbookDiscard(kitchen).propose([NAME]).commit()
+    assert !lock.exists()
   }
 
   @Test void leavesRecipeBodyFailuresWithoutAnArgumentBindingHint() {

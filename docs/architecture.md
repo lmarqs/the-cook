@@ -210,8 +210,9 @@ Names and values are quoted strings, so no value is read as another type. Values
 paths are normalized, duplicates removed, and values sorted when the parameter requests it. A supplied yes-or-no flag
 records `"true"` or `"false"`. Unsupplied parameters are omitted; explicitly supplied default values remain recorded.
 `arguments: {}` records that no arguments were supplied. A missing field means arguments were not recorded, so
-replicate refuses that entry and asks the person to cook it once with its arguments. An `arguments` field of any other
-shape makes the lock unreadable, and the error names the recipe. The YAML remains `version: 1`.
+replicate refuses that entry and asks the person to cook it once with its arguments. Replicate also refuses an
+`arguments` field of any other shape, naming the recipe; cooking the recipe again or discarding it replaces the field.
+The YAML remains `version: 1`.
 
 Cooking works without the lock. When the lock is missing or names no entry for a recipe, Cook evaluates the recipe as
 usual and shows the diff; it has no previous ownership to compare against, so it removes nothing on the recipe's

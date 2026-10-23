@@ -48,8 +48,7 @@ final class CookLock {
     data.recipes.each { Map recipe ->
       def owns = (Map) (recipe.owns ?: [:])
       def targets = KINDS.collectMany { kind, create -> (owns["${kind}s"] ?: []).collect(create) }
-      def arguments = readArguments((String) recipe.name, recipe.arguments)
-      lock.entries[recipe.name] = new Entry(recipe.name, recipe.source, recipe.sha256, arguments, targets)
+      lock.entries[recipe.name] = new Entry(recipe.name, recipe.source, recipe.sha256, recipe.arguments, targets)
     }
     lock
   }
@@ -66,10 +65,23 @@ final class CookLock {
 
   /**
    * The arguments `name` was last cooked with, each param's first name with its values, or `null` when they were not
-   * recorded.
+   * recorded. Fails when the lock records them in another form, which cooking `name` again or discarding it replaces.
    */
   Map<String, List<String>> arguments(String name) {
-    entries[name]?.arguments
+    def recorded = entries[name]?.arguments
+
+    if (recorded == null) {
+      return null
+    }
+
+    if (!readable(recorded)) {
+      throw new IllegalArgumentException(Diagnostic.text(
+      "${PATH} records the arguments of ${name} in a form Cook cannot read",
+      'each argument is a name with a list of values, such as "mode": ["fast"]',
+      "cook ${name} again with its arguments, or discard it"))
+    }
+
+    ((Map<String, List<String>>) recorded).collectEntries { option, values -> [(option): new ArrayList<>(values)] }
   }
 
   /** Whether the recipe `name` was cooked before. */
@@ -123,9 +135,13 @@ final class CookLock {
       lines << "    source: ${quote(entry.source)}"
       lines << "    sha256: ${quote(entry.sha256)}"
 
-      if (entry.arguments != null) {
+      if (entry.arguments != null && !readable(entry.arguments)) {
+        lines << "    arguments: ${JsonOutput.toJson(entry.arguments)}"
+      } else if (entry.arguments != null) {
         lines << (entry.arguments ? '    arguments:' : '    arguments: {}')
-        entry.arguments.each { option, values -> lines << "      ${quote(option)}: ${JsonOutput.toJson(values)}" }
+        ((Map) entry.arguments).each { option, values ->
+          lines << "      ${quote((String) option)}: ${JsonOutput.toJson(values)}"
+        }
       }
 
       def groups = KINDS.keySet()
@@ -140,23 +156,11 @@ final class CookLock {
     lines.join('\n') + '\n'
   }
 
-  private static Map<String, List<String>> readArguments(String name, Object recorded) {
-    if (recorded == null) {
-      return null
-    }
-
-    boolean readable = recorded instanceof Map && ((Map) recorded).every { option, values ->
+  /** Whether `recorded` maps each param's name to a list of its values, the form Cook writes. */
+  private static boolean readable(Object recorded) {
+    recorded instanceof Map && ((Map) recorded).every { option, values ->
       option instanceof String && values instanceof List && ((List) values).every { it instanceof String }
     }
-
-    if (!readable) {
-      throw new IllegalArgumentException(Diagnostic.text(
-      "${PATH} records the arguments of ${name} in a form Cook cannot read",
-      'each argument is a name with a list of values, such as "mode": ["fast"]',
-      "remove the arguments field of ${name}, then cook it again with its arguments"))
-    }
-
-    ((Map<String, List<String>>) recorded).collectEntries { option, values -> [(option): new ArrayList<>(values)] }
   }
 
   private static String quote(String value) {
@@ -178,14 +182,15 @@ final class CookLock {
     final String name
     final String source
     final String sha256
-    final Map<String, List<String>> arguments
+    // As the lock records them: the form Cook writes, or any other value, which only replicate refuses.
+    final Object arguments
     final List<Target> targets
 
-    Entry(String name, String source, String sha256, Map<String, List<String>> arguments, List<Target> targets) {
+    Entry(String name, String source, String sha256, Object arguments, List<Target> targets) {
       this.name = name
       this.source = source
       this.sha256 = sha256
-      this.arguments = arguments == null ? null : new LinkedHashMap<>(arguments)
+      this.arguments = arguments
       this.targets = new ArrayList<>(targets)
     }
   }
