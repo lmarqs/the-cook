@@ -171,6 +171,8 @@ the CLI hands its repositories to the core.
 | Why the project exists, what it is trying to achieve, and the tenets behind every decision | [Philosophy](docs/philosophy.md) |
 | The intended design: responsibilities, operations, commands and distribution | [Architecture](docs/architecture.md) |
 
+The same pages, as of the latest release, are published at [lmarqs.github.io/the-cook](https://lmarqs.github.io/the-cook/).
+
 ## Install
 
 Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 and macOS
