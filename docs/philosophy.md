@@ -22,6 +22,8 @@ programs consume native files, often inside the repository. Reusing their setup 
 - Replacing a shared file can erase unrelated settings or changes someone made by hand.
 - Hidden changes make it hard to judge what cooking or discarding setup will do.
 - Coupling program-specific configuration to the engine makes each program's evolution an engine concern.
+- Several agents and people work in one repository at once, each in their own working copy, and each agent harness
+  reads its own native files. A setup kept by hand differs between harnesses and between working copies.
 
 ## The goals
 
@@ -30,6 +32,7 @@ programs consume native files, often inside the repository. Reusing their setup 
 - Preserve unrelated content when cooking or discarding recipes.
 - Let configured programs consume their native files directly.
 - Keep the engine's responsibilities bounded so cookbooks can evolve separately.
+- Give every agent harness and every working copy the same reviewed setup from what the repository commits.
 
 ## What `the-cook` is
 
