@@ -9,6 +9,8 @@ worktrees='.worktrees'
 setup=''
 # The arguments that choose the tasks, by tracker; set by the cook.
 flags='(--epic <id> | --prd <file>)'
+# The tracker a run with --epic takes its beads from, beads or beads-bv; set by the cook.
+epic_tracker='beads'
 
 usage() {
   echo "usage: .ralph-tui/bin/run <name> --agent <entry> $flags [--base <ref>] [ralph-tui run arguments...]" >&2
@@ -174,13 +176,19 @@ echo "branch: $branch"
 cd "$worktree"
 if [ "$copied" = true ]; then
   template=$worktree/.ralph-tui/templates/json.hbs
-  [ -z "$epic" ] || template=$worktree/.ralph-tui/templates/beads.hbs
+  [ -z "$epic" ] || template=$worktree/.ralph-tui/templates/$epic_tracker.hbs
   prompt_given=false
   for argument in "$@"; do [ "$argument" != --prompt ] || prompt_given=true; done
   # A parallel worker gets only the copied configuration, so the prompt reaches it by its path.
   if [ "$prompt_given" = false ] && [ -f "$template" ]; then set -- --prompt "$template" "$@"; fi
 fi
 if [ -n "$epic" ]; then
+  # bv reads the issues bd exports, and its bd finds no database from a run worktree, so bv would rank stale issues
+  # or none, and ralph-tui would quietly take the plain beads order.
+  if [ "$epic_tracker" = beads-bv ] && [ -z "${BEADS_DIR:-}" ]; then
+    BEADS_DIR=$(dirname -- "$(git -C "$root" rev-parse --path-format=absolute --git-common-dir)")/.beads
+    export BEADS_DIR
+  fi
   exec ralph-tui run --epic "$epic" --agent "$agent" "$@"
 fi
 exec ralph-tui run --prd "$prd" --agent "$agent" "$@"

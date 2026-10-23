@@ -56,7 +56,7 @@ sandbox = "workspace-write"
   @Test void seedsTheConfigurationAndPromptsAndOwnsTheLauncherOnAnEmptyKitchen() {
     def kitchen = kitchen()
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], tracker: ['beads', 'json']]).commit()
 
     assert files(kitchen) == [
       '.gitignore',
@@ -79,7 +79,7 @@ sandbox = "workspace-write"
     }
     assert new File(kitchen, '.gitignore').text == '''\
 # cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui
-# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex
+# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --tracker=beads --tracker=json
 /.ralph-tui/*
 !/.ralph-tui/config.toml
 !/.ralph-tui/templates/
@@ -103,7 +103,7 @@ recipes:
         - ".ralph-tui/bin/worker"
 """
     // No actions is what `./cook` reports as `Already cooked.`.
-    assert cook(kitchen, RALPH, [harness: ['claude', 'codex']]).actions == [:]
+    assert cook(kitchen, RALPH, [harness: ['claude', 'codex'], tracker: ['beads', 'json']]).actions == [:]
   }
 
   @Test void eachHarnessGetsOneEntryAndNoDefaultAgent() {
@@ -140,13 +140,15 @@ recipes:
     def kitchen = kitchen()
     write(kitchen, '.agents/adapters/claude/roles/worker.json', '{"permissions":{"deny":["Bash(git push *)"]}}\n')
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-role': ['claude:worker']]).commit()
+    cook(kitchen, RALPH,
+        [harness: ['claude', 'codex'], 'worker-role': ['claude:worker'], tracker: ['beads', 'json']]).commit()
 
     def config = new File(kitchen, '.ralph-tui/config.toml').text
     assert config == CONFIG.replace(CLAUDE_FLAGS, CLAUDE_FLAGS.replace(']',
     ', "--settings", ".agents/adapters/claude/roles/worker.json"]'))
     assert new File(kitchen, '.gitignore').readLines()[1] ==
-    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worker-role=claude:worker'
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worker-role=claude:worker ' +
+    '--tracker=beads --tracker=json'
     assert new File(kitchen, '.agents/adapters/claude/roles/worker.json').text ==
     '{"permissions":{"deny":["Bash(git push *)"]}}\n'
   }
@@ -234,7 +236,8 @@ roles:
     write(kitchen, 'x.toml', 'model_reasoning_effort = "high"\n\n[sandbox_workspace_write]\n' +
         'writable_roots = ["/var/cache"]\n')
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-settings': ['codex:x.toml']]).commit()
+    cook(kitchen, RALPH,
+        [harness: ['claude', 'codex'], 'worker-settings': ['codex:x.toml'], tracker: ['beads', 'json']]).commit()
 
     def config = new File(kitchen, '.ralph-tui/config.toml').text
     assert config == CONFIG.replace('"-c", "sandbox_workspace_write.network_access=false"]',
@@ -461,7 +464,7 @@ roles:
 
     cook(kitchen, [
       'io.github.lmarqs.cookbook:beads:0.1.0#tracker': [share: ['clone']],
-      (RALPH): [harness: ['claude', 'codex']],
+      (RALPH): [harness: ['claude', 'codex'], tracker: ['beads', 'json']],
     ]).commit()
 
     assert files(kitchen).findAll { it.startsWith('.ralph-tui/') || it.startsWith('.beads/') } == [
@@ -486,21 +489,23 @@ roles:
     def kitchen = kitchen()
     def agents = new File(kitchen, 'AGENTS.md')
     agents.text = '# Agents\n'
-    def arguments = [harness: ['claude'], instructions: ['AGENTS.md']]
+    def arguments = [harness: ['claude'], tracker: ['beads', 'json'], instructions: ['AGENTS.md']]
 
     cook(kitchen, RALPH, arguments).commit()
 
     assert agents.text == '''\
 # Agents
 <!-- cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
-<!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --instructions=AGENTS.md -->
+<!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --tracker=beads --tracker=json \
+--instructions=AGENTS.md -->
 - Loop runs: `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, or `--prd <file>`, runs ralph-tui in
   `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the
   branch is delivered.
 <!-- cook:end io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
 '''
     assert new File(kitchen, '.gitignore').readLines()[1] ==
-    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --instructions=AGENTS.md'
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --tracker=beads --tracker=json ' +
+    '--instructions=AGENTS.md'
     assert cook(kitchen, RALPH, arguments).actions == [:]
   }
 
@@ -519,6 +524,85 @@ roles:
     assert usage.output.startsWith('usage: .ralph-tui/bin/run <name> --agent <entry> --prd <file> [--base <ref>]')
     write(kitchen, 'tasks/prd.json', '{}\n')
     assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'tasks/prd.json').exit == 0
+  }
+
+  @Test void theTrackerIsJsonByDefault() {
+    def kitchen = kitchen()
+
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+
+    assert files(kitchen).findAll { it.startsWith('.ralph-tui/templates/') } == ['.ralph-tui/templates/json.hbs']
+    assert !new File(kitchen, '.ralph-tui/config.toml').text.contains('tracker')
+    assert new File(kitchen, '.ralph-tui/bin/run').readLines().contains("flags='--prd <file>'")
+  }
+
+  @Test void aBeadsBvCookSeedsItsTrackerAndPromptAndOffersOnlyEpic() {
+    def kitchen = repository()
+    write(kitchen, 'AGENTS.md', '# Agents\n')
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads-bv'], instructions: ['AGENTS.md']]).commit()
+    commitAll(kitchen)
+
+    assert files(kitchen).findAll { it.startsWith('.ralph-tui/templates/') } == ['.ralph-tui/templates/beads-bv.hbs']
+    assert new File(kitchen, '.ralph-tui/templates/beads-bv.hbs').bytes ==
+    new File(SOURCES, 'templates/beads-bv.hbs').bytes
+    assert new File(kitchen, '.ralph-tui/config.toml').text.contains('\ntracker = "beads-bv"\n')
+    assert new File(kitchen, 'AGENTS.md').text.contains(
+    '`.ralph-tui/bin/run <name> --agent <entry> --epic <id>` runs ralph-tui in')
+    def usage = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--headless')
+    assert usage.output.startsWith('usage: .ralph-tui/bin/run <name> --agent <entry> --epic <id> [--base <ref>]')
+  }
+
+  @Test void refusesTheBeadsAndBeadsBvTrackersTogether() {
+    def kitchen = kitchen()
+
+    def error = shouldFail(IllegalArgumentException) {
+      cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads', 'beads-bv']])
+    }
+
+    assert error.message.readLines() == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --tracker=beads and --tracker=beads-bv are both given',
+      '  both run with --epic, and the configuration names one tracker',
+      '  give one of them',
+    ]
+    assert files(kitchen) == []
+  }
+
+  @Test void aBeadsBvRunPointsBvAtTheMainCheckoutsBeadsAndPassesItsPrompt() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads-bv', 'json']]).commit()
+    new File(kitchen, '.git/info/exclude') << '/.ralph-tui/\n'
+    write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
+    commitAll(kitchen)
+    def worktree = new File(kitchen, '.worktrees/ralph/demo').canonicalPath
+
+    def epic = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
+
+    assert epic.exit == 0
+    assert epic.output.readLines().drop(4) == [
+      "ralph-tui run --epic ep-1 --agent claude --prompt ${worktree}/.ralph-tui/templates/beads-bv.hbs",
+      "cwd ${worktree}",
+      'effort high',
+      "beads ${kitchen.canonicalPath}/.beads",
+    ]*.toString()
+
+    def own = launch([BEADS_DIR: '/elsewhere/.beads'], kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude',
+    '--epic', 'ep-1')
+    assert own.output.readLines().last() == 'beads /elsewhere/.beads'
+
+    def prd = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'tasks/prd.json')
+    assert prd.exit == 0
+    assert prd.output.readLines().last() == 'effort high'
+  }
+
+  @Test void aBeadsRunLeavesBeadsDirUnset() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads']]).commit()
+    commitAll(kitchen)
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
+
+    assert run.exit == 0
+    assert run.output.readLines().last() == 'effort high'
   }
 
   @Test void aWorktreeRootMovesTheRunWorktreesTheirParallelWorkersAndTheIgnoreLine() {
@@ -595,11 +679,17 @@ roles:
       'neither read nor write the Beads database',
       'permissions.allow',
       'prefix rules',
+      'leaves `beads.hbs` unread',
+      '`bv` orders serial runs only',
     ].each { assert flat.contains(it): "the help lacks '${it}'" }
   }
 
   @Test void everyVariableTheModelSetsIsInItsScript() {
-    def scripts = [run: ['worktrees', 'setup', 'flags'], clean: ['worktrees', 'teardown'], worker: ['check', 'agents']]
+    def scripts = [
+      run: ['worktrees', 'setup', 'flags', 'epic_tracker'],
+      clean: ['worktrees', 'teardown'],
+      worker: ['check', 'agents'],
+    ]
 
     scripts.each { script, names ->
       def lines = new File(SOURCES, "bin/${script}.sh").readLines()
@@ -654,7 +744,7 @@ roles:
 
   @Test void runCopiesAnIgnoredUncommittedConfigurationAndPromptsIntoTheWorktreeOnEachRunAndPassesThePrompt() {
     def kitchen = repository()
-    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads', 'json']]).commit()
     new File(kitchen, '.git/info/exclude') << '/.ralph-tui/\n'
     write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
     commitAll(kitchen)
@@ -930,7 +1020,7 @@ roles:
     def kitchen = kitchen()
     cook(kitchen, RALPH, [harness: ['claude'], tracker: ['json']]).commit()
 
-    def lacking = refusedRecook(kitchen, [harness: ['claude']])
+    def lacking = refusedRecook(kitchen, [harness: ['claude'], tracker: ['beads']])
 
     assert lacking.message.readLines() == [
       'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --tracker=beads is not applied in .ralph-tui/config.toml',
@@ -941,9 +1031,27 @@ roles:
 
     def config = new File(kitchen, '.ralph-tui/config.toml')
     config.text = 'tracker = "json"\n' + config.text
-    def other = refusedRecook(kitchen, [harness: ['claude']])
+    def other = refusedRecook(kitchen, [harness: ['claude'], tracker: ['beads']])
 
     assert other.message.readLines()[1] == '  its tracker is "json", and a run with --epic needs tracker = "beads"'
+  }
+
+  @Test void aBeadsBvRecookNeedsTheBeadsBvTrackerAndABeadsRecookAcceptsIt() {
+    def kitchen = kitchen()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads']]).commit()
+
+    def lacking = refusedRecook(kitchen, [harness: ['claude'], tracker: ['beads-bv']])
+
+    assert lacking.message.readLines().take(2) == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --tracker=beads-bv is not applied in .ralph-tui/config.toml',
+      '  its tracker is "beads", and --tracker=beads-bv needs tracker = "beads-bv"',
+    ]
+
+    def config = new File(kitchen, '.ralph-tui/config.toml')
+    config.text = config.text.replace('tracker = "beads"', 'tracker = "beads-bv"')
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads-bv']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads']]).commit()
+    assert config.text.contains('tracker = "beads-bv"')
   }
 
   @Test void acceptsARecookOverAHandWrittenConfigurationThatHasWhatTheArgumentsNeed() {
@@ -1200,7 +1308,7 @@ skipPermissions = false
 
   @Test void runRefusesBothTrackersAndNeedsOne() {
     def kitchen = repository()
-    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads', 'json']]).commit()
     commitAll(kitchen)
     write(kitchen, 'prd.json', '{}\n')
 
@@ -1217,7 +1325,7 @@ skipPermissions = false
 
   @Test void runRequiresAnAgent() {
     def kitchen = repository()
-    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['beads', 'json']]).commit()
     commitAll(kitchen)
 
     def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1')
@@ -1700,16 +1808,23 @@ skipPermissions = false
   // Runs a command with a fake ralph-tui first on the PATH, which prints its arguments, directory and effort, and with
   // a HOME of its own, so the person's Git configuration and hooks stay out of the test.
   private Map launch(File directory, String... command) {
+    launch([:], directory, command)
+  }
+
+  // As launch, with BEADS_DIR printed after the effort when set, and the variables in `environment` added.
+  private Map launch(Map<String, String> environment, File directory, String... command) {
     def bin = new File(folder.root, 'bin')
 
     if (!bin.exists()) {
       write(bin, 'ralph-tui', '#!/bin/sh\necho "ralph-tui $*"\necho "cwd $(pwd -P)"\n' +
-          'echo "effort ${CLAUDE_CODE_EFFORT_LEVEL:-}"\n')
+          'echo "effort ${CLAUDE_CODE_EFFORT_LEVEL:-}"\n[ -z "${BEADS_DIR:-}" ] || echo "beads $BEADS_DIR"\n')
       new File(bin, 'ralph-tui').setExecutable(true)
       new File(folder.root, 'home').mkdirs()
     }
 
     def builder = new ProcessBuilder(command).directory(directory).redirectErrorStream(true)
+    builder.environment().remove('BEADS_DIR')
+    builder.environment().putAll(environment)
     builder.environment().putAll([
       PATH: "${bin.path}:${System.getenv('PATH')}".toString(),
       HOME: new File(folder.root, 'home').path,

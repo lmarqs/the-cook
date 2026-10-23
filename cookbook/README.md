@@ -320,8 +320,10 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 # Claude workers whose tasks complete only once the team's check passes
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-check=scripts/check
-# Only JSON PRDs: seeds only their prompt, and the launcher offers only --prd
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=json
+# Beads epics and JSON PRDs: seeds both prompts, and the launcher offers --epic and --prd
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
+# Beads epics whose next bead bv picks, ranking the epic's dependency graph
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
 # Also giving agents and people the launcher's commands, in the files they read
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
@@ -334,11 +336,12 @@ directory, by its path from the repository root, under whose `ralph/` run worktr
 `io.github.lmarqs.cookbook:agents#connect --worktree-root` does for Claude Code's; `.worktrees` by default.
 `--worktree-setup` and `--worktree-teardown` each name a committed executable by its path from the repository root,
 outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown. `--worker-check` names one
-too, the check a task must pass to complete; without it, the worker refuses every task. `--tracker` is `beads`, run
-with `--epic`, or `json`, run with `--prd`, and repeats; both by default. It narrows the seeded prompts, the
-configuration's `tracker` line and the run flag the launcher offers. `--instructions` names a Markdown file by its path
-from the repository root, and repeats for each file; the file must exist. What it publishes for people, sessions and
-other recipes:
+too, the check a task must pass to complete; without it, the worker refuses every task. `--tracker` is `beads` or
+`beads-bv`, run with `--epic`, or `json`, run with `--prd`, and repeats, with one of `beads` and `beads-bv` at most;
+`json` by default. It chooses the seeded prompts, the configuration's `tracker` line and the run flag the launcher
+offers. `beads-bv` is ralph-tui's beads tracker with `bv` picking each next bead of the epic. `--instructions` names a
+Markdown file by its path from the repository root, and repeats for each file; the file must exist. What it publishes
+for people, sessions and other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -346,12 +349,13 @@ other recipes:
 | `.ralph-tui/bin/clean <name> [--force]` | Removes the run's worktree and branch, and its parallel workers' worktrees and branches |
 | `.ralph-tui/bin/worker <agent> [agent arguments…]` | Runs the agent for ralph-tui, as Run-time effects says |
 | `<worktree root>/ralph/<name>` on branch `ralph/<name>` | The rule for a run's worktree, following `<worktree root>/<branch>` |
-| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` and with `--prd` |
+| `.ralph-tui/templates/beads.hbs`, `beads-bv.hbs`, `json.hbs` | The prompts ralph-tui renders for a run with `--epic` under each beads tracker, and with `--prd` |
 
 ## Consumes
 
 - ralph-tui 0.12.0 and Git at run time; Claude Code 2.1.306 and codex-cli 0.160.1 as workers. `bd` 1.3.1 only for a
-  run with `--epic`, which reads the Beads database; a run with `--prd` needs no `bd`.
+  run with `--epic`, which reads the Beads database; a run with `--prd` needs no `bd`. `bv` 0.25.2 only for a run with
+  `--epic` under `--tracker=beads-bv`; without it, ralph-tui takes the plain beads order.
 - `.agents/adapters/<harness>/roles/<name>.json` for `claude`, `.toml` for `codex`, in the draft, with
   `--worker-role=<harness>:<name>`: written by `io.github.lmarqs.cookbook:agents#connect --harness=<harness>` from
   `roles.<name>` in `.agents/permission/policy.yaml`. Without it, cooking is refused and names both.
@@ -378,8 +382,8 @@ other recipes:
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` with the `beads` tracker, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, or with `--worker-check` `strategy = "retry"`, `maxRetries = 2` and `continueOnNonZeroExit = false`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness, with `--worker-check` running `.ralph-tui/bin/worker` with the harness as its first argument | Always, when absent | seed |
-| `.ralph-tui/templates/beads.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` or `"beads-bv"` with that tracker, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, or with `--worker-check` `strategy = "retry"`, `maxRetries = 2` and `continueOnNonZeroExit = false`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness, with `--worker-check` running `.ralph-tui/bin/worker` with the harness as its first argument | Always, when absent | seed |
+| `.ralph-tui/templates/beads.hbs`, `beads-bv.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
 | `.ralph-tui/bin/worker` | The worker wrapper, executable | Always | owned |
 | `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/<worktree root>/ralph/` | Always | owned |
@@ -400,7 +404,7 @@ tracker's state, and the rest of each `--instructions` file.
 | --- | --- |
 | What a Claude worker may do | The person, by `--worker-role=claude:<role>` or `--worker-settings=claude:<path>`; the team, by adding entries to the configuration; the session, by `bin/run --agent <entry>` |
 | What a Codex worker may do | The person, by `--worker-role=codex:<role>` or `--worker-settings=codex:<path>`; the team, in the seeded entry, which sets Codex's `workspace-write` sandbox; `--agent codex` runs with only what `--worker-*=codex:` gave the Codex entry |
-| The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD |
+| The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD; the person, by `--tracker=beads-bv`, has `bv` order the epic's beads |
 | Where a run's configuration and prompts come from | The team, by committing `.ralph-tui/`; otherwise each person, by ignoring it in their clone, and `bin/run` copies it into each run |
 | Whether a task completes only once the checks pass | The person, by `--worker-check`; the team writes the file, or points an entry's `command` at a wrapper of its own |
 | Where run worktrees go | The person, by `--worktree-root` |
@@ -434,7 +438,9 @@ refuses and prints the line that ignores `.ralph-tui/` in the clone. With a copy
 prompt of the run's tracker, unless the run gives `--prompt`, because ralph-tui copies only `config.toml` into a
 parallel worker. It prints the worktree's path and branch, then runs `ralph-tui run --epic <id> --agent <entry>`, or
 `--prd` with the file's absolute path, in the worktree, with the remaining arguments, such as `--headless` or
-`--model opus`. It sets and strips no environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
+`--model opus`. Cooked with `--tracker=beads-bv`, a run with `--epic` exports `BEADS_DIR` as the main checkout's
+`.beads`, unless it is set, because bv reads the issues `bd export` writes, and finds no database from a run worktree.
+It sets and strips no other environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 An agent entry whose `command` is `.ralph-tui/bin/worker`, as `--worker-check` seeds, has ralph-tui run
 `.ralph-tui/bin/worker <agent> [arguments…]` for each task, from the run worktree or a parallel worker's. The worker
@@ -464,14 +470,16 @@ with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrit
 `--worker-check`, or without one, rewrites the worker, and cooking without a file's `--instructions` removes its
 section. Cooking with another `--worktree-root` rewrites the launcher and the `.gitignore` section, which then look only
 under the new root, so clean every run before. The seeds are never rewritten or removed, so a narrower `--tracker`
-leaves a prompt seeded earlier in place. A cook whose arguments the existing `.ralph-tui/config.toml` lacks is refused
-and writes nothing: an agent entry for each `--harness`, the flags of each `--worker-role` or `--worker-settings`, the
-worker as the `command` of each entry for `--worker-check`, and a beads `tracker` for `--tracker=beads`. Edit the file
-or delete it and cook again; a Codex settings file is copied into the configuration when seeding, so editing one means
-deleting `config.toml` and cooking again. A newer version's prompts are taken by deleting them and cooking again. A
-newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a team never edits it:
-to use scripts of its own, it runs its own launcher instead of `bin/run` and `bin/clean`, or points an agent entry's
-`command` at its own worker, such as `scripts/worker.py`, in the configuration, which is never rewritten.
+leaves a prompt seeded earlier in place, and a cook without `--tracker` takes `json`: re-cooking for `--epic` repeats
+`--tracker=beads` or `--tracker=beads-bv`, or the launcher's usage line and the instructions section offer only `--prd`.
+A cook whose arguments the existing `.ralph-tui/config.toml` lacks is refused and writes nothing: an agent entry for
+each `--harness`, the flags of each `--worker-role` or `--worker-settings`, the worker as the `command` of each entry
+for `--worker-check`, a beads `tracker` for `--tracker=beads`, and `tracker = "beads-bv"` for `--tracker=beads-bv`. Edit
+the file or delete it and cook again; a Codex settings file is copied into the configuration when seeding, so editing
+one means deleting `config.toml` and cooking again. A newer version's prompts are taken by deleting them and cooking
+again. A newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a team never
+edits it: to use scripts of its own, it runs its own launcher instead of `bin/run` and `bin/clean`, or points an agent
+entry's `command` at its own worker, such as `scripts/worker.py`, in the configuration, which is never rewritten.
 
 ## Traps
 
@@ -498,6 +506,11 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
   under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
 - ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
+- ralph-tui 0.12 reads the prompt `.ralph-tui/templates/<tracker>.hbs`: a configuration whose `tracker` is changed to
+  `beads-bv` by hand leaves `beads.hbs` unread and takes ralph-tui's own prompt, which has the agent close the bead
+  with `bd close`. `--tracker=beads-bv` seeds `beads-bv.hbs`.
+- ralph-tui 0.12's `beads-bv` takes the plain beads order, and says so nowhere, when `bv` is missing or fails, or picks
+  a bead outside the epic; its parallel mode never asks `bv`, so `bv` orders serial runs only.
 - A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
   and closes beads for it, and the prompts ask for neither.
 - Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a
@@ -527,7 +540,7 @@ Parameters
   --worker-check=<String>
       An executable, by its path from the repository root, that must pass before a worker completes a task; optional
   --tracker=<String[]>
-      Trackers whose prompts are seeded and whose run flag the launcher offers: beads (--epic), json (--prd); default: beads, json; choices: beads, json; repeatable
+      Trackers whose prompts are seeded and run flag offered: beads or beads-bv (--epic), json (--prd); default: json; choices: beads, beads-bv, json; repeatable
   --instructions=<String[]>
       A Markdown file, from the repository root, where the recipe gives the launcher's commands; optional; repeatable
 
@@ -537,8 +550,9 @@ Ingredients
 After cooking
   Install ralph-tui and the runtimes it needs with `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`: npm needs node to
   install it, and its launcher runs on bun. Without `-g`, mise pins them in the project's `mise.toml` instead, which is
-  the team's choice. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and `.ralph-tui/` to share them
-  with the team, or keep `.ralph-tui/` to this clone by ignoring it with
+  the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with
+  `brew install dicklesworthstone/tap/bv`. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and
+  `.ralph-tui/` to share them with the team, or keep `.ralph-tui/` to this clone by ignoring it with
   `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`, and `bin/run` copies it into each run. `bin/run`
   refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
   `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, with a Beads database holding the epic, or
