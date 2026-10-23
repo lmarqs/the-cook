@@ -38,15 +38,6 @@ package io.github.lmarqs.cookbook.ralph
  * skipPermissions = true
  * ```
  *
- * Known limits of those versions: ralph-tui's parallel mode starts children that are still blocked and refuses fewer
- * than three tasks; Codex runs no project hooks in a worktree, because it trusts hooks per checkout path, unless
- * started with `--dangerously-bypass-hook-trust`; a Codex `workspace-write` worker can neither read nor write the Beads
- * database, nor write `.git`, so it cannot commit; Claude Code ignores the project's `permissions.allow` in a workspace
- * nobody has trusted, so an unattended Claude worker's allows come through `--worker-role=claude:<role>` or
- * `--worker-settings=claude:<path>`;
- * deny rules are prefix rules that `git -C . push` gets past, a guardrail, and the structural limit is a worker without
- * push credentials.
- *
  * A Markdown section in each instruction file the recipe names, such as `AGENTS.md`, gives the launcher's commands.
  *
  * ## Instances

@@ -199,28 +199,11 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
 - Claude Code ignores the project's `permissions.allow` in a workspace nobody has trusted, and a fresh clone or a new
   worktree may be one: an unattended Claude worker's allows come through `--worker-role=claude:<role>` or
   `--worker-settings=claude:<path>`.
-- Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a
-  worker without push credentials.
-- A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
-  and closes beads for it, and the prompts ask for neither.
-- Codex runs no project hooks in a worktree it has not trusted, so a Codex worker gets no session-start context unless
-  started with `--dangerously-bypass-hook-trust`.
-- ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
-- ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
-- ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
-  under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
 - ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere,
   even in a sentence saying it is not done, whatever the checks say. `--worker-check` gates it on the team's check;
   the artifact's README, under Gating completion, says how a team writes a wrapper of its own.
 - ralph-tui 0.12 runs an installed plugin with no options for an `--agent` that matches no entry, and for Claude that
   means no permission checks. `bin/run` refuses it; `ralph-tui run` started by hand does not.
-- With `.ralph-tui/` not committed, parallel workers find no `.ralph-tui/bin/worker`, because ralph-tui copies only
-  `config.toml` into them: run serially, or commit `.ralph-tui/`.
-- ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
-  agent: a worker's checks that print such words to stderr look rate-limited.
-- ralph-tui 0.12 copies only `config.toml` into a parallel worker's worktree and runs no setup there.
-- A `[parallel] worktreeDir` in the configuration moves the parallel workers where `bin/clean` does not look: it then
-  removes the run and leaves its workers' worktrees and branches.
 - ralph-tui commits with `git add -A`, so whatever a worker changes in the run worktree, `.beads/` included, rides in
   the run branch.
 - ralph-tui 0.12 marks a task done before committing it, and reports a failed commit nowhere, headless or in the TUI.
@@ -228,6 +211,23 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
   worktree, where the next task's commit takes them in under its own message. When `ralph/<name>` has fewer commits
   than the run completed tasks, run `git status` in the run worktree and check the commit settings; `bin/clean`
   refuses while the changes remain.
+- ralph-tui 0.12 copies only `config.toml` into a parallel worker's worktree and runs no setup there: with
+  `.ralph-tui/` not committed, parallel workers find no `.ralph-tui/bin/worker`, so run serially, or commit
+  `.ralph-tui/`.
+- ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
+  under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
+- ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
+- ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
+- Codex runs no project hooks in a worktree it has not trusted, so a Codex worker gets no session-start context unless
+  started with `--dangerously-bypass-hook-trust`.
+- A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
+  and closes beads for it, and the prompts ask for neither.
+- Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a
+  worker without push credentials.
+- ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
+  agent: a worker's checks that print such words to stderr look rate-limited.
+- A `[parallel] worktreeDir` in the configuration moves the parallel workers where `bin/clean` does not look: it then
+  removes the run and leaves its workers' worktrees and branches.
 - A tracked PRD run with `--parallel` leaves its completion marks uncommitted: ralph-tui 0.12 writes them after merging
   the workers' commits, and commits nothing after that.
 - A run branch with a committed `.ralph-tui/config.toml` takes the configuration and prompts committed there, so a

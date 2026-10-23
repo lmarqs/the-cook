@@ -527,7 +527,7 @@ roles:
     assert texts.yieldText.contains('mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0')
   }
 
-  @Test void theModelDocumentsTheEntriesToAddAndTheKnownLimits() {
+  @Test void theModelDocumentsTheEntriesToAdd() {
     def text = new File(SOURCES, 'RalphTui.groovy').text
     [
       'skipPermissions = true',
@@ -536,12 +536,19 @@ roles:
       'CLAUDE_CODE_EFFORT_LEVEL',
       'model_reasoning_effort',
       '`sonnet`, `opus` and `haiku`',
-      'fewer\n * than three tasks',
-      '--dangerously-bypass-hook-trust',
-      'neither read nor write the Beads\n * database',
-      '`permissions.allow`',
-      'prefix rules',
     ].each { assert text.contains(it) }
+  }
+
+  @Test void theHelpStatesTheKnownLimits() {
+    def help = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy').help
+    def flat = help.replace('\\\n', '').replaceAll(/\s*\n\s*/, ' ')
+    [
+      'fewer than three tasks',
+      '--dangerously-bypass-hook-trust',
+      'neither read nor write the Beads database',
+      'permissions.allow',
+      'prefix rules',
+    ].each { assert flat.contains(it): "the help lacks '${it}'" }
   }
 
   @Test void everyVariableTheModelSetsIsInItsScript() {
