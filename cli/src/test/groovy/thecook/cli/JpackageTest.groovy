@@ -11,7 +11,9 @@ class JpackageTest {
     def root = Files.createTempDirectory('cook packaged test ').toFile()
 
     try {
-      assert run(root, '--help').contains('Usage:')
+      def usage = run(root, '--help')
+      assert usage.contains('Usage:')
+      assert usage.contains('replicate  Cook recipes again from cook.lock.')
       assert run(root, '--version') == "cook ${System.getProperty('cook.version')}\n"
       Fixtures.notesCookbook(root)
       new File(root, 'Notes.groovy').text = Fixtures.NOTES_MODEL
@@ -54,7 +56,9 @@ notes.add('local')
       tar(archive, '-xzf', '-C', root.path)
       def unpacked = new File(root, launcher)
       assert unpacked.canExecute()
-      assert runLauncher(root, unpacked, '--help').contains('Usage:')
+      def usage = runLauncher(root, unpacked, '--help')
+      assert usage.contains('Usage:')
+      assert usage.contains('replicate  Cook recipes again from cook.lock.')
     } finally {
       root.deleteDir()
     }

@@ -5,6 +5,7 @@ import thecook.cookbook.Argument
 import thecook.cookbook.CookbookCook
 import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookbookDiscard
+import thecook.cookbook.CookbookReplicate
 import thecook.cookbook.CookbookRepositories
 import thecook.cookbook.Coordinates
 import thecook.cookbook.ExistingSeed
@@ -35,7 +36,7 @@ final class CookCommand {
   private final PrintWriter stderr
   private final Function<File, CookbookRepositories> repositories
   private final BufferedReader stdin
-  // `help` or `discard` once the invocation names one; null while cooking or before parsing.
+  // The command word once the invocation names one; null while cooking or before parsing.
   private String commandName
 
   CookCommand(PrintWriter stdout, PrintWriter stderr, Function<File, CookbookRepositories> repositories,
@@ -95,6 +96,8 @@ final class CookCommand {
     try {
       parsed = line.parseArgs(invocation)
     } catch (CommandLine.ParameterException error) {
+      def name = error.commandLine.commandSpec.name()
+      commandName = name == 'cook' ? null : name
       throw new UsageError(error.message ?: 'Invalid arguments')
     }
 
@@ -143,6 +146,8 @@ final class CookCommand {
         return help(kitchen, ((HelpArgs) command).recipes)
       case DiscardArgs:
         return discard(kitchen, (DiscardArgs) command)
+      case ReplicateArgs:
+        return replicate(kitchen, (ReplicateArgs) command)
       default:
         throw new IllegalStateException("Unhandled command: ${command}")
     }
@@ -212,6 +217,30 @@ final class CookCommand {
       }
     }
     return { -> write(new CookbookDiscard(kitchen).propose(args.recipes), args.dryRun, args.batchApprove) }
+  }
+
+  private Closure<Boolean> replicate(File kitchen, ReplicateArgs args) {
+    if (!args.recipes) {
+      throw new UsageError('A recipe is required')
+    }
+
+    args.recipes.each { operand ->
+      if (operand.startsWith('-')) {
+        def name = operand.split('=', 2)[0]
+        throw new UsageError(name in BEFORE_RECIPE ?
+        "${name} goes before the first recipe" :
+        "replicate takes no recipe arguments: ${operand}")
+      }
+
+      if (!isOperand(operand)) {
+        throw new UsageError("Not a recipe: ${operand}", 'a recipe is coordinates or a .groovy path')
+      }
+    }
+    return {
+      ->
+      def proposal = new CookbookReplicate(kitchen, repositories.apply(kitchen)).propose(args.recipes)
+      write(proposal, args.dryRun, args.batchApprove)
+    }
   }
 
   private static boolean isOperand(String token) {
@@ -405,13 +434,16 @@ final class CookCommand {
     true
   }
 
-  // Each release whose sources changed under a recorded version, each recipe's consequence the diff cannot show, then
+  // Each changed source, each recipe's consequence the diff cannot show, then
   // the diff itself: what one approval covers.
   private void review(Proposal proposal, Collection<String> paths) {
     proposal.changedSources.each {
+      def release = Coordinates.written(it.address)
+      def source = release ? 'release' : 'source'
+      def context = release ? ' under the same version' : ''
       stdout.println("Changed source ${it.address}")
-      stdout.println("  cook.lock recorded sha256 ${it.recorded}; the release now has sha256 ${it.current}")
-      stdout.println('  its sources changed under the same version; review the diff before approving')
+      stdout.println("  cook.lock recorded sha256 ${it.recorded}; the ${source} now has sha256 ${it.current}")
+      stdout.println("  its sources changed${context}; review the diff before approving")
       stdout.println()
     }
     proposal.recipes.findAll { it.confirm != null }.each {

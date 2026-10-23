@@ -35,7 +35,7 @@ abstract class KitchenScoped {
 
 @Command(
 name = 'cook',
-subcommands = [HelpArgs, DiscardArgs],
+subcommands = [HelpArgs, DiscardArgs, ReplicateArgs],
 description = ["Cooks recipes: Cook's options come first, then the recipe, then the recipe's own arguments."],
 footer = [
   '',
@@ -88,6 +88,19 @@ class DiscardArgs extends KitchenScoped {
   boolean dryRun
 
   @Option(names = ['--batch-approve'], description = ['Show the diff, then write without asking.'])
+  boolean batchApprove
+
+  @Parameters(paramLabel = 'RECIPE', description = ['A recipe: its cook.lock name, coordinates or a .groovy path.'])
+  List<String> recipes = []
+}
+
+@Command(name = 'replicate', description = ['Cook recipes again from cook.lock.'])
+class ReplicateArgs extends KitchenScoped {
+  @Option(names = ['--dry-run'], description = ['Report the proposed changes without writing.'])
+  boolean dryRun
+
+  @Option(names = ['--batch-approve'],
+  description = ["Show the recipes' confirm texts and the diff, then write without asking."])
   boolean batchApprove
 
   @Parameters(paramLabel = 'RECIPE', description = ['A recipe: its cook.lock name, coordinates or a .groovy path.'])

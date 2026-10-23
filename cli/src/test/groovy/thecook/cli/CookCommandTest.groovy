@@ -9,6 +9,7 @@ class CookCommandTest {
     def cli = command(stdout, stderr)
     assert cli.execute(['--help'] as String[]) == 0
     assert stdout.toString('UTF-8').contains('Cooks recipes')
+    assert stdout.toString('UTF-8').contains('replicate  Cook recipes again from cook.lock.')
     [
       ['--mystery', 'x.groovy'],
       ['-C'],
@@ -179,6 +180,7 @@ After cooking
       }
       stdout.reset()
       assert cli.execute(['help'] as String[]) == 0 && stdout.toString('UTF-8').startsWith('Usage:')
+      assert stdout.toString('UTF-8').contains('replicate  Cook recipes again from cook.lock.')
       assert repo.list() as Set == ['notes.groovy', 'bare.groovy'] as Set
     }
   }
@@ -436,6 +438,96 @@ notes.add('local')
     }
   }
 
+  @Test void replicatesNamedRecipesWithRecordedArgumentsThroughTheReviewAndWriteFlow() {
+    workspace { root, repo ->
+      Fixtures.notesCookbook(repo)
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      def cooked = [
+        '-C',
+        repo.path,
+        '--batch-approve',
+        'acme:notes:1.2.3#notes',
+        '--line',
+        'two words',
+        '--loud',
+        'acme:notes:1.2.3#more'
+      ]
+      assert cli.execute(cooked as String[]) == 0 : stderr.toString('UTF-8')
+      def notes = new File(repo, 'NOTES.md')
+      def expected = notes.text
+      def lock = new File(repo, 'cook.lock')
+      def recorded = lock.text
+      assert notes.delete()
+      def operands = ['acme:notes#notes', 'acme:notes:9.9.9#more']
+
+      stdout.reset()
+      assert cli.execute((['replicate', '--kitchen=' + repo.path, '--dry-run'] + operands) as String[]) == 0 :
+      stderr.toString('UTF-8')
+      assert stdout.toString('UTF-8').startsWith('Confirm acme:notes:1.2.3#notes\n  Everyone reads `NOTES.md`.\n')
+      assert stdout.toString('UTF-8').contains('\n+TWO WORDS\n')
+      assert stdout.toString('UTF-8').endsWith('\nWould create NOTES.md\n')
+      assert !notes.exists()
+      assert lock.text == recorded
+
+      assert cli.execute((['replicate', '-C', repo.path] + operands) as String[]) == 1
+      assert stderr.toString('UTF-8').startsWith('cook: replicate: approval required; nothing was written\n')
+      assert !notes.exists()
+      stderr.reset()
+      def declined = new ByteArrayOutputStream()
+      assert command(declined, stderr, 'n\n')
+      .execute((['replicate', '-C', repo.path] + operands) as String[]) == 1
+      assert stderr.toString('UTF-8') == 'cook: replicate: nothing was written\n  the answer was not y or yes\n'
+      assert !notes.exists()
+      assert lock.text == recorded
+
+      stdout.reset(); stderr.reset()
+      assert cli.execute((['-C', repo.path, 'replicate', '--batch-approve'] + operands) as String[]) == 0 :
+      stderr.toString('UTF-8')
+      assert stdout.toString('UTF-8').endsWith('Created NOTES.md\n\n' +
+      'After cooking acme:notes:1.2.3#notes\n  Read `NOTES.md`.\n')
+      assert notes.text == expected
+      assert lock.text == recorded
+      stdout.reset()
+      assert cli.execute((['replicate', '-C', repo.path] + operands) as String[]) == 0
+      assert stdout.toString('UTF-8') == 'Already cooked.\n'
+      assert stderr.toString('UTF-8') == ''
+    }
+  }
+
+  @Test void replicateReviewsChangedPathSourcesBeforeWriting() {
+    workspace { root, repo ->
+      new File(repo, 'NotesModel.groovy').text = Fixtures.NOTES_MODEL
+      def recipe = new File(repo, 'local.groovy')
+      recipe.text = """import acme.notes.Notes
+@param(value = ['line']) String line
+@ingredient(Notes) def notes
+notes.add(line)
+"""
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      assert cli.execute(['-C', repo.path, '--batch-approve', 'local.groovy', '--line=recorded'] as String[]) == 0
+      def lock = new File(repo, 'cook.lock')
+      def recorded = (lock.text =~ /sha256: "(\w+)"/)[0][1]
+      recipe.text = recipe.text.replace('notes.add(line)', "notes.add(line + ' again')")
+
+      stdout.reset()
+      assert command(stdout, stderr, 'yes\n')
+      .execute(['replicate', '-C', repo.path, 'local.groovy'] as String[]) == 0 : stderr.toString('UTF-8')
+      def current = (lock.text =~ /sha256: "(\w+)"/)[0][1]
+      assert current != recorded
+      assert stdout.toString('UTF-8').startsWith("""Changed source local.groovy
+  cook.lock recorded sha256 ${recorded}; the source now has sha256 ${current}
+  its sources changed; review the diff before approving
+
+--- a/NOTES.md
++++ b/NOTES.md
+""")
+      assert stdout.toString('UTF-8').contains('Write these changes? [y/N] Updated NOTES.md\nUpdated cook.lock\n')
+      assert new File(repo, 'NOTES.md').text.contains('\nrecorded again\n')
+    }
+  }
+
   @Test void discardsByLockNameButCookingStillRequiresAVersion() {
     workspace { root, repo ->
       Fixtures.notesCookbook(repo)
@@ -498,6 +590,42 @@ notes.add('local')
       assert !lock.exists()
 
       [
+        [['replicate'], 2, 'cook: replicate: A recipe is required'],
+        [['replicate', 'notes'], 2, 'cook: replicate: Not a recipe: notes'],
+        [
+          ['replicate', 'acme:notes#notes', '--batch-approve'],
+          2,
+          'cook: replicate: --batch-approve goes before the first recipe'
+        ],
+        [
+          ['replicate', 'acme:notes#notes', '--line=a'],
+          2,
+          'cook: replicate: replicate takes no recipe arguments: --line=a'
+        ],
+        [
+          ['replicate', 'acme:notes#notes', '-x'],
+          2,
+          'cook: replicate: replicate takes no recipe arguments: -x'
+        ],
+        [
+          ['--dry-run', 'replicate', 'acme:notes#notes'],
+          2,
+          'cook: replicate: --dry-run, --check, --batch-approve, --force and --skip go before a recipe, ' +
+          'not before a command'
+        ],
+        [
+          ['replicate', 'acme:notes#notes'],
+          1,
+          'cook: replicate: cook.lock lists no recipe acme:notes#notes; nothing was written'
+        ],
+        [
+          ['replicate', 'https://example.com/notes.groovy'],
+          1,
+          'cook: replicate: a URL is not a recipe'
+        ],
+        [['replicate', '--check'], 2, "cook: replicate: Unknown option: '--check'"],
+        [['replicate', '--force'], 2, "cook: replicate: Unknown option: '--force'"],
+        [['replicate', '--skip'], 2, "cook: replicate: Unknown option: '--skip'"],
         [['discard'], 2, 'cook: discard: A recipe is required'],
         [['discard', 'notes'], 2, 'cook: discard: Not a recipe: notes'],
         [
