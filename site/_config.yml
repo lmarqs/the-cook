@@ -29,10 +29,10 @@ exclude:
   - cli/src
   - core/src
   - infra/src
-  - plugin/src
-  - cookbook/agents/skills/agents-layout/templates
-  - cookbook/beads/templates
-  - cookbook/git/templates
+  - cookbook/test
+  - cookbook/src/agents/skills/agents-layout/templates
+  - cookbook/src/beads/templates
+  - cookbook/src/git/templates
   - site/preview
   - site/prepare
   - site/README.md

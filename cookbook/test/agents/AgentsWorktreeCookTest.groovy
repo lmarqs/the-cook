@@ -1,8 +1,8 @@
 package thecook
 
-import static thecook.Kitchens.COOKBOOK
+import static thecook.Cookbook.COOKBOOK
+import static thecook.Cookbook.publishDirectory
 import static thecook.Kitchens.cook
-import static thecook.Kitchens.publishDirectory
 
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper

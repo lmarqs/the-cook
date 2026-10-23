@@ -5,5 +5,4 @@ includeBuild('infra') { name = 'infra' }
 
 includeBuild('cli') { name = 'cli' }
 includeBuild('docs') { name = 'docs' }
-includeBuild('plugin') { name = 'plugin' }
 includeBuild('cookbook') { name = 'cookbook' }

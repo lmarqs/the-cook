@@ -14,21 +14,14 @@ import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
 /**
- * Cooks this repository's cookbook artifacts in a test kitchen: each artifact is published as a jar under the
- * kitchen's `repository/` directory at version `0.1.0`, and coordinates resolve from there.
+ * Cooks artifacts in a test kitchen: each artifact is published as a jar under the kitchen's `repository/` directory,
+ * and coordinates resolve from there.
  */
 class Kitchens {
-  /** The cookbook source directory, `cookbook/` in this repository. */
-  static final File COOKBOOK = new File(System.getProperty('cook.cookbook'))
-
-  /** The version every artifact is published at. */
-  static final String VERSION = '0.1.0'
-
-  /** Publishes `cookbook/<name>/` as `io.github.lmarqs.cookbook:<name>:0.1.0`, with `extra` files beside its own. */
-  static File publishDirectory(File kitchen, String name, Map<String, Object> extra = [:]) {
-    def directory = new File(COOKBOOK, name)
+  /** Publishes the files of `directory` at `address`, with `extra` files beside its own. */
+  static File publishDirectory(File kitchen, String address, File directory, Map<String, Object> extra = [:]) {
     Map<String, Object> files = files(directory).collectEntries { [it, new File(directory, it).bytes] }
-    publish(kitchen, "io.github.lmarqs.cookbook:${name}:${VERSION}", files + extra)
+    publish(kitchen, address, files + extra)
   }
 
   /** The paths of every file under `directory`, relative to it, in path order. */
@@ -86,9 +79,8 @@ class Kitchens {
     })
   }
 
-  /** The sha256 `cook.lock` records for the artifact `cookbook/<name>/`, as docs/architecture.md defines it. */
-  static String sourcesSha256(String name) {
-    def directory = new File(COOKBOOK, name)
+  /** The sha256 `cook.lock` records for an artifact of the files of `directory`, as docs/architecture.md defines it. */
+  static String sourcesSha256(File directory) {
     def lines = files(directory).collect { "${sha256(new File(directory, it).bytes)}  ${it}\n" }
     sha256(lines.join().getBytes('UTF-8'))
   }

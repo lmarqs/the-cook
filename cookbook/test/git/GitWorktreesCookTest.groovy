@@ -1,10 +1,10 @@
 package thecook
 
-import static thecook.Kitchens.COOKBOOK
+import static thecook.Cookbook.COOKBOOK
+import static thecook.Cookbook.publishDirectory
+import static thecook.Cookbook.sourcesSha256
 import static thecook.Kitchens.cook
 import static thecook.Kitchens.ignored
-import static thecook.Kitchens.publishDirectory
-import static thecook.Kitchens.sourcesSha256
 
 import org.junit.Rule
 import org.junit.Test

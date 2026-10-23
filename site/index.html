@@ -95,21 +95,21 @@ summary: the-cook writes the setup a repository shares, such as agent instructio
         <h3>One set of instructions and permissions for every harness</h3>
         <p><code>#seed</code> creates <code>AGENTS.md</code> and a permission policy. <code>#connect</code> renders the
           policy into Claude Code's permissions and Codex's sandbox and approval settings, with roles that narrow it for Claude Code.</p>
-        <a class="more" href="{{ '/cookbook/agents/' | relative_url }}">agents cookbook</a>
+        <a class="more" href="{{ '/cookbook/src/agents/' | relative_url }}">agents cookbook</a>
       </div>
       <div class="card">
         <p class="recipe">agents#connect</p>
         <h3>A fresh clone that already holds the setup</h3>
         <p>The <code>.claude/</code> and <code>.codex/</code> links into <code>.agents/</code> are committed, so a
           fresh clone, a cloud session or CI holds each harness's settings, hooks and skills without cooking.</p>
-        <a class="more" href="{{ '/cookbook/agents/' | relative_url }}">agents cookbook</a>
+        <a class="more" href="{{ '/cookbook/src/agents/' | relative_url }}">agents cookbook</a>
       </div>
       <div class="card">
         <p class="recipe">agents#connect · beads#tracker</p>
         <h3>Context when a session starts</h3>
         <p>Both harnesses run <code>.agents/hooks/session-start</code>, which adds the output of each
           <code>session-start.d/*.sh</code> to the session. <code>beads#tracker</code> can write one that prints the Beads prime text.</p>
-        <a class="more" href="{{ '/cookbook/beads/' | relative_url }}">beads cookbook</a>
+        <a class="more" href="{{ '/cookbook/src/beads/' | relative_url }}">beads cookbook</a>
       </div>
       <div class="card">
         <p class="recipe">git#worktrees · agents#connect</p>
@@ -117,14 +117,14 @@ summary: the-cook writes the setup a repository shares, such as agent instructio
         <p><code>git#worktrees</code> states the rule <code>.worktrees/&lt;branch&gt;</code> and seeds setup and
           teardown scripts. With <code>--worktree-setup</code>, Claude Code's worktree hooks run setup in each new
           worktree, and removal deletes the branch only once its commits have landed.</p>
-        <a class="more" href="{{ '/cookbook/git/' | relative_url }}">git cookbook</a>
+        <a class="more" href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a>
       </div>
       <div class="card">
         <p class="recipe">ralph#ralph-tui</p>
         <h3>Unattended loop runs</h3>
         <p><code>bin/run</code> runs ralph-tui in <code>.worktrees/ralph/&lt;name&gt;</code> on its own branch.
           <code>bin/clean</code> refuses to delete commits that have not landed, unless given <code>--force</code>.</p>
-        <a class="more" href="{{ '/cookbook/ralph/' | relative_url }}">ralph cookbook</a>
+        <a class="more" href="{{ '/cookbook/src/ralph/' | relative_url }}">ralph cookbook</a>
       </div>
       <div class="card">
         <p class="recipe">--share=clone · replicate</p>

@@ -1,6 +1,7 @@
 plugins {
   id 'groovy'
   id 'java-library'
+  id 'java-test-fixtures'
 }
 
 group = 'io.github.lmarqs'
@@ -31,11 +32,12 @@ dependencies {
     }
   }
   testImplementation 'junit:junit:4.13.2'
+  testFixturesApi 'junit:junit:4.13.2'
 }
 
 tasks.named('test') {
   useJUnit()
-  systemProperty 'cook.cookbook', file('../cookbook').absolutePath
+  systemProperty 'cook.cookbook', file('../cookbook/src').absolutePath
   // The tests cook the cookbook's recipes, so a cookbook change must rerun them. Its build outputs are left out:
   // the cookbook's publish tasks rewrite them during the same build.
   inputs.files(fileTree('../cookbook') { exclude 'build/**', '.gradle/**' })

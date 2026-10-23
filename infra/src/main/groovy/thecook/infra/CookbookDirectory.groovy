@@ -7,9 +7,8 @@ import thecook.cookbook.CookbookRepository
 
 /**
  * A cookbook's source directory at a `file:` URI, where `cookbook.toml` names its `group`. It serves each artifact of
- * that group at any version from the files of its top-level directory, as they are, so an edit cooks with no build.
- * Artifacts are the directories that the cookbook's build packages: each one not named `build` and not hidden. Hidden
- * files are left out.
+ * that group at any version from the files of its directory under `src/`, as they are, so an edit cooks with no build.
+ * Hidden files are left out.
  */
 final class CookbookDirectory implements CookbookRepository {
   final URI uri
@@ -40,9 +39,9 @@ final class CookbookDirectory implements CookbookRepository {
 
   CookbookArtifact artifact(Coordinates coordinates) {
     def name = coordinates.artifact
-    def root = new File(directory, name)
+    def root = new File(directory, "src/${name}")
 
-    if (coordinates.group != group || name == 'build' || !root.isDirectory()) {
+    if (coordinates.group != group || hidden(name) || !root.isDirectory()) {
       return null
     }
 

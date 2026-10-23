@@ -12,13 +12,14 @@ import java.util.zip.ZipOutputStream
 class CookbookDirectoryTest {
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
-  @Test void servesAnArtifactAtAnyVersionFromItsFilesLeavingHiddenOnesOut() {
+  @Test void servesAnArtifactAtAnyVersionFromItsFilesUnderSrcLeavingHiddenOnesOut() {
     def book = cookbook([
-      'notes/notes.groovy': 'notes',
-      'notes/Note.groovy': 'class Note {}',
-      'notes/templates/NOTES.md': 'resource',
-      'notes/.DS_Store': 'hidden',
-      'notes/.cache/x.groovy': 'hidden',
+      'src/notes/notes.groovy': 'notes',
+      'src/notes/Note.groovy': 'class Note {}',
+      'src/notes/templates/NOTES.md': 'resource',
+      'src/notes/.DS_Store': 'hidden',
+      'src/notes/.cache/x.groovy': 'hidden',
+      'test/notes/NotesTest.groovy': 'class NotesTest {}',
     ])
 
     def artifact = book.artifact(Coordinates.parse('acme:notes:1.2.3'))
@@ -37,12 +38,17 @@ class CookbookDirectoryTest {
     assert artifact.sha256 == CookbookArtifact.fromZip(coordinates, jar, coordinates.packagePath).sha256
   }
 
-  @Test void holdsOnlyItsGroupsArtifacts() {
-    def book = cookbook(['notes/notes.groovy': 'notes', 'build/build.groovy': 'packaging output'])
+  @Test void holdsOnlyItsGroupsArtifactsUnderSrc() {
+    def book = cookbook([
+      'src/notes/notes.groovy': 'notes',
+      'build/build.groovy': 'packaging output',
+      'test/test.groovy': 'a test',
+      'top/top.groovy': 'outside src',
+    ])
 
     assert book.artifact(Coordinates.parse('other:notes:1.2.3')) == null
     assert book.artifact(Coordinates.parse('acme:missing:1.2.3')) == null
-    assert book.artifact(Coordinates.parse('acme:build:1.2.3')) == null
+    ['build', 'test', 'top', 'src'].each { assert book.artifact(Coordinates.parse("acme:${it}:1.2.3")) == null }
     assert book.toString() == new File(folder.root, 'book').toURI().toString()
   }
 

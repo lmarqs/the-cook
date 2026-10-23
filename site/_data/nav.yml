@@ -31,14 +31,14 @@
     - title: Cookbooks
       path: cookbook/README.md
     - title: agents
-      path: cookbook/agents/README.md
-      match: cookbook/agents/
+      path: cookbook/src/agents/README.md
+      match: cookbook/src/agents/
     - title: git
-      path: cookbook/git/README.md
+      path: cookbook/src/git/README.md
     - title: beads
-      path: cookbook/beads/README.md
+      path: cookbook/src/beads/README.md
     - title: ralph
-      path: cookbook/ralph/README.md
+      path: cookbook/src/ralph/README.md
 - section: Inside Cook
   pages:
     - title: Core
