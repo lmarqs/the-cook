@@ -44,9 +44,8 @@ final class CookbookReplicate {
         null, 'cook it once with its arguments'))
       }
 
-      new RecipeRequest(lock.source(name), recorded.collect { argument ->
-        def equals = argument.indexOf('=')
-        Argument.inline(argument.substring(2, equals), argument.substring(equals + 1))
+      new RecipeRequest(lock.source(name), recorded.collectMany { option, values ->
+        values.collect { Argument.inline(option, it) }
       })
     }
     new CookbookCook(destination, repositories, ExistingSeed.REFUSE, true).propose(requests)

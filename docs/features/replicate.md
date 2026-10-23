@@ -55,7 +55,7 @@ choose the order deliberately; the last writer wins, as in [ordered operations](
 
 The whole request is refused before any writes if a recipe is named twice, is absent from `cook.lock`, or has no
 recorded arguments. An older lock entry without an `arguments` field needs one ordinary cook with its arguments
-first. `arguments: []` means no arguments were supplied and can be replicated. Recorded arguments contain supplied
+first. `arguments: {}` means no arguments were supplied and can be replicated. Recorded arguments contain supplied
 values, including explicitly supplied defaults; unsupplied defaults come from the recipe when it runs.
 
 ### Source drift and changed arguments

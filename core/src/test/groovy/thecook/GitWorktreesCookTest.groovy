@@ -51,7 +51,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:git#worktrees"
     source: "${WORKTREES}"
     sha256: "${sourcesSha256('git')}"
-    arguments: []
+    arguments: {}
     owns:
       sections:
         - file: ".gitignore"

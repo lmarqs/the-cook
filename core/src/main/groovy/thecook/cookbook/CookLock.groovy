@@ -4,6 +4,7 @@ import groovy.json.JsonOutput
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
+import thecook.model.Diagnostic
 
 /**
  * `cook.lock`: for each cooked recipe, its short name, its source, the source's sha256, its arguments and the sections,
@@ -47,8 +48,8 @@ final class CookLock {
     data.recipes.each { Map recipe ->
       def owns = (Map) (recipe.owns ?: [:])
       def targets = KINDS.collectMany { kind, create -> (owns["${kind}s"] ?: []).collect(create) }
-      lock.entries[recipe.name] = new Entry(recipe.name, recipe.source, recipe.sha256, (List<String>) recipe.arguments,
-          targets)
+      def arguments = readArguments((String) recipe.name, recipe.arguments)
+      lock.entries[recipe.name] = new Entry(recipe.name, recipe.source, recipe.sha256, arguments, targets)
     }
     lock
   }
@@ -63,8 +64,11 @@ final class CookLock {
     entries[name]?.source
   }
 
-  /** The normalized arguments `name` was last cooked with, or `null` when they were not recorded. */
-  List<String> arguments(String name) {
+  /**
+   * The arguments `name` was last cooked with, each param's first name with its values, or `null` when they were not
+   * recorded.
+   */
+  Map<String, List<String>> arguments(String name) {
     entries[name]?.arguments
   }
 
@@ -98,7 +102,7 @@ final class CookLock {
   }
 
   /** Records `name` as cooked from `source` with `arguments`, owning `targets`, taking them from prior owners. */
-  void record(String name, String source, String sha256, List<String> arguments, List<Target> targets) {
+  void record(String name, String source, String sha256, Map<String, List<String>> arguments, List<Target> targets) {
     entries.each { other, entry ->
       if (other != name) {
         entry.targets.removeAll { owned ->
@@ -120,7 +124,8 @@ final class CookLock {
       lines << "    sha256: ${quote(entry.sha256)}"
 
       if (entry.arguments != null) {
-        lines << "    arguments: ${JsonOutput.toJson(entry.arguments)}"
+        lines << (entry.arguments ? '    arguments:' : '    arguments: {}')
+        entry.arguments.each { option, values -> lines << "      ${quote(option)}: ${JsonOutput.toJson(values)}" }
       }
 
       def groups = KINDS.keySet()
@@ -133,6 +138,25 @@ final class CookLock {
       }
     }
     lines.join('\n') + '\n'
+  }
+
+  private static Map<String, List<String>> readArguments(String name, Object recorded) {
+    if (recorded == null) {
+      return null
+    }
+
+    boolean readable = recorded instanceof Map && ((Map) recorded).every { option, values ->
+      option instanceof String && values instanceof List && ((List) values).every { it instanceof String }
+    }
+
+    if (!readable) {
+      throw new IllegalArgumentException(Diagnostic.text(
+      "${PATH} records the arguments of ${name} in a form Cook cannot read",
+      'each argument is a name with a list of values, such as "mode": ["fast"]',
+      "remove the arguments field of ${name}, then cook it again with its arguments"))
+    }
+
+    ((Map<String, List<String>>) recorded).collectEntries { option, values -> [(option): new ArrayList<>(values)] }
   }
 
   private static String quote(String value) {
@@ -154,14 +178,14 @@ final class CookLock {
     final String name
     final String source
     final String sha256
-    final List<String> arguments
+    final Map<String, List<String>> arguments
     final List<Target> targets
 
-    Entry(String name, String source, String sha256, List<String> arguments, List<Target> targets) {
+    Entry(String name, String source, String sha256, Map<String, List<String>> arguments, List<Target> targets) {
       this.name = name
       this.source = source
       this.sha256 = sha256
-      this.arguments = arguments == null ? null : new ArrayList<>(arguments)
+      this.arguments = arguments == null ? null : new LinkedHashMap<>(arguments)
       this.targets = new ArrayList<>(targets)
     }
   }

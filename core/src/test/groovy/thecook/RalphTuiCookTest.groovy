@@ -94,7 +94,9 @@ recipes:
   - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
     source: "${RALPH}"
     sha256: "${sourcesSha256('ralph')}"
-    arguments: ["--harness=claude","--harness=codex","--tracker=beads","--tracker=json"]
+    arguments:
+      "harness": ["claude","codex"]
+      "tracker": ["beads","json"]
     owns:
       sections:
         - file: ".gitignore"

@@ -181,7 +181,8 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
     sha256: "3f5a…"
-    arguments: ["--harness=claude","--harness=codex"]
+    arguments:
+      "harness": ["claude","codex"]
     owns:
       sections:
         - file: ".agents/adapters/codex/rules/cook.rules"
@@ -204,12 +205,13 @@ newline, sorted by the UTF-8 bytes of the path. The path is relative to the repo
 the artifact's directory for coordinates, separated by `/`, and both hashes are written in lower-case hex. Because
 the lock is committed, every clone has the same ownership information.
 
-`arguments` is a list of `--name=value` strings in parameter declaration order, using the parameter's first name.
-Values follow parameter normalization: paths are normalized, duplicates removed, and values sorted when the parameter
-requests it. A supplied yes-or-no flag records `true` or `false`. Unsupplied parameters are omitted; explicitly
-supplied default values remain recorded.
-`arguments: []` records that no arguments were supplied. A missing field means arguments were not recorded, so
-replicate refuses that entry and asks the person to cook it once with its arguments. The YAML remains `version: 1`.
+`arguments` maps each supplied parameter's first name to the list of its values, in parameter declaration order.
+Names and values are quoted strings, so no value is read as another type. Values follow parameter normalization:
+paths are normalized, duplicates removed, and values sorted when the parameter requests it. A supplied yes-or-no flag
+records `"true"` or `"false"`. Unsupplied parameters are omitted; explicitly supplied default values remain recorded.
+`arguments: {}` records that no arguments were supplied. A missing field means arguments were not recorded, so
+replicate refuses that entry and asks the person to cook it once with its arguments. An `arguments` field of any other
+shape makes the lock unreadable, and the error names the recipe. The YAML remains `version: 1`.
 
 Cooking works without the lock. When the lock is missing or names no entry for a recipe, Cook evaluates the recipe as
 usual and shows the diff; it has no previous ownership to compare against, so it removes nothing on the recipe's
@@ -257,7 +259,7 @@ a run, use the repository's version control.
 the same evaluation, combined diff, approval and rollback as cooking. It accepts short lock names, versioned
 coordinates and recipe paths; each identifies the lock entry by short name. The recorded source selects the version,
 even when the operand names another. A missing entry or an entry without recorded arguments is refused before any
-recipe runs; `arguments: []` is valid. A changed source, including a recipe path, is reported before the diff rather
+recipe runs; `arguments: {}` is valid. A changed source, including a recipe path, is reported before the diff rather
 than skipped or restored from a copy. Arguments that no longer bind are reported with their recorded line and a next
 step to cook with arguments. Replicate evaluates against current content, so it rebuilds output without promising
 identical bytes from changed sources, defaults or other inputs.
@@ -385,9 +387,9 @@ Other documents cite these requirements by number.
 - **FR-14:** The repository commits `cook.lock`, a YAML file at its root. For each cooked recipe it records the short
   name, the source as a repository-relative path or coordinates, the sha256 of its sources (for a path, the recipe,
   models beside it and its `@resource` files; for coordinates, the artifact's sources), the normalized supplied
-  arguments as `--name=value` strings in parameter declaration order, and the owned sections, keys, files and links.
-  Defaulted parameters are omitted; `arguments: []` means none were supplied, while a missing field means they
-  were not recorded. Replicate evaluates named recipes again from the recorded sources and arguments in operand
+  arguments as each parameter's first name with its values, in declaration order, and the owned sections, keys, files
+  and links. Defaulted parameters are omitted; `arguments: {}` means none were supplied, while a missing field means
+  they were not recorded. Replicate evaluates named recipes again from the recorded sources and arguments in operand
   order through cooking's review and approval. It refuses a missing entry or unrecorded arguments and reports changed
   sources, including paths, before the diff.
 - **FR-15:** Discarding recipes removes what `cook.lock` lists for each, without evaluating them: a section with its

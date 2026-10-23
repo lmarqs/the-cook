@@ -66,7 +66,8 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.1.0#connect"
     sha256: "${sha256}"
-    arguments: ["--harness=claude"]
+    arguments:
+      "harness": ["claude"]
     owns:
       sections:
         - file: ".gitignore"
@@ -85,7 +86,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.1.0#seed"
     sha256: "${sha256}"
-    arguments: []
+    arguments: {}
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
@@ -1085,7 +1086,7 @@ text.text = 'first\\n'
     assert new File(kitchen, 'cook.lock').text.contains("""  - name: "recipes/setup"
     source: "recipes/setup.groovy"
     sha256: "${recorded}"
-    arguments: []
+    arguments: {}
 """)
     assert cook(kitchen, './recipes/setup.groovy', [:]).changes.empty
 
@@ -1277,13 +1278,16 @@ text.text = agent.join(',')
         [agent: ['codex', 'claude', 'codex'], m: ['slow'], file: ['./b.md', 'a.md', 'b.md']]).commit()
 
     def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
-    def expected = ['--agent=codex', '--agent=claude', '--mode=slow', '--file=a.md', '--file=b.md']
-    assert lock.arguments('recipes/setup') == expected
-    assert new File(kitchen, 'cook.lock').text.contains(
-    '    arguments: ["--agent=codex","--agent=claude","--mode=slow","--file=a.md","--file=b.md"]\n')
+    assert lock.arguments('recipes/setup') == [agent: ['codex', 'claude'], mode: ['slow'], file: ['a.md', 'b.md']]
+    assert new File(kitchen, 'cook.lock').text.contains('''\
+    arguments:
+      "agent": ["codex","claude"]
+      "mode": ["slow"]
+      "file": ["a.md","b.md"]
+''')
   }
 
-  @Test void recordsAnEmptyArgumentListWhenNoneAreGiven() {
+  @Test void recordsAnEmptyArgumentMapWhenNoneAreGiven() {
     def kitchen = kitchen()
     recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
     recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
@@ -1295,20 +1299,42 @@ text.text = mode
     cook(kitchen, 'recipes/setup.groovy', [:]).commit()
 
     def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
-    assert lock.arguments('recipes/setup') == []
-    assert new File(kitchen, 'cook.lock').text.contains('    arguments: []\n')
+    assert lock.arguments('recipes/setup') == [:]
+    assert new File(kitchen, 'cook.lock').text.contains('    arguments: {}\n')
   }
 
-  @Test void quotesArgumentValuesAsJsonStringsAndReadsThemBackWithoutSplitting() {
+  @Test void quotesArgumentNamesAndValuesAsJsonStringsSoNoneIsReadAsAnotherType() {
     def lock = new CookLock()
-    def arguments = ['--note=with spaces', '--note="quoted"\\path\nnext', '--flag=true']
+    def arguments = [note: ['with spaces', '"quoted"\\path\nnext'], yes: ['true'], count: ['1']]
     lock.record('recipes/setup', 'recipes/setup.groovy', 'abc', arguments, [])
 
     def rendered = lock.render()
 
-    assert rendered.readLines()[6] ==
-    '    arguments: ["--note=with spaces","--note=\\"quoted\\"\\\\path\\nnext","--flag=true"]'
+    assert rendered.readLines()[6..9] == [
+      '    arguments:',
+      '      "note": ["with spaces","\\"quoted\\"\\\\path\\nnext"]',
+      '      "yes": ["true"]',
+      '      "count": ["1"]',
+    ]
     assert CookLock.parse(rendered).arguments('recipes/setup') == arguments
+  }
+
+  @Test void refusesALockWhoseArgumentsAreNotNamesWithListsOfValues() {
+    ['["--mode=fast"]', '{"mode": "fast"}', '{"mode": [1]}',].each { arguments ->
+      def text = """version: 1
+recipes:
+  - name: "recipes/setup"
+    source: "recipes/setup.groovy"
+    sha256: "abc"
+    arguments: ${arguments}
+    owns: {}
+"""
+      def error = shouldFail(IllegalArgumentException) { CookLock.parse(text) }
+
+      assert error.message == 'cook.lock records the arguments of recipes/setup in a form Cook cannot read\n' +
+      '  each argument is a name with a list of values, such as "mode": ["fast"]\n' +
+      '  remove the arguments field of recipes/setup, then cook it again with its arguments'
+    }
   }
 
   @Test void readsAnOldLockWithoutArgumentsAsNotRecordedAndPreservesItsOwnership() {

@@ -33,9 +33,9 @@ removed without disturbing anything else.
    not remove output that recipe A owns, even when A is omitted from the invocation.
 3. The repository commits `cook.lock`, a YAML file at its root ([example](../architecture.md#ownership-and-the-lock)).
    - For each cooked recipe it records the short name, the source as a repository-relative path or
-     coordinates, the source's sha256, the normalized supplied arguments as `--name=value` strings in declaration
-     order, and the owned sections, keys, files and links. Defaulted parameters are omitted; no supplied arguments is
-     `arguments: []`. An entry without the field has no recorded arguments.
+     coordinates, the source's sha256, the normalized supplied arguments as each parameter's first name with its
+     values, in declaration order, and the owned sections, keys, files and links. Defaulted parameters are omitted; no
+     supplied arguments is `arguments: {}`. An entry without the field has no recorded arguments.
    - Cooking a new version of a recipe also removes what its previous version owned and the new version no longer
      declares; the diff shows that removal.
    - Without a lock entry for a recipe, cooking removes nothing on its behalf.
@@ -159,6 +159,6 @@ Must be maintained:
   invocation evaluates again.
 - In a fresh clone with ignored output absent, replicating a named recipe rebuilds it from the recorded source and
   arguments and shows the combined diff before approval. A second replicate evaluates again and can have no changes.
-- Replicate refuses an entry without recorded arguments but accepts `arguments: []`; a versioned operand still uses
+- Replicate refuses an entry without recorded arguments but accepts `arguments: {}`; a versioned operand still uses
   the recorded source version, and a changed source is reported before the diff.
 - A write failure rolls back completed batch changes and leaves no file of Cook's behind.

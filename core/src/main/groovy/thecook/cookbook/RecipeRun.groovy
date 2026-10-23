@@ -17,7 +17,8 @@ final class RecipeRun {
   private RecipeRun() { }
 
   /**
-   * Runs `recipe` with `arguments` and returns its ingredients and normalized arguments in declaration order.
+   * Runs `recipe` with `arguments` and returns its ingredients, and the arguments given, normalized: each param's first
+   * name with its values, in declaration order.
    * A bare `--name` is `true` for a yes-or-no param and an error for any other.
    * `resources` holds the text of each `@resource` path.
    * `name` is the recipe's own name, for its `@recipe` fields. `newIngredient` creates an instance of a model type at a
@@ -33,7 +34,7 @@ final class RecipeRun {
           .value()
           .toList()
     }
-    List<String> line = [name]
+    Map<String, List<String>> given = [:]
 
     try {
       def unknown = arguments*.name.findAll { !(it in names) }
@@ -46,7 +47,11 @@ final class RecipeRun {
       params.each { field ->
         def bound = bind(field, arguments, recipe)
         set(script, field, bound.value)
-        line.addAll(bound.given ? bound.values.collect { "${bound.option}=${it}".toString() } : [])
+
+        if (bound.given) {
+          def declared = field.getAnnotation(Param)
+          given[declared.value().first()] = bound.values
+        }
       }
     } catch (IllegalArgumentException error) {
       throw new ArgumentBindingException(error)
@@ -66,6 +71,11 @@ final class RecipeRun {
         "${field.name} has the type ${field.type.simpleName}, which the recipe name cannot have")
       }
 
+      def line = [name] + given.collectMany { option, values ->
+        values.collect {
+          "--${option}=${it}".toString()
+        }
+      }
       set(script, field, field.getAnnotation(Self).arguments() ? line.join(' ') : name)
     }
     def ingredients = fields.findAll { it.getAnnotation(Injected) }.collect { field ->
@@ -75,7 +85,7 @@ final class RecipeRun {
       instance
     }
     script.run()
-    [ingredients: ingredients, arguments: line.drop(1)]
+    [ingredients: ingredients, arguments: given]
   }
 
   /**

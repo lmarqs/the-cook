@@ -327,12 +327,11 @@ more
 
 --- a/cook.lock
 +++ b/cook.lock
-@@ -12,7 +12,7 @@
-   - name: "acme:notes#notes"
-     source: "acme:notes:1.2.3#notes"
+@@ -14,6 +14,7 @@
      sha256: "${sha256}"
--    arguments: ["--line=second"]
-+    arguments: ["--line=second","--loud=false"]
+     arguments:
+       "line": ["second"]
++      "loud": ["false"]
      owns:
        sections:
          - file: "NOTES.md"

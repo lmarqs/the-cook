@@ -44,10 +44,10 @@ class AgentsWorktreeCookTest {
     assert hooks.WorktreeRemove == [[hooks: [command('remove')]]]
     def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
     assert lock.arguments('io.github.lmarqs.cookbook:agents#connect') == [
-      '--harness=claude',
-      '--worktree-root=.worktrees',
-      '--worktree-setup=.worktrees/setup',
-      '--worktree-teardown=.worktrees/teardown'
+      harness: ['claude'],
+      'worktree-root': ['.worktrees'],
+      'worktree-setup': ['.worktrees/setup'],
+      'worktree-teardown': ['.worktrees/teardown'],
     ]
     def owned = lock.owned('io.github.lmarqs.cookbook:agents#connect')
     assert new FileTarget(HOOK) in owned
