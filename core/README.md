@@ -18,8 +18,8 @@ The core reaches no network and runs no external command. It declares `CookbookR
 
 1. `RecipeLoader` resolves each operand. Coordinates read the artifact from the first of the given repositories that
    holds it (`CookbookRepositories`). A path must resolve inside the kitchen, symbolic links included, and its models
-   are the upper-case `.groovy` files in its directory. `CookbookArtifact` and `RecipeLoader` leave out every
-   `.test.groovy` file, a cookbook's test of its recipes. Each artifact and directory is read, and its models compiled,
+   are the upper-case `.groovy` files in its directory. `CookbookArtifact` leaves out an artifact's `test/`
+   directory, which holds the cookbook's tests of its recipes. Each artifact and directory is read, and its models compiled,
    once per invocation.
 2. `CookbookCompiler` compiles an artifact's or a directory's models in a class loader of their own, then the recipe in
    its own class loader over them. Every unit imports the author's annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and

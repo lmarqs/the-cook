@@ -200,7 +200,7 @@ The source is a path relative to the repository root or the recipe's coordinates
 list, so a key containing a dot stays one segment; `links` lists the symbolic links a recipe owns. The sha256 identifies
 the recipe version that produced the recorded ownership. It is the hash of the recipe's sources: for a path, the
 recipe file, the models beside it and the files its `@resource` lines name; for coordinates, the artifact's files
-other than its tests, the same whichever repository supplied them. The hash is the sha256 of one line `<sha256 of the file>  <path>` per file, each ending in a
+other than its `test/` directory, the same whichever repository supplied them. The hash is the sha256 of one line `<sha256 of the file>  <path>` per file, each ending in a
 newline, sorted by the UTF-8 bytes of the path. The path is relative to the repository root for a recipe path and to
 the artifact's directory for coordinates, separated by `/`, and both hashes are written in lower-case hex. Because
 the lock is committed, every clone has the same ownership information.
@@ -282,9 +282,9 @@ A recipe reads a file, such as a template, through a `@resource('<path>')` line,
 recipe path, the path resolves from the recipe's directory, and a file outside the repository, directly or through a
 symbolic link, is refused, as is a recipe operand outside it; move the file into the repository. For coordinates, the
 path names a file in the recipe's artifact (FR-22). A recipe compiles against the models of its own artifact: for
-coordinates, the artifact's models; for a recipe path, the upper-case `.groovy` files in its directory. A file named
-`<name>.test.groovy` is a cookbook's test of its recipes: cooking never reads it, so it is no recipe, no model and no
-source in the hash `cook.lock` records.
+coordinates, the artifact's models; for a recipe path, the upper-case `.groovy` files in its directory. An artifact's
+`test/` directory holds the cookbook's tests of its recipes: cooking never reads it, so nothing in it is a recipe, a
+model, a resource or a source in the hash `cook.lock` records.
 
 For example, run this invocation from `/work/project`:
 
@@ -427,8 +427,8 @@ Other documents cite these requirements by number.
   and deletions stay within that directory, including paths resolved through symlinks.
 - **FR-22:** A recipe reads a file through `@resource`, resolved from a recipe path's directory inside the repository
   or from the recipe's artifact. A local operand or resource outside the repository is refused. A recipe compiles
-  against the models of its own artifact, or for a recipe path, the models in its directory. Cooking never reads a
-  `.test.groovy` file.
+  against the models of its own artifact, or for a recipe path, the models in its directory. Cooking never reads an
+  artifact's `test/` directory.
 - **FR-25:** Cooking does not require `cook.lock`. Every invocation evaluates the supplied recipes against current
   content; nothing marks a recipe as already cooked. Without a lock entry, cooking removes nothing on a recipe's
   behalf.

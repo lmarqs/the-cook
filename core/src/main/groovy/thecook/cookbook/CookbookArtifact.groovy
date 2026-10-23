@@ -7,8 +7,8 @@ import java.util.zip.ZipInputStream
 
 /**
  * The files of one cookbook artifact: its README, its recipes, named in lower case, and its models, named in upper
- * case, each a `.groovy` file at the top of the artifact. A `.test.groovy` file is the cookbook's test of its recipes,
- * not part of the artifact.
+ * case, each a `.groovy` file at the top of the artifact. Its `test/` directory holds the cookbook's tests of its
+ * recipes, which are not part of the artifact.
  */
 final class CookbookArtifact {
   final Coordinates coordinates
@@ -89,9 +89,9 @@ final class CookbookArtifact {
         .sort()
   }
 
-  /** Whether the file at `path` is a test of the cookbook's recipes, which cooking never reads. */
+  /** Whether the file at `path` is in the artifact's `test/` directory, which cooking never reads. */
   static boolean isTest(String path) {
-    path.endsWith('.test.groovy')
+    path.startsWith('test/')
   }
 
   /** The sha256 of `files`, keyed by path, as `sha256` defines it. */

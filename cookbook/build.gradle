@@ -12,9 +12,13 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 sourceSets {
   test {
     groovy {
-      // A recipe's test sits beside it as <name>.test.groovy, which cooking never reads.
+      // An artifact's tests sit in its test/ directory, which cooking never reads.
       srcDirs = ['.']
-      include '*/*.test.groovy', 'Cookbook.groovy'
+      include '*/test/**/*.groovy', 'Cookbook.groovy'
+    }
+    resources {
+      srcDirs = file('.').listFiles().findAll { new File(it, 'test').isDirectory() }.collect { new File(it, 'test') }
+      exclude '**/*.groovy'
     }
   }
 }

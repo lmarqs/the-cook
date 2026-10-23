@@ -81,10 +81,10 @@ class Kitchens {
 
   /**
    * The sha256 `cook.lock` records for an artifact of the files of `directory`, as docs/architecture.md defines it: its
-   * `.test.groovy` files are left out.
+   * `test/` directory is left out.
    */
   static String sourcesSha256(File directory) {
-    def sources = files(directory).findAll { !it.endsWith('.test.groovy') }
+    def sources = files(directory).findAll { !it.startsWith('test/') }
     def lines = sources.collect { "${sha256(new File(directory, it).bytes)}  ${it}\n" }
     sha256(lines.join().getBytes('UTF-8'))
   }

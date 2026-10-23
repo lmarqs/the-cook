@@ -1096,24 +1096,6 @@ text.text = 'first\\n'
     assert !again.after('cook.lock').contains(recorded)
   }
 
-  @Test void aTestFileBesideARecipePathIsNeitherAModelNorHashedWithTheRecipe() {
-    def kitchen = kitchen()
-    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
-    recipe(kitchen, 'recipes/Text.test.groovy', 'this is not a model\n')
-    recipe(kitchen, 'recipes/setup.test.groovy', 'this is not a recipe\n')
-    recipe(kitchen, 'recipes/setup.groovy', """@help('Writes a file.')
-import acme.text.Text
-@ingredient(Text) def text
-text.text = 'first\\n'
-""")
-
-    cook(kitchen, 'recipes/setup.groovy', [:]).commit()
-
-    assert new File(kitchen, 'OUT.md').text == 'first\n'
-    def recorded = sourcesSha256(kitchen, ['recipes/Text.groovy', 'recipes/setup.groovy'])
-    assert new File(kitchen, 'cook.lock').text.contains("sha256: \"${recorded}\"")
-  }
-
   @Test void aModelBesideARecipePathReadsTheFilesOfItsDirectory() {
     def kitchen = kitchen()
     def source = new File(COOKBOOK, 'agents')
@@ -2004,7 +1986,7 @@ config.migrated = migrated
           .relativize(it.toPath())
           .toString()
     }
-    sourcesSha256(directory, paths.findAll { !it.endsWith('.test.groovy') })
+    sourcesSha256(directory, paths.findAll { !it.startsWith('test/') })
   }
 
   private static String sourcesSha256(File directory, List<String> paths) {
