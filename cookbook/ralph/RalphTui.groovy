@@ -92,13 +92,15 @@ class RalphTui {
   /** The worker wrapper `workerCheck` writes, which each seeded entry then names as its `command`. */
   static final String WORKER = '.ralph-tui/bin/worker'
 
-  private static final Map<String, List<String>> FLAGS = [
-    claude: ['--permission-prompts', 'none', '--permission-mode', 'acceptEdits'],
-    codex: ['-c', 'approval_policy=never', '-c', 'sandbox_workspace_write.network_access=false'],
-  ]
-  private static final Map<String, List<String>> OPTIONS = [
-    claude: ['skipPermissions = false'],
-    codex: ['fullAuto = false', 'sandbox = "workspace-write"'],
+  private static final Map<String, Map<String, List<String>>> AGENTS = [
+    claude: [
+      flags: ['--permission-prompts', 'none', '--permission-mode', 'acceptEdits'],
+      options: ['skipPermissions = false'],
+    ],
+    codex: [
+      flags: ['-c', 'approval_policy=never', '-c', 'sandbox_workspace_write.network_access=false'],
+      options: ['fullAuto = false', 'sandbox = "workspace-write"'],
+    ],
   ]
 
   private List<String> harnesses = []
@@ -242,19 +244,7 @@ class RalphTui {
       '',
       '[errorHandling]',
     ] + errorHandling() + ['', '[parallel]', 'directMerge = true',]
-    harnesses.each { harness ->
-      def defaultFlags = ((workerCheck ? [harness] : []) + flags(harness)).collect { quoted(it) }
-      def plugin = "plugin = \"${harness}\"" + (workerCheck ? "\ncommand = \"${WORKER}\"" : '')
-      lines += [
-        '',
-        '[[agents]]',
-        "name = \"${harness}\"",
-        plugin,
-        "defaultFlags = [${defaultFlags.join(', ')}]",
-        '',
-        '[agents.options]',
-      ] + OPTIONS[harness]
-    }
+    harnesses.each { harness -> lines += [''] + entry(harness) }
     lines.join('\n') + '\n'
   }
 
@@ -373,10 +363,20 @@ class RalphTui {
     trackers == TRACKERS ? '(--epic <id> | --prd <file>)' : trackers == ['beads'] ? '--epic <id>' : '--prd <file>'
   }
 
+  private List<String> entry(String harness) {
+    def defaultFlags = ((workerCheck ? [harness] : []) + flags(harness)).collect { quoted(it) }
+    ['[[agents]]', "name = \"${harness}\"", "plugin = \"${harness}\""] +
+    (workerCheck ? ["command = \"${WORKER}\""] : []) +
+    ["defaultFlags = [${defaultFlags.join(', ')}]", '', '[agents.options]'] + AGENTS[harness].options
+  }
+
   private List<String> flags(String harness) {
-    def extra = harness == 'claude' && workerRole ? ['--settings', "${ROLES}/${workerRole}.json".toString()] :
-    harness == 'claude' && workerSettings ? ['--settings', workerSettings] : []
-    FLAGS[harness] + extra
+    AGENTS[harness].flags + (extraFlags()[harness] ?: [])
+  }
+
+  private Map<String, List<String>> extraFlags() {
+    def settings = workerRole ? "${ROLES}/${workerRole}.json".toString() : workerSettings
+    settings ? [claude: ['--settings', settings]] : [:]
   }
 
   private void checkHarnesses() {
