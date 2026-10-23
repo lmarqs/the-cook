@@ -359,8 +359,8 @@ other recipes:
   time. Workers resolve it in the run worktree, so it names a committed file by its path from the repository root,
   without `..` segments and outside `.ralph-tui/`, where Git ignores all but the configuration, prompts and launcher.
 - The `--worker-settings=codex:<path>` file, and a Codex role's file, in the draft: read at cook time, and its keys
-  written into the configuration as `-c` flags. Without the file, or when it is not TOML, or holds a value `-c` cannot
-  carry, cooking is refused.
+  written into the configuration as `-c` flags. Without the file, or when it is not TOML, or holds a key or value `-c`
+  cannot carry, cooking is refused.
 - The `--worktree-setup` file, at run time, only with `--worktree-setup`: `bin/run` runs it in each run worktree it
   creates and fails the run when it is missing there, not executable or fails. Never read or written at cook time.
 - The `--worktree-teardown` file, at run time, only with `--worktree-teardown`: `bin/clean` runs it in the run worktree
@@ -421,20 +421,20 @@ this recipe in the same invocation, with the role defined in the policy.
 
 `bin/run <name>` refuses while `git status --porcelain .ralph-tui` in the main checkout lists anything, because a
 worktree holds only what is committed. It creates `<worktree root>/ralph/<name>` on a new branch `ralph/<name>` from
-`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist; it refuses a `--base` when the
-branch exists, and a `--agent`, `--epic`, `--prd` or `--base` given twice. It requires `--agent <entry>`, and after the
-worktree is ready, and any copy of the configuration is made, refuses an entry that no `name` or `plugin` line of the
-worktree's `.ralph-tui/config.toml` equals, listing the entry names. With `--worktree-setup`, it runs that file from
-the root of each worktree it creates, never one it reuses, and stops the run when the file is missing, not executable
-or fails, leaving the worktree for `bin/clean`; without `--worktree-setup`, it runs no setup. When `ralph/<name>` has
-no committed `.ralph-tui/config.toml`, it copies the main checkout's `config.toml` and `templates/` into the worktree
-on every run, because ralph-tui reads them only from there. It first checks that Git ignores them and `session.json` in
-the worktree, because ralph-tui commits each task with `git add -A`; otherwise it refuses and prints the line that
-ignores `.ralph-tui/` in the clone. With a copy, it passes `--prompt` with the copied prompt of the run's tracker,
-unless the run gives `--prompt`, because ralph-tui copies only `config.toml` into a parallel worker. It prints the
-worktree's path and branch, then runs `ralph-tui run --epic <id> --agent <entry>`, or `--prd` with the file's absolute
-path, in the worktree, with the remaining arguments, such as `--headless` or `--model opus`. It sets and strips no
-environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
+`--base`, `HEAD` by default, or reuses the worktree or the branch when they exist; it refuses a `--base` when the branch
+exists, and a `--agent`, `--epic`, `--prd` or `--base` given twice. It requires `--agent <entry>`, and after the
+worktree is ready, and any copy of the configuration is made, refuses an `--agent` that no `[[agents]]` entry's `name`
+or `plugin` in the worktree's `.ralph-tui/config.toml` equals, listing the entries' names. With `--worktree-setup`, it
+runs that file from the root of each worktree it creates, never one it reuses, and stops the run when the file is
+missing, not executable or fails, leaving the worktree for `bin/clean`; without `--worktree-setup`, it runs no setup.
+When `ralph/<name>` has no committed `.ralph-tui/config.toml`, it copies the main checkout's `config.toml` and
+`templates/` into the worktree on every run, because ralph-tui reads them only from there. It first checks that Git
+ignores them and `session.json` in the worktree, because ralph-tui commits each task with `git add -A`; otherwise it
+refuses and prints the line that ignores `.ralph-tui/` in the clone. With a copy, it passes `--prompt` with the copied
+prompt of the run's tracker, unless the run gives `--prompt`, because ralph-tui copies only `config.toml` into a
+parallel worker. It prints the worktree's path and branch, then runs `ralph-tui run --epic <id> --agent <entry>`, or
+`--prd` with the file's absolute path, in the worktree, with the remaining arguments, such as `--headless` or
+`--model opus`. It sets and strips no environment variable, so `CLAUDE_CODE_EFFORT_LEVEL` reaches Claude workers.
 
 An agent entry whose `command` is `.ralph-tui/bin/worker`, as `--worker-check` seeds, has ralph-tui run
 `.ralph-tui/bin/worker <agent> [arguments…]` for each task, from the run worktree or a parallel worker's. The worker

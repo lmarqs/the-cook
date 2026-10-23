@@ -104,7 +104,7 @@ class RalphTui {
   private List<String> trackers = TRACKERS
   private List<String> workerRoles = []
   private List<String> workerSettings = []
-  private List<Binding> workerBindings = []
+  private Map<String, WorkerBinding> workerBindings = [:]
   private String worktreeRoot = WORKTREE_ROOT
   private String worktreeSetup
   private String worktreeTeardown
@@ -202,13 +202,13 @@ class RalphTui {
    * 1. `cookedWith` is blank;
    * 2. a harness is not `claude` or `codex`, or none is given;
    * 3. a tracker is not `beads` or `json`, or none is given;
-   * 4. a worker role or settings value is not `<harness>:<x>`, or names a harness no `--harness` gives, or one param
-   *    names a harness twice;
+   * 4. a worker role or settings value is not `<harness>:<x>`, or names a harness that is not `claude` or `codex` or
+   *    that no `--harness` gives, or one param names a harness twice;
    * 5. a role and a settings file both bind one harness;
    * 6. a role name is not a role name, or its `.agents/adapters/<harness>/roles/<name>.<json|toml>` is not in the
    *    draft;
    * 7. a settings path is absolute or has a `..` segment, or a `codex` settings file is not in the draft, is not TOML,
-   *    or holds a value `-c <key>=<value>` cannot carry;
+   *    or holds a key or value `-c <key>=<value>` cannot carry;
    * 8. the worktree setup, worktree teardown or worker check is under `.ralph-tui/`, which in a run worktree holds only
    *    what this recipe writes;
    * 9. `.ralph-tui/config.toml` exists and is not TOML, or lacks what an argument needs, checked in this order: an
@@ -390,7 +390,7 @@ class RalphTui {
   }
 
   private List<String> flags(String harness) {
-    AGENTS[harness].flags + (workerBindings.find { it.harness == harness }?.flags ?: [])
+    AGENTS[harness].flags + (workerBindings[harness]?.flags ?: [])
   }
 
   private void checkHarnesses() {
@@ -421,7 +421,7 @@ class RalphTui {
       return
     }
 
-    def config = parsedConfiguration(text)
+    def config = parsedToml(CONFIG_PATH, text, ['fix it, or delete it and cook again'])
     def agents = config.agents instanceof List ? config.agents.findAll { it instanceof Map } : []
 
     harnesses.each { harness ->
@@ -431,7 +431,7 @@ class RalphTui {
     }
 
     harnesses.each { harness ->
-      def binding = workerBindings.find { it.harness == harness }
+      def binding = workerBindings[harness]
 
       if (binding?.flags && !agents.any { it.plugin == harness && containsRun(it.defaultFlags, binding.flags) }) {
         def flags = binding.flags.collect { quoted(it) }.join(', ')
@@ -455,12 +455,12 @@ class RalphTui {
     }
   }
 
-  private static Map parsedConfiguration(String text) {
+  private static Map parsedToml(String path, String text, List<String> next) {
     try {
       new TomlSlurper().parseText(text)
     } catch (Exception e) {
-      throw new IllegalArgumentException("${CONFIG_PATH} is not valid TOML\n  " +
-      "${(e.message ?: e.class.name).readLines()[0]}\n  fix it, or delete it and cook again")
+      def cause = (e.message ?: e.class.name).readLines()[0]
+      throw new IllegalArgumentException((["${path} is not valid TOML", cause] + next).join('\n  '))
     }
   }
 
@@ -479,7 +479,7 @@ class RalphTui {
   }
 
   /** One binding of a worker role or settings file to a harness, with the argument as the person gave it. */
-  private static class Binding {
+  private static class WorkerBinding {
     String param
     String value
     String harness
@@ -491,65 +491,60 @@ class RalphTui {
     }
   }
 
-  private List<Binding> resolveWorkers() {
+  private Map<String, WorkerBinding> resolveWorkers() {
     def roles = bindings('worker-role', workerRoles, '<role>', 'the role binds', 'claude:worker')
     def settings = bindings('worker-settings', workerSettings, '<path>', 'the file binds', 'claude:ralph-claude.json')
 
     (roles + settings).each { binding ->
+      if (!(binding.harness in HARNESSES)) {
+        throw new IllegalArgumentException("${binding.argument()} names ${binding.harness}, which is not one of: " +
+        HARNESSES.join(', '))
+      }
+
       if (!(binding.harness in harnesses)) {
         throw new IllegalArgumentException("${binding.argument()} names ${binding.harness}, which no --harness " +
         'gives\n  add --harness=' + binding.harness + ', or leave it out')
       }
     }
 
-    [roles, settings].each { checkOnePerHarness(it) }
-    checkRoleAndSettingsOverlap(roles, settings)
-
+    checkOnePerHarness(roles + settings)
     roles.each { it.flags = roleFlags(it) }
     settings.each { it.flags = settingsFlags(it, it.operand) }
-    roles + settings
+    (roles + settings).collectEntries { [(it.harness): it] }
   }
 
-  private static List<Binding> bindings(String param, List<String> values, String operand, String binds,
+  private static List<WorkerBinding> bindings(String param, List<String> values, String operand, String binds,
       String example) {
     values.collect { value ->
       def colon = value.indexOf(':')
       def harness = colon < 0 ? '' : value.substring(0, colon)
       def rest = colon < 0 ? '' : value.substring(colon + 1)
 
-      if (!harness || !rest) {
+      if (!harness.trim() || !rest.trim()) {
         throw new IllegalArgumentException("--${param}=${value} is not <harness>:${operand}\n  name the harness " +
         "${binds}, as --${param}=${example}")
       }
 
-      new Binding(param: param, value: value, harness: harness, operand: rest)
+      new WorkerBinding(param: param, value: value, harness: harness, operand: rest)
     }
   }
 
-  private static void checkOnePerHarness(List<Binding> bindings) {
-    def twice = bindings.countBy { it.harness }.find { it.value > 1 }
+  private static void checkOnePerHarness(List<WorkerBinding> bindings) {
+    bindings.groupBy { it.harness }.each { harness, bound ->
+      def repeated = bound.find { binding -> bound.count { it.param == binding.param } > 1 }
 
-    if (twice) {
-      throw new IllegalArgumentException("--${bindings.first().param} names ${twice.key} twice\n" +
-      '  give one file per harness')
-    }
-  }
+      if (repeated) {
+        throw new IllegalArgumentException("--${repeated.param} names ${harness} twice\n  give one file per harness")
+      }
 
-  private static void checkRoleAndSettingsOverlap(List<Binding> roles, List<Binding> settings) {
-    def role = roles.find { binding ->
-      settings.any {
-        it.harness == binding.harness
+      if (bound.size() > 1) {
+        throw new IllegalArgumentException("${bound[0].argument()} and ${bound[1].argument()} both set ${harness}'s " +
+        'settings\n  give one of them; to combine a role with more settings, write a settings file that holds both')
       }
     }
-
-    if (role) {
-      def file = settings.find { it.harness == role.harness }
-      throw new IllegalArgumentException("${role.argument()} and ${file.argument()} both set ${role.harness}'s " +
-      'settings\n  give one of them; to combine a role with more settings, write a settings file that holds both')
-    }
   }
 
-  private List<String> roleFlags(Binding binding) {
+  private List<String> roleFlags(WorkerBinding binding) {
     def role = binding.operand
 
     if (!(role ==~ /[a-z][a-z0-9-]*/)) {
@@ -569,7 +564,7 @@ class RalphTui {
     settingsFlags(binding, file)
   }
 
-  private List<String> settingsFlags(Binding binding, String given) {
+  private List<String> settingsFlags(WorkerBinding binding, String given) {
     def segments = given.split('/').findAll { it && it != '.' }
 
     if (given.startsWith('/') || '..' in segments || !segments) {
@@ -581,7 +576,7 @@ class RalphTui {
     binding.harness == 'claude' ? ['--settings', path] : codexFlags(binding, path)
   }
 
-  private List<String> codexFlags(Binding binding, String path) {
+  private List<String> codexFlags(WorkerBinding binding, String path) {
     def text = current(path)
 
     if (text == null) {
@@ -589,16 +584,8 @@ class RalphTui {
       '  Codex settings are read when cooking\n  write the file, then cook again')
     }
 
-    def table
-
-    try {
-      table = new TomlSlurper().parseText(text)
-    } catch (Exception e) {
-      throw new IllegalArgumentException("${path} is not valid TOML\n  ${(e.message ?: e.class.name).readLines()[0]}")
-    }
-
     def flags = []
-    flatten(table, '').each { key, value ->
+    flatten(parsedToml(path, text, []), '', path).each { key, value ->
       def rendered = render(value)
 
       if (rendered == null) {
@@ -611,13 +598,21 @@ class RalphTui {
     flags
   }
 
-  private static Map<String, Object> flatten(Map table, String prefix) {
+  // A -c key is a dotted path to nested tables, and in <key>=<value> a key's own = reads as the separator, so a TOML
+  // key holding either, such as "my.server", would set another key than the file's.
+  private static Map<String, Object> flatten(Map table, String prefix, String path) {
     def flat = [:]
     table.each { key, value ->
       def name = "${prefix}${key}".toString()
 
+      if (!key || key.contains('.') || key.contains('=')) {
+        throw new IllegalArgumentException("${path}: ${prefix}${quoted(key.toString())} cannot be passed as " +
+        '-c <key>=<value>\n  -c reads each . in a key as a nested table and an = as the end of the key; use keys ' +
+        'without them')
+      }
+
       if (value instanceof Map) {
-        flat += flatten(value, "${name}.")
+        flat += flatten(value, "${name}.", path)
       } else {
         flat[name] = value
       }
@@ -627,7 +622,7 @@ class RalphTui {
 
   private static String render(Object value) {
     if (value instanceof CharSequence) {
-      return groovy.json.JsonOutput.toJson(value.toString())
+      return quoted(value.toString())
     }
 
     if (value instanceof Number || value instanceof Boolean) {

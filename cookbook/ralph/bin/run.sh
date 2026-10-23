@@ -22,6 +22,25 @@ fail() {
   exit 1
 }
 
+# Prints "<key> <value>" for the name and plugin of each [[agents]] entry in the TOML file $1. A line test alone would
+# miss an indented or single-quoted key, and take a name from another table for an entry.
+agent_keys() {
+  awk -v q="'" '
+    /^[[:space:]]*\[/ { entry = ($0 ~ /^[[:space:]]*\[\[[[:space:]]*agents[[:space:]]*\]\][[:space:]]*(#.*)?$/); next }
+    entry && /^[[:space:]]*(name|plugin)[[:space:]]*=/ {
+      key = $0
+      sub(/^[[:space:]]*/, "", key)
+      sub(/[[:space:]]*=.*$/, "", key)
+      value = $0
+      sub(/^[^=]*=[[:space:]]*/, "", value)
+      quote = substr(value, 1, 1)
+      if (quote != "\"" && quote != q) next
+      value = substr(value, 2)
+      end = index(value, quote)
+      if (end) print key, substr(value, 1, end - 1)
+    }' "$1"
+}
+
 root=$(CDPATH='' cd -- "$(dirname -- "$0")/../.." && pwd)
 
 [ $# -ge 1 ] || usage
@@ -142,9 +161,9 @@ fi
 
 # ralph-tui runs an installed plugin of the --agent name with no options when no entry matches, and Claude then runs
 # without permission checks.
-if ! grep -Fxq -e "name = \"$agent\"" -e "plugin = \"$agent\"" "$worktree/.ralph-tui/config.toml" 2>/dev/null; then
-  entries=$(sed -n 's/^name = "\(.*\)"$/\1/p' "$worktree/.ralph-tui/config.toml" 2>/dev/null |
-    paste -sd, - | sed 's/,/, /g')
+keys=$(agent_keys "$worktree/.ralph-tui/config.toml" 2>/dev/null || true)
+if ! printf '%s\n' "$keys" | grep -Fxq -e "name $agent" -e "plugin $agent"; then
+  entries=$(printf '%s\n' "$keys" | sed -n 's/^name //p' | paste -sd, - | sed 's/,/, /g')
   fail "--agent $agent matches no entry in .ralph-tui/config.toml" \
     'ralph-tui would run an installed plugin of that name with no options, and Claude without permission checks' \
     "give one of: $entries"

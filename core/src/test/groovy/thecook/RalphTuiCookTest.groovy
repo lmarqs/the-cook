@@ -124,6 +124,7 @@ recipes:
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     def config = new File(kitchen, '.ralph-tui/config.toml')
     config.text = config.text.replace('maxIterations = 10', 'maxIterations = 3')
+    def edited = config.text
     def prompt = new File(kitchen, '.ralph-tui/templates/beads.hbs')
     prompt.text = 'Our prompt for {{taskId}}\n'
 
@@ -131,7 +132,7 @@ recipes:
     assert config.text.contains('maxIterations = 3')
     assert new File(kitchen, '.gitignore').readLines()[1] ==
     '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worktree-root=wt'
-    assert !config.text.contains('codex')
+    assert config.text == edited
     assert prompt.text == 'Our prompt for {{taskId}}\n'
   }
 
@@ -294,6 +295,33 @@ roles:
     ]
   }
 
+  @Test void refusesABlankWorkerSettingsPath() {
+    def kitchen = kitchen()
+
+    def error = shouldFail(IllegalArgumentException) {
+      cook(kitchen, RALPH, [harness: ['claude'], 'worker-settings': ['claude: ']])
+    }
+
+    assert error.message.readLines() == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-settings=claude:  is not <harness>:<path>',
+      '  name the harness the file binds, as --worker-settings=claude:ralph-claude.json',
+    ]
+    assert files(kitchen) == []
+  }
+
+  @Test void refusesAWorkerValueNamingAHarnessThatIsNotOne() {
+    def kitchen = kitchen()
+
+    def error = shouldFail(IllegalArgumentException) {
+      cook(kitchen, RALPH, [harness: ['claude'], 'worker-role': ['claud:worker']])
+    }
+
+    assert error.message.readLines() == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-role=claud:worker names claud, which is not one of: ' +
+      'claude, codex',
+    ]
+  }
+
   @Test void refusesAHarnessGivenTwiceInOneWorkerParam() {
     def kitchen = kitchen()
 
@@ -354,6 +382,26 @@ roles:
       'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: x.toml: tables cannot be passed as -c tables=<value>',
       '  use strings, numbers, booleans or lists of them',
     ]
+  }
+
+  @Test void refusesACodexSettingsKeyThatMinusCCannotName() {
+    def kitchen = kitchen()
+
+    [
+      '[mcp_servers."my.server"]\ncommand = "x"\n': 'mcp_servers."my.server"',
+      '"a=b" = 1\n': '"a=b"',
+    ].each { text, key ->
+      write(kitchen, 'x.toml', text)
+      def error = shouldFail(IllegalArgumentException) {
+        cook(kitchen, RALPH, [harness: ['codex'], 'worker-settings': ['codex:x.toml']])
+      }
+
+      assert error.message.readLines() == [
+        "io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: x.toml: ${key} cannot be passed as " +
+        '-c <key>=<value>',
+        '  -c reads each . in a key as a nested table and an = as the end of the key; use keys without them',
+      ]*.toString()
+    }
   }
 
   @Test void requiresAHarness() {
@@ -1197,6 +1245,40 @@ skipPermissions = false
 
     assert other.exit == 1
     assert other.output.readLines().last() == '  give one of: shim'
+  }
+
+  @Test void runTakesTheAgentOnlyFromAnAgentsEntryInAnyTomlForm() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    write(kitchen, '.ralph-tui/config.toml', '''\
+tracker = "beads"
+
+[trackerOptions]
+name = "codex"
+
+[[agents]]
+  name = 'shim' # the team's entry
+  plugin="claude"
+
+[agents.options]
+skipPermissions = false
+''')
+    commitAll(kitchen)
+
+    ['shim', 'claude'].each { agent ->
+      def run = launch(kitchen, '.ralph-tui/bin/run', agent, '--agent', agent, '--epic', 'ep-1')
+
+      assert run.exit == 0
+      assert run.output.readLines()[3] == "ralph-tui run --epic ep-1 --agent ${agent}".toString()
+    }
+    def codex = launch(kitchen, '.ralph-tui/bin/run', 'codex', '--agent', 'codex', '--epic', 'ep-1')
+
+    assert codex.exit == 1
+    assert codex.output.readLines().drop(1) == [
+      'run: --agent codex matches no entry in .ralph-tui/config.toml',
+      '  ralph-tui would run an installed plugin of that name with no options, and Claude without permission checks',
+      '  give one of: shim',
+    ]
   }
 
   @Test void runRefusesARepeatedEpicPrdOrBase() {
