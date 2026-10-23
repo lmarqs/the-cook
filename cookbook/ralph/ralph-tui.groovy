@@ -26,8 +26,10 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
 # Beads epics whose next bead bv picks, ranking the epic's dependency graph
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
-# Keeping all of .ralph-tui/ out of commits: each clone cooks its own, and bin/run copies it into each run
+# Keeping all of .ralph-tui/ out of commits: each clone replicates its own, and bin/run copies it into each run
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
+# In a new clone, replaying the source and arguments from the committed cook.lock
+./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
 # Also giving agents and people the launcher's commands, in the files they read
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
@@ -274,7 +276,9 @@ install it, and its launcher runs on bun. Without `-g`, mise pins them in the pr
 the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with
 `brew install dicklesworthstone/tap/bv`. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and,
 with `--share=team`, `.ralph-tui/` to share them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/`
-out of commits, and each clone cooks its own. To keep `.ralph-tui/` to one clone of a team that shares it, ignore it
+out of commits. In a new clone, run \
+`./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
+`.ralph-tui/` to one clone of a team that shares it, ignore it
 with `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted
 `.ralph-tui/` into each run. `bin/run`
 refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run

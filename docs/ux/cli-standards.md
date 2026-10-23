@@ -35,9 +35,10 @@ recipe and template references resolve.
 ## Command grammar
 
 The [CLI reference](../features/cli.md) defines the commands: cooking, with no command word, as the default; `discard`
-with recipes; and `help` with recipes. It also defines recipe
-operands, per-recipe argument scope and the placement of batch options before the first operand. Help, messages and
-examples follow that grammar, because callers predict what a command does from its operands and argument scope.
+and `replicate` with named recipes; and `help` with recipes. Discard and replicate accept the version-less lock name,
+versioned coordinates or a recipe path, without recipe arguments. It also defines recipe operands, per-recipe argument
+scope and the placement of batch options before the first operand. Help, messages and examples follow that grammar,
+because callers predict what a command does from its operands and argument scope.
 
 Each argument has one spelling and one position, and an action other than cooking is a command, not an option. A
 second accepted form for the same meaning is refused with a message naming the one form, because every alternative is
@@ -52,10 +53,11 @@ ending, and a yes-or-no param never takes the next word, so no word's reading de
 ## Cooking and discard
 
 Cooking evaluates the supplied recipes against current content and `cook.lock` and proposes their declared changes.
-Discard removes what `cook.lock` lists for each named recipe without evaluating it. The architecture states the
+Discard removes what `cook.lock` lists for each named recipe without evaluating it. Replicate evaluates the recorded
+sources with the recorded arguments in the order the caller names the recipes. The architecture states the
 semantics in [cooking and discard](../architecture.md#cooking-and-discard) and
 [ownership and the lock](../architecture.md#ownership-and-the-lock); the [discard](../features/discard.md) page works
-through an example.
+through an example, and [replicate](../features/replicate.md) covers rebuilding output in a fresh clone.
 
 ### Repeated invocations
 
@@ -63,7 +65,8 @@ Each time Cook cooks, it evaluates the supplied recipes against current content,
 When the result is unchanged, report that there are no proposed changes rather than claiming evaluation was skipped,
 because evaluation always runs.
 
-Cooking works without `cook.lock`; discard needs it, because the lock is its only record of what a recipe owns.
+Cooking works without `cook.lock`; discard needs it for ownership, and replicate needs it for sources and arguments.
+Replicate refuses an entry whose arguments were never recorded and asks for one ordinary cook with its arguments.
 
 ### Checking for drift
 
@@ -78,8 +81,8 @@ change to current content. The CLI accepts the whole batch; choosing individual 
 decision.
 
 Without preapproval, ask before changing target files; declining approval leaves batch targets unchanged.
-[`--batch-approve`](../features/cli.md#batch-options-and-approval) preapproves the entire operation, cooking or discard:
-display the diff and proceed without prompting. Existing and edited content follows this same review flow; ownership
+[`--batch-approve`](../features/cli.md#batch-options-and-approval) preapproves the entire operation: cooking, discard or
+replicate. Display the diff and proceed without prompting. Existing and edited content follows this same review flow; ownership
 never blocks a change.
 
 ### Failure recovery
@@ -167,15 +170,16 @@ With no arguments, with `help` alone or with `--help` alone, show help. `help <r
 order without running it, because a recipe inside an artifact cannot be read with a pager. Present the operation
 summary, grammar, operand and argument scope, batch approval behavior, and examples in a consistent order, because
 readers need to predict how a command works. Examples use `./cook` and exact recipe paths or
-coordinates. Explain that cooking evaluates supplied recipes while discard reads only `cook.lock`, and link to the
+coordinates. Explain that cooking evaluates supplied recipes, discard reads only `cook.lock`, and replicate cooks
+named recipes again from recorded sources and arguments. Show replicate with a version-less lock name, and link to the
 [CLI reference](../features/cli.md) for details.
 
 Help advertises only the commands in the [command grammar](#command-grammar), because callers act on what help lists.
 
 ## Command set
 
-The command set is cooking, which takes no command word, `discard` and `help`. Reserving `discard` and `help` means
-a recipe file named `discard` or `help` is given as a path, such as `./help`.
+The command set is cooking, which takes no command word, `discard`, `replicate` and `help`. Reserving `discard`,
+`replicate` and `help` means a recipe file with one of those names is given as a path, such as `./replicate`.
 [What counts as breaking](compatibility-standards.md#what-counts-as-breaking) covers removing or renaming a command.
 
 ## Prior art

@@ -36,9 +36,10 @@ Omitting a recipe from a later invocation leaves its output in place; see [cooki
 
 Each recipe is written as its short name in `cook.lock`, `group:artifact#recipe`, versioned coordinates
 `group:artifact:version#recipe`, or a `.groovy` path in the kitchen. Discard matches the recipe's short name, so the
-version in coordinates does not need to be the cooked one, and a path's file does not need to exist any more. Cooking
-still requires a version in coordinates. Discard takes no recipe arguments. Batch options precede the first recipe;
-the [CLI reference](cli.md) defines them.
+version in coordinates does not need to be the cooked one, and a path's file does not need to exist any more. A path's
+lock name also works without `.groovy`, such as `./cook discard recipes/setup`. Cooking and help still require a
+version in coordinates. [Replicate](replicate.md) accepts the same lock names to cook again from recorded inputs.
+Discard takes no recipe arguments. Batch options precede the first recipe; the [CLI reference](cli.md) defines them.
 
 ## What discard removes
 

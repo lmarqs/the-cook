@@ -11,6 +11,7 @@ see the root README's [current implementation](../../README.md#current-implement
 ```text
 ./cook [-C <dir>] [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
 ./cook discard [-C <dir>] [batch-options] <recipe>...
+./cook replicate [-C <dir>] [batch-options] <recipe>...
 ./cook help [-C <dir>] [<recipe>]...
 ./cook --help
 ./cook --version
@@ -27,17 +28,21 @@ version the build wrote into the engine, and takes no other arguments either.
 | --- | --- | --- |
 | Cook, without a command word | One or more recipes, with arguments for each | Declared additions and updates against current content, and removal of what each recipe's previous version owned and no longer declares |
 | Discard | One or more recipes, without arguments | Removal of what `cook.lock` lists for each recipe; no recipe runs |
+| Replicate | One or more recipes, without arguments | Cook again from the sources and arguments recorded in `cook.lock` |
 | Help | One or more recipes, without arguments | Show each recipe's help in order; read only, and no recipe runs |
 
 The [architecture](../architecture.md#cooking-and-discard) defines these operations; [cooking](cook.md) and
-[discard](discard.md) explain them with examples.
+[discard](discard.md) and [replicate](replicate.md) explain them with examples.
 
 ```sh
 # Cook a recipe
 ./cook ./recipe.groovy
 
 # Remove what two recipes own
-./cook discard io.github.lmarqs.cookbook:agents:0.0.0#connect ./recipe.groovy
+./cook discard io.github.lmarqs.cookbook:agents#connect ./recipe.groovy
+
+# Recreate a recipe's output from the lock
+./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
 ```
 
 ## Recipe operands
@@ -64,12 +69,14 @@ from its source without running it or resolving its imports. It is the one way t
 ./cook help ./recipes/project.groovy ./recipes/dependency.groovy
 ```
 
-Discard also accepts the short name in `cook.lock`, `group:artifact#recipe`, without a version. It takes no recipe
-arguments and matches each by its short name: versioned coordinates match whatever version was cooked, and a path
-matches after its file is gone. Discard resolves no coordinates.
+Discard and replicate also accept the short name as `cook.lock` writes it: `group:artifact#recipe`, without a
+version, or a path's place in the kitchen without `.groovy`, such as `recipes/setup`. Cooking and help still require
+versioned coordinates. Discard and replicate take no recipe arguments and match by short name, so a versioned operand
+identifies whichever version the lock records. Discard resolves no coordinates, and a path matches after its file is
+gone. Replicate loads the recorded source and arguments, so that source must be available.
 
-A first operand equal to `discard` or `help` selects that command. To cook a recipe file named `discard`,
-make its path explicit:
+A first operand equal to `discard`, `replicate` or `help` selects that command. To cook a recipe file named `discard`,
+`replicate` or `help`, make its path explicit:
 
 ```sh
 ./cook ./discard
@@ -179,8 +186,8 @@ cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
 
 | Option | Used with | Position | Effect |
 | --- | --- | --- | --- |
-| `--batch-approve` | Cooking and `discard` | Before the first recipe operand | Displays the final diff and proceeds without prompting; approval covers the whole batch |
-| `--dry-run` | Cooking and `discard` | Before the first recipe operand | Displays the final diff and writes nothing |
+| `--batch-approve` | Cooking, `discard` and `replicate` | Before the first recipe operand | Displays the final diff and proceeds without prompting; approval covers the whole batch |
+| `--dry-run` | Cooking, `discard` and `replicate` | Before the first recipe operand | Displays the final diff and writes nothing |
 | `--check` | Cooking | Before the first recipe operand | Displays what `--dry-run` displays, writes nothing, and exits 1 when anything would change; `Already cooked.` exits 0. It excludes `--batch-approve` |
 
 `--batch-approve` is the batch option and the only preapproval spelling. Without it, Cook asks before changing target
@@ -188,7 +195,8 @@ files. Noninteractive execution without this flag does not silently authorize wr
 
 The review starts with a `Changed source` notice for each release whose sources differ from what `cook.lock` recorded
 under the same coordinates, as when a jar was republished under its version, with both sha256 values. The diff that
-follows shows what the changed sources write.
+follows shows what the changed sources write. Replicate also reports edited path sources this way; see
+[source drift](replicate.md#source-drift-and-changed-arguments).
 
 ```sh
 ./cook --batch-approve ./recipe.groovy

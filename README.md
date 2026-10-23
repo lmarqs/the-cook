@@ -72,13 +72,16 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
   ([recipe arguments and ordering](docs/features/cli.md#recipe-arguments-and-ordering)).
 - `--force` and `--skip` for a file a recipe writes from a template the first time it is cooked
   ([existing files](docs/features/cli.md#existing-files)).
-- `cook.lock`, which the kitchen keeps and commits: each recipe's short name, source, the source's sha256 and what it
-  owns, so a later run withdraws what a recipe no longer declares
+- `cook.lock`, which the kitchen keeps and commits: each recipe's short name, source, the source's sha256, normalized
+  supplied arguments and what it owns, so a later run withdraws what a recipe no longer declares
   ([the lock](docs/architecture.md#ownership-and-the-lock)).
 - A failed write rolls back the writes already made, so the files are as they were, and prints the error.
 - `./cook discard [--dry-run] [--batch-approve] <recipe>...`, which removes what `cook.lock` lists for each recipe,
   without running it, through the same review: each section with its markers, each key, each whole file and link,
   deleting a file left empty, and the recipe's lock entry ([discard](docs/features/discard.md)).
+- `./cook replicate [--dry-run] [--batch-approve] <recipe>...`, which cooks named recipes again from the sources and
+  arguments recorded in `cook.lock`, including ignored output missing from a fresh clone
+  ([replicate](docs/features/replicate.md)).
 - `help` on an artifact, a recipe or a recipe path, read without running it.
 
 Coordinates resolve from the first repository of the kitchen's `cook.toml` `repositories` list that holds them, and
