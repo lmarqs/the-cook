@@ -584,8 +584,8 @@ After cooking
   each run. `bin/run` refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
   `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, with a Beads database holding the epic, or
   `.ralph-tui/bin/run <name> --agent <entry> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch
-  `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`, to
-  give agents these commands, and with the agents layout, add them to the Launching table in `.agents/README.md`.
+  `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`,
+  to give agents these commands, and with the agents layout, add them to the Launching table in `.agents/README.md`.
 ````
 
 ## Layout
