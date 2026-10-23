@@ -89,6 +89,8 @@ recipes:
         - ".agents/skills/agents-layout/SKILL.md"
         - ".agents/skills/agents-layout/references/adopt.md"
         - ".agents/skills/agents-layout/references/agents-md.md"
+        - ".agents/skills/agents-layout/references/claude.md"
+        - ".agents/skills/agents-layout/references/codex.md"
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
@@ -562,6 +564,8 @@ notes.set(features: [hooks: true])
       '.agents/skills/agents-layout/SKILL.md',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
+      '.agents/skills/agents-layout/references/claude.md',
+      '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
@@ -965,6 +969,8 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/SKILL.md',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
+      '.agents/skills/agents-layout/references/claude.md',
+      '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
@@ -1042,6 +1048,8 @@ agents.connect([claude])
       '.agents/skills/agents-layout/SKILL.md',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
+      '.agents/skills/agents-layout/references/claude.md',
+      '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',

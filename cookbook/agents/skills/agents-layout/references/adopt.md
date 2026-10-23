@@ -258,7 +258,7 @@ holds the same ideas, so the move is mechanical. This belongs to step 6.
 
 2. Codex gets no role. A renderer that wrote worker denies into Codex's rules because Codex ran only as a worker now
    has two choices: add those entries to `commands.deny`, which also binds people at the keyboard, or keep Codex
-   workers on `commands` alone and rely on its sandbox. [design.md](design.md#why-codex-has-no-roles) explains why.
+   workers on `commands` alone and rely on its sandbox. [codex.md](codex.md#no-roles) explains why.
 3. Find the code, tests, docs and CI steps that run the renderer or name its outputs:
 
    ```sh
