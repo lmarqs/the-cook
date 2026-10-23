@@ -93,6 +93,8 @@ class RalphTui {
   /** The extension of the role file `io.github.lmarqs.cookbook:agents#connect` renders for each harness. */
   static final Map<String, String> ROLE_EXTENSIONS = [claude: 'json', codex: 'toml']
 
+  private static final String CONFIG_PATH = '.ralph-tui/config.toml'
+
   /** The worker wrapper `workerCheck` writes, which each seeded entry then names as its `command`. */
   static final String WORKER = '.ralph-tui/bin/worker'
 
@@ -111,7 +113,7 @@ class RalphTui {
   private List<String> trackers = TRACKERS
   private List<String> workerRoles = []
   private List<String> workerSettings = []
-  private Map<String, List<String>> workerFlags = [:]
+  private List<Binding> workerBindings = []
   private String worktreeRoot = WORKTREE_ROOT
   private String worktreeSetup
   private String worktreeTeardown
@@ -217,7 +219,12 @@ class RalphTui {
    * 7. a settings path is absolute or has a `..` segment, or a `codex` settings file is not in the draft, is not TOML,
    *    or holds a value `-c <key>=<value>` cannot carry;
    * 8. the worktree setup, worktree teardown or worker check is under `.ralph-tui/`, which in a run worktree holds only
-   *    what this recipe writes.
+   *    what this recipe writes;
+   * 9. `.ralph-tui/config.toml` exists and is not TOML, or lacks what an argument needs, checked in this order: an
+   *    `[[agents]]` entry with each harness's plugin; one with each worker role or settings file's flags as a run in
+   *    its `defaultFlags`; one with the worker as its `command` and the harness first in its `defaultFlags`, for
+   *    each harness, with a worker check; and with the `beads` tracker, a `tracker` or `defaultTracker` starting
+   *    with `beads`. The configuration is seeded once, so a refused cook writes nothing.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -226,13 +233,14 @@ class RalphTui {
 
     checkHarnesses()
     checkTrackers()
-    workerFlags = resolveWorkers()
+    workerBindings = resolveWorkers()
     outsideRalphTui('worktree-setup', worktreeSetup, '.worktrees/setup')
     outsideRalphTui('worktree-teardown', worktreeTeardown, '.worktrees/teardown')
     outsideRalphTui('worker-check', workerCheck, 'scripts/check')
 
     harnesses = harnesses.unique(false)
     trackers = TRACKERS.findAll { it in trackers }
+    checkExistingConfiguration()
     this.cookedWith = cookedWith
   }
 
@@ -241,7 +249,7 @@ class RalphTui {
    * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it
    * twice first, direct merges in parallel mode, and one `[[agents]]` entry per harness, when installed.
    */
-  @Seed(path = '.ralph-tui/config.toml')
+  @Seed(path = CONFIG_PATH)
   String config() {
     if (!cookedWith) {
       return null
@@ -392,7 +400,7 @@ class RalphTui {
   }
 
   private List<String> flags(String harness) {
-    AGENTS[harness].flags + (workerFlags[harness] ?: [])
+    AGENTS[harness].flags + (workerBindings.find { it.harness == harness }?.flags ?: [])
   }
 
   private void checkHarnesses() {
@@ -416,19 +424,84 @@ class RalphTui {
     }
   }
 
+  private void checkExistingConfiguration() {
+    def text = current(CONFIG_PATH)
+
+    if (text == null) {
+      return
+    }
+
+    def config = parsedConfiguration(text)
+    def agents = config.agents instanceof List ? config.agents.findAll { it instanceof Map } : []
+
+    harnesses.each { harness ->
+      if (!agents.any { it.plugin == harness }) {
+        notApplied("--harness=${harness}", "no [[agents]] entry there has plugin = \"${harness}\"")
+      }
+    }
+
+    harnesses.each { harness ->
+      def binding = workerBindings.find { it.harness == harness }
+
+      if (binding?.flags && !agents.any { it.plugin == harness && containsRun(it.defaultFlags, binding.flags) }) {
+        def flags = binding.flags.collect { quoted(it) }.join(', ')
+        notApplied(binding.argument(), "no [[agents]] entry there with plugin = \"${harness}\" has ${flags} in " +
+            'its defaultFlags')
+      }
+    }
+
+    harnesses.each { harness ->
+      if (workerCheck && !agents.any { it.plugin == harness && it.command == WORKER && firstFlag(it) == harness }) {
+        notApplied("--worker-check=${workerCheck}", "no [[agents]] entry there with plugin = \"${harness}\" has " +
+            "command = \"${WORKER}\" and \"${harness}\" first in its defaultFlags")
+      }
+    }
+
+    def tracker = config.tracker ?: config.defaultTracker
+
+    if ('beads' in trackers && !(tracker instanceof CharSequence && tracker.toString().startsWith('beads'))) {
+      def set = tracker == null ? 'it sets no tracker' : "its tracker is ${quoted(tracker.toString())}"
+      notApplied('--tracker=beads', "${set}, and a run with --epic needs tracker = \"beads\"")
+    }
+  }
+
+  private static Map parsedConfiguration(String text) {
+    try {
+      new TomlSlurper().parseText(text)
+    } catch (Exception e) {
+      throw new IllegalArgumentException("${CONFIG_PATH} is not valid TOML\n  " +
+      "${(e.message ?: e.class.name).readLines()[0]}\n  fix it, or delete it and cook again")
+    }
+  }
+
+  private static boolean containsRun(Object defaultFlags, List<String> run) {
+    defaultFlags instanceof List && Collections.indexOfSubList(defaultFlags, run) >= 0
+  }
+
+  private static Object firstFlag(Map agent) {
+    agent.defaultFlags instanceof List && agent.defaultFlags ? agent.defaultFlags.first() : null
+  }
+
+  private static void notApplied(String argument, String cause) {
+    throw new IllegalArgumentException("${argument} is not applied in ${CONFIG_PATH}\n  ${cause}\n  the " +
+    'configuration is seeded once and never rewritten, so a later cook cannot add it\n  add it there, or ' +
+    "delete ${CONFIG_PATH} and cook again")
+  }
+
   /** One binding of a worker role or settings file to a harness, with the argument as the person gave it. */
   private static class Binding {
     String param
     String value
     String harness
     String operand
+    List<String> flags = []
 
     String argument() {
       "--${param}=${value}"
     }
   }
 
-  private Map<String, List<String>> resolveWorkers() {
+  private List<Binding> resolveWorkers() {
     def roles = bindings('worker-role', workerRoles, '<role>', 'the role binds', 'claude:worker')
     def settings = bindings('worker-settings', workerSettings, '<path>', 'the file binds', 'claude:ralph-claude.json')
 
@@ -442,10 +515,9 @@ class RalphTui {
     [roles, settings].each { checkOnePerHarness(it) }
     checkRoleAndSettingsOverlap(roles, settings)
 
-    def flags = [:].withDefault { [] }
-    roles.each { flags[it.harness] += roleFlags(it) }
-    settings.each { flags[it.harness] += settingsFlags(it, it.operand) }
-    new LinkedHashMap<String, List<String>>(flags)
+    roles.each { it.flags = roleFlags(it) }
+    settings.each { it.flags = settingsFlags(it, it.operand) }
+    roles + settings
   }
 
   private static List<Binding> bindings(String param, List<String> values, String operand, String binds,

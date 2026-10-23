@@ -128,10 +128,10 @@ recipes:
     def prompt = new File(kitchen, '.ralph-tui/templates/beads.hbs')
     prompt.text = 'Our prompt for {{taskId}}\n'
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex']]).commit()
+    cook(kitchen, RALPH, [harness: ['claude'], 'worktree-root': ['wt']]).commit()
     assert config.text.contains('maxIterations = 3')
     assert new File(kitchen, '.gitignore').readLines()[1] ==
-    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex'
+    '# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --worktree-root=wt'
     assert !config.text.contains('codex')
     assert prompt.text == 'Our prompt for {{taskId}}\n'
   }
@@ -807,14 +807,131 @@ roles:
     assert new File(kitchen, '.gitignore').readLines()[1].endsWith(' --worker-check=scripts/check')
   }
 
-  @Test void aWorkerCheckLeavesAConfigurationSeededEarlierAsItIs() {
+  @Test void refusesAWorkerCheckOverAConfigurationSeededWithoutIt() {
     def kitchen = kitchen()
     cook(kitchen, RALPH, [harness: ['claude', 'codex']]).commit()
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']]).commit()
+    def error = refusedRecook(kitchen, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']])
 
-    assert new File(kitchen, '.ralph-tui/config.toml').text == CONFIG
-    assert new File(kitchen, '.ralph-tui/bin/worker').text.contains("\ncheck='scripts/check'\n")
+    assert error.message.readLines() == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-check=scripts/check is not applied in ' +
+      '.ralph-tui/config.toml',
+      '  no [[agents]] entry there with plugin = "claude" has command = ".ralph-tui/bin/worker" and "claude" first ' +
+      'in its defaultFlags',
+      '  the configuration is seeded once and never rewritten, so a later cook cannot add it',
+      '  add it there, or delete .ralph-tui/config.toml and cook again',
+    ]
+  }
+
+  @Test void refusesARecookWhoseHarnessTheConfigurationLacks() {
+    def kitchen = kitchen()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+
+    def error = refusedRecook(kitchen, [harness: ['claude', 'codex']])
+
+    assert error.message.readLines() == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --harness=codex is not applied in .ralph-tui/config.toml',
+      '  no [[agents]] entry there has plugin = "codex"',
+      '  the configuration is seeded once and never rewritten, so a later cook cannot add it',
+      '  add it there, or delete .ralph-tui/config.toml and cook again',
+    ]
+  }
+
+  @Test void refusesARecookWhoseWorkerFilesTheConfigurationLacks() {
+    def kitchen = kitchen()
+    write(kitchen, '.agents/adapters/claude/roles/worker.json', '{}\n')
+    write(kitchen, 'x.json', '{}\n')
+    write(kitchen, 'x.toml', 'retries = 3\nname = "a\\"b"\n')
+    cook(kitchen, RALPH, [harness: ['claude', 'codex']]).commit()
+
+    def role = refusedRecook(kitchen, [harness: ['claude', 'codex'], 'worker-role': ['claude:worker']])
+    def claude = refusedRecook(kitchen, [harness: ['claude', 'codex'], 'worker-settings': ['claude:x.json']])
+    def codex = refusedRecook(kitchen, [harness: ['claude', 'codex'], 'worker-settings': ['codex:x.toml']])
+
+    assert role.message.readLines().take(2) == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-role=claude:worker is not applied in ' +
+      '.ralph-tui/config.toml',
+      '  no [[agents]] entry there with plugin = "claude" has "--settings", ' +
+      '".agents/adapters/claude/roles/worker.json" in its defaultFlags',
+    ]
+    assert claude.message.readLines().take(2) == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-settings=claude:x.json is not applied in ' +
+      '.ralph-tui/config.toml',
+      '  no [[agents]] entry there with plugin = "claude" has "--settings", "x.json" in its defaultFlags',
+    ]
+    assert codex.message.readLines().take(2) == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --worker-settings=codex:x.toml is not applied in ' +
+      '.ralph-tui/config.toml',
+      '  no [[agents]] entry there with plugin = "codex" has "-c", "retries=3", "-c", "name=\\"a\\\\\\"b\\"" in ' +
+      'its defaultFlags',
+    ]
+  }
+
+  @Test void refusesARecookWhoseBeadsTrackerTheConfigurationLacks() {
+    def kitchen = kitchen()
+    cook(kitchen, RALPH, [harness: ['claude'], tracker: ['json']]).commit()
+
+    def lacking = refusedRecook(kitchen, [harness: ['claude']])
+
+    assert lacking.message.readLines() == [
+      'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: --tracker=beads is not applied in .ralph-tui/config.toml',
+      '  it sets no tracker, and a run with --epic needs tracker = "beads"',
+      '  the configuration is seeded once and never rewritten, so a later cook cannot add it',
+      '  add it there, or delete .ralph-tui/config.toml and cook again',
+    ]
+
+    def config = new File(kitchen, '.ralph-tui/config.toml')
+    config.text = 'tracker = "json"\n' + config.text
+    def other = refusedRecook(kitchen, [harness: ['claude']])
+
+    assert other.message.readLines()[1] == '  its tracker is "json", and a run with --epic needs tracker = "beads"'
+  }
+
+  @Test void acceptsARecookOverAHandWrittenConfigurationThatHasWhatTheArgumentsNeed() {
+    def kitchen = kitchen()
+    write(kitchen, '.ralph-tui/config.toml', '''\
+tracker = "beads-rust"
+defaultAgent = "shim"
+
+[[agents]]
+name = "shim"
+plugin = "claude"
+command = "scripts/ralph/claude"
+defaultFlags = ["--permission-prompts", "none", "--settings", "x.json"]
+
+[agents.options]
+skipPermissions = false
+''')
+    def before = new File(kitchen, '.ralph-tui/config.toml').text
+
+    cook(kitchen, RALPH, [harness: ['claude'], 'worker-settings': ['claude:x.json']]).commit()
+
+    assert new File(kitchen, '.ralph-tui/config.toml').text == before
+    assert new File(kitchen, '.gitignore').readLines()[1].endsWith(' --harness=claude --worker-settings=claude:x.json')
+  }
+
+  @Test void acceptsARecookWithTheWorkerCheckTheConfigurationWasSeededWith() {
+    def kitchen = kitchen()
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/check']]).commit()
+    def config = new File(kitchen, '.ralph-tui/config.toml').text
+
+    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-check': ['scripts/other']]).commit()
+
+    assert new File(kitchen, '.ralph-tui/config.toml').text == config
+    assert new File(kitchen, '.ralph-tui/bin/worker').text.contains("\ncheck='scripts/other'\n")
+  }
+
+  @Test void refusesAConfigurationThatIsNotToml() {
+    def kitchen = kitchen()
+    write(kitchen, '.ralph-tui/config.toml', 'key = \n')
+
+    def error = refusedRecook(kitchen, [harness: ['claude']])
+
+    def lines = error.message.readLines()
+    assert lines.size() == 3
+    assert lines[0] == 'io.github.lmarqs.cookbook:ralph:0.1.0#ralph-tui: .ralph-tui/config.toml is not valid TOML'
+    assert lines[1].startsWith('  ') && lines[1].trim()
+    assert lines[2] == '  fix it, or delete it and cook again'
   }
 
   @Test void withoutAWorkerCheckTheWorkerIsWrittenAndRefusesEveryTask() {
@@ -1338,6 +1455,15 @@ roles:
     assert forced.exit == 0
     assert !worker.exists()
     assert git(kitchen, 'branch', '--list', 'ralph*') == ''
+  }
+
+  // Re-cooks with arguments the seeded configuration cannot take and checks that the refusal wrote nothing.
+  private Throwable refusedRecook(File kitchen, Map arguments) {
+    def before = files(kitchen).collectEntries { [(it): new File(kitchen, it).bytes.toList()] }
+    def error = shouldFail(IllegalArgumentException) { cook(kitchen, RALPH, arguments) }
+
+    assert files(kitchen).collectEntries { [(it): new File(kitchen, it).bytes.toList()] } == before
+    error
   }
 
   private File kitchen() {

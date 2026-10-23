@@ -181,11 +181,14 @@ with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrit
 `--worker-check`, or without one, rewrites the worker, and cooking without a file's `--instructions` removes its
 section. Cooking with another `--worktree-root` rewrites the launcher and the `.gitignore` section, which then look only
 under the new root, so clean every run before. The seeds are never rewritten or removed, so a narrower `--tracker`
-leaves a prompt seeded earlier in place: to take other harnesses, a worker role or a newer version's configuration or
-prompts, edit them or delete them and cook again. A newer version rewrites the launcher and the sections. Every cook
-rewrites `.ralph-tui/bin/`, so a team never edits it: to use scripts of its own, it runs its own launcher instead of
-`bin/run` and `bin/clean`, or points an agent entry's `command` at its own worker, such as `scripts/worker.py`, in the
-configuration, which is never rewritten.
+leaves a prompt seeded earlier in place. A cook whose arguments the existing `.ralph-tui/config.toml` lacks is refused
+and writes nothing: an agent entry for each `--harness`, the flags of each `--worker-role` or `--worker-settings`, the
+worker as the `command` of each entry for `--worker-check`, and a beads `tracker` for `--tracker=beads`. Edit the file
+or delete it and cook again; a Codex settings file is copied into the configuration when seeding, so editing one means
+deleting `config.toml` and cooking again. A newer version's prompts are taken by deleting them and cooking again. A
+newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a team never edits it:
+to use scripts of its own, it runs its own launcher instead of `bin/run` and `bin/clean`, or points an agent entry's
+`command` at its own worker, such as `scripts/worker.py`, in the configuration, which is never rewritten.
 
 ## Traps
 
@@ -205,8 +208,6 @@ configuration, which is never rewritten.
 - ralph-tui 0.12 completes and commits a task when the agent's output holds `<promise>COMPLETE</promise>` anywhere,
   even in a sentence saying it is not done, whatever the checks say. `--worker-check` gates it on the team's check;
   the artifact's README, under Gating completion, says how a team writes a wrapper of its own.
-- A configuration seeded before `--worker-check` keeps its entries: the worker runs only for an entry whose `command`
-  is `.ralph-tui/bin/worker` and whose `defaultFlags` start with the harness.
 - With `.ralph-tui/` not committed, parallel workers find no `.ralph-tui/bin/worker`, because ralph-tui copies only
   `config.toml` into them: run serially, or commit `.ralph-tui/`.
 - ralph-tui 0.12 treats stderr naming a rate limit, `429` or `overloaded` as rate limiting, and retries or switches
