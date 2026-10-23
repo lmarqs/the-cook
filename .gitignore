@@ -25,7 +25,7 @@ CLAUDE.local.md
 !/.worktrees/teardown
 # cook:end io.github.lmarqs.cookbook:git#worktrees/worktrees
 # cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui
-# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown --instructions=AGENTS.md
+# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown --tracker=beads --tracker=json --instructions=AGENTS.md
 /.ralph-tui/*
 !/.ralph-tui/config.toml
 !/.ralph-tui/templates/
