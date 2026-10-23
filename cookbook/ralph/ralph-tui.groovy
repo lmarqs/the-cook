@@ -6,7 +6,7 @@ sets up and cleans the run's worktree.
 ## API
 
 ```sh
-# Claude Code workers, limited by the project's settings
+# Claude Code workers, limited by the project's denies, and its allows where the checkout is trusted
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
 # Claude Code and Codex workers, Claude by default
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
@@ -206,6 +206,11 @@ configuration, which is never rewritten.
   removes the run and leaves its workers' worktrees and branches.
 - ralph-tui commits with `git add -A`, so whatever a worker changes in the run worktree, `.beads/` included, rides in
   the run branch.
+- ralph-tui 0.12 marks a task done before committing it, and reports a failed commit nowhere, headless or in the TUI.
+  A commit refused by signing with no key or by a hook leaves the task done and its changes staged in the run
+  worktree, where the next task's commit takes them in under its own message. When `ralph/<name>` has fewer commits
+  than the run completed tasks, run `git status` in the run worktree and check the commit settings; `bin/clean`
+  refuses while the changes remain.
 - A tracked PRD run with `--parallel` leaves its completion marks uncommitted: ralph-tui 0.12 writes them after merging
   the workers' commits, and commits nothing after that.
 - A run branch with a committed `.ralph-tui/config.toml` takes the configuration and prompts committed there, so a
