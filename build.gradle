@@ -105,8 +105,33 @@ tasks.register('centralBundleTest') {
   }
 }
 
+// The engine knows no cookbook: no code or build file under core/ may name the cookbook's directory or the property
+// that once passed its path to the core tests. Coordinates such as io.github.lmarqs.cookbook:agents are data, and its
+// documentation may name the cookbook.
+tasks.register('coreBoundaryCheck') {
+  group = 'verification'
+  description = 'Fail when code or a build file under core/ refers to the cookbook directory.'
+  def sources = fileTree('core') {
+    exclude 'build/**', '.gradle/**', '**/*.md'
+  }
+  inputs.files(sources).withPathSensitivity(PathSensitivity.RELATIVE)
+  doLast {
+    def reference = ~/\bcook\.cookbook\b|(^|[^.\w])(\.\.\/)+cookbook\b|\bcookbook\/(src|test)\b/
+    def found = sources.files.collectMany { file ->
+      file.readLines()
+          .withIndex()
+          .findAll { line, index -> line =~ reference }
+          .collect { line, index -> "${rootDir.toPath().relativize(file.toPath())}:${index + 1}: ${line.trim()}" }
+    }
+
+    if (found) {
+      throw new GradleException("The core refers to the cookbook:\n${found.join('\n')}")
+    }
+  }
+}
+
 tasks.named('check') {
-  dependsOn 'codenarc', 'centralBundleTest'
+  dependsOn 'codenarc', 'centralBundleTest', 'coreBoundaryCheck'
   dependsOn gradle.includedBuild('core').task(':check'), gradle.includedBuild('infra').task(':check')
   dependsOn gradle.includedBuild('cli').task(':check')
   dependsOn gradle.includedBuild('docs').task(':check')
