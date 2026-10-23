@@ -1,7 +1,7 @@
 {
   "name": "cook replicate",
-  "branchName": "ralph/replicate",
   "description": "A recipe whose output stays out of commits leaves every new clone or worktree with the committed `cook.lock` entry but none of the files. `io.github.lmarqs.cookbook:ralph#ralph-tui --share=clone` is the case in point: `.gitignore` keeps all of `.ralph-tui/` out of commits, and its help says \"each clone cooks its own\". Today the person retypes the original command with all of its arguments, because `cook.lock` records no arguments (ADR 0007, decision 3).  This feature makes `cook.lock` record each recipe's arguments and adds `./cook replicate <recipe>...`. The command cooks each named recipe again, at the source and with the arguments `cook.lock` recorded, through the normal diff, approval and `--dry-run` flow. `discard` and `replicate` both accept the recipe's lock name, such as `io.github.lmarqs.cookbook:ralph#ralph-tui`, without a version. Tracking issue: #71.",
+  "branchName": "ralph/replicate",
   "userStories": [
     {
       "id": "US-001",
@@ -22,9 +22,10 @@
         "`git diff --check` passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
-      "dependsOn": []
+      "dependsOn": [],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-002",
@@ -138,5 +139,8 @@
         "US-005"
       ]
     }
-  ]
+  ],
+  "metadata": {
+    "updatedAt": "2026-10-23T14:37:57.216Z"
+  }
 }

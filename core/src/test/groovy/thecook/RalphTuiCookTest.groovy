@@ -94,6 +94,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
     source: "${RALPH}"
     sha256: "${sourcesSha256('ralph')}"
+    arguments: ["--harness=claude","--harness=codex","--tracker=beads","--tracker=json"]
     owns:
       sections:
         - file: ".gitignore"
@@ -643,16 +644,16 @@ roles:
     assert git(new File(kitchen, '.worktrees/ralph/demo'), 'status', '--porcelain') == ''
   }
 
-  @Test void aShareChangeRewritesOnlyTheIgnoreSection() {
+  @Test void aShareChangeRewritesTheIgnoreSectionAndRecordedArguments() {
     def kitchen = kitchen()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()
     def team = new File(kitchen, '.gitignore').readLines().drop(2)
 
     def clone = cook(kitchen, RALPH, [harness: ['claude'], share: ['clone']])
-    assert clone.actions == ['.gitignore': 'update']
+    assert clone.actions == ['.gitignore': 'update', 'cook.lock': 'update']
     clone.commit()
     def back = cook(kitchen, RALPH, [harness: ['claude'], share: ['team']])
-    assert back.actions == ['.gitignore': 'update']
+    assert back.actions == ['.gitignore': 'update', 'cook.lock': 'update']
     back.commit()
 
     assert new File(kitchen, '.gitignore').readLines().drop(2) == team

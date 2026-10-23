@@ -4,6 +4,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
     sha256: "f66f2557e76b46d5568c8d6414986dc10c7e841f03c445b2d8a1f8f43e8fc610"
+    arguments: ["--harness=claude","--harness=codex","--worktree-setup=.worktrees/setup","--worktree-teardown=.worktrees/teardown"]
     owns:
       sections:
         - file: ".agents/adapters/codex/rules/cook.rules"
@@ -40,6 +41,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
     sha256: "f66f2557e76b46d5568c8d6414986dc10c7e841f03c445b2d8a1f8f43e8fc610"
+    arguments: []
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
@@ -57,6 +59,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:git#worktrees"
     source: "io.github.lmarqs.cookbook:git:4.2.0#worktrees"
     sha256: "a48d044b0801e6129bb5270999753f887ec1231ea98bbe322e615952139df0e7"
+    arguments: ["--instructions=AGENTS.md"]
     owns:
       sections:
         - file: ".gitignore"
@@ -66,6 +69,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
     source: "io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui"
     sha256: "d52ce3a91e332d99e25d4f9f5269f2dd8ae20e55e2222be5aefcf339d5e0022b"
+    arguments: ["--harness=claude","--harness=codex","--worktree-setup=.worktrees/setup","--worktree-teardown=.worktrees/teardown","--tracker=beads","--tracker=json","--instructions=AGENTS.md"]
     owns:
       sections:
         - file: ".gitignore"

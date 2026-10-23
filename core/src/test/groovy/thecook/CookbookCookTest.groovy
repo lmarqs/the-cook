@@ -66,6 +66,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.1.0#connect"
     sha256: "${sha256}"
+    arguments: ["--harness=claude"]
     owns:
       sections:
         - file: ".gitignore"
@@ -84,6 +85,7 @@ recipes:
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.1.0#seed"
     sha256: "${sha256}"
+    arguments: []
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
@@ -101,7 +103,6 @@ recipes:
 """
     assert cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).changes == []
 
-    // cook.lock records no arguments, so the section's first line says how to cook it again.
     assert new File(kitchen, '.gitignore').readLines()[0..1] == [
       '# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses',
       '# io.github.lmarqs.cookbook:agents#connect --harness=claude'
@@ -1084,6 +1085,7 @@ text.text = 'first\\n'
     assert new File(kitchen, 'cook.lock').text.contains("""  - name: "recipes/setup"
     source: "recipes/setup.groovy"
     sha256: "${recorded}"
+    arguments: []
 """)
     assert cook(kitchen, './recipes/setup.groovy', [:]).changes.empty
 
@@ -1257,6 +1259,77 @@ a.md,b.md
 '''
     def defaulted = cook(kitchen, 'recipes/setup.groovy', [agent: ['claude']]).after('OUT.md')
     assert defaulted.readLines()[0] == 'recipes/setup --agent=claude'
+  }
+
+  @Test void recordsNormalizedArgumentsInTheLockWithoutRequiringARecipeNameField() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
+@param(value = ['agent'], many = true, doc = 'Agents') String[] agent
+@param(value = ['mode', 'm'], default = ['fast'], doc = 'The mode') String mode
+@param(value = ['note'], default = [], doc = 'A note') String note
+@param(value = ['file'], many = true, sorted = true, path = true, default = [], doc = 'Files') List<String> file
+@ingredient(Text) def text
+text.text = agent.join(',')
+""")
+
+    cook(kitchen, 'recipes/setup.groovy',
+        [agent: ['codex', 'claude', 'codex'], m: ['slow'], file: ['./b.md', 'a.md', 'b.md']]).commit()
+
+    def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
+    def expected = ['--agent=codex', '--agent=claude', '--mode=slow', '--file=a.md', '--file=b.md']
+    assert lock.arguments('recipes/setup') == expected
+    assert new File(kitchen, 'cook.lock').text.contains(
+    '    arguments: ["--agent=codex","--agent=claude","--mode=slow","--file=a.md","--file=b.md"]\n')
+  }
+
+  @Test void recordsAnEmptyArgumentListWhenNoneAreGiven() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/Text.groovy', TEXT_MODEL)
+    recipe(kitchen, 'recipes/setup.groovy', """import acme.text.Text
+@param(value = ['mode'], default = ['fast'], doc = 'The mode') String mode
+@ingredient(Text) def text
+text.text = mode
+""")
+
+    cook(kitchen, 'recipes/setup.groovy', [:]).commit()
+
+    def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
+    assert lock.arguments('recipes/setup') == []
+    assert new File(kitchen, 'cook.lock').text.contains('    arguments: []\n')
+  }
+
+  @Test void quotesArgumentValuesAsJsonStringsAndReadsThemBackWithoutSplitting() {
+    def lock = new CookLock()
+    def arguments = ['--note=with spaces', '--note="quoted"\\path\nnext', '--flag=true']
+    lock.record('recipes/setup', 'recipes/setup.groovy', 'abc', arguments, [])
+
+    def rendered = lock.render()
+
+    assert rendered.readLines()[6] ==
+    '    arguments: ["--note=with spaces","--note=\\"quoted\\"\\\\path\\nnext","--flag=true"]'
+    assert CookLock.parse(rendered).arguments('recipes/setup') == arguments
+  }
+
+  @Test void readsAnOldLockWithoutArgumentsAsNotRecordedAndPreservesItsOwnership() {
+    def text = '''# Written by the-cook; do not edit by hand.
+version: 1
+recipes:
+  - name: "recipes/setup"
+    source: "recipes/setup.groovy"
+    sha256: "abc"
+    owns:
+      sections:
+        - file: "NOTES.md"
+          id: "recipes/setup/notes"
+'''
+    def lock = CookLock.parse(text)
+
+    assert lock.arguments('recipes/setup') == null
+    assert lock.arguments('missing') == null
+    assert lock.sha256('recipes/setup', 'recipes/setup.groovy') == 'abc'
+    assert lock.owned('recipes/setup') == [new SectionTarget('NOTES.md', 'recipes/setup/notes')]
+    assert lock.render() == text
   }
 
   @Test void refusesARecipeNameFieldThatIsNotAString() {

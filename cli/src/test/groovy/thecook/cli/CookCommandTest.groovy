@@ -311,7 +311,7 @@ more
       def recook = ['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#notes', '--line=second']
       assert cli.execute(recook as String[]) == 0
       assert stdout.toString('UTF-8').contains('\n-first\n+second\n')
-      assert stdout.toString('UTF-8').contains('\nUpdated NOTES.md\n\nAfter cooking')
+      assert stdout.toString('UTF-8').contains('\nUpdated NOTES.md\nUpdated cook.lock\n\nAfter cooking')
       stdout.reset()
       def loud = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line=second', '--loud']
       assert cli.execute(loud as String[]) == 0
@@ -319,7 +319,24 @@ more
       stdout.reset()
       def quiet = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line=second', '--loud=false']
       assert cli.execute(quiet as String[]) == 0
-      assert stdout.toString('UTF-8') == 'Already cooked.\n'
+      def sha256 = (new File(repo, 'cook.lock').text =~ /sha256: "(\w+)"/)[0][1]
+      assert stdout.toString('UTF-8') == """Confirm acme:notes:1.2.3#notes
+  Everyone reads `NOTES.md`.
+
+--- a/cook.lock
++++ b/cook.lock
+@@ -12,7 +12,7 @@
+   - name: "acme:notes#notes"
+     source: "acme:notes:1.2.3#notes"
+     sha256: "${sha256}"
+-    arguments: ["--line=second"]
++    arguments: ["--line=second","--loud=false"]
+     owns:
+       sections:
+         - file: "NOTES.md"
+
+Would update cook.lock
+"""
       stdout.reset()
       def loudSeparate = ['-C', repo.path, '--dry-run', 'acme:notes:1.2.3#notes', '--line', 'second', '--loud']
       assert cli.execute(loudSeparate as String[]) == 0

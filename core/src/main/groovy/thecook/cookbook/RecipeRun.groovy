@@ -17,12 +17,13 @@ final class RecipeRun {
   private RecipeRun() { }
 
   /**
-   * Runs `recipe` with `arguments` and returns its ingredients in declaration order. A bare `--name` is `true` for a
-   * yes-or-no param and an error for any other. `resources` holds the text of each `@resource` path.
+   * Runs `recipe` with `arguments` and returns its ingredients and normalized arguments in declaration order.
+   * A bare `--name` is `true` for a yes-or-no param and an error for any other.
+   * `resources` holds the text of each `@resource` path.
    * `name` is the recipe's own name, for its `@recipe` fields. `newIngredient` creates an instance of a model type at a
    * directory.
    */
-  static List<Object> run(CompiledRecipe recipe, String name, List<Argument> arguments, Map<String, String> resources,
+  static Map run(CompiledRecipe recipe, String name, List<Argument> arguments, Map<String, String> resources,
       Closure newIngredient) {
     def script = (Script) recipe.type.getDeclaredConstructor().newInstance()
     List<Field> fields = recipe.fields.collect { recipe.type.getDeclaredField(it) }
@@ -68,7 +69,7 @@ final class RecipeRun {
       instance
     }
     script.run()
-    ingredients
+    [ingredients: ingredients, arguments: line.drop(1)]
   }
 
   /**

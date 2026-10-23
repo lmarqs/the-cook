@@ -42,7 +42,14 @@ class AgentsWorktreeCookTest {
     def hooks = new JsonSlurper().parse(settings).hooks
     assert hooks.WorktreeCreate == [[hooks: [command('create')]]]
     assert hooks.WorktreeRemove == [[hooks: [command('remove')]]]
-    def owned = CookLock.parse(new File(kitchen, 'cook.lock').text).owned('io.github.lmarqs.cookbook:agents#connect')
+    def lock = CookLock.parse(new File(kitchen, 'cook.lock').text)
+    assert lock.arguments('io.github.lmarqs.cookbook:agents#connect') == [
+      '--harness=claude',
+      '--worktree-root=.worktrees',
+      '--worktree-setup=.worktrees/setup',
+      '--worktree-teardown=.worktrees/teardown'
+    ]
+    def owned = lock.owned('io.github.lmarqs.cookbook:agents#connect')
     assert new FileTarget(HOOK) in owned
     ['WorktreeCreate', 'WorktreeRemove'].each { assert new KeyTarget(SETTINGS, ['hooks', it]) in owned }
     assert new File(kitchen, '.gitignore').readLines()[1] == '# io.github.lmarqs.cookbook:agents#connect ' +

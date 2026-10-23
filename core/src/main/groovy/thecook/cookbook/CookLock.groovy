@@ -6,10 +6,10 @@ import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 
 /**
- * `cook.lock`: for each cooked recipe, its short name, its source, the source's sha256 and the sections, keys, whole
- * files and links it owns. It is the only record of which recipes were cooked and what each owns, so the kitchen keeps
- * and commits it: Cook reads it to withdraw what a recipe no longer declares, and to tell the first time a recipe is
- * cooked, which refuses an existing file its seed writes, from a later one.
+ * `cook.lock`: for each cooked recipe, its short name, its source, the source's sha256, its arguments and the sections,
+ * keys, whole files and links it owns. The kitchen keeps and commits it as the only record of which recipes were
+ * cooked and what each owns. Cook reads it to withdraw what a recipe no longer declares, and to tell the first time
+ * a recipe is cooked, which refuses an existing file its seed writes, from a later one.
  */
 final class CookLock {
   static final String PATH = 'cook.lock'
@@ -47,7 +47,8 @@ final class CookLock {
     data.recipes.each { Map recipe ->
       def owns = (Map) (recipe.owns ?: [:])
       def targets = KINDS.collectMany { kind, create -> (owns["${kind}s"] ?: []).collect(create) }
-      lock.entries[recipe.name] = new Entry(recipe.name, recipe.source, recipe.sha256, targets)
+      lock.entries[recipe.name] = new Entry(recipe.name, recipe.source, recipe.sha256, (List<String>) recipe.arguments,
+          targets)
     }
     lock
   }
@@ -55,6 +56,11 @@ final class CookLock {
   /** The sha256 the recipe `name` was last cooked with from `source`, or `null` when it was not cooked from it. */
   String sha256(String name, String source) {
     entries[name]?.source == source ? entries[name].sha256 : null
+  }
+
+  /** The normalized arguments `name` was last cooked with, or `null` when they were not recorded. */
+  List<String> arguments(String name) {
+    entries[name]?.arguments
   }
 
   /** Whether the recipe `name` was cooked before. */
@@ -86,8 +92,8 @@ final class CookLock {
     }?.key
   }
 
-  /** Records `name` as cooked from `source`, owning `targets`, and takes each target from the recipes that held it. */
-  void record(String name, String source, String sha256, List<Target> targets) {
+  /** Records `name` as cooked from `source` with `arguments`, owning `targets`, taking them from prior owners. */
+  void record(String name, String source, String sha256, List<String> arguments, List<Target> targets) {
     entries.each { other, entry ->
       if (other != name) {
         entry.targets.removeAll { owned ->
@@ -97,7 +103,7 @@ final class CookLock {
         }
       }
     }
-    entries[name] = new Entry(name, source, sha256, targets)
+    entries[name] = new Entry(name, source, sha256, arguments, targets)
   }
 
   /** The lock's YAML, with every string quoted so no value is read as another type. */
@@ -107,6 +113,11 @@ final class CookLock {
       lines << "  - name: ${quote(entry.name)}"
       lines << "    source: ${quote(entry.source)}"
       lines << "    sha256: ${quote(entry.sha256)}"
+
+      if (entry.arguments != null) {
+        lines << "    arguments: ${JsonOutput.toJson(entry.arguments)}"
+      }
+
       def groups = KINDS.keySet()
           .collectEntries { kind -> [(kind): entry.targets.findAll { it.kind == kind }] }
           .findAll { kind, targets -> targets }
@@ -138,12 +149,14 @@ final class CookLock {
     final String name
     final String source
     final String sha256
+    final List<String> arguments
     final List<Target> targets
 
-    Entry(String name, String source, String sha256, List<Target> targets) {
+    Entry(String name, String source, String sha256, List<String> arguments, List<Target> targets) {
       this.name = name
       this.source = source
       this.sha256 = sha256
+      this.arguments = arguments == null ? null : new ArrayList<>(arguments)
       this.targets = new ArrayList<>(targets)
     }
   }

@@ -48,9 +48,10 @@ final class CookbookCook {
         }
 
         def compiled = CookbookCompiler.recipe(recipe.source, recipe.fileName, recipe.models)
-        def ingredients = RecipeRun.run(compiled, name, request.arguments, recipe.resources) { Class type, String at ->
+        def run = RecipeRun.run(compiled, name, request.arguments, recipe.resources) { Class type, String at ->
           model(type, at, loader.reads(type, draft))
         }
+        def ingredients = run.ingredients
         ingredients*.getClass()
             .unique()
             .each { checkPristine(it, loader.reads(it, draft), name) }
@@ -62,7 +63,7 @@ final class CookbookCook {
           changedSources.add(new ChangedSource(recipe.address, recorded, recipe.sha256))
         }
 
-        lock.record(name, recipe.address, recipe.sha256, declared.owned*.target)
+        lock.record(name, recipe.address, recipe.sha256, run.arguments, declared.owned*.target)
         def texts = RecipeSource.texts(recipe.source, "${recipe.fileName}.groovy")
         recipes.add(new CookedRecipe(recipe.address, texts?.confirm, texts?.yieldText))
       } catch (Exception error) {

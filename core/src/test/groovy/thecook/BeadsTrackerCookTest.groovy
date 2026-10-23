@@ -39,7 +39,7 @@ class BeadsTrackerCookTest {
 # cook:end io.github.lmarqs.cookbook:beads#tracker/beads
 '''
     assert new File(kitchen, '.beads/PRIME.md').bytes == new File(BEADS, 'templates/PRIME-clone.template.md').bytes
-    assert text(kitchen, 'cook.lock') == lock('''\
+    assert text(kitchen, 'cook.lock') == lock(['--share=clone'], '''\
       sections:
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:beads#tracker/beads"
@@ -61,7 +61,7 @@ class BeadsTrackerCookTest {
 # cook:end io.github.lmarqs.cookbook:beads#tracker/beads
 '''
     assert new File(kitchen, '.beads/PRIME.md').bytes == new File(BEADS, 'templates/PRIME-team.template.md').bytes
-    assert text(kitchen, 'cook.lock') == lock('''\
+    assert text(kitchen, 'cook.lock') == lock(['--share=team'], '''\
       sections:
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:beads#tracker/beads"
@@ -90,7 +90,7 @@ class BeadsTrackerCookTest {
     prime.text = '# Our Beads rules\n'
 
     assert cook(kitchen, TRACKER, [share: ['team']]).actions == [:]
-    assert cook(kitchen, TRACKER, [share: ['clone']]).actions == ['.gitignore': 'update']
+    assert cook(kitchen, TRACKER, [share: ['clone']]).actions == ['.gitignore': 'update', 'cook.lock': 'update']
     assert prime.text == '# Our Beads rules\n'
     assert text(kitchen, '.gitignore').startsWith('/build/\n# cook:begin ')
   }
@@ -124,7 +124,7 @@ class BeadsTrackerCookTest {
     assert files(kitchen) == ['.beads/PRIME.md', '.gitignore', 'cook.lock', path]
     assert text(kitchen, '.gitignore').readLines()[1] ==
     "# io.github.lmarqs.cookbook:beads#tracker --share=clone --session-start=${path}".toString()
-    assert text(kitchen, 'cook.lock') == lock("""\
+    assert text(kitchen, 'cook.lock') == lock(['--share=clone', "--session-start=${path}".toString()], """\
       sections:
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:beads#tracker/beads"
@@ -144,7 +144,7 @@ class BeadsTrackerCookTest {
 
     assert files(kitchen) == (before + ['.beads/PRIME.md', '.gitignore', 'cook.lock']).sort()
     assert text(kitchen, '.gitignore').readLines()[1] == '# io.github.lmarqs.cookbook:beads#tracker --share=clone'
-    assert text(kitchen, 'cook.lock') == lock('''\
+    assert text(kitchen, 'cook.lock') == lock(['--share=clone'], '''\
       sections:
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:beads#tracker/beads"
@@ -308,13 +308,14 @@ class BeadsTrackerCookTest {
     kitchen
   }
 
-  private static String lock(String owns) {
+  private static String lock(List<String> arguments, String owns) {
     """# Written by the-cook; do not edit by hand.
 version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:beads#tracker"
     source: "${TRACKER}"
     sha256: "${sourcesSha256('beads')}"
+    arguments: ${groovy.json.JsonOutput.toJson(arguments)}
     owns:
 """ + owns
   }
