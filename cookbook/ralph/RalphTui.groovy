@@ -114,152 +114,123 @@ class RalphTui {
 
   /**
    * Sets the `[[agents]]` entries the seeded configuration gets, one per harness in the order given, the first as
-   * `defaultAgent`; a repeated harness counts once. Each must be `claude` or `codex`, and at least one is required.
+   * `defaultAgent`; a repeated harness counts once. `null` means none.
    */
   void harnesses(List<String> names) {
-    def unknown = names - HARNESSES
-
-    if (unknown) {
-      throw new IllegalArgumentException("--harness=${unknown.first()} is not one of: ${HARNESSES.join(', ')}")
-    }
-
-    if (!names) {
-      throw new IllegalArgumentException('ralph-tui needs at least one --harness')
-    }
-
-    harnesses = names.unique(false)
+    harnesses = names ?: []
   }
 
   /**
    * Narrows what is seeded and offered to the trackers in `names`, each `beads` or `json`: their prompts, the
    * configuration's `tracker = "beads"`, and the run flags `bin/run`'s usage line and the instructions section name.
-   * Both by default. A run still picks its tracker with `--epic` or `--prd`.
+   * Both by default, and for `null`. A run still picks its tracker with `--epic` or `--prd`.
    */
   void trackers(List<String> names) {
-    def unknown = names - TRACKERS
-
-    if (unknown || !names) {
-      throw new IllegalArgumentException("--tracker=${unknown ? unknown.first() : ''} is not one of: " +
-      TRACKERS.join(', '))
-    }
-
-    trackers = TRACKERS.findAll { it in names }
+    trackers = names ?: TRACKERS
   }
 
   /**
-   * Adds `"--settings", ".agents/adapters/claude/roles/<name>.json"` to the Claude entry's `defaultFlags`. Refused when
-   * that file is not in the draft, naming the policy role to define and the recipe to cook; when `workerSettings` was
-   * called; and when no Claude entry is requested. Call after `harnesses`.
+   * Adds `"--settings", ".agents/adapters/claude/roles/<name>.json"` to the Claude entry's `defaultFlags`. `null` adds
+   * none.
    */
   void workerRole(String name) {
-    if (!(name ==~ /[a-z][a-z0-9-]*/)) {
-      throw new IllegalArgumentException("--worker-role=${name} is not a role name\n  a role is a key under roles in " +
-      '.agents/permission/policy.yaml: lower-case letters, digits and hyphens, starting with a letter')
-    }
-
-    claudeOnly("--worker-role=${name}")
-
-    if (workerSettings) {
-      throw exclusive()
-    }
-
-    def file = "${ROLES}/${name}.json"
-
-    if (current(file) == null) {
-      throw new IllegalArgumentException("--worker-role=${name} needs ${file}\n  the role file is not in the draft\n" +
-      "  define roles.${name} in .agents/permission/policy.yaml, then cook " +
-      'io.github.lmarqs.cookbook:agents#connect --harness=claude')
-    }
-
     workerRole = name
   }
 
   /**
    * Adds `"--settings", "<path>"` to the Claude entry's `defaultFlags`; the file is the team's, and nothing reads or
-   * writes it at cook time. Refused when `workerRole` was called, and when no Claude entry is requested. Call after
-   * `harnesses`.
+   * writes it at cook time. `null` adds none.
    */
   void workerSettings(String path) {
-    if (!path?.trim()) {
-      throw new IllegalArgumentException('--worker-settings needs a path')
-    }
-
-    claudeOnly("--worker-settings=${path}")
-
-    if (workerRole) {
-      throw exclusive()
-    }
-
     workerSettings = path
   }
 
   /**
    * Has `bin/run` put each run's worktree at `<path>/ralph/<name>`, `path` being a directory by its path from the
    * repository root, and `bin/clean` remove it from there; ralph-tui puts the run's parallel workers beside it, in
-   * `.ralph-worktrees/<last part of the name>/`. `.worktrees` without it.
+   * `.ralph-worktrees/<last part of the name>/`. `.worktrees` without it, and for `null`.
    */
   void worktreeRoot(String path) {
-    worktreeRoot = path
+    worktreeRoot = path ?: WORKTREE_ROOT
   }
 
   /**
    * Has `bin/run` run the file at `path`, by its path from the repository root, from the root of each worktree it
-   * creates, and fail the run when that file is missing, not executable or fails. Without it, `bin/run` runs no setup.
-   * Refused under `.ralph-tui/`, which in a run worktree holds only what this recipe writes.
+   * creates, and fail the run when that file is missing, not executable or fails. Without it, and for `null`,
+   * `bin/run` runs no setup.
    */
   void worktreeSetup(String path) {
-    worktreeSetup = outsideRalphTui('worktree-setup', path, '.worktrees/setup')
+    worktreeSetup = path
   }
 
   /**
    * Has `bin/clean` run the file at `path`, by its path from the repository root, from the root of the run worktree
    * before removing anything, and stop, removing nothing, when that file is missing, not executable or fails. Without
-   * it, `bin/clean` runs no teardown. Refused under `.ralph-tui/`, as `worktreeSetup` is.
+   * it, and for `null`, `bin/clean` runs no teardown.
    */
   void worktreeTeardown(String path) {
-    worktreeTeardown = outsideRalphTui('worktree-teardown', path, '.worktrees/teardown')
+    worktreeTeardown = path
   }
 
   /**
    * Has `.ralph-tui/bin/worker` hand the agent's output to ralph-tui only once the file at `path`, by its path from the
    * repository root, passes; and seeds each `[[agents]]` entry with the worker as its `command`, its harness as the
-   * worker's first argument, and retries for a failed iteration. Without it, the worker refuses every task. Refused
-   * under `.ralph-tui/`, as `worktreeSetup` is.
+   * worker's first argument, and retries for a failed iteration. Without it, and for `null`, the worker refuses every
+   * task.
    */
   void workerCheck(String path) {
-    workerCheck = outsideRalphTui('worker-check', path, 'scripts/check')
+    workerCheck = path
   }
 
   /**
    * Has the launcher's commands stated in each Markdown file in `paths`, by its path from the repository root, in a
-   * `ralph-tui` section. A file the draft lacks is refused when the sections are written.
+   * `ralph-tui` section. A file the draft lacks is refused when the sections are written. `null` names none.
    */
   void instructions(List<String> paths) {
-    instructions = paths.unique(false)
+    instructions = paths ?: []
   }
 
   /**
    * Requests the owned launcher, `bin/run` and `bin/clean`, the worker `bin/worker`, and the `ralph-tui` section of
-   * `.gitignore`. `cookedWith` names the recipe and its arguments, which the section's first line records; it must not
-   * be blank. Call after `harnesses`, `workerRole`, `workerSettings`, `worktreeRoot`, `worktreeSetup`,
-   * `worktreeTeardown`, `workerCheck` and `instructions`.
+   * `.gitignore`, and makes the settings above the state the outputs render from. `cookedWith` names the recipe and its
+   * arguments, which the section's first line records. Refused, in this order, when:
+   *
+   * 1. `cookedWith` is blank;
+   * 2. a harness is not `claude` or `codex`, or none is given;
+   * 3. a tracker is not `beads` or `json`, or none is given;
+   * 4. the worker role is not a role name;
+   * 5. the worker role or settings is given with no `claude` harness;
+   * 6. both the worker role and the worker settings are given;
+   * 7. the role's `.agents/adapters/claude/roles/<name>.json` is not in the draft;
+   * 8. the worker settings path is blank;
+   * 9. the worktree setup, worktree teardown or worker check is under `.ralph-tui/`, which in a run worktree holds only
+   *    what this recipe writes.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
       throw new IllegalArgumentException('install needs the recipe it is cooked with')
     }
 
+    checkHarnesses()
+    checkTrackers()
+    checkWorker()
+    outsideRalphTui('worktree-setup', worktreeSetup, '.worktrees/setup')
+    outsideRalphTui('worktree-teardown', worktreeTeardown, '.worktrees/teardown')
+    outsideRalphTui('worker-check', workerCheck, 'scripts/check')
+
+    harnesses = harnesses.unique(false)
+    trackers = TRACKERS.findAll { it in trackers }
     this.cookedWith = cookedWith
   }
 
   /**
    * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the `beads` tracker, the first
    * harness as `defaultAgent`, ten iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it
-   * twice first, direct merges in parallel mode, and one `[[agents]]` entry per harness, when harnesses are set.
+   * twice first, direct merges in parallel mode, and one `[[agents]]` entry per harness, when installed.
    */
   @Seed(path = '.ralph-tui/config.toml')
   String config() {
-    if (!harnesses) {
+    if (!cookedWith) {
       return null
     }
 
@@ -289,20 +260,20 @@ class RalphTui {
 
   /**
    * `.ralph-tui/templates/beads.hbs`, the prompt for a run with `--epic`, seeded when absent and never owned, when
-   * harnesses are set.
+   * installed.
    */
   @Seed(path = '.ralph-tui/templates/beads.hbs')
   String beadsPrompt() {
-    harnesses && 'beads' in trackers ? resource('templates/beads.hbs') : null
+    cookedWith && 'beads' in trackers ? resource('templates/beads.hbs') : null
   }
 
   /**
    * `.ralph-tui/templates/json.hbs`, the prompt for a run with `--prd`, seeded when absent and never owned, when
-   * harnesses are set.
+   * installed.
    */
   @Seed(path = '.ralph-tui/templates/json.hbs')
   String jsonPrompt() {
-    harnesses && 'json' in trackers ? resource('templates/json.hbs') : null
+    cookedWith && 'json' in trackers ? resource('templates/json.hbs') : null
   }
 
   /**
@@ -408,6 +379,61 @@ class RalphTui {
     FLAGS[harness] + extra
   }
 
+  private void checkHarnesses() {
+    def unknown = harnesses - HARNESSES
+
+    if (unknown) {
+      throw new IllegalArgumentException("--harness=${unknown.first()} is not one of: ${HARNESSES.join(', ')}")
+    }
+
+    if (!harnesses) {
+      throw new IllegalArgumentException('ralph-tui needs at least one --harness')
+    }
+  }
+
+  private void checkTrackers() {
+    def unknown = trackers - TRACKERS
+
+    if (unknown || !trackers) {
+      throw new IllegalArgumentException("--tracker=${unknown ? unknown.first() : ''} is not one of: " +
+      TRACKERS.join(', '))
+    }
+  }
+
+  private void checkWorker() {
+    if (workerRole != null && !(workerRole ==~ /[a-z][a-z0-9-]*/)) {
+      throw new IllegalArgumentException("--worker-role=${workerRole} is not a role name\n" +
+      '  a role is a key under roles in .agents/permission/policy.yaml: lower-case letters, digits and hyphens, ' +
+      'starting with a letter')
+    }
+
+    if (workerRole != null) {
+      claudeOnly("--worker-role=${workerRole}")
+    }
+
+    if (workerSettings != null) {
+      claudeOnly("--worker-settings=${workerSettings}")
+    }
+
+    if (workerRole != null && workerSettings != null) {
+      throw exclusive()
+    }
+
+    if (workerRole != null) {
+      def file = "${ROLES}/${workerRole}.json"
+
+      if (current(file) == null) {
+        throw new IllegalArgumentException("--worker-role=${workerRole} needs ${file}\n  the role file is not in the " +
+        "draft\n  define roles.${workerRole} in .agents/permission/policy.yaml, then cook " +
+        'io.github.lmarqs.cookbook:agents#connect --harness=claude')
+      }
+    }
+
+    if (workerSettings != null && !workerSettings.trim()) {
+      throw new IllegalArgumentException('--worker-settings needs a path')
+    }
+  }
+
   private void claudeOnly(String argument) {
     if (!('claude' in harnesses)) {
       throw new IllegalArgumentException("${argument} applies to the claude entry\n  no --harness=claude is given\n" +
@@ -422,14 +448,12 @@ class RalphTui {
   }
 
   // In a run worktree, .ralph-tui/ holds only what this recipe writes, so a team's script there would never be found.
-  private static String outsideRalphTui(String param, String path, String example) {
-    if (path.split('/').first() == '.ralph-tui') {
+  private static void outsideRalphTui(String param, String path, String example) {
+    if (path != null && path.split('/').first() == '.ralph-tui') {
       throw new IllegalArgumentException("--${param}=${path} is under .ralph-tui/\n" +
       '  a run worktree has there only the configuration, prompts and launcher this recipe writes\n' +
       "  name a committed file outside .ralph-tui/, as --${param}=${example}")
     }
-
-    path
   }
 
   private static String shellQuoted(String value) {

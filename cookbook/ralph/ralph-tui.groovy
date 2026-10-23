@@ -263,27 +263,11 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 
 ralph.harnesses(harness as List<String>)
 ralph.trackers(tracker as List<String>)
+ralph.workerRole(workerRole)
+ralph.workerSettings(workerSettings)
 ralph.worktreeRoot(worktreeRoot)
-
-if (workerSettings != null) {
-  ralph.workerSettings(workerSettings)
-}
-
-if (workerRole != null) {
-  ralph.workerRole(workerRole)
-}
-
-if (worktreeSetup != null) {
-  ralph.worktreeSetup(worktreeSetup)
-}
-
-if (worktreeTeardown != null) {
-  ralph.worktreeTeardown(worktreeTeardown)
-}
-
-if (workerCheck != null) {
-  ralph.workerCheck(workerCheck)
-}
-
+ralph.worktreeSetup(worktreeSetup)
+ralph.worktreeTeardown(worktreeTeardown)
+ralph.workerCheck(workerCheck)
 ralph.instructions(instructions as List<String>)
 ralph.install(cookedWith)
