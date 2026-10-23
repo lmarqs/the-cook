@@ -497,8 +497,6 @@ to use scripts of its own, it runs its own launcher instead of `bin/run` and `bi
   under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
 - ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
-- Codex runs no project hooks in a worktree it has not trusted, so a Codex worker gets no session-start context unless
-  started with `--dangerously-bypass-hook-trust`.
 - A Codex `workspace-write` worker can neither read nor write the Beads database, nor write `.git`: ralph-tui commits
   and closes beads for it, and the prompts ask for neither.
 - Deny rules are prefix rules: `git -C . push` gets past `git push`. They are a guardrail; the structural limit is a

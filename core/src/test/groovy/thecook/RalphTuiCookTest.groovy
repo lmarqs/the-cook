@@ -592,7 +592,6 @@ roles:
     def flat = help.replace('\\\n', '').replaceAll(/\s*\n\s*/, ' ')
     [
       'fewer than three tasks',
-      '--dangerously-bypass-hook-trust',
       'neither read nor write the Beads database',
       'permissions.allow',
       'prefix rules',
