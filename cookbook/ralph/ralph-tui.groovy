@@ -267,8 +267,9 @@ import io.github.lmarqs.cookbook.ralph.RalphTui
 @param(value = ['worker-check'], default = [], path = true,
     doc = 'An executable, by its path from the repository root, that must pass before a worker completes a task')
     String workerCheck
-@param(value = ['tracker'], choices = ['beads', 'json'], many = true, sorted = true, default = ['beads', 'json'],
-    doc = 'Trackers whose prompts are seeded and whose run flag the launcher offers: beads (--epic), json (--prd)')
+@param(value = ['tracker'], choices = ['beads', 'beads-bv', 'json'], many = true, sorted = true, default = ['json'],
+    doc = 'Trackers whose prompts are seeded and whose run flag the launcher offers: beads or beads-bv (--epic), ' +
+    'json (--prd)')
     String[] tracker
 @param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = "A Markdown file, from the repository root, where the recipe gives the launcher's commands")

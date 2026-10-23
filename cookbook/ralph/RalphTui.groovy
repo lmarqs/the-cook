@@ -75,8 +75,17 @@ class RalphTui {
   /** The harnesses ralph-tui drives, by their ralph-tui agent plugin names. */
   static final List<String> HARNESSES = ['claude', 'codex']
 
-  /** The trackers a run takes tasks from: `beads` with `--epic`, `json` with `--prd`. */
-  static final List<String> TRACKERS = ['beads', 'json']
+  /**
+   * The trackers a run takes tasks from: `beads` or `beads-bv`, which has `bv` pick the next bead, with `--epic`, and
+   * `json` with `--prd`.
+   */
+  static final List<String> TRACKERS = ['beads', 'beads-bv', 'json']
+
+  /** The trackers when `trackers` is not called. */
+  static final List<String> DEFAULT_TRACKERS = ['json']
+
+  /** The trackers a run with `--epic` takes its beads from; one of them at most. */
+  static final List<String> EPIC_TRACKERS = ['beads', 'beads-bv']
 
   /** Where run worktrees go when `worktreeRoot` is not called, following `.worktrees/<branch>`. */
   static final String WORKTREE_ROOT = '.worktrees'
@@ -101,7 +110,7 @@ class RalphTui {
   ]
 
   private List<String> harnesses = []
-  private List<String> trackers = TRACKERS
+  private List<String> trackers = DEFAULT_TRACKERS
   private List<String> workerRoles = []
   private List<String> workerSettings = []
   private Map<String, WorkerBinding> workerBindings = [:]
@@ -121,12 +130,13 @@ class RalphTui {
   }
 
   /**
-   * Narrows what is seeded and offered to the trackers in `names`, each `beads` or `json`: their prompts, the
-   * configuration's `tracker = "beads"`, and the run flags `bin/run`'s usage line and the instructions section name.
-   * Both by default, and for `null`. A run still picks its tracker with `--epic` or `--prd`.
+   * Sets what is seeded and offered to the trackers in `names`, each `beads`, `beads-bv` or `json`, with at most one of
+   * `beads` and `beads-bv`: their prompts, the configuration's `tracker` line, and the run flags `bin/run`'s usage line
+   * and the instructions section name. `json` without it, and for `null`. A run still picks its tracker with `--epic`
+   * or `--prd`.
    */
   void trackers(List<String> names) {
-    trackers = names ?: TRACKERS
+    trackers = names ?: DEFAULT_TRACKERS
   }
 
   /**
@@ -201,7 +211,7 @@ class RalphTui {
    *
    * 1. `cookedWith` is blank;
    * 2. a harness is not `claude` or `codex`, or none is given;
-   * 3. a tracker is not `beads` or `json`, or none is given;
+   * 3. a tracker is not `beads`, `beads-bv` or `json`, or none is given, or both `beads` and `beads-bv` are;
    * 4. a worker role or settings value is not `<harness>:<x>`, or names a harness that is not `claude` or `codex` or
    *    that no `--harness` gives, or one param names a harness twice;
    * 5. a role and a settings file both bind one harness;
@@ -214,8 +224,9 @@ class RalphTui {
    * 9. `.ralph-tui/config.toml` exists and is not TOML, or lacks what an argument needs, checked in this order: an
    *    `[[agents]]` entry with each harness's plugin; one with each worker role or settings file's flags as a run in
    *    its `defaultFlags`; one with the worker as its `command` and the harness first in its `defaultFlags`, for
-   *    each harness, with a worker check; and with the `beads` tracker, a `tracker` or `defaultTracker` starting
-   *    with `beads`. The configuration is seeded once, so a refused cook writes nothing.
+   *    each harness, with a worker check; and a `tracker` or `defaultTracker` starting with `beads` with the `beads`
+   *    tracker, or equal to `beads-bv` with the `beads-bv` tracker. The configuration is seeded once, so a refused cook
+   *    writes nothing.
    */
   void install(String cookedWith) {
     if (!cookedWith?.trim()) {
@@ -236,7 +247,7 @@ class RalphTui {
   }
 
   /**
-   * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the `beads` tracker, ten
+   * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the epic tracker, if any, ten
    * iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it twice first, direct merges in
    * parallel mode, and one `[[agents]]` entry per harness, when installed.
    */
@@ -246,7 +257,7 @@ class RalphTui {
       return null
     }
 
-    def lines = ['configVersion = "2.1"',] + ('beads' in trackers ? ['tracker = "beads"'] : []) + [
+    def lines = ['configVersion = "2.1"',] + (epicTracker() ? ["tracker = \"${epicTracker()}\"".toString()] : []) + [
       '# ralph-tui stops a run after this many iterations, each one agent run on one task; 0 means no limit.',
       'maxIterations = 10',
       'autoCommit = true',
@@ -267,6 +278,15 @@ class RalphTui {
   }
 
   /**
+   * `.ralph-tui/templates/beads-bv.hbs`, the prompt for a run with `--epic` under the `beads-bv` tracker, seeded when
+   * absent and never owned, when installed.
+   */
+  @Seed(path = '.ralph-tui/templates/beads-bv.hbs')
+  String beadsBvPrompt() {
+    cookedWith && 'beads-bv' in trackers ? resource('templates/beads-bv.hbs') : null
+  }
+
+  /**
    * `.ralph-tui/templates/json.hbs`, the prompt for a run with `--prd`, seeded when absent and never owned, when
    * installed.
    */
@@ -277,8 +297,8 @@ class RalphTui {
 
   /**
    * The executable `.ralph-tui/bin/run`, which runs ralph-tui in `<worktreeRoot>/ralph/<name>`, with the `worktreeRoot`
-   * and `worktreeSetup` paths and the tracker arguments shell-quoted into its `worktrees`, `setup` and `flags`
-   * variables, when installed.
+   * and `worktreeSetup` paths, the tracker arguments and the epic tracker shell-quoted into its `worktrees`, `setup`,
+   * `flags` and `epic_tracker` variables, when installed.
    */
   @File(path = '.ralph-tui/bin/run', mode = '0755')
   String run() {
@@ -288,7 +308,8 @@ class RalphTui {
 
     def script = assign(resource('bin/run.sh'), 'worktrees', worktreeRoot)
     script = assign(script, 'setup', worktreeSetup ?: '')
-    assign(script, 'flags', runFlags())
+    script = assign(script, 'flags', runFlags())
+    assign(script, 'epic_tracker', epicTracker() ?: 'beads')
   }
 
   /**
@@ -350,7 +371,8 @@ class RalphTui {
       return null
     }
 
-    def run = trackers == TRACKERS ? '`.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, or `--prd <file>`,' :
+    def run = epicTracker() && 'json' in trackers ?
+        '`.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, or `--prd <file>`,' :
         "`.ralph-tui/bin/run <name> --agent <entry> ${runFlags()}`"
     def lines = [
       "<!-- ${cookedWith} -->",
@@ -379,7 +401,15 @@ class RalphTui {
   }
 
   private String runFlags() {
-    trackers == TRACKERS ? '(--epic <id> | --prd <file>)' : trackers == ['beads'] ? '--epic <id>' : '--prd <file>'
+    if (!epicTracker()) {
+      return '--prd <file>'
+    }
+
+    'json' in trackers ? '(--epic <id> | --prd <file>)' : '--epic <id>'
+  }
+
+  private String epicTracker() {
+    trackers.find { it in EPIC_TRACKERS }
   }
 
   private List<String> entry(String harness) {
@@ -411,6 +441,11 @@ class RalphTui {
     if (unknown || !trackers) {
       throw new IllegalArgumentException("--tracker=${unknown ? unknown.first() : ''} is not one of: " +
       TRACKERS.join(', '))
+    }
+
+    if (EPIC_TRACKERS.every { it in trackers }) {
+      throw new IllegalArgumentException('--tracker=beads and --tracker=beads-bv are both given\n  both run with ' +
+      '--epic, and the configuration names one tracker\n  give one of them')
     }
   }
 
@@ -449,9 +484,14 @@ class RalphTui {
 
     def tracker = config.tracker ?: config.defaultTracker
 
+    def set = tracker == null ? 'it sets no tracker' : "its tracker is ${quoted(tracker.toString())}"
+
     if ('beads' in trackers && !(tracker instanceof CharSequence && tracker.toString().startsWith('beads'))) {
-      def set = tracker == null ? 'it sets no tracker' : "its tracker is ${quoted(tracker.toString())}"
       notApplied('--tracker=beads', "${set}, and a run with --epic needs tracker = \"beads\"")
+    }
+
+    if ('beads-bv' in trackers && tracker != 'beads-bv') {
+      notApplied('--tracker=beads-bv', "${set}, and --tracker=beads-bv needs tracker = \"beads-bv\"")
     }
   }
 
