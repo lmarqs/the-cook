@@ -7,8 +7,8 @@ that a recipe stops declaring can linger after the recipe changes, and removing 
 different request from changing what it declares.
 
 **Goal.** Developers see the actual additions, updates and deletions before approving them, while unrelated content
-stays intact, every clone agrees on which recipe produced which output, and a recipe's output can be removed without
-disturbing anything else.
+stays intact, every clone agrees on which recipe produced which output, and a recipe's output can be rebuilt or
+removed without disturbing anything else.
 
 ## Context
 
@@ -33,7 +33,9 @@ disturbing anything else.
    not remove output that recipe A owns, even when A is omitted from the invocation.
 3. The repository commits `cook.lock`, a YAML file at its root ([example](../architecture.md#ownership-and-the-lock)).
    - For each cooked recipe it records the short name, the source as a repository-relative path or
-     coordinates, the source's sha256, and the owned sections, keys, files and links. It records no recipe arguments.
+     coordinates, the source's sha256, the normalized supplied arguments as `--name=value` strings in declaration
+     order, and the owned sections, keys, files and links. Defaulted parameters are omitted; no supplied arguments is
+     `arguments: []`. An entry without the field has no recorded arguments.
    - Cooking a new version of a recipe also removes what its previous version owned and the new version no longer
      declares; the diff shows that removal.
    - Without a lock entry for a recipe, cooking removes nothing on its behalf.
@@ -43,11 +45,17 @@ disturbing anything else.
    in `cook.lock`. The CLI displays that diff in the terminal and accepts the whole batch.
    Preapproval still displays the diff; noninteractive execution alone does not authorize writes. Choosing individual
    changes is a separate interface decision.
-6. Discarding recipes removes what `cook.lock` lists for each, without evaluating them: a section with its markers, a
-   key, a whole file or a link. A file left empty is deleted, and each recipe's entry leaves the lock. Discard restores
-   no value the recipe replaced. It follows the same diff and whole-batch approval as cooking.
-7. Cooking does not require `cook.lock`. Each invocation evaluates supplied recipes again; nothing skips a recipe as
-   already cooked. An unchanged result may have an empty diff.
+6. Discard and replicate use the committed record:
+   - Discarding recipes removes what `cook.lock` lists for each, without evaluating them: a section with its markers,
+     a key, a whole file or a link. A file left empty is deleted, and each recipe's entry leaves the lock. Discard
+     restores no value the recipe replaced. It follows the same diff and whole-batch approval as cooking.
+   - Replicate evaluates named recipes again from their recorded sources and arguments, in operand order, through
+     cooking's diff and whole-batch approval. It uses the recorded version even when an operand names another, and
+     refuses a missing entry or one without recorded arguments; an empty argument list is valid. A changed source
+     is reported before the diff, including a changed recipe path. Replicate rebuilds output against current content;
+     it does not restore saved bytes.
+7. Cooking supplied recipes does not require `cook.lock`; replicate requires its recorded inputs. Both evaluate
+   recipes again; cooking never skips a recipe as already cooked. An unchanged result may have an empty diff.
 8. Cook keeps no history of its own. `cook.lock` is its only record; on a write failure, Cook rolls back the batch's
    completed writes in place and reports the failure. Earlier content lives in the repository's version control.
 
@@ -67,9 +75,8 @@ The trust limits of these guarantees follow [0011](0011-safety-invariants.md), a
 - **3.** In the worked example, the section version 1 added would otherwise linger after version 2 stops declaring it.
   Comparing the new declarations with the recorded ownership answers that, and only a record of the previous version's
   targets can supply that comparison. Committing the record gives every clone the same answer and puts ownership changes
-  in pull-request review; key paths and whole files carry no markers, so markers alone cannot hold it. The lock lists
-  the targets each recipe owns, and reading that ownership needs no arguments. The trade: a generated file to commit
-  and review.
+  in pull-request review; key paths and whole files carry no markers, so markers alone cannot hold it. The trade: a
+  generated file to commit and review, including changes to arguments even when output stays the same.
 - **4.** Reviewing the actual diff exposes a manual edit that a requested update would replace. Approval makes that
   choice explicit; a veto would block the developer's intended change, and a separate step to bring existing content
   under Cook before changing it would add a second contract for content the diff already shows.
@@ -81,8 +88,13 @@ The trust limits of these guarantees follow [0011](0011-safety-invariants.md), a
   disappeared, and no record beyond the lock. Cook owns content, not files: a file it created only to hold that
   content has no reason to stay once the content goes. The trade: the developer's `custom` value goes with the key,
   and the diff is the only notice.
-- **7.** Current declarations and content suffice for a new proposal; a missing lock only means no previous ownership
-  to compare. A record of earlier evaluation cannot determine what a recipe requests now.
+- **3, 6.** A clone that keeps a recipe's output out of commits rebuilds it from the lock: the recorded source and
+  arguments survive even when no generated section or argument comment does. Replaying them avoids reconstructing
+  the invocation by hand. The trade: the source must still be available and trusted, and changed sources, defaults
+  or current content can change the result; the hash identifies source changes rather than restoring earlier bytes.
+- **7.** Supplied declarations and current content suffice for an ordinary cook; a missing lock only means no previous
+  ownership to compare. Replicate needs the lock to select its inputs, then evaluates them against current content
+  just as cooking does. Recorded ownership never makes evaluation unnecessary.
 - **8.** The repository's version control already holds every earlier version of the files Cook writes, with tools
   to restore, compare and merge them. A second history inside Cook would duplicate that, with weaker tools and one
   clone's view. Rollback after a partial failure needs only the prior content of the batch's own files, which Cook
@@ -124,13 +136,15 @@ no longer be what anyone wants.
 Costs:
 
 - Approval can authorize replacing or deleting manually edited target content; review must show that actual change.
-- `cook.lock` changes with every batch that changes ownership, and reviewers read those changes with the native files.
+- `cook.lock` changes with ownership, sources or supplied arguments, and reviewers read those changes with the native
+  files.
 - Discard removes values a recipe replaced instead of restoring them; restoring them is the repository history's job.
 
 Must be maintained:
 
 - Target addressing, owner-named marker boundaries and combined diffs that preserve unrelated content.
-- `cook.lock` entries that match what was written, and that list everything discard must remove.
+- `cook.lock` entries that match what was written, list everything discard must remove, and record the inputs
+  replicate replays.
 
 ## Confirmation
 
@@ -143,4 +157,8 @@ Must be maintained:
   keeps the text; a file holding only the recipe's content is deleted.
 - With no `cook.lock`, cooking still evaluates supplied recipes and removes nothing on their behalf. An identical
   invocation evaluates again.
+- In a fresh clone with ignored output absent, replicating a named recipe rebuilds it from the recorded source and
+  arguments and shows the combined diff before approval. A second replicate evaluates again and can have no changes.
+- Replicate refuses an entry without recorded arguments but accepts `arguments: []`; a versioned operand still uses
+  the recorded source version, and a changed source is reported before the diff.
 - A write failure rolls back completed batch changes and leaves no file of Cook's behind.

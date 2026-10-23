@@ -73,9 +73,9 @@ therefore keep separate sections in one file. `cook.lock` lists each recipe's se
 ### The argument line
 
 Every section a recipe owns opens with a comment line naming the recipe, without its version, and the arguments it was
-cooked with, because `cook.lock` records no arguments: the line is what a person, a re-cook or a `--check` step reads
-to cook the section again. A recipe with several values for one param writes them in a fixed order, so the line does
-not change with the order they were given in:
+cooked with. The line keeps the invocation readable beside the output for a person, an explicit re-cook or a `--check`
+step; `cook.lock` records the source and arguments for replicate even when the output is absent. A recipe with several
+values for one param writes them in a fixed order, so the line does not change with the order they were given in:
 
 ```gitignore
 # cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses

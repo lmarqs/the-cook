@@ -27,7 +27,8 @@ define ordered file changes, review, recorded ownership and discard.
 3. Users manage recipe versions and supply the version they intend to cook. Each recipe has a short name that
    markers and `cook.lock` use: a path's place in the repository without `.groovy`, such as `recipes/setup`, or
    coordinates without the version, such as `com.acme.cookbook:editor#setup`. `cook.lock` records its source,
-   sha256 and owned targets ([0007](0007-ownership.md)). Cooking a new version removes what the previous version
+   sha256, normalized supplied arguments and owned targets; replicate replays those inputs
+   ([0007](0007-ownership.md)). Cooking a new version removes what the previous version
    owned and no longer declares, including edited values. Discarding a recipe removes what the lock lists for it
    without evaluating it again. Moving a recipe file renames it; cooking the new name and discarding the old one moves
    the ownership.
@@ -52,8 +53,9 @@ define ordered file changes, review, recorded ownership and discard.
 - **3.** FR-14 records what each recipe owns, so a new version's removals follow from the lock rather than from
   reevaluating an earlier version, and FR-15 discards a recipe from the lock alone. The short name ties
   versions of one recipe together without a stored copy of the previous version for merging, which would add version
-  management outside the agreed design. Users must supply the recipe version they mean, rather than relying on Cook to
-  reconstruct it. Both short-name rules come from the operand alone, so discard names a recipe whose file is gone.
+  management outside the agreed design. Users supply a version to change it or name a recorded recipe to repeat its
+  source and arguments through replicate ([0007](0007-ownership.md)). Both short-name rules come from the operand
+  alone, so discard names a recipe whose file is gone.
   The trade of renaming by discard is a second command after moving a file.
 - **4.** The lock's source and sha256 identify which recipe version produced the current output; the repository or
   cookbook that holds the source keeps its history. [0014](0014-directory-layout.md) gives the reasons.
@@ -113,7 +115,7 @@ Costs:
 Must be maintained:
 
 - Reusable program models, ordered current-content proposals and whole-batch review.
-- The distinction between supplied recipe sources and the ownership recorded in `cook.lock`.
+- The distinction between supplied recipe sources and the inputs and ownership recorded in `cook.lock`.
 
 ## Confirmation
 

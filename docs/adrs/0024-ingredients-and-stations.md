@@ -42,8 +42,8 @@ setup changes before they are written.
   propose replacing a local value; the reviewer sees the final diff before approving the batch.
 - **3.** An engine pin chooses an executable package, while a supplied recipe chooses the requested setup. Treating
   the lock as an update baseline would add the recipe-version management the architecture excludes;
-  the lock only records which version produced the current ownership (FR-14, FR-25). The trade is that users supply
-  the versions they intend to cook, independently of engine upgrades.
+  the lock records inputs and ownership, and replicate replays those inputs ([0007](0007-ownership.md), FR-14, FR-25).
+  The trade is that users supply new versions explicitly, independently of engine upgrades.
 
 ## Rejected alternatives
 

@@ -23,7 +23,8 @@ an inspectable record of the sources actually used.
 - Engine package verification checks bytes against a committed checksum; it does not alone authenticate the publisher
   or verify cookbook content ([0021](0021-release-trust.md)). A checksum obtained from the same replaceable source as
   an asset cannot independently establish that asset's author or trustworthiness.
-- `cook.lock` records each cooked recipe's source and sha256 (FR-14); users manage recipe versions.
+- `cook.lock` records each cooked recipe's source, sha256, normalized supplied arguments and owned targets (FR-14);
+  users manage recipe versions, and replicate replays recorded inputs ([0007](0007-ownership.md)).
 
 ## Decision
 
@@ -31,9 +32,10 @@ an inspectable record of the sources actually used.
    recipe or ingredient takes. Trust in the source precedes evaluation; approving the resulting batch approves
    declared file changes, not the admission of arbitrary code into a sandbox. Being data-only is not a safety
    guarantee.
-2. `cook.lock` records the source and sha256 of each cooked recipe; for coordinates the sha256 covers the
-   artifact's sources. It identifies which version produced the current output; it does not authenticate an author
-   or undo arbitrary code side effects. Cook keeps no copy of the sources ([0014](0014-directory-layout.md)).
+2. The source, sha256 and normalized supplied arguments in `cook.lock` identify the inputs used for each cooked
+   recipe ([0007](0007-ownership.md)); for coordinates the sha256 covers the artifact's sources. Recording inputs and
+   replaying them through replicate does not authenticate an author or undo arbitrary code side effects. Cook keeps
+   no copy of the sources ([0014](0014-directory-layout.md)).
 3. Approval of the combined diff before target writes follows [0007](0007-ownership.md).
 4. Engine delivery is verified independently ([0017](0017-engine-version.md), [0021](0021-release-trust.md)). Engine
    checksums do not vouch for cookbook authors or move recipe versions.
@@ -44,9 +46,10 @@ an inspectable record of the sources actually used.
   exists, so output approval cannot establish trust in that code. The trade is reliance on users' source selection and
   code review; the engine promises no protection from a malicious trusted recipe.
 - **2.** A source can change after a batch. The sha256 lets a reviewer tell whether the source they read is the one
-  that produced the output, and a changed release shows before the diff; the source itself stays with its repository
-  or cookbook, which keeps its history. The trade is that a source that disappears cannot be read again from Cook. A
-  hash alone is neither authentication nor a sandbox.
+  that produced the output, and a changed release shows before the diff; replicate also reports changed path sources.
+  Recorded arguments let a caller repeat the invocation, but source trust still precedes evaluation. The source
+  itself stays with its repository or cookbook, which keeps its history. The trade is that a source that disappears
+  cannot be read again from Cook. A hash alone is neither authentication nor a sandbox.
 - **3.** FR-9 and FR-11 through FR-13 make visible requested changes and explicit approval the write boundary. An
   ownership veto or an import step would add a reconciliation step that the diff makes unnecessary. The trade is that
   edited values can be replaced after review; recovery protects declared writes, not every effect of the supplied code.
@@ -95,7 +98,8 @@ Must be maintained:
 
 - Review against FR-18 and FR-22: do a local recipe and a recipe cooked by coordinates both use the invocation
   directory as destination, is a local recipe outside the repository refused, and is a URL operand refused?
-- Review against FR-14: does `cook.lock` record each cooked recipe's source and sha256?
+- Review against FR-14: does `cook.lock` record each cooked recipe's source, sha256, normalized supplied arguments and
+  owned targets, and does replicate still require trust in the sources it evaluates?
 - Review against FR-4 and FR-26: does any document promise that an engine checksum or approval of the diff stops code
   side effects? None may.
 - Review against FR-25: does cooking stay available without `cook.lock`?

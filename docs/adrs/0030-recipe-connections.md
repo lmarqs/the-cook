@@ -12,9 +12,10 @@ recipes, programs and the repository can be read from the arguments a recipe was
 
 ## Context
 
-- Every section a recipe owns opens with a comment line naming the recipe and the arguments it was cooked with
-  ([generated content](../ux/generated-content-standards.md)). Re-cooking repeats those arguments, and `--check`
-  compares the result with the destination.
+- `cook.lock` records each recipe's source and normalized supplied arguments, which replicate replays
+  ([0007](0007-ownership.md)). Every owned section also opens with a comment line naming the recipe and those
+  arguments ([generated content](../ux/generated-content-standards.md)), so a reader sees them beside the output.
+  Re-cooking repeats those arguments, and `--check` compares the result with the destination.
 - A model can read the current content of any file in the destination, including a file another recipe in the same
   invocation writes.
 - Worked example: acme cooks a tracker recipe that adds a session-start script whenever it finds an agents layout's
@@ -47,14 +48,14 @@ recipes, programs and the repository can be read from the arguments a recipe was
 
 ## Reasons
 
-- **1.** The arguments on the opening line are what a reviewer sees, what re-cooking repeats and what `--check`
-  compares. A write that depends on another recipe's files makes `--check` report a change with no argument changed,
-  and makes the result depend on which recipe was cooked first. The trade is an argument to type where detection would
-  have guessed right.
-- **2.** A parameter puts the connection on the argument line, so it is reviewed, repeated on every re-cook and removed
-  by cooking without it. The recipe knows the shape of the meeting point, a directory of scripts or a settings file,
-  and not which recipe provides it, so either side can change without the other. The trade is that the person must know
-  the path; the recipe's help names the meeting point in Connections.
+- **1.** The arguments in the lock are what replicate repeats, and the opening line shows them beside a section for
+  review and an explicit re-cook or `--check`. A write that depends on another recipe's files makes `--check` report a
+  change with no argument changed, and makes the result depend on which recipe was cooked first. The trade is an
+  argument to type where detection would have guessed right.
+- **2.** A parameter puts the connection in the lock and on the argument line, so it is reviewed, repeated on every
+  replicate and removed by cooking without it. The recipe knows the shape of the meeting point, a directory of scripts
+  or a settings file, and not which recipe provides it, so either side can change without the other. The trade is that
+  the person must know the path; the recipe's help names the meeting point in Connections.
 - **3.** A program's adapters to other programs exist outside the recipe and change with that program, so a recipe
   that copies one picks some programs and drifts from the rest. A recipe that owns another program's key also replaces
   the team's use of it on every cook. The trade is a step the team takes by hand, which the recipe's After cooking names.

@@ -128,8 +128,8 @@ class Agents {
   /**
    * Renders the shared policy into each harness's own permission model. `cookedWith`, when given, names the recipe and
    * the arguments that cook the rendered sections again, such as
-   * `io.github.lmarqs.cookbook:agents#connect --harness=codex`; each section opens with it as a comment, because
-   * `cook.lock` records no arguments.
+   * `io.github.lmarqs.cookbook:agents#connect --harness=codex`; each section opens with that comment so readers can see
+   * its invocation beside the output. `cook.lock` also records the arguments for replicate.
    */
   void permit(Collection<Harness> harnesses, String cookedWith = null) {
     def shared = policy()
@@ -194,8 +194,8 @@ class Agents {
    * fresh clone reads the shared setup with no cooking while the files the harness writes locally stay out of commits.
    * Also keeps out the files that would make a harness skip the shared setup. `cookedWith`, when given, names the
    * recipe and the arguments that cook the section again, such as
-   * `io.github.lmarqs.cookbook:agents#connect --harness=claude`; it opens the section as a comment, because `cook.lock`
-   * records no arguments.
+   * `io.github.lmarqs.cookbook:agents#connect --harness=claude`; it opens the section as a comment so its invocation is
+   * readable beside the output. `cook.lock` also records the arguments for replicate.
    */
   void ignoreLocalDirectories(Collection<Harness> harnesses, String cookedWith = null) {
     ignoredHarnesses = (ignoredHarnesses + harnesses).unique()
