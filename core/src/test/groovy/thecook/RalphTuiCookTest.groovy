@@ -140,8 +140,8 @@ recipes:
     def kitchen = kitchen()
     write(kitchen, '.agents/adapters/claude/roles/worker.json', '{"permissions":{"deny":["Bash(git push *)"]}}\n')
 
-    cook(kitchen, RALPH, [harness: ['claude', 'codex'], 'worker-role': ['claude:worker'], tracker: ['beads', 'json']])
-        .commit()
+    cook(kitchen, RALPH,
+        [harness: ['claude', 'codex'], 'worker-role': ['claude:worker'], tracker: ['beads', 'json']]).commit()
 
     def config = new File(kitchen, '.ralph-tui/config.toml').text
     assert config == CONFIG.replace(CLAUDE_FLAGS, CLAUDE_FLAGS.replace(']',
@@ -496,7 +496,8 @@ roles:
     assert agents.text == '''\
 # Agents
 <!-- cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
-<!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --tracker=beads --tracker=json --instructions=AGENTS.md -->
+<!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --tracker=beads --tracker=json \
+--instructions=AGENTS.md -->
 - Loop runs: `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, or `--prd <file>`, runs ralph-tui in
   `.worktrees/ralph/<name>` on branch `ralph/<name>`; `.ralph-tui/bin/clean <name>` removes both once the
   branch is delivered.
@@ -585,7 +586,7 @@ roles:
     ]*.toString()
 
     def own = launch([BEADS_DIR: '/elsewhere/.beads'], kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude',
-        '--epic', 'ep-1')
+    '--epic', 'ep-1')
     assert own.output.readLines().last() == 'beads /elsewhere/.beads'
 
     def prd = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'tasks/prd.json')
@@ -678,6 +679,8 @@ roles:
       'neither read nor write the Beads database',
       'permissions.allow',
       'prefix rules',
+      'leaves `beads.hbs` unread',
+      '`bv` orders serial runs only',
     ].each { assert flat.contains(it): "the help lacks '${it}'" }
   }
 
