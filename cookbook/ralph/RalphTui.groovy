@@ -57,9 +57,10 @@ package io.github.lmarqs.cookbook.ralph
  * ralph.workerSettings(['codex:ralph-codex.toml'])
  * ralph.worktreeRoot('.worktrees')
  * ralph.worktreeSetup('.worktrees/setup')
+ * ralph.share('team')
  * ralph.install('io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex ' +
  *     '--worker-role=claude:worker --worker-settings=codex:ralph-codex.toml --worktree-root=.worktrees ' +
- *     '--worktree-setup=.worktrees/setup')
+ *     '--worktree-setup=.worktrees/setup --share=team')
  * ```
  *
  * ## With other models
@@ -90,6 +91,12 @@ class RalphTui {
   /** Where run worktrees go when `worktreeRoot` is not called, following `.worktrees/<branch>`. */
   static final String WORKTREE_ROOT = '.worktrees'
 
+  /**
+   * Who shares `.ralph-tui/`: `team` commits the configuration, prompts and launcher; `clone` keeps all of it out of
+   * commits, so each clone cooks its own.
+   */
+  static final List<String> SHARES = ['team', 'clone']
+
   private static final String CONFIG_PATH = '.ralph-tui/config.toml'
 
   /** The worker wrapper `workerCheck` writes, which each seeded entry then names as its `command`. */
@@ -118,6 +125,7 @@ class RalphTui {
   private List<String> workerSettings = []
   private Map<String, WorkerBinding> workerBindings = [:]
   private String worktreeRoot = WORKTREE_ROOT
+  private String share = 'team'
   private String worktreeSetup
   private String worktreeTeardown
   private String workerCheck
@@ -169,6 +177,18 @@ class RalphTui {
    */
   void worktreeRoot(String path) {
     worktreeRoot = path ?: WORKTREE_ROOT
+  }
+
+  /**
+   * Sets who shares `.ralph-tui/`, `team` or `clone`, which decides what the `ralph-tui` section of `.gitignore`
+   * ignores under it. `team` without it, and for `null`. Rejects any other share.
+   */
+  void share(String share) {
+    if (share && !(share in SHARES)) {
+      throw new IllegalArgumentException("ralph-tui is shared by ${SHARES.join(' or ')}, not ${share}")
+    }
+
+    this.share = share ?: 'team'
   }
 
   /**
@@ -345,7 +365,8 @@ class RalphTui {
 
   /**
    * The `ralph-tui` section of `.gitignore`: a comment naming the recipe and its arguments, then everything under
-   * `.ralph-tui/` but the configuration, prompts and launcher, and the run worktrees, when installed.
+   * `.ralph-tui/` but the configuration, prompts and launcher for `team`, or all of `.ralph-tui/` for `clone`, and the
+   * run worktrees, when installed.
    */
   @Section(path = '.gitignore', id = 'ralph-tui')
   List<String> ignoreSection() {
@@ -353,14 +374,9 @@ class RalphTui {
       return null
     }
 
-    [
-      "# ${cookedWith}".toString(),
-      '/.ralph-tui/*',
-      '!/.ralph-tui/config.toml',
-      '!/.ralph-tui/templates/',
-      '!/.ralph-tui/bin/',
-      "/${worktreeRoot}/ralph/".toString(),
-    ]
+    def rules = share == 'clone' ? ['/.ralph-tui/'] :
+    ['/.ralph-tui/*', '!/.ralph-tui/config.toml', '!/.ralph-tui/templates/', '!/.ralph-tui/bin/']
+    (["# ${cookedWith}"] + rules + ["/${worktreeRoot}/ralph/"])*.toString()
   }
 
   /**

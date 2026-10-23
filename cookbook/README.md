@@ -65,8 +65,9 @@ Params are kebab-case and name the value's role in what the recipe sets up, as t
 `--share`. A param that applies to one party of a run names that party first: `--worker-role` and `--worker-settings`
 limit the workers a loop runner starts, not whoever launches it. One concept keeps one name across artifacts:
 `--harness` names the coding agents a recipe connects, with the programs' own names, `claude` and `codex`, as values,
-and `--instructions`, repeatable, names the Markdown files where a recipe states the rules it sets up for people and
-agents, such as `AGENTS.md` and `README.md`. A param avoids a word the configured program uses for something else, as
+`--share` names who shares what a recipe writes, `team` when the repository commits it and `clone` when each clone
+keeps its own, with `team` the default, and `--instructions`, repeatable, names the Markdown files where a recipe states
+the rules it sets up for people and agents, such as `AGENTS.md` and `README.md`. A param avoids a word the configured program uses for something else, as
 ralph-tui 0.12 has a `setup` command, and a word this repository uses for something else, as `hook` names harness and
 Git hooks. A param that names another recipe's or the team's file takes its path from the repository root and is
 declared with `path`, so the engine refuses it when absolute or holding a `..` segment
@@ -324,6 +325,8 @@ sets up and cleans the run's worktree.
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
 # Beads epics whose next bead bv picks, ranking the epic's dependency graph
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
+# Keeping all of .ralph-tui/ out of commits: each clone cooks its own, and bin/run copies it into each run
+./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
 # Also giving agents and people the launcher's commands, in the files they read
 ./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
@@ -386,7 +389,8 @@ for people, sessions and other recipes:
 | `.ralph-tui/templates/beads.hbs`, `beads-bv.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
 | `.ralph-tui/bin/worker` | The worker wrapper, executable | Always | owned |
-| `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/<worktree root>/ralph/` | Always | owned |
+| `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/*` but the configuration, prompts and launcher, and `/<worktree root>/ralph/` | `--share=team`, the default | owned |
+| `.gitignore` | The section `ralph-tui`: the argument line, `/.ralph-tui/` and `/<worktree root>/ralph/` | `--share=clone` | owned |
 
 The Claude entry runs `claude --permission-prompts none --permission-mode acceptEdits --print`: edits are accepted, and
 any command the settings do not allow is refused rather than asked, with `skipPermissions = false`.
@@ -408,7 +412,7 @@ tracker's state, and the rest of each `--instructions` file.
 | What a Claude worker may do | The person, by `--worker-role=claude:<role>` or `--worker-settings=claude:<path>`; the team, by adding entries to the configuration; the session, by `bin/run --agent <entry>` |
 | What a Codex worker may do | The person, by `--worker-settings=codex:<path>`; the team, in the seeded entry, which sets Codex's `workspace-write` sandbox; `--agent codex` runs with only what `--worker-settings=codex:` gave the Codex entry |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD; the person, by `--tracker=beads-bv`, has `bv` order the epic's beads |
-| Where a run's configuration and prompts come from | The team, by committing `.ralph-tui/`; otherwise each person, by ignoring it in their clone, and `bin/run` copies it into each run |
+| Where a run's configuration and prompts come from | The team, by committing `.ralph-tui/` with `--share=team`; the person, by `--share=clone` or by ignoring it in their clone, and `bin/run` copies it into each run |
 | Whether a task completes only once the checks pass | The person, by `--worker-check`; the team writes the file, or points an entry's `command` at a wrapper of its own |
 | Where run worktrees go | The person, by `--worktree-root` |
 | The run worktree's setup | The person, by `--worktree-setup`; the team writes the file |
@@ -472,7 +476,9 @@ io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --wor
 with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrites the launcher, cooking with another
 `--worker-check`, or without one, rewrites the worker, and cooking without a file's `--instructions` removes its
 section. Cooking with another `--worktree-root` rewrites the launcher and the `.gitignore` section, which then look only
-under the new root, so clean every run before. The seeds are never rewritten or removed, so a narrower `--tracker`
+under the new root, so clean every run before. Cooking with another `--share` rewrites the `.gitignore` section
+only: Git keeps tracking a `.ralph-tui/` committed before `--share=clone` until `git rm -r --cached .ralph-tui` removes
+it from the index. The seeds are never rewritten or removed, so a narrower `--tracker`
 leaves a prompt seeded earlier in place, and a cook without `--tracker` takes `json`: re-cooking for `--epic` repeats
 `--tracker=beads` or `--tracker=beads-bv`, or the launcher's usage line and the instructions section offer only `--prd`.
 A cook whose arguments the existing `.ralph-tui/config.toml` lacks is refused and writes nothing: an agent entry for
@@ -505,8 +511,8 @@ rewritten.
   than the run completed tasks, run `git status` in the run worktree and check the commit settings; `bin/clean`
   refuses while the changes remain.
 - ralph-tui 0.12 copies only `config.toml` into a parallel worker's worktree and runs no setup there: with
-  `.ralph-tui/` not committed, parallel workers find no `.ralph-tui/bin/worker`, so run serially, or commit
-  `.ralph-tui/`.
+  `.ralph-tui/` not committed, as with `--share=clone`, parallel workers find no `.ralph-tui/bin/worker`, so with
+  `--worker-check` run serially, or commit `.ralph-tui/`.
 - ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
   under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
@@ -556,6 +562,8 @@ Parameters
       An executable, by its path from the repository root, that must pass before a worker completes a task; optional
   --tracker=<String[]>
       Trackers whose prompts are seeded and run flag offered: beads or beads-bv (--epic), json (--prd); default: json; choices: beads, beads-bv, json; repeatable
+  --share=<String>
+      Who shares .ralph-tui/: team commits its configuration, prompts and launcher; clone commits none of it; default: team; choices: team, clone
   --instructions=<String[]>
       A Markdown file, from the repository root, where the recipe gives the launcher's commands; optional; repeatable
 
@@ -566,9 +574,11 @@ After cooking
   Install ralph-tui and the runtimes it needs with `mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0`: npm needs node to
   install it, and its launcher runs on bun. Without `-g`, mise pins them in the project's `mise.toml` instead, which is
   the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with
-  `brew install dicklesworthstone/tap/bv`. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and
-  `.ralph-tui/` to share them with the team, or keep `.ralph-tui/` to this clone by ignoring it with
-  `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`, and `bin/run` copies it into each run. `bin/run`
+  `brew install dicklesworthstone/tap/bv`. Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and,
+  with `--share=team`, `.ralph-tui/` to share them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/`
+  out of commits, and each clone cooks its own. To keep `.ralph-tui/` to one clone of a team that shares it, ignore it
+  with `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted
+  `.ralph-tui/` into each run. `bin/run`
   refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
   `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, with a Beads database holding the epic, or
   `.ralph-tui/bin/run <name> --agent <entry> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch

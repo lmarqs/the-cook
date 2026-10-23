@@ -619,6 +619,47 @@ roles:
     assert git(kitchen, 'branch', '--list', 'ralph*') == ''
   }
 
+  @Test void aCloneShareIgnoresTheWholeDirectoryAndRunCopiesItIntoTheWorktree() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude'], share: ['clone']]).commit()
+
+    assert new File(kitchen, '.gitignore').text == '''\
+# cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui
+# io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --share=clone
+/.ralph-tui/
+/.worktrees/ralph/
+# cook:end io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui
+'''
+    ['config.toml', 'templates/json.hbs', 'bin/run', 'bin/clean', 'bin/worker'].each {
+      assert ignored(kitchen, ".ralph-tui/${it}")
+    }
+    commitAll(kitchen)
+    assert git(kitchen, 'ls-files', '.ralph-tui') == ''
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--epic', 'ep-1')
+
+    assert run.exit == 0
+    assert run.output.readLines()[1].startsWith('Copied .ralph-tui/config.toml, templates/ and bin/worker from ')
+    assert git(new File(kitchen, '.worktrees/ralph/demo'), 'status', '--porcelain') == ''
+  }
+
+  @Test void aShareChangeRewritesOnlyTheIgnoreSection() {
+    def kitchen = kitchen()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    def team = new File(kitchen, '.gitignore').readLines().drop(2)
+
+    def clone = cook(kitchen, RALPH, [harness: ['claude'], share: ['clone']])
+    assert clone.actions == ['.gitignore': 'update']
+    clone.commit()
+    def back = cook(kitchen, RALPH, [harness: ['claude'], share: ['team']])
+    assert back.actions == ['.gitignore': 'update']
+    back.commit()
+
+    assert new File(kitchen, '.gitignore').readLines().drop(2) == team
+    def fork = shouldFail(IllegalArgumentException) { cook(kitchen, RALPH, [harness: ['claude'], share: ['fork']]) }
+    assert fork.message == "${RALPH}: --share=fork is not one of: team, clone"
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
@@ -632,6 +673,7 @@ roles:
       ['worktree-teardown'],
       ['worker-check'],
       ['tracker'],
+      ['share'],
       ['instructions']
     ]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.ralph.RalphTui']
