@@ -179,7 +179,9 @@ starters.second = 'second'
     publishCfg(kitchen)
     def settings = new File(kitchen, 'conf/settings.json'); settings.parentFile.mkdirs()
     settings.text = '{\n  // ours\n  "model": "opus"\n}\n'
-    def json = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:cfg:1.0.0#settings', [:]) }.message.readLines()
+    def json = shouldFail(IllegalArgumentException) {
+      cook(kitchen, 'acme:cfg:1.0.0#settings', [:])
+    }.message.readLines()
     assert json[0] == 'acme:cfg:1.0.0#settings: conf/settings.json key permissions'
     assert json[1].startsWith('  JSON: ')
     assert json[2] == '    settings files are strict JSON: remove comments and trailing commas'
@@ -602,10 +604,8 @@ class Notes {
 notes.add(line)
 """)
 
-    def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose([
-      request('acme:text:1.0.0#setup', [:]),
-      request('notes.groovy', [line: ['first']]),
-    ])
+    def requests = [request('acme:text:1.0.0#setup', [:]), request('notes.groovy', [line: ['first']])]
+    def proposal = new CookbookCook(kitchen, repositories(kitchen)).propose(requests)
 
     assert proposal.recipes*.address == ['acme:text:1.0.0#setup', 'notes.groovy']
     proposal.commit()
@@ -1128,7 +1128,9 @@ config.migrated = migrated
   }
 
   private static File publishCfg(File kitchen, String version = '1.0.0', Map<String, Object> extra = [:]) {
-    def recipe = { String body -> "@help('Writes configuration.')\nimport acme.cfg.Cfg\n@ingredient(Cfg) def cfg\n${body}\n" }
+    def recipe = { String body ->
+      "@help('Writes configuration.')\nimport acme.cfg.Cfg\n@ingredient(Cfg) def cfg\n${body}\n"
+    }
     publish(kitchen, "acme:cfg:${version}", [
       'Cfg.groovy': CFG_MODEL,
       'ignore.groovy': recipe("cfg.ignore = ['build/']"),
@@ -1174,7 +1176,9 @@ config.migrated = migrated
   private static String sourcesSha256(Map<String, Object> files) {
     sha256(files.keySet()
         .sort()
-        .collect { "${sha256(files[it].toString().getBytes('UTF-8'))}  ${it}\n" }
+        .collect {
+          "${sha256(files[it].toString().getBytes('UTF-8'))}  ${it}\n"
+        }
         .join()
         .getBytes('UTF-8'))
   }
