@@ -1136,6 +1136,45 @@ skipPermissions = false
     assert !new File(kitchen, '.worktrees').exists()
   }
 
+  @Test void runRefusesARepeatedEpicPrdOrBase() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+
+    [
+      '--epic': ['--epic', 'ep-1', '--epic', 'ep-2'],
+      '--epic ': ['--epic=ep-1', '--epic=ep-2'],
+      '--prd': ['--prd', 'a.json', '--prd=b.json'],
+      '--base': ['--base', 'HEAD', '--base', 'HEAD'],
+      '--base ': ['--base=HEAD', '--epic', 'ep-1', '--base', 'HEAD'],
+    ].each { flag, arguments ->
+      flag = flag.trim()
+      def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', *arguments)
+
+      assert run.exit == 1
+      assert run.output.readLines() == ["run: ${flag} is given twice", "  a run takes one ${flag}"]*.toString()
+    }
+    assert !new File(kitchen, '.worktrees').exists()
+  }
+
+  @Test void runRefusesABaseWhenTheRunBranchExists() {
+    def kitchen = repository()
+    cook(kitchen, RALPH, [harness: ['claude']]).commit()
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/run', 'demo', '--epic', 'ep-1').exit == 0
+    def branch = git(kitchen, 'rev-parse', 'ralph/demo')
+
+    def run = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--base', 'HEAD', '--epic', 'ep-1')
+
+    assert run.exit == 1
+    assert run.output.readLines() == [
+      'run: --base does not apply: ralph/demo exists',
+      '  the run continues the branch where it is',
+      '  run without --base, or run .ralph-tui/bin/clean demo first',
+    ]*.toString()
+    assert git(kitchen, 'rev-parse', 'ralph/demo') == branch
+  }
+
   @Test void cleanRefusesUndeliveredOrUncommittedWorkUnlessForced() {
     def kitchen = repository()
     cook(kitchen, RALPH, [harness: ['claude']]).commit()

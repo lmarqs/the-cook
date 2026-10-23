@@ -32,7 +32,7 @@ branch=ralph/$name
 git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
   fail "$name is not a run name" "ralph/$name must be a valid branch name"
 
-epic='' prd='' base=HEAD
+epic='' prd='' base=HEAD seen=' '
 count=$#
 while [ "$count" -gt 0 ]; do
   argument=$1
@@ -54,6 +54,10 @@ while [ "$count" -gt 0 ]; do
       continue
       ;;
   esac
+  case $seen in
+    *" $argument "*) fail "$argument is given twice" "a run takes one $argument" ;;
+  esac
+  seen="$seen$argument "
   case $argument in
     --epic) epic=$value ;;
     --prd) prd=$value ;;
@@ -65,6 +69,14 @@ if [ -n "$epic" ] && [ -n "$prd" ]; then
   fail '--epic and --prd are both given' 'a run takes its tasks from one tracker' 'give one of them'
 fi
 [ -n "$epic" ] || [ -n "$prd" ] || usage
+
+case $seen in
+  *' --base '*)
+    ! git -C "$root" show-ref --verify --quiet "refs/heads/$branch" ||
+      fail "--base does not apply: $branch exists" 'the run continues the branch where it is' \
+        "run without --base, or run .ralph-tui/bin/clean $name first"
+    ;;
+esac
 
 if [ -n "$prd" ]; then
   [ -f "$prd" ] || fail "$prd is not a file" 'the --prd file is read from where run starts'
