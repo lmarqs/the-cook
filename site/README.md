@@ -17,7 +17,7 @@ into the site:
 | `preview` | Builds the working tree with the image `actions/jekyll-build-pages` runs and serves it locally |
 
 The theme reads `docs/assets/the-lab.png`: steel and night for surfaces, hazmat yellow for what to act on, the four
-tank colours for categories, Pixelify Sans for headings and Silkscreen for labels.
+tank colours for categories. Text and headings are IBM Plex Sans; the pixel face, Silkscreen, is kept to short uppercase labels, the brand and numbers, where it stays readable.
 
 ## Publishing
 

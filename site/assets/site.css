@@ -1,5 +1,6 @@
 /* the-cook site: the lab of docs/assets/the-lab.png. Steel and night for surfaces, hazmat yellow for what to act on,
-   the four tank colours for categories. Dark is the lab at night; light is the same lab with the lights on. */
+   the four tank colours for categories, the pixel face only for short labels. Dark is the lab at night; light is the
+   same lab with the lights on. */
 
 :root {
   --bg: #0d0f14;
@@ -26,7 +27,6 @@
   --stripe-dark: #111318;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-pixel: "Pixelify Sans", var(--font-mono);
   --font-label: "Silkscreen", var(--font-mono);
   --topbar-h: 60px;
   color-scheme: dark;
@@ -93,7 +93,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .brand { display: flex; align-items: center; gap: 10px; color: #e7e4dc; text-decoration: none; }
 .brand:hover { color: #fff; }
 .brand .hat { color: #e7e4dc; --accent: #f5c518; }
-.brand-name { font: 500 20px/1 var(--font-pixel); letter-spacing: 1px; }
+.brand-name { font: 400 18px/1 var(--font-label); letter-spacing: 1px; }
 .release {
   font: 600 12px/1 var(--font-mono); color: #f5c518; text-decoration: none;
   border: 1px solid #5a4a10; padding: 5px 8px; background: #17150b;
@@ -149,7 +149,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .prose { max-width: 780px; }
 .prose > :first-child { margin-top: 0; }
 .prose h1, .prose h2, .prose h3, .prose h4 { line-height: 1.25; position: relative; scroll-margin-top: calc(var(--topbar-h) + 16px); }
-.prose h1 { font: 500 40px/1.15 var(--font-pixel); letter-spacing: .5px; margin: 0 0 24px; }
+.prose h1 { font: 700 38px/1.15 var(--font-body); letter-spacing: -.5px; margin: 0 0 24px; }
 .prose h2 { font-size: 26px; font-weight: 600; margin: 48px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); }
 .prose h3 { font-size: 20px; font-weight: 600; margin: 32px 0 10px; }
 .prose h4 { font-size: 17px; font-weight: 600; margin: 24px 0 8px; }
@@ -210,7 +210,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .kicker { font: 400 14px/1.2 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin: 0 0 12px; }
 .section { padding: 80px 0; }
 .section + .section { border-top: 1px solid var(--line); }
-.section h2 { font: 500 34px/1.15 var(--font-pixel); margin: 0 0 14px; letter-spacing: .5px; }
+.section h2 { font: 700 34px/1.15 var(--font-body); margin: 0 0 14px; letter-spacing: -.5px; }
 .section .lede { max-width: 720px; color: var(--text-muted); font-size: 18px; margin: 0 0 36px; }
 
 .hero { background: #07080b; color: #e7e4dc; border-bottom: 1px solid #1d222d; }
@@ -218,7 +218,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   max-width: 1400px; margin: 0 auto; padding: 64px 20px 72px;
   display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 48px; align-items: center;
 }
-.hero h1 { font: 500 clamp(34px, 4.4vw, 58px)/1.08 var(--font-pixel); margin: 0 0 20px; text-shadow: 3px 3px 0 #000; }
+.hero h1 { font: 700 clamp(34px, 4.2vw, 56px)/1.08 var(--font-body); letter-spacing: -1px; margin: 0 0 20px; }
 .hero h1 em { font-style: normal; color: #f5c518; }
 .hero .lede { font-size: 18px; color: #c9ccd4; margin: 0 0 30px; }
 .hero .kicker { color: #f0a23a; }
@@ -226,7 +226,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
 .button {
-  display: inline-block; font: 500 16px/1 var(--font-pixel); letter-spacing: .5px; text-decoration: none;
+  display: inline-block; font: 600 16px/1 var(--font-body); text-decoration: none;
   padding: 14px 20px; border: 2px solid #000; box-shadow: 4px 4px 0 var(--shadow); transition: transform .08s, box-shadow .08s;
 }
 .button:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--shadow); text-decoration: none; }
@@ -243,7 +243,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .lab-map img { display: block; width: 100%; }
 .pin {
   position: absolute; transform: translate(-50%, -50%); width: 30px; height: 30px; display: grid; place-items: center;
-  background: #f5c518; color: #111318; font: 500 15px/1 var(--font-pixel); text-decoration: none;
+  background: #f5c518; color: #111318; font: 400 14px/1 var(--font-label); text-decoration: none;
   border: 2px solid #111318; box-shadow: 3px 3px 0 #000;
 }
 .pin:hover, .pin.on { background: #fff; color: #111318; }
@@ -255,7 +255,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .legend li.on, .legend li:target { border-left-color: var(--accent); }
 .legend .num {
   width: 30px; height: 30px; display: grid; place-items: center; background: #f5c518; color: #111318;
-  font: 500 15px/1 var(--font-pixel); border: 2px solid #111318;
+  font: 400 14px/1 var(--font-label); border: 2px solid #111318;
 }
 .legend h3 { margin: 2px 0 4px; font-size: 17px; font-weight: 600; }
 .legend p { margin: 0; color: var(--text-muted); font-size: 15px; }
@@ -263,7 +263,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 /* Problem and goal */
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .panel { background: var(--bg-raised); border: 1px solid var(--line); padding: 26px 28px; }
-.panel h3 { margin: 0 0 12px; font: 500 20px/1.2 var(--font-pixel); letter-spacing: .5px; }
+.panel h3 { margin: 0 0 12px; font: 400 15px/1.2 var(--font-label); letter-spacing: 1.5px; text-transform: uppercase; }
 .panel.problem h3 { color: var(--tank-orange); }
 .panel.goal h3 { color: var(--tank-green); }
 .panel p { margin: 0 0 12px; }
@@ -294,7 +294,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .step { position: relative; padding: 0 0 22px 52px; counter-increment: step; }
 .step::before {
   content: counter(step); position: absolute; left: 0; top: 0; width: 34px; height: 34px; display: grid; place-items: center;
-  font: 500 16px/1 var(--font-pixel); background: var(--bg-raised); border: 2px solid var(--accent); color: var(--link);
+  font: 400 15px/1 var(--font-label); background: var(--bg-raised); border: 2px solid var(--accent); color: var(--link);
 }
 .step:not(:last-child)::after { content: ""; position: absolute; left: 16px; top: 38px; bottom: 4px; border-left: 2px dashed var(--line-strong); }
 .step h3 { margin: 4px 0 4px; font-size: 17px; font-weight: 600; }
@@ -332,7 +332,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   box-shadow: 0 0 0 var(--shadow); transition: transform .08s, box-shadow .08s, border-color .08s;
 }
 .map a:hover { border-color: var(--accent); transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--shadow); color: var(--text); }
-.map strong { display: block; font: 500 18px/1.2 var(--font-pixel); color: var(--link); margin-bottom: 6px; letter-spacing: .3px; }
+.map strong { display: block; font: 700 18px/1.2 var(--font-body); color: var(--link); margin-bottom: 6px; }
 .map span { font-size: 14.5px; color: var(--text-muted); }
 
 .note { margin: 24px 0 0; font-size: 14.5px; color: var(--text-muted); }
