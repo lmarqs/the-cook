@@ -82,8 +82,8 @@ decision.
 
 Without preapproval, ask before changing target files; declining approval leaves batch targets unchanged.
 [`--batch-approve`](../features/cli.md#batch-options-and-approval) preapproves the entire operation: cooking, discard or
-replicate. Display the diff and proceed without prompting. Existing and edited content follows this same review flow; ownership
-never blocks a change.
+replicate. Display the diff and proceed without prompting. Existing and edited content follows this same review flow;
+ownership never blocks a change.
 
 ### Failure recovery
 

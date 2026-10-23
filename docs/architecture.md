@@ -259,11 +259,11 @@ a run, use the repository's version control.
 **Replicate** cooks named recipes again from the sources and arguments `cook.lock` records, in operand order, through
 the same evaluation, combined diff, approval and rollback as cooking. It accepts short lock names, versioned
 coordinates and recipe paths; each identifies the lock entry by short name. The recorded source selects the version,
-even when the operand names another. A missing entry or an entry without recorded arguments is refused before any
-recipe runs; `arguments: {}` is valid. A changed source, including a recipe path, is reported before the diff rather
-than skipped or restored from a copy. Arguments that no longer bind are reported with their recorded line and a next
-step to cook with arguments. Replicate evaluates against current content, so it rebuilds output without promising
-identical bytes from changed sources, defaults or other inputs.
+even when the operand names another. A missing entry, or one whose arguments are unrecorded or unreadable, is refused
+before any recipe runs; `arguments: {}` is valid. A changed source, including a recipe path, is reported before the
+diff and cooked as it is now. Arguments that no longer bind are reported with their recorded line and a next step to
+cook with arguments. Replicate evaluates against current content, so changed sources, defaults or other inputs can
+produce different output.
 
 ## Destination and source origins
 

@@ -51,9 +51,9 @@ removed without disturbing anything else.
      restores no value the recipe replaced. It follows the same diff and whole-batch approval as cooking.
    - Replicate evaluates named recipes again from their recorded sources and arguments, in operand order, through
      cooking's diff and whole-batch approval. It uses the recorded version even when an operand names another, and
-     refuses a missing entry or one without recorded arguments; an empty argument list is valid. A changed source
-     is reported before the diff, including a changed recipe path. Replicate rebuilds output against current content;
-     it does not restore saved bytes.
+     refuses a missing entry or one whose arguments are unrecorded or unreadable; `arguments: {}` is valid. A changed
+     source, including a changed recipe path, is reported before the diff. Replicate rebuilds output against current
+     content; it does not restore saved bytes.
 7. Cooking supplied recipes does not require `cook.lock`; replicate requires its recorded inputs. Both evaluate
    recipes again; cooking never skips a recipe as already cooked. An unchanged result may have an empty diff.
 8. Cook keeps no history of its own. `cook.lock` is its only record; on a write failure, Cook rolls back the batch's
