@@ -41,7 +41,7 @@ final class CookbookDirectory implements CookbookRepository {
     def name = coordinates.artifact
     def root = new File(directory, "src/${name}")
 
-    if (coordinates.group != group || hidden(name) || !root.isDirectory()) {
+    if (coordinates.group != group || !root.isDirectory()) {
       return null
     }
 

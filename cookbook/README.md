@@ -636,7 +636,7 @@ plugins {
 group = (file('cookbook.toml').text =~ /(?m)^group\s*=\s*"([^"]+)"/)[0][1]
 version = findProperty('releaseVersion') ?: '0.0.0'
 
-file('src').listFiles().findAll { it.isDirectory() }.each { artifact ->
+file('src').listFiles().findAll { it.isDirectory() && !it.name.startsWith('.') }.each { artifact ->
   def jar = tasks.register("${artifact.name}Jar", Jar) {
     archiveBaseName = artifact.name
     preserveFileTimestamps = false

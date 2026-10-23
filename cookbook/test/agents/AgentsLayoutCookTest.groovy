@@ -3,7 +3,6 @@ package thecook
 import static thecook.Cookbook.COOKBOOK
 import static thecook.Cookbook.publishDirectory
 import static thecook.Kitchens.cook
-import static thecook.Kitchens.publish
 import static thecook.Kitchens.repositories
 import static thecook.Kitchens.request
 import static thecook.Kitchens.sourcesSha256
@@ -835,6 +834,7 @@ agents.connect([claude])
     assert !new File(kitchen, '.claude/CLAUDE.md').exists()
   }
 
+  // The policy and the output the layout's mock-up was written with, copied from it.
   private static String fixture(String name) {
     AgentsLayoutCookTest.getResource("/agents/agents-layout/${name}").text
   }
@@ -852,10 +852,6 @@ agents.connect([claude])
 
   private File kitchen() {
     folder.newFolder('kitchen')
-  }
-
-  private static String sha256(File file) {
-    sha256(file.bytes)
   }
 
   private static Throwable shouldFail(Class<? extends Throwable> type, Closure action) {

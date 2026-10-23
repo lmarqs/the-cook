@@ -15,8 +15,15 @@ repositories {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+// Gradle's default source directories, src/main/ and src/test/, would sit among the artifacts under src/.
 sourceSets {
+  main {
+    java.srcDirs = []
+    groovy.srcDirs = []
+    resources.srcDirs = []
+  }
   test {
+    java.srcDirs = []
     groovy.srcDirs = ['test']
     resources {
       srcDirs = ['test']

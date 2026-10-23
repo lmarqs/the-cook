@@ -105,9 +105,9 @@ tasks.register('centralBundleTest') {
   }
 }
 
-// The engine knows no cookbook: no code or build file under core/ may name the cookbook's directory or the property
-// that once passed its path to the core tests. Coordinates such as io.github.lmarqs.cookbook:agents are data, and its
-// documentation may name the cookbook.
+// The engine knows no cookbook: no code or build file under core/ may name the cookbook's directory or cook.cookbook,
+// the property that passes its path to the cookbook's tests. Coordinates such as io.github.lmarqs.cookbook:agents are
+// data, and its documentation may name the cookbook.
 tasks.register('coreBoundaryCheck') {
   group = 'verification'
   description = 'Fail when code or a build file under core/ refers to the cookbook directory.'

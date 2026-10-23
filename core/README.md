@@ -74,8 +74,8 @@ When a write fails, it restores the paths it already wrote and fails.
 `./gradlew check` runs the core tests, which never read the repository's cookbook: `CookbookCookTest` and
 `CookbookReplicateTest` cook small artifacts built in the test, by coordinates and by path; `DocumentsTest` edits JSON
 and TOML through the documents' own API; `CoordinatesTest` and `RecipeSourceTest` cover coordinates and recipe texts;
-`FilePatchTest` covers the review diff. The root build's `coreBoundaryCheck` fails when a file under `core/` names
-the cookbook's directory.
+`FilePatchTest` covers the review diff. The root build's `coreBoundaryCheck` fails when code or a build file under
+`core/` names the cookbook's directory.
 
 `Kitchens`, a test fixture other builds reuse, publishes any directory as an artifact into a test kitchen and cooks
 from there; the cookbook's tests, under `cookbook/test/`, cook its recipes through it.

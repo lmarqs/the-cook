@@ -1,26 +1,23 @@
 package thecook
 
+import static thecook.Kitchens.cook
+import static thecook.Kitchens.publish
+import static thecook.Kitchens.repositories
+import static thecook.Kitchens.request
+
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import thecook.cookbook.Argument
-import thecook.cookbook.Coordinates
 import thecook.cookbook.CookbookCook
-import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookLock
 import thecook.cookbook.CookbookDiscard
-import thecook.cookbook.CookbookRepositories
-import thecook.cookbook.CookbookRepository
 import thecook.cookbook.ExistingSeed
 import thecook.cookbook.KeyTarget
-import thecook.cookbook.RecipeRequest
 import thecook.cookbook.SectionTarget
 
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
-import java.util.jar.JarEntry
-import java.util.jar.JarOutputStream
 
 class CookbookCookTest {
   private static final String TEXT_MODEL = '''package acme.text
@@ -1070,20 +1067,8 @@ import acme.noisy.Noisy
     '  a model declares only what a recipe asks for'
   }
 
-  // The policy and the output the layout's mock-up was written with, copied from it.
-
   private File kitchen() {
     folder.newFolder('kitchen')
-  }
-
-  // Coordinates resolve from the jars that publish writes under the kitchen's repository directory.
-  private static CookbookRepositories repositories(File kitchen) {
-    def directory = new File(kitchen, 'repository')
-    def jars = { Coordinates coordinates ->
-      def jar = new File(directory, coordinates.jarPath)
-      jar.isFile() ? CookbookArtifact.fromZip(coordinates, jar.bytes, coordinates.packagePath) : null
-    } as CookbookRepository
-    new CookbookRepositories([jars], directory.path)
   }
 
   private static File recipe(File kitchen, String path, String text) {
@@ -1115,18 +1100,6 @@ config.migrated = migrated
     ])
   }
 
-  private static def cook(File kitchen, String operand, Map<String, List<String>> arguments) {
-    new CookbookCook(kitchen, repositories(kitchen)).propose([request(operand, arguments)])
-  }
-
-  private static RecipeRequest request(String operand, Map<String, List<String>> arguments) {
-    new RecipeRequest(operand, arguments.collectMany { name, values ->
-      values.collect {
-        Argument.inline(name, it)
-      }
-    })
-  }
-
   private static File publishCfg(File kitchen, String version = '1.0.0', Map<String, Object> extra = [:]) {
     def recipe = { String body ->
       "@help('Writes configuration.')\nimport acme.cfg.Cfg\n@ingredient(Cfg) def cfg\n${body}\n"
@@ -1145,20 +1118,6 @@ config.migrated = migrated
 
   private static File publishText(File kitchen, Map<String, Object> extra = [:]) {
     publish(kitchen, 'acme:text:1.0.0', ['Text.groovy': TEXT_MODEL] + extra)
-  }
-
-  private static File publish(File kitchen, String address, Map<String, Object> files) {
-    def coordinates = Coordinates.parse(address)
-    def jar = new File(kitchen, "repository/${coordinates.jarPath}")
-    jar.parentFile.mkdirs()
-    new JarOutputStream(new FileOutputStream(jar)).withCloseable { out ->
-      files.each { path, content ->
-        out.putNextEntry(new JarEntry("${coordinates.packagePath}${path}"))
-        out.write(content instanceof byte[] ? content : content.toString().getBytes('UTF-8'))
-        out.closeEntry()
-      }
-    }
-    jar
   }
 
   private static String sha256(File file) {
