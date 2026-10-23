@@ -1063,6 +1063,26 @@ skipPermissions = false
     assert git(worktree, 'status', '--porcelain') == ''
   }
 
+  @Test void theWorkerChecksEveryCompletionRalphTuiAccepts() {
+    def worktree = new File(workerRepository(), '.worktrees/ralph/demo')
+    def log = new File(worktree, '.ralph-tui/worker-check.log')
+
+    [
+      '<promise>complete</promise>',
+      '<promise>\n COMPLETE\n</promise>',
+      '{"type":"result","result":"<promise> Complete </promise>"}'
+    ].each { promise ->
+      log.delete()
+
+      def failed = launch(worktree, 'sh', '-c',
+          "echo the prompt | PROMISE='${promise}' CHECK_FAILS=1 .ralph-tui/bin/worker claude 2>/dev/null")
+
+      assert failed.exit == 1: promise
+      assert failed.output == '': promise
+      assert log.text.startsWith('check '): promise
+    }
+  }
+
   @Test void theWorkerAsksEachHarnessForItsVersionAndRefusesTheMainCheckout() {
     def kitchen = workerRepository()
 
@@ -1721,7 +1741,7 @@ skipPermissions = false
           'echo "args $*"\necho "prompt $(cat)"\n[ -z "${AGENT_FAILS:-}" ] || exit 3\n' +
           'if [ -n "${AGENT_SLEEPS:-}" ]; then sleep 60 & echo $! > "$AGENT_SLEEPS"; wait; fi\n' +
           'if [ -n "${AGENT_BLOCKED:-}" ]; then echo "BLOCKED: no tests"\n' +
-          'else echo "<promise>COMPLETE</promise>"; fi\n')
+          'else printf \'%s\\n\' "${PROMISE:-<promise>COMPLETE</promise>}"; fi\n')
     }
     kitchen
   }

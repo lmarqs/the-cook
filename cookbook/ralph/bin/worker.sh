@@ -64,7 +64,9 @@ status=$?
 [ "$status" -eq 0 ] || exit "$status"
 
 # ralph-tui completes a task when the output holds the promise, at any exit code, so the output waits for the check.
-if grep -q '<promise>COMPLETE</promise>' "$output"; then
+# It accepts any case and any whitespace inside the tags, so the match drops every byte but letters, digits and tag
+# characters, each byte of a multibyte space among them; a false match only runs the check.
+if LC_ALL=C tr -cd '[:alnum:]<>/' <"$output" | grep -iq '<promise>complete</promise>'; then
   "$root/$check" "$base" </dev/null 3<&- >"$log" 2>&1 &
   child=$!
   wait "$child" || fail "$check did not pass, so the task stays open; its output is in $log"
