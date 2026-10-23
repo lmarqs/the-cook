@@ -33,12 +33,12 @@ sets up and cleans the run's worktree.
 `--worker-role` and `--worker-settings` each take `<harness>:<x>`, once per harness, and the harness is one `--harness`
 gives: `claude:<path>` makes the Claude entry pass `--settings <path>`, and `codex:<path>` makes the Codex entry pass
 one `-c <key>=<value>` for each key of the TOML file at `<path>`, which is read when cooking. A role binds `claude`
-only, as Codex has no roles. A role and a settings file do not bind the same harness; to combine them, write a settings file that holds both. `--worktree-root` names the
-directory, by its path from the repository root, under whose `ralph/` run worktrees go, as
-`io.github.lmarqs.cookbook:agents#connect --worktree-root` does for Claude Code's; `.worktrees` by default.
-`--worktree-setup` and `--worktree-teardown` each name a committed executable by its path from the repository root,
-outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown. `--worker-check` names one
-too, the check a task must pass to complete; without it, the worker refuses every task. `--tracker` is `beads` or
+only, as Codex has no roles. A role and a settings file do not bind the same harness; to combine them, write a settings
+file that holds both. `--worktree-root` names the directory, by its path from the repository root, under whose `ralph/`
+run worktrees go, as `io.github.lmarqs.cookbook:agents#connect --worktree-root` does for Claude Code's; `.worktrees` by
+default. `--worktree-setup` and `--worktree-teardown` each name a committed executable by its path from the repository
+root, outside `.ralph-tui/`; without them, `bin/run` runs no setup and `bin/clean` no teardown. `--worker-check` names
+one too, the check a task must pass to complete; without it, the worker refuses every task. `--tracker` is `beads` or
 `beads-bv`, run with `--epic`, or `json`, run with `--prd`, and repeats, with one of `beads` and `beads-bv` at most;
 `json` by default. It chooses the seeded prompts, the configuration's `tracker` line and the run flag the launcher
 offers. `beads-bv` is ralph-tui's beads tracker with `bv` picking each next bead of the epic. `--instructions` names a
@@ -203,10 +203,11 @@ each `--harness`, the flags of each `--worker-role` or `--worker-settings`, the 
 for `--worker-check`, a beads `tracker` for `--tracker=beads`, and `tracker = "beads-bv"` for `--tracker=beads-bv`. Edit
 the file or delete it and cook again; a Codex settings file is copied into the configuration when seeding, so editing
 one means deleting `config.toml` and cooking again. A newer version's prompts are taken by deleting them and cooking
-again, and a newer version's entry flags, such as the Codex entry's `--dangerously-bypass-hook-trust`, by adding
-them to the entry by hand. A newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a team never
-edits it: to use scripts of its own, it runs its own launcher instead of `bin/run` and `bin/clean`, or points an agent
-entry's `command` at its own worker, such as `scripts/worker.py`, in the configuration, which is never rewritten.
+again, and a newer version's entry flags, such as the Codex entry's `--dangerously-bypass-hook-trust`, by adding them to
+the entry by hand. A newer version rewrites the launcher and the sections. Every cook rewrites `.ralph-tui/bin/`, so a
+team never edits it: to use scripts of its own, it runs its own launcher instead of `bin/run` and `bin/clean`, or points
+an agent entry's `command` at its own worker, such as `scripts/worker.py`, in the configuration, which is never
+rewritten.
 
 ## Traps
 
