@@ -70,6 +70,8 @@ when a section was edited by hand or a seed deleted.
 
 - Tools that walk the directory without reading `.gitignore`, such as a linter given a glob, see every worktree's copy
   of the sources: exclude `.worktrees/` in their own settings.
+- `docker build` with the repository root as its context sends every worktree, with what `.worktrees/setup`
+  installed, to the build, and `COPY . .` puts them in the image: add `.worktrees/` to `.dockerignore`.
 ''')
 @yield('''
 Fill in `.worktrees/setup` with what a new worktree needs to run, and `.worktrees/teardown` with what removing one
