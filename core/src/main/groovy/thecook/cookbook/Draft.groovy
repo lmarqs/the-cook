@@ -37,7 +37,7 @@ final class Draft {
   /** `file`, `symlink` or `directory` as the invocation left `path` so far; `null` when absent. */
   String kind(String path) {
     if (!after.containsKey(path) &&
-        Files.isDirectory(repository.target(path, true).toPath(), LinkOption.NOFOLLOW_LINKS)) {
+        Files.isDirectory(repository.target(path).toPath(), LinkOption.NOFOLLOW_LINKS)) {
       return 'directory'
     }
 
@@ -113,7 +113,7 @@ final class Draft {
     }
 
     paths.each { path ->
-      if (repository.snapshot(repository.target(path, true), true).hash != before[path].hash) {
+      if (repository.snapshot(repository.target(path)).hash != before[path].hash) {
         throw new IllegalStateException("Changed since preview: ${path}")
       }
     }
@@ -132,7 +132,7 @@ final class Draft {
 
   private Map state(String path) {
     if (!before.containsKey(path)) {
-      def snapshot = repository.snapshot(repository.target(path, true), true)
+      def snapshot = repository.snapshot(repository.target(path))
       before[path] = snapshot + [kind: snapshot.exists ? (snapshot.kind ?: 'file') : null]
     }
 
@@ -152,14 +152,14 @@ final class Draft {
 
   private void put(String path, Map state) {
     if (state.kind == 'symlink') {
-      files.link(repository.target(path, true), state.content)
+      files.link(repository.target(path), state.content)
     } else {
       // A link at the path is replaced, not followed.
-      files.write(repository.target(path, true), state.exists ? state.content : null, state.mode)
+      files.write(repository.target(path), state.exists ? state.content : null, state.mode)
     }
 
     if (!state.exists) {
-      def parent = repository.target(path, true).parentFile
+      def parent = repository.target(path).parentFile
 
       while (parent != repository.directory && parent.list()?.length == 0) {
         parent.delete()

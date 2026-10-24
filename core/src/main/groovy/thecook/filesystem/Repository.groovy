@@ -12,11 +12,12 @@ class Repository {
   Repository(File directory) {
     this.directory = directory.canonicalFile
   }
-  File target(String relative, boolean allowLeafLink = false) {
+  /** The file at `relative`, refusing a symbolic link on the way to it; the file itself may be a link. */
+  File target(String relative) {
     TargetPath.of(relative)
-    resolve(relative, allowLeafLink)
+    resolve(relative)
   }
-  private File resolve(String relative, boolean allowLeafLink = false) {
+  private File resolve(String relative) {
     def current = directory.toPath()
 
     if (Files.isSymbolicLink(current)) {
@@ -31,18 +32,14 @@ class Repository {
 
       current = current.resolve(segment)
 
-      if (Files.isSymbolicLink(current) && !(allowLeafLink && index == segments.length - 1)) {
+      if (Files.isSymbolicLink(current) && index < segments.length - 1) {
         throw new IllegalArgumentException("Symlink target: ${relative}")
       }
     }
     current.toFile()
   }
-  Map snapshot(File file, boolean allowLink = false) {
+  Map snapshot(File file) {
     if (Files.isSymbolicLink(file.toPath())) {
-      if (!allowLink) {
-        throw new IllegalArgumentException("Symlink target: ${relative(file)}")
-      }
-
       String target = Files.readSymbolicLink(file.toPath()).toString()
       return [exists: true, hash: digest(target.getBytes('UTF-8')), content: target, mode: null, kind: 'symlink']
     }
