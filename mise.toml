@@ -6,8 +6,8 @@ description = "Start the release workflow on main and watch it until it ends"
 shell = "bash -c"
 run = '''
 set -eu
-read -r -p "Publish a release to Maven Central? It cannot be taken back. Type yes: " answer
-[ "$answer" = yes ] || { echo "Not released."; exit 1; }
+read -r -p "Publish a release to Maven Central? It cannot be taken back. [y/N] " answer
+case "$answer" in y | Y | yes | YES) ;; *) echo "Not released."; exit 1 ;; esac
 url=$(gh workflow run release.yml --ref main)
 echo "$url"
 gh run watch "${url##*/}" --exit-status
