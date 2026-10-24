@@ -4,7 +4,6 @@ import thecook.formats.BlockDocument
 import thecook.formats.KeyDocument
 import thecook.formats.KeyDocuments
 import thecook.model.Diagnostic
-import thecook.reconciliation.Permissions
 
 import java.nio.file.Paths
 
@@ -224,7 +223,7 @@ final class KeyTarget extends Target {
   }
 }
 
-/** A whole file, with the permissions its declaration names. */
+/** A whole file, with the permissions its declaration names, in the `rwxr-xr-x` form. */
 class FileTarget extends Target {
   // Permissions are written, not owned, so the lock does not record them.
   private final String mode
@@ -244,7 +243,7 @@ class FileTarget extends Target {
 
   @Override
   protected void writePart(Draft draft, Object content) {
-    draft.write(file, content.toString(), mode ? Permissions.parse(mode) : null)
+    draft.write(file, content.toString(), mode)
   }
 
   @Override

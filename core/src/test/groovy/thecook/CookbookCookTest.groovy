@@ -1046,6 +1046,29 @@ script.want()
     assert Files.getPosixFilePermissions(run.toPath()) == PosixFilePermissions.fromString('rw-r--r--')
   }
 
+  @Test void refusesAnInvalidFileModeNamingTheMemberThatDeclaresIt() {
+    def kitchen = kitchen()
+    publish(kitchen, 'acme:script:1.0.0', [
+      'Script.groovy': '''package acme.script
+
+@Ingredient
+class Script {
+  private boolean wanted
+  void want() { wanted = true }
+  @File(path = 'run', mode = '0999')
+  String run() { wanted ? '#!/bin/sh\\n' : null }
+}
+''',
+      'script.groovy': '''@help('Writes a script.')
+import acme.script.Script
+@ingredient(Script) def script
+script.want()
+''',
+    ])
+    def error = shouldFail(IllegalArgumentException) { cook(kitchen, 'acme:script:1.0.0#script', [:]) }
+    assert error.message == 'acme:script:1.0.0#script: Script.run(): Invalid file mode: 0999'
+  }
+
   @Test void refusesAModelThatDeclaresOutputOnANewInstance() {
     def kitchen = kitchen()
     publish(kitchen, 'acme:noisy:1.0.0', [

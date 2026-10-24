@@ -90,7 +90,7 @@ final class Declarations {
     switch (annotation) {
       case Seed:
         declared.seeds << new Seeding(member, base, value.toString(), failsOnExisting(member, (Seed) annotation),
-        mode((Seed) annotation))
+        mode(member, ((Seed) annotation).mode()))
         break
       case Delete:
         if (value == true) {
@@ -123,25 +123,37 @@ final class Declarations {
         }
         break
       case WholeFile:
-        declared.owned << new Declaration(member, new FileTarget(base, ((WholeFile) annotation).mode()),
+        declared.owned << new Declaration(member, new FileTarget(base, mode(member, ((WholeFile) annotation).mode())),
         value.toString())
         break
       case Files:
+        String mode = mode(member, ((Files) annotation).mode())
         entries(member, value).each { name, content ->
-          declared.owned << new Declaration(member, new FileTarget("${base}/${name}", ((Files) annotation).mode()),
-              content.toString())
+          declared.owned << new Declaration(member, new FileTarget("${base}/${name}", mode), content.toString())
         }
         break
-      default:
+      case Links:
         String instead = ((Links) annotation).instead() ?: null
         entries(member, value).each { name, target ->
           declared.owned << new Declaration(member, new LinkTarget("${base}/${name}", instead), target.toString())
         }
+        break
+      default:
+        throw new IllegalStateException("${annotation.annotationType().simpleName} declares nothing")
     }
   }
 
-  private static String mode(Seed seed) {
-    seed.mode() ? Permissions.parse(seed.mode()) : null
+  // The permissions a member's `mode` names, such as `0755`, in the `rwxr-xr-x` form the draft writes.
+  private static String mode(String member, String mode) {
+    if (!mode) {
+      return null
+    }
+
+    try {
+      Permissions.parse(mode)
+    } catch (IllegalArgumentException error) {
+      throw new IllegalArgumentException("${member}: ${error.message}", error)
+    }
   }
 
   private static boolean failsOnExisting(String member, Seed seed) {
