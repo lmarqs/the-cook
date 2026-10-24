@@ -131,14 +131,8 @@ final class CookbookCook {
     def targets = owned*.target
     lock.owned(name)
         .findAll { !(it in targets) }
-        .each { target ->
-          try {
-            target.withdraw(draft)
-          } catch (RuntimeException error) {
-            throw target.failed(error)
-          }
-        }
-    owned.each { it.write(draft) }
+        *.withdraw(draft)
+    owned.each { it.target.write(draft, it.value) }
     declared.deletes.each { deletion ->
       def owner = lock.ownerOf(new FileTarget(deletion.file), name) ?:
           (targets.any { it.file == deletion.file } ? name : null)

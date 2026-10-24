@@ -25,20 +25,27 @@ abstract class Target {
   /** What `cook.lock` records: a map of fields, or the path for a whole file or link. */
   abstract Object getEntry()
 
-  /** Writes `value` into the draft as this part. */
-  abstract void write(Draft draft, Object value)
-
-  /** Removes this part from the draft. */
-  abstract void withdraw(Draft draft)
-
-  /**
-   * `error` with this target named on the first line and every line of its cause indented beneath it, so a cause laid
-   * out as what, why and next keeps its own indentation one level deeper.
-   */
-  final IllegalArgumentException failed(Exception error) {
-    String cause = error.message ?: error.class.simpleName
-    new IllegalArgumentException(([toString()] + cause.readLines().collect { "  ${it}" }).join('\n'), error)
+  /** Writes `value` into the draft as this part; a failure names this target. */
+  final void write(Draft draft, Object value) {
+    try {
+      writePart(draft, value)
+    } catch (RuntimeException error) {
+      throw failed(error)
+    }
   }
+
+  /** Removes this part from the draft; a failure names this target. */
+  final void withdraw(Draft draft) {
+    try {
+      withdrawPart(draft)
+    } catch (RuntimeException error) {
+      throw failed(error)
+    }
+  }
+
+  protected abstract void writePart(Draft draft, Object value)
+
+  protected abstract void withdrawPart(Draft draft)
 
   /** Whether writing this target changes `other`: the same section, overlapping keys, or a whole file or link. */
   final boolean overlaps(Target other) {
@@ -66,6 +73,12 @@ abstract class Target {
     }
 
     draft.read(file)
+  }
+
+  // The cause's lines go one level deeper, so a cause laid out as what, why and next keeps its own indentation.
+  private IllegalArgumentException failed(RuntimeException error) {
+    String cause = error.message ?: error.class.simpleName
+    new IllegalArgumentException(([toString()] + cause.readLines().collect { "  ${it}" }).join('\n'), error)
   }
 
   @Override
@@ -102,7 +115,8 @@ final class SectionTarget extends Target {
     [file: file, id: id]
   }
 
-  void write(Draft draft, Object lines) {
+  @Override
+  protected void writePart(Draft draft, Object lines) {
     if (failsOnMissing && draft.kind(file) == null) {
       throw new IllegalArgumentException(Diagnostic.text("${file} is missing",
       'the section goes into a file the team keeps, and the recipe never creates it',
@@ -114,7 +128,8 @@ final class SectionTarget extends Target {
     draft.replace(file, document)
   }
 
-  void withdraw(Draft draft) {
+  @Override
+  protected void withdrawPart(Draft draft) {
     String text = editable(draft)
     def begin = ~/.*cook:begin ${java.util.regex.Pattern.quote(id)}(?:\s.*)?/
     def marker = text?.readLines()?.find { it ==~ begin }
@@ -164,7 +179,8 @@ final class KeyTarget extends Target {
   }
 
   /** Leaves a key that already holds `value` as it is, so the file keeps its formatting. */
-  void write(Draft draft, Object value) {
+  @Override
+  protected void writePart(Draft draft, Object value) {
     def document = open(draft)
 
     if (document.set(checkedPath(), value)) {
@@ -172,7 +188,8 @@ final class KeyTarget extends Target {
     }
   }
 
-  void withdraw(Draft draft) {
+  @Override
+  protected void withdrawPart(Draft draft) {
     def document = open(draft)
     document.remove(checkedPath())
     draft.replace(file, document)
@@ -225,11 +242,13 @@ class FileTarget extends Target {
     file
   }
 
-  void write(Draft draft, Object content) {
+  @Override
+  protected void writePart(Draft draft, Object content) {
     draft.write(file, content.toString(), mode ? Permissions.parse(mode) : null)
   }
 
-  void withdraw(Draft draft) {
+  @Override
+  protected void withdrawPart(Draft draft) {
     draft.delete(file)
   }
 
@@ -263,7 +282,7 @@ final class LinkTarget extends FileTarget {
   }
 
   @Override
-  void write(Draft draft, Object target) {
+  protected void writePart(Draft draft, Object target) {
     def existing = draft.kind(file)
 
     if (existing in ['file', 'directory']) {

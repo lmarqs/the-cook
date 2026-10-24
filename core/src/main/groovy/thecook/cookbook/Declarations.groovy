@@ -221,14 +221,6 @@ final class Declaration {
     this.value = value
   }
 
-  void write(Draft draft) {
-    try {
-      target.write(draft, value)
-    } catch (RuntimeException error) {
-      throw target.failed(error)
-    }
-  }
-
   @Override
   String toString() {
     "${member} declares a ${target.kind} of ${target.file}"
