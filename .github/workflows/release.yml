@@ -1,8 +1,11 @@
 name: release
 
-# A release is cut only when the maintainer starts this workflow. semantic-release computes the version from the
-# Conventional Commits since the last v* tag; nothing is published unless the Linux and macOS builds pass.
+# A release is cut only when the maintainer asks for one: by pushing to main a commit whose message holds #release, or by
+# starting this workflow. semantic-release computes the version from the Conventional Commits since the last v* tag;
+# nothing is published unless the Linux and macOS builds pass.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -23,6 +26,7 @@ env:
 
 jobs:
   version:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '#release')
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.next.outputs.version }}

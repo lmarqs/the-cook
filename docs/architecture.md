@@ -311,9 +311,9 @@ syntax, recipe operands, argument scope, and batch options (FR-17 through FR-20)
 Cook uses JVM-based distribution with `jpackage`. Each platform-specific package contains the engine and a
 bundled Java runtime. Distribute the complete package, including its runtime (FR-26).
 
-A release is cut when the maintainer starts the `release` workflow; its version comes from the Conventional Commits
-since the last `v*` tag. Nothing is published unless the Linux x64 and arm64 and macOS arm64 builds and their tests pass. A release
-publishes:
+A release is cut when the maintainer pushes to `main` a commit whose message holds `#release`, or starts the `release`
+workflow; its version comes from the Conventional Commits since the last `v*` tag. Nothing is published unless the Linux
+x64 and arm64 and macOS arm64 builds and their tests pass. A release publishes:
 
 - on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
   package with its `.sha256`, and the `cook` wrapper with its `.sha256`;
