@@ -23,16 +23,17 @@ The core reaches no network and runs no external command. It declares `CookbookR
 2. `CookbookCompiler` compiles an artifact's or a directory's models in a class loader of their own, then the recipe in
    its own class loader over them. Every unit imports the author's annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and
    `java.nio.file` by default. A recipe's `@param` and `@ingredient` lines become fields.
-3. `RecipeRun` binds each `@param` from the recipe's arguments, injects each `@ingredient` as a new model instance at
-   its directory, and runs the recipe's body. A model reads its own artifact's packaged files, or for a model beside a
-   recipe path the files of its directory, and the draft's current content.
-4. `Declarations` reads what the models declare through their annotated members: the sections, keys, whole files and
-   links they own, the files they seed and the files they delete.
-5. The recipe is cooked into one in-memory `Draft` of the kitchen: it withdraws what `cook.lock` says it owned and no
+3. `LoadedRecipe.evaluate` runs the recipe against one in-memory `Draft` of the kitchen and returns an `Evaluation`:
+   what it declares and its arguments. `RecipeRun` binds each `@param` from the recipe's arguments, injects each
+   `@ingredient` as a new model instance at its directory, and runs the recipe's body. A model reads its own
+   artifact's packaged files, or for a model beside a recipe path the files of its directory, and the draft's current
+   content. `Declarations` then reads what the models declare through their annotated members: the sections, keys,
+   whole files and links they own, the files they seed and the files they delete.
+4. `Ownership` cooks those declarations into the draft: the recipe withdraws what `cook.lock` says it owned and no
    longer declares, writes what it declares, and takes ownership from the recipes that held it. Each later recipe
-   sees what the earlier ones wrote.
-6. `CookLock` records each recipe's short name, source, the source's sha256 and what it owns, and the draft writes
-   `cook.lock` with the rest.
+   sees what the earlier ones wrote. Discard withdraws through the same module.
+5. `CookLock` records each recipe's short name, source, the source's sha256, its arguments and what it owns, and the
+   draft writes `cook.lock` with the rest.
 
 ## Recipe names and sources
 
@@ -71,7 +72,9 @@ When a write fails, it restores the paths it already wrote and fails.
 ## Verification
 
 `./gradlew check` runs the core tests, which never read the repository's cookbook: `CookbookCookTest` and
-`CookbookReplicateTest` cook small artifacts built in the test, by coordinates and by path; `DocumentsTest` edits JSON,
+`CookbookReplicateTest` cook small artifacts built in the test, by coordinates and by path; `OwnershipTest` feeds
+declarations to `Ownership` without compiling a recipe; `LoadedRecipeTest` evaluates a recipe without cooking it;
+`DocumentsTest` edits JSON,
 TOML and YAML through the documents' own API; `CoordinatesTest` and `RecipeSourceTest` cover coordinates and recipe
 texts; `FilePatchTest` covers the review diff. The root build's `coreBoundaryCheck` fails when code or a build file
 under `core/` names the cookbook's directory.
