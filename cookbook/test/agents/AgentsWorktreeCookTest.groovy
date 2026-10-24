@@ -156,6 +156,7 @@ class AgentsWorktreeCookTest {
       executable(it, '.worktrees/setup', '#!/bin/sh\n')
       executable(it, '.worktrees/teardown', '#!/bin/sh\n[ ! -f fail ] || exit 1\npwd -P >> ../../teardown-ran\n')
     }
+    new File(kitchen, '.git/info/exclude') << '/fail\n'
     ['merged', 'unmerged'].each { assert hook(kitchen, 'create', [name: it]).exit == 0 }
     def merged = new File(kitchen, '.worktrees/merged')
     def unmerged = new File(kitchen, '.worktrees/unmerged')
@@ -180,6 +181,35 @@ class AgentsWorktreeCookTest {
     def main = hook(kitchen, 'remove', [worktree_path: kitchen.canonicalPath])
     assert main.exit == 1
     assert main.error.startsWith("worktree: ${kitchen.canonicalPath} is the main checkout\n")
+  }
+
+  @Test void removeKeepsAWorktreeWithUncommittedOrUntrackedFilesAndIgnoresIgnoredOnes() {
+    def kitchen = repository(NAMED) {
+      executable(it, '.worktrees/setup', '#!/bin/sh\n')
+      executable(it, '.worktrees/teardown', '#!/bin/sh\npwd -P >> ../../teardown-ran\n')
+      new File(it, 'tracked.txt').text = 'committed\n'
+    }
+    new File(kitchen, '.git/info/exclude') << '/ignored.txt\n'
+    ['modified', 'untracked', 'ignored'].each { assert hook(kitchen, 'create', [name: it]).exit == 0 }
+    def modified = new File(kitchen, '.worktrees/modified')
+    def untracked = new File(kitchen, '.worktrees/untracked')
+    def ignored = new File(kitchen, '.worktrees/ignored')
+    new File(modified, 'tracked.txt').text = 'uncommitted\n'
+    new File(untracked, 'new.txt').text = 'untracked\n'
+    new File(ignored, 'ignored.txt').text = 'ignored\n'
+
+    [modified, untracked].each {
+      def removed = hook(kitchen, 'remove', [worktree_path: it.canonicalPath])
+      assert removed.exit == 1
+      assert removed.error.startsWith("worktree: ${it.canonicalPath} has uncommitted or untracked files\n")
+      assert it.exists()
+    }
+    assert new File(modified, 'tracked.txt').text == 'uncommitted\n'
+    assert new File(untracked, 'new.txt').text == 'untracked\n'
+    assert !new File(kitchen, 'teardown-ran').exists()
+
+    assert hook(kitchen, 'remove', [worktree_path: ignored.canonicalPath]).exit == 0
+    assert !ignored.exists()
   }
 
   @Test void createReusesItsWorktreeWithoutSettingItUpAgainAndRecreatesOneWhoseDirectoryIsGone() {

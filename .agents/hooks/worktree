@@ -151,6 +151,8 @@ case ${1:-} in
     esac
     if [ -d "$worktree" ]; then
       [ -e "$(marker "$worktree")" ] || fail "$worktree is a worktree this hook did not create" 'it is kept'
+      [ -z "$(git -C "$worktree" status --porcelain)" ] || fail "$worktree has uncommitted or untracked files" \
+        'commit or stash them, or run the teardown and git worktree remove --force by hand'
       if [ -n "$teardown" ]; then run_script "$worktree" "$teardown"; fi
       git -C "$main" worktree remove --force "$worktree" >&2
     else

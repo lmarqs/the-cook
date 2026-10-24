@@ -209,8 +209,10 @@ again.
   default branch, without the session's unpushed commits, as Claude Code's own `worktree.baseRef` `fresh` does:
   `--worktree-base=head` starts it at the `HEAD` of the session's `cwd` instead (tested).
 - Claude Code 2.1.308's `ExitWorktree` tool refuses `remove` for a worktree the hook created, even a clean one,
-  saying it could not verify the worktree's state, until it is given `discard_changes: true` (tested).
-  `claude --worktree -p` keeps the worktree on exit.
+  saying it could not verify the worktree's state, until it is given `discard_changes: true` (tested). Claude Code
+  then runs the hook without checking the worktree, so the hook refuses, exiting 1, while the worktree has uncommitted
+  or untracked files: commit or stash them, or remove the worktree by hand. `claude --worktree -p` keeps the worktree
+  on exit.
 - The hook neither reuses nor removes a worktree made another way, such as with `git worktree add` or by a ralph-tui
   run under `<root>/ralph/`: a Claude Code worktree named after one fails to start. Remove such a worktree with
   `git worktree remove`.
