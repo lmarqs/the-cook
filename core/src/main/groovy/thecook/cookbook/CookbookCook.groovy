@@ -15,19 +15,15 @@ final class CookbookCook {
   private final File destination
   private final CookbookRepositories repositories
   private final ExistingSeed existing
-  private final boolean replicate
 
   /**
    * Coordinates resolve from `repositories`; `existing` decides what cooking a recipe the first time does with a
-   * file its `existing = 'fail'` seed writes. `replicate` reports changed path sources and failures to bind recorded
-   * arguments when replaying requests from `cook.lock`.
+   * file its `existing = 'fail'` seed writes.
    */
-  CookbookCook(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE,
-  boolean replicate = false) {
+  CookbookCook(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE) {
     this.destination = destination
     this.repositories = repositories
     this.existing = existing
-    this.replicate = replicate
   }
 
   /** Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`. */
@@ -63,7 +59,7 @@ final class CookbookCook {
         cook(name, declared, draft, lock, seeds)
         def recorded = lock.sha256(name, recipe.address)
 
-        if ((replicate || Coordinates.written(recipe.address)) && recorded != null && recorded != recipe.sha256) {
+        if ((request.replayed || recipe.released) && recorded != null && recorded != recipe.sha256) {
           changedSources.add(new ChangedSource(recipe.address, recorded, recipe.sha256))
         }
 
@@ -74,7 +70,7 @@ final class CookbookCook {
         def cause = error instanceof InvocationTargetException && error.cause instanceof Exception ? error.cause : error
         def message = cause.message ?: cause.class.simpleName
 
-        if (replicate && cause instanceof ArgumentBindingException) {
+        if (request.replayed && cause instanceof ArgumentBindingException) {
           def line = request.arguments.collect { "--${it.name}=${it.value}" }.join(' ')
           message = Diagnostic.text(message, "arguments recorded in ${CookLock.PATH}: ${line}",
               'cook it with its arguments')
@@ -146,14 +142,20 @@ final class CookbookCook {
   }
 }
 
-/** One recipe to cook: its operand as written, coordinates or a path in the kitchen, and its arguments in order. */
+/**
+ * One recipe to cook: its operand as written, coordinates or a path in the kitchen, and its arguments in order.
+ * A request `replayed` from `cook.lock` reports a changed path source, and arguments that no longer bind as the ones
+ * the lock recorded.
+ */
 final class RecipeRequest {
   final String operand
   final List<Argument> arguments
+  final boolean replayed
 
-  RecipeRequest(String operand, List<Argument> arguments) {
+  RecipeRequest(String operand, List<Argument> arguments, boolean replayed = false) {
     this.operand = operand
     this.arguments = arguments
+    this.replayed = replayed
   }
 }
 

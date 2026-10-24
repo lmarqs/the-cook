@@ -16,8 +16,7 @@ final class RecipeLoader {
   private final Map<String, CookbookArtifact> artifacts = [:]
   private final Map<String, ClassLoader> models = [:]
   private final Map<Path, ClassLoader> directoryModels = [:]
-  private final Map<ClassLoader, CookbookArtifact> modelArtifacts = [:]
-  private final Map<ClassLoader, Path> modelDirectories = [:]
+  private final Map<ClassLoader, ModelFiles> modelFiles = [:]
 
   RecipeLoader(File kitchen, CookbookRepositories repositories) {
     this.kitchen = kitchen.toPath().toRealPath()
@@ -48,11 +47,10 @@ final class RecipeLoader {
    * recipe path, and `draft` as the current content.
    */
   ModelReads reads(Class type, Draft draft) {
-    def artifact = modelArtifacts[type.classLoader]
-    def directory = modelDirectories[type.classLoader]
+    def files = modelFiles[type.classLoader]
     [
-      resource: { String path -> directory ? directoryFile(directory, path) : artifact?.resource(path) },
-      resources: { String path -> directory ? directoryFiles(directory, path) : artifact?.resources(path) },
+      resource: { String path -> files?.resource(path) },
+      resources: { String path -> files?.resources(path) },
       current: { draft.read(it) },
     ] as ModelReads
   }
@@ -76,7 +74,7 @@ final class RecipeLoader {
 
       [(path): text]
     }
-    new LoadedRecipe(coordinates.recipeName, coordinates.recipeAddress(recipe),
+    new LoadedRecipe(coordinates.recipeName, coordinates.recipeAddress(recipe), true,
         artifact.sha256, source, recipe, models(coordinates), resources)
   }
 
@@ -90,7 +88,7 @@ final class RecipeLoader {
     }
 
     if (!path.toRealPath().startsWith(kitchen)) {
-      throw outsideTheKitchen('recipe')
+      throw KitchenDirectory.outside('recipe')
     }
 
     def bytes = Files.readAllBytes(path)
@@ -105,7 +103,7 @@ final class RecipeLoader {
     }
     def siblings = modelFiles(path.parent)
     sources.putAll(siblings)
-    new LoadedRecipe(name(kitchen, operand), place, CookbookArtifact.sourcesSha256(sources), source,
+    new LoadedRecipe(name(kitchen, operand), place, false, CookbookArtifact.sourcesSha256(sources), source,
         file.replaceAll(/\.groovy$/, ''), models(path.parent, siblings), resources)
   }
 
@@ -116,7 +114,7 @@ final class RecipeLoader {
     }
     files.collectEntries { model ->
       if (!model.toRealPath().startsWith(kitchen)) {
-        throw outsideTheKitchen('model')
+        throw KitchenDirectory.outside('model')
       }
 
       [(kitchen.relativize(model).join('/')): Files.readAllBytes(model)]
@@ -133,7 +131,7 @@ final class RecipeLoader {
     def path = directory.resolve(declared).normalize()
 
     if (!path.startsWith(kitchen)) {
-      throw outsideTheKitchen('resource')
+      throw KitchenDirectory.outside('resource')
     }
 
     if (!Files.isRegularFile(path)) {
@@ -141,7 +139,7 @@ final class RecipeLoader {
     }
 
     if (!path.toRealPath().startsWith(kitchen)) {
-      throw outsideTheKitchen('resource')
+      throw KitchenDirectory.outside('resource')
     }
 
     path
@@ -157,7 +155,7 @@ final class RecipeLoader {
     def path = kitchen.resolve(operand).normalize()
 
     if (!path.startsWith(kitchen)) {
-      throw outsideTheKitchen('recipe')
+      throw KitchenDirectory.outside('recipe')
     }
 
     kitchen.relativize(path)
@@ -173,7 +171,7 @@ final class RecipeLoader {
     models.computeIfAbsent(coordinates.artifactAddress) {
       def artifact = artifact(coordinates)
       def loader = CookbookCompiler.models(artifact)
-      modelArtifacts[loader] = artifact
+      modelFiles[loader] = artifact
       loader
     }
   }
@@ -182,62 +180,33 @@ final class RecipeLoader {
     directoryModels.computeIfAbsent(directory) {
       Map<String, byte[]> byName = files.collectEntries { place, bytes -> [(place.tokenize('/').last()): bytes] }
       def loader = CookbookCompiler.models(new CookbookArtifact(null, byName))
-      modelDirectories[loader] = directory
+      modelFiles[loader] = new KitchenDirectory(kitchen, directory)
       loader
     }
-  }
-
-  // A model beside a recipe path reads the files of its directory as a model in a jar reads the jar's files.
-  private String directoryFile(Path directory, String path) {
-    def file = directory.resolve(path).normalize()
-    file.startsWith(directory) && Files.isRegularFile(file) ? kitchenText(file) : null
-  }
-
-  private Map<String, String> directoryFiles(Path directory, String path) {
-    def root = directory.resolve(path).normalize()
-
-    if (!root.startsWith(directory) || !Files.isDirectory(root)) {
-      return [:]
-    }
-
-    List<Path> files = Files.walk(root).withCloseable { paths ->
-      paths.filter { Files.isRegularFile(it) }.toList()
-    }
-    files.collectEntries { [(root.relativize(it).join('/')): kitchenText(it)] }.sort()
-  }
-
-  private static IllegalArgumentException outsideTheKitchen(String what) {
-    def message = Diagnostic.text("the ${what} is outside the kitchen", null, 'move it into the kitchen')
-    new IllegalArgumentException(message)
-  }
-
-  private String kitchenText(Path file) {
-    if (!file.toRealPath().startsWith(kitchen)) {
-      throw outsideTheKitchen('model\'s file')
-    }
-
-    new String(Files.readAllBytes(file), 'UTF-8')
   }
 }
 
 /**
  * A resolved recipe: its short name for markers and `cook.lock`, the address the lock records as its source and the
- * review shows, the sha256 of its sources, its text and file name, the class loader its model imports resolve from,
- * and the text of each file its `@resource` lines name, keyed by the path as written.
+ * review shows, whether it is `released`, read by coordinates rather than from a path in the kitchen, the sha256 of its
+ * sources, its text and file name, the class loader its model imports resolve from, and the text of each file its
+ * `@resource` lines name, keyed by the path as written.
  */
 final class LoadedRecipe {
   final String name
   final String address
+  final boolean released
   final String sha256
   final String source
   final String fileName
   final ClassLoader models
   final Map<String, String> resources
 
-  LoadedRecipe(String name, String address, String sha256, String source, String fileName, ClassLoader models,
-  Map<String, String> resources) {
+  LoadedRecipe(String name, String address, boolean released, String sha256, String source, String fileName,
+  ClassLoader models, Map<String, String> resources) {
     this.name = name
     this.address = address
+    this.released = released
     this.sha256 = sha256
     this.source = source
     this.fileName = fileName

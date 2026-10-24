@@ -46,8 +46,8 @@ final class CookbookReplicate {
 
       new RecipeRequest(lock.source(name), recorded.collectMany { option, values ->
         values.collect { Argument.inline(option, it) }
-      })
+      }, true)
     }
-    new CookbookCook(destination, repositories, ExistingSeed.REFUSE, true).propose(requests)
+    new CookbookCook(destination, repositories).propose(requests)
   }
 }
