@@ -3,22 +3,20 @@ package thecook
 import groovy.json.JsonSlurper
 import org.junit.Test
 import thecook.formats.BlockDocument
-import thecook.formats.Document
-import thecook.formats.Documents
-import thecook.rendering.BlockLocation
-import thecook.rendering.KeyLocation
+import thecook.formats.KeyDocument
+import thecook.formats.KeyDocuments
 
 class DocumentsTest {
   @Test void markdownReadsBackABlockWhoseIdContainsHashes() {
     def id = 'acme:notes#more/notes'
     def written = new BlockDocument('# Notes\n', '<!-- ', ' -->')
-    written.write(id, new BlockLocation(), written.render('more'))
+    written.write(id, written.render('more'))
     assert written.text ==
     '# Notes\n<!-- cook:begin acme:notes#more/notes -->\nmore\n<!-- cook:end acme:notes#more/notes -->\n'
 
     def reopened = new BlockDocument(written.text, '<!-- ', ' -->')
-    assert reopened.read(id, new BlockLocation()) == 'more\n'
-    reopened.remove(id, new BlockLocation())
+    assert reopened.read(id) == 'more\n'
+    reopened.remove(id)
     assert reopened.text == '# Notes\n'
   }
 
@@ -184,10 +182,6 @@ class DocumentsTest {
       assert shouldFail { set(open('toml', text), ['k'], [x: 2]) }.message == table
       assert shouldFail { set(open('toml', text), ['k'], 'on') }.message == line
       assert shouldFail { set(open('toml', text), ['k'], [1, 2]) }.message == line
-      def document = open('toml', text)
-      assert shouldFail { document.readBefore('k', new KeyLocation(['k']), document.render([x: 2])) }.message == table
-      assert shouldFail { document.readBefore('k', new KeyLocation(['k']), document.render(true)) }.message == line
-      assert shouldFail { open('toml', text).read('k', new KeyLocation(['k'])) }.message == unknown
       assert shouldFail { remove(open('toml', text), ['k']) }.message == unknown
     }
   }
@@ -235,16 +229,16 @@ class DocumentsTest {
     assert nested.text == '[t]\n[t.sub]\nx = 1\n'
   }
 
-  private static Document open(String format, String text) {
-    new Documents().open(format, text)
+  private static KeyDocument open(String format, String text) {
+    KeyDocuments.open("settings.${format}", text)
   }
 
-  private static void set(Document document, List<String> path, Object value) {
-    document.write(path.join('.'), new KeyLocation(path), document.render(value))
+  private static void set(KeyDocument document, List<String> path, Object value) {
+    document.set(path, value)
   }
 
-  private static void remove(Document document, List<String> path) {
-    document.remove(path.join('.'), new KeyLocation(path))
+  private static void remove(KeyDocument document, List<String> path) {
+    document.remove(path)
   }
 
   private static Throwable shouldFail(Closure action) {

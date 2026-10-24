@@ -1,15 +1,13 @@
 package thecook.formats
 
 import thecook.model.Diagnostic
-import thecook.rendering.RegionLocation
-import thecook.rendering.KeyLocation
 
 import org.tomlj.Toml
 
-class TomlDocument implements Document {
+class TomlDocument implements KeyDocument {
   String text
   TomlDocument(String text) {
-    this.text = text; parsed()
+    this.text = text ?: ''; parsed()
   }
   boolean isEmpty() {
     parsed().isEmpty() && !text.trim()
@@ -72,15 +70,23 @@ class TomlDocument implements Document {
     null
   }
   @Override
-  String read(String id, RegionLocation location) {
-    readBefore(id, location, null)
+  boolean set(List<String> path, Object value) {
+    def rendered = render(value)
+    def range = bounds(path, rendered)
+
+    if (range) {
+      if (text.substring(range[0], range[1]) == rendered) {
+        return false
+      }
+
+      splice(range[0], range[1], rendered)
+      return true
+    }
+
+    insert(path, rendered)
+    true
   }
-  @Override
-  String readBefore(String id, RegionLocation location, String content) {
-    def range = bounds(((KeyLocation) location).path, content)
-    range ? text.substring(range[0], range[1]) : null
-  }
-  String render(Object value) {
+  private String render(Object value) {
     if (value instanceof Map) {
       return '{ ' + value.collect { key, item -> keyName(key.toString()) + ' = ' + render(item) }.join(', ') + ' }'
     }
@@ -110,15 +116,8 @@ class TomlDocument implements Document {
   private static String tableName(List<String> path) {
     path.collect { keyName(it) }.join('.')
   }
-  @Override
-  void write(String id, RegionLocation location, String content) {
-    def range = bounds(((KeyLocation) location).path, content)
-
-    if (range) {
-      splice(range[0], range[1], content); return
-    }
-
-    def table = ((KeyLocation) location).path.dropRight(1)
+  private void insert(List<String> path, String content) {
+    def table = path.dropRight(1)
     def header = findHeader(table)
 
     if (table && !header) {
@@ -127,7 +126,7 @@ class TomlDocument implements Document {
 
     int insertion = header ? header[1] : 0
     def ending = text.contains('\r\n') ? '\r\n' : '\n'
-    splice(insertion, insertion, keyName(((KeyLocation) location).path[-1]) + ' = ' + content + ending)
+    splice(insertion, insertion, keyName(path[-1]) + ' = ' + content + ending)
   }
   private List<Integer> findHeader(List<String> path) {
     if (!path) {
@@ -153,15 +152,15 @@ class TomlDocument implements Document {
     parsed()
   }
   @Override
-  void remove(String id, RegionLocation location) {
-    def range = bounds(((KeyLocation) location).path)
+  void remove(List<String> path) {
+    def range = bounds(path)
 
     if (range) {
       int start = text.lastIndexOf('\n', range[0] - 1) + 1
       int end = text.indexOf('\n', range[1]); end = end < 0 ? text.length() : end + 1
       def suffix = text.substring(range[1], end)
       splice(start, end, suffix.contains('#') ? suffix.substring(suffix.indexOf('#')) : '')
-      removeEmptiedTable(((KeyLocation) location).path.dropRight(1))
+      removeEmptiedTable(path.dropRight(1))
     }
   }
   // A table whose only key was removed is dropped with the blank line before it, so withdrawing the key Cook wrote

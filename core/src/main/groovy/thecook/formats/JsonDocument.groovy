@@ -1,15 +1,15 @@
 package thecook.formats
 
-import thecook.rendering.RegionLocation
-import thecook.rendering.KeyLocation
-
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-class JsonDocument implements Document {
+class JsonDocument implements KeyDocument {
   String text
+  // A file Cook creates is indented; one that exists keeps its layout.
+  private final boolean created
   private final List<List<String>> emptyWhenOpened
   JsonDocument(String text) {
+    created = text == null
     this.text = text ?: '{}\n'
     emptyWhenOpened = emptyObjects(root(), [])
   }
@@ -37,20 +37,27 @@ class JsonDocument implements Document {
     node
   }
   @Override
-  @SuppressWarnings('UnusedMethodParameter')
-  String readBefore(String id, RegionLocation location, String content) {
-    read(id, location)
+  boolean set(List<String> path, Object value) {
+    def rendered = JsonOutput.toJson(value)
+    def node = at(path)
+
+    if (node && parsed(text.substring(node.start, node.end)) == parsed(rendered)) {
+      return false
+    }
+
+    write(path, rendered)
+
+    if (created) {
+      text = indented(parsed(text), '') + '\n'
+    }
+
+    true
   }
-  @Override
-  String read(String id, RegionLocation location) {
-    def node = at(((KeyLocation) location).path)
-    node ? text.substring(node.start, node.end) : null
+  private static Object parsed(String json) {
+    new JsonSlurper().parseText(json)
   }
-  String render(Object value) {
-    JsonOutput.toJson(value)
-  }
-  /** `value` as JSON, each object member and array item on its own line, two spaces deeper than `indent`. */
-  static String indented(Object value, String indent) {
+  // `value` as JSON, each object member and array item on its own line, two spaces deeper than `indent`.
+  private static String indented(Object value, String indent) {
     def inner = indent + '  '
 
     if (value instanceof Map && value) {
@@ -65,15 +72,13 @@ class JsonDocument implements Document {
 
     JsonOutput.toJson(value)
   }
-  @Override
-  void write(String id, RegionLocation location, String content) {
-    def path = ((KeyLocation) location).path
+  private void write(List<String> path, String content) {
     ensureParents(path.dropRight(1))
     def node = at(path)
 
     if (node) {
       def indent = lineIndent(at(path.dropRight(1)).members[path[-1]].keyStart)
-      splice(node.start, node.end, indent == null ? content : indented(new JsonSlurper().parseText(content), indent))
+      splice(node.start, node.end, indent == null ? content : indented(parsed(content), indent))
       return
     }
 
@@ -101,14 +106,14 @@ class JsonDocument implements Document {
     if (parentIndent != null) {
       def inner = parentIndent + '  '
       splice(parent.start, parent.end, '{\n' + inner + JsonOutput.toJson(path[-1]) + ': ' +
-          indented(new JsonSlurper().parseText(content), inner) + '\n' + parentIndent + '}')
+          indented(parsed(content), inner) + '\n' + parentIndent + '}')
       return
     }
 
     int offset = members ? members[-1].value.end : parent.start + 1
     def indent = members ? lineIndent(members[-1].keyStart) : null
     def entry = indent == null ? (members ? ', ' : '') + JsonOutput.toJson(path[-1]) + ':' + content :
-        ',\n' + indent + JsonOutput.toJson(path[-1]) + ': ' + indented(new JsonSlurper().parseText(content), indent)
+        ',\n' + indent + JsonOutput.toJson(path[-1]) + ': ' + indented(parsed(content), indent)
     splice(offset, offset, entry)
   }
   // The whitespace before `offset` on its line, or null when other text precedes it there, as in a one-line file.
@@ -117,10 +122,9 @@ class JsonDocument implements Document {
     before.trim() ? null : before
   }
   @Override
-  void remove(String id, RegionLocation location) {
-    def removed = ((KeyLocation) location).path
-    deleteKey(removed)
-    removeEmptiedParents(removed.dropRight(1))
+  void remove(List<String> path) {
+    deleteKey(path)
+    removeEmptiedParents(path.dropRight(1))
   }
   // An object whose last key was removed is dropped, as TOML drops an emptied table, so withdrawing the key Cook wrote
   // into an object it added leaves no parent behind in a later invocation; one that was empty when opened stays.

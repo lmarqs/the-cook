@@ -1,7 +1,6 @@
 package thecook.formats
 
-import thecook.rendering.RegionLocation
-
+/** A text file holding marked blocks, each between a `cook:begin <id>` and a `cook:end <id>` line. */
 class BlockDocument implements Document {
   String text
   private final String open
@@ -78,13 +77,8 @@ class BlockDocument implements Document {
     def finish = text.indexOf('\n', last.end())
     [first.start(), finish < 0 ? text.length() : finish + 1]
   }
-  @Override
-  @SuppressWarnings('UnusedMethodParameter')
-  String readBefore(String id, RegionLocation location, String content) {
-    read(id, location)
-  }
-  @Override
-  String read(String id, RegionLocation location) {
+  /** The text between the block's markers; `null` when the document holds no block `id`. */
+  String read(String id) {
     def range = bounds(id)
 
     if (!range) {
@@ -108,8 +102,8 @@ class BlockDocument implements Document {
     result = result.replace('\r\n', '\n').replace('\n', newline())
     result ? result.replaceAll(/(?:\r?\n)+$/, '') + newline() : ''
   }
-  @Override
-  void write(String id, RegionLocation location, String content) {
+  /** Replaces the block `id` with `content`, as `render` lays it out, or appends the block when absent. */
+  void write(String id, String content) {
     def range = bounds(id)
     def block = begin(id) + newline() + content + end(id) + newline()
 
@@ -119,8 +113,8 @@ class BlockDocument implements Document {
 
     text += (text && !text.endsWith('\n') ? newline() : '') + block
   }
-  @Override
-  void remove(String id, RegionLocation location) {
+  /** Removes the block `id` with its markers. */
+  void remove(String id) {
     def range = bounds(id)
 
     if (range) {

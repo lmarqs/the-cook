@@ -9,6 +9,7 @@ import thecook.cookbook.api.ingredient.Links
 import thecook.cookbook.api.ingredient.Section
 import thecook.cookbook.api.ingredient.Sections
 import thecook.cookbook.api.ingredient.Seed
+import thecook.formats.KeyDocuments
 import thecook.reconciliation.Permissions
 
 import java.lang.annotation.Annotation
@@ -160,7 +161,7 @@ final class Declarations {
   }
 
   private static KeyTarget key(String member, String file, List<String> path) {
-    if (!KeyTarget.format(file)) {
+    if (!KeyDocuments.format(file)) {
       throw new IllegalArgumentException("${member} declares a key in ${file}, which is not a JSON, TOML or YAML file")
     }
 

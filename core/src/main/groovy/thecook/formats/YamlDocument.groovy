@@ -1,8 +1,5 @@
 package thecook.formats
 
-import thecook.rendering.RegionLocation
-import thecook.rendering.KeyLocation
-
 import groovy.json.JsonOutput
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.DumperOptions.FlowStyle
@@ -12,11 +9,11 @@ import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
 
-class YamlDocument implements Document {
+class YamlDocument implements KeyDocument {
   String text
   private final List<List<String>> emptyWhenOpened
   YamlDocument(String text) {
-    this.text = text
+    this.text = text ?: ''
     emptyWhenOpened = emptyMappings(root(), [])
   }
   boolean isEmpty() {
@@ -96,35 +93,24 @@ class YamlDocument implements Document {
     node
   }
   @Override
-  @SuppressWarnings('UnusedMethodParameter')
-  String readBefore(String id, RegionLocation location, String content) {
-    read(id, location)
-  }
-  @Override
-  String read(String id, RegionLocation location) {
-    def node = at(((KeyLocation) location).path)
-
-    if (!node) {
-      return null
-    }
-
-    def range = valueBounds(node)
-    text.substring(range[0], range[1])
-  }
-  String render(Object value) {
-    JsonOutput.toJson(value)
-  }
-  @Override
-  void write(String id, RegionLocation location, String content) {
-    def path = ((KeyLocation) location).path
-    ensureParents(path.dropRight(1))
+  boolean set(List<String> path, Object value) {
+    def rendered = JsonOutput.toJson(value)
     def node = at(path)
 
     if (node) {
-      def range = valueBounds(node); splice(range[0], range[1], content); return
+      def range = valueBounds(node)
+
+      if (text.substring(range[0], range[1]) == rendered) {
+        return false
+      }
+
+      splice(range[0], range[1], rendered)
+      return true
     }
 
-    insert(path, content)
+    ensureParents(path.dropRight(1))
+    insert(path, rendered)
+    true
   }
   private void ensureParents(List<String> path) {
     for (int count = 1; count <= path.size(); count++) {
@@ -174,10 +160,9 @@ class YamlDocument implements Document {
     splice(start, start, entry)
   }
   @Override
-  void remove(String id, RegionLocation location) {
-    def removed = ((KeyLocation) location).path
-    deleteKey(removed)
-    removeEmptiedParents(removed.dropRight(1))
+  void remove(List<String> path) {
+    deleteKey(path)
+    removeEmptiedParents(path.dropRight(1))
   }
   // A mapping whose last key was removed is dropped, as JSON drops an emptied object, so withdrawing the key Cook wrote
   // into a mapping it added leaves no parent behind in a later invocation; one that was empty when opened stays.

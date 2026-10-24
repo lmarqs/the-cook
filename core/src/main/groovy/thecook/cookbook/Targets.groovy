@@ -1,15 +1,10 @@
 package thecook.cookbook
 
 import thecook.formats.BlockDocument
-import thecook.formats.Document
-import thecook.formats.Documents
-import thecook.formats.JsonDocument
+import thecook.formats.KeyDocument
+import thecook.formats.KeyDocuments
 import thecook.model.Diagnostic
 import thecook.reconciliation.Permissions
-import thecook.rendering.BlockLocation
-import thecook.rendering.KeyLocation
-
-import groovy.json.JsonSlurper
 
 import java.nio.file.Paths
 
@@ -115,7 +110,7 @@ final class SectionTarget extends Target {
     }
 
     def document = blocks(editable(draft), comment)
-    document.write(id, new BlockLocation(), document.render(((List) lines).join('\n')))
+    document.write(id, document.render(((List) lines).join('\n')))
     draft.replace(file, document)
   }
 
@@ -126,7 +121,7 @@ final class SectionTarget extends Target {
 
     if (marker != null) {
       def document = blocks(text, marker.substring(0, marker.indexOf('cook:begin ')).trim())
-      document.remove(id, new BlockLocation())
+      document.remove(id)
       draft.replace(file, document)
     }
   }
@@ -160,12 +155,6 @@ final class KeyTarget extends Target {
     this.path = path
   }
 
-  /** `json`, `toml` or `yaml` by the file's extension; `null` for any other file. */
-  static String format(String file) {
-    def extension = file.contains('.') ? file.substring(file.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT) : ''
-    [json: 'json', toml: 'toml', yaml: 'yaml', yml: 'yaml'][extension]
-  }
-
   String getKind() {
     'key'
   }
@@ -174,32 +163,18 @@ final class KeyTarget extends Target {
     [file: file, path: path]
   }
 
-  /**
-   * Leaves a key that already holds `value` as it is, so the file keeps its formatting; a new JSON file is indented,
-   * and a value written into an indented one is indented to the depth of its key.
-   */
+  /** Leaves a key that already holds `value` as it is, so the file keeps its formatting. */
   void write(Draft draft, Object value) {
-    String text = editable(draft)
-    def document = open(text)
-    def location = new KeyLocation(path)
-    def rendered = document.render(value)
+    def document = open(draft)
 
-    if (holds(document.readBefore(identity, location, rendered), rendered)) {
-      return
-    }
-
-    document.write(identity, location, rendered)
-
-    if (text == null && format(file) == 'json') {
-      draft.write(file, JsonDocument.indented(new JsonSlurper().parseText(document.text), '') + '\n')
-    } else {
+    if (document.set(checkedPath(), value)) {
       draft.replace(file, document)
     }
   }
 
   void withdraw(Draft draft) {
-    def document = open(editable(draft))
-    document.remove(identity, new KeyLocation(path))
+    def document = open(draft)
+    document.remove(checkedPath())
     draft.replace(file, document)
   }
 
@@ -219,18 +194,16 @@ final class KeyTarget extends Target {
     path.join('.')
   }
 
-  private Document open(String text) {
-    new Documents().open(format(file), text ?: '')
+  private KeyDocument open(Draft draft) {
+    KeyDocuments.open(file, editable(draft))
   }
 
-  private boolean holds(String existing, String rendered) {
-    if (existing == null) {
-      return false
+  private List<String> checkedPath() {
+    if (path.isEmpty() || path.any { it.isEmpty() || it.contains('\n') }) {
+      throw new IllegalArgumentException('Invalid key path')
     }
 
-    format(file) == 'json' ?
-        new JsonSlurper().parseText(existing) == new JsonSlurper().parseText(rendered) :
-        existing == rendered
+    path
   }
 }
 
