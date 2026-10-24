@@ -50,7 +50,7 @@ class Notes {
   private File kitchen() {
     def kitchen = folder.newFolder()
     write(kitchen, 'IN.md', 'In\n')
-    write(kitchen, 'recipes/Notes.groovy', NOTES_MODEL)
+    write(kitchen, 'recipes/NotesModel.groovy', NOTES_MODEL)
     write(kitchen, 'recipes/header.txt', 'Header\n')
     write(kitchen, 'recipes/notes.groovy', '''import acme.notes.Notes
 @param(value = ['text'], default = ['default'], doc = 'The text') String text
