@@ -8,7 +8,6 @@ import groovy.json.JsonSlurper
 
 class JsonDocument implements Document {
   String text
-  final List<List<String>> createdParents = []
   private final List<List<String>> emptyWhenOpened
   JsonDocument(String text) {
     this.text = text ?: '{}\n'
@@ -85,7 +84,7 @@ class JsonDocument implements Document {
       def parent = path.take(count)
 
       if (!at(parent)) {
-        insert(parent, '{}'); createdParents.add(parent)
+        insert(parent, '{}')
       }
 
       if (at(parent).kind != 'object') {
@@ -122,16 +121,6 @@ class JsonDocument implements Document {
     def removed = ((KeyLocation) location).path
     deleteKey(removed)
     removeEmptiedParents(removed.dropRight(1))
-    def deepestFirst = createdParents.sort { -it.size() }.toList()
-
-    deepestFirst.each { path ->
-      def node = at(path)
-
-      if (node?.kind == 'object' && node.members.isEmpty()) {
-        deleteKey(path)
-        createdParents.remove(path)
-      }
-    }
   }
   // An object whose last key was removed is dropped, as TOML drops an emptied table, so withdrawing the key Cook wrote
   // into an object it added leaves no parent behind in a later invocation; one that was empty when opened stays.

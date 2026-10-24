@@ -8,7 +8,6 @@ import org.tomlj.Toml
 
 class TomlDocument implements Document {
   String text
-  final List<Map> createdTables = []
   TomlDocument(String text) {
     this.text = text; parsed()
   }
@@ -151,7 +150,6 @@ class TomlDocument implements Document {
     def ending = text.contains('\r\n') ? '\r\n' : '\n'
     def separator = text ? (text.endsWith('\n') ? ending : ending + ending) : ''
     text += separator + '[' + tableName(table) + ']' + ending
-    createdTables.add([path: table, separator: separator])
     parsed()
   }
   @Override
@@ -165,8 +163,6 @@ class TomlDocument implements Document {
       splice(start, end, suffix.contains('#') ? suffix.substring(suffix.indexOf('#')) : '')
       removeEmptiedTable(((KeyLocation) location).path.dropRight(1))
     }
-
-    cleanupTables()
   }
   // A table whose only key was removed is dropped with the blank line before it, so withdrawing the key Cook wrote
   // into a table it added leaves no header behind, in this document or a later one.
@@ -188,33 +184,6 @@ class TomlDocument implements Document {
     def ending = text.contains('\r\n') ? '\r\n' : '\n'
     int start = text.substring(0, header[0]).endsWith(ending + ending) ? header[0] - ending.length() : header[0]
     splice(start, header[1], '')
-  }
-  private void cleanupTables() {
-    createdTables.toList().reverseEach { table ->
-      def header = findHeader(table.path)
-
-      if (!header) {
-        return
-      }
-
-      def following = (text.substring(header[1]) =~ /(?m)^[ \t]*\[/)
-      int end = following.find() ? header[1] + following.start() : text.length()
-
-      if (text.substring(header[1], end).trim()) {
-        return
-      }
-
-      int start = header[0]
-
-      if (table.separator && start >= table.separator.length() &&
-          text.substring(start - table.separator.length(), start) == table.separator) {
-        start -= table.separator.length()
-      }
-
-      // Following whitespace may be the next table's separator; only this header is ours.
-      splice(start, header[1], '')
-      createdTables.remove(table)
-    }
   }
   private void splice(int start, int end, String value) {
     text = text.substring(0, start) + value + text.substring(end); parsed()

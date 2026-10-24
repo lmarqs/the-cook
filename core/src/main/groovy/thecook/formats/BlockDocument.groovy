@@ -11,7 +11,6 @@ class BlockDocument implements Document {
   BlockDocument(String text, String open = '# ', String close = '') {
     this.text = text; this.open = open; this.close = close; validateMarkers()
   }
-  private final Set<String> separators = new LinkedHashSet<>()
   boolean isEmpty() {
     text.isEmpty()
   }
@@ -118,38 +117,15 @@ class BlockDocument implements Document {
       splice(range, block); return
     }
 
-    boolean separator = text && !text.endsWith('\n')
-
-    if (separator) {
-      separators.add(id)
-    }
-
-    text += (separator ? newline() : '') + block
+    text += (text && !text.endsWith('\n') ? newline() : '') + block
   }
   @Override
   void remove(String id, RegionLocation location) {
     def range = bounds(id)
 
-    if (!range) {
-      return
+    if (range) {
+      splice(range, '')
     }
-
-    boolean recorded = separators.remove(id)
-    boolean separator = recorded
-
-    if (separator && range[0] > 0) {
-      def following = text.substring(range[1])
-      def next = following ? markedId(following.readLines().first(), 'begin') : null
-
-      if (next != null) {
-        // The newline still separates handwritten text from the next managed block.
-        separators.add(next)
-      } else if (!following) {
-        range[0] -= range[0] >= 2 && text.charAt(range[0] - 2) == '\r' as char ? 2 : 1
-      }
-    }
-
-    splice(range, '')
   }
   private void splice(List<Integer> range, String replacement) {
     text = text.substring(0, range[0]) + replacement + text.substring(range[1])
