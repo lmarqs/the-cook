@@ -54,7 +54,7 @@ class CookbookDirectoryTest {
 
   @Test void refusesACookbookTomlWithoutAGroup() {
     def book = folder.newFolder('book')
-    new File(book, 'cookbook.toml').text = 'api = 1\n'
+    new File(book, 'cookbook.toml').text = 'name = "book"\n'
 
     def error = shouldFail(IllegalArgumentException) { new CookbookDirectory(book.toURI()) }
 

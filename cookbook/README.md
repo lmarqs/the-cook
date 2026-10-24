@@ -605,13 +605,11 @@ explains them, so a seeded skill can compare a repository's files with the relea
 agents working in the cookbook would read it as instructions, since Codex reads every `AGENTS.md` between the
 repository root and its working directory.
 
-`cookbook.toml` declares the cookbook's `group` and the engine API version as `api`. The release version is the
-Gradle property `releaseVersion`, set by the build that publishes the release, and `0.0.0` without it. This
-cookbook's manifest is:
+`cookbook.toml` declares the cookbook's `group`. The release version is the Gradle property `releaseVersion`, set by
+the build that publishes the release, and `0.0.0` without it. This cookbook's manifest is:
 
 ```toml
 group = "io.github.lmarqs.cookbook"
-api = 1
 ```
 
 ## A cookbook outside this repository
