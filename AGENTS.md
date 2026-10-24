@@ -78,10 +78,10 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
   `docs`. The type decides the next release: `feat` a minor, `fix` a patch, and `docs`, `refactor`, `test`, `build`,
   `ci` and `chore` none. A `!` after the area, as in `feat(core)!:`, releases a major version. Lint-only changes use
   `chore(lint)`.
-- Deploy: the maintainer starts the `release` workflow; semantic-release takes the version from the commits since the
-  last `v*` tag, and the release publishes only after the Linux and macOS builds pass. It shows in the workflow run and
-  on the GitHub releases page, and the `pages` workflow then publishes its docs to GitHub Pages. No rollback: Maven
-  Central cannot take a release back.
+- Deploy: the maintainer starts the `release` workflow with `mise run release`; semantic-release takes the version from
+  the commits since the last `v*` tag, and the release publishes only after the Linux and macOS builds pass. It shows in
+  the workflow run and on the GitHub releases page, and the `pages` workflow then publishes its docs to GitHub Pages. No
+  rollback: Maven Central cannot take a release back.
 
 ## Gotchas
 
