@@ -165,10 +165,15 @@ objective:
 ---
 ```
 
+The objective is plain text, with no links, code spans or emphasis, because GitHub shows front matter as text; a
+[glossary](../features/glossary.md) link belongs at the term's first use in the page body. `./gradlew -p docs check`
+fails when a page lacks either part or puts Markdown in one.
+
 Keep the objective independent of design details, so readers understand the purpose before judging a solution.
 
-Two pages state their objective in an opening paragraph instead, because readers open them for lookup rather than
-motivation: `docs/architecture.md` (the authority that other pages cite) and `docs/features/cli.md` (command syntax).
+Three pages state their objective in an opening paragraph instead, because readers open them for lookup rather than
+motivation: `docs/architecture.md` (the authority that other pages cite), `docs/features/cli.md` (command syntax) and
+`docs/adrs/README.md` (the ADR index and writing guide).
 Cookbook units open with the lead of their doc comment.
 
 ADR facts follow under `## Context`; reference material and examples follow under their own headings, because readers

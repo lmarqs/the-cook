@@ -2,7 +2,7 @@
 objective:
   problem: >-
     Developers, reviewers, automation and teammates encounter Cook through its commands,
-    [diffs](../features/glossary.md) and the native files it changes. Inconsistent interactions make it hard to tell what
+    diffs and the native files it changes. Inconsistent interactions make it hard to tell what
     will change, what approval covers and how to recover from an operation.
   goal: >-
     Cook presents predictable commands and reviewable file changes, with clear approval and recovery behavior

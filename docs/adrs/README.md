@@ -46,6 +46,10 @@ before the title, and the site shows it under the title. It has two parts:
 - **`goal`.** The outcome that holds once the problem is solved, stated so that anyone can tell whether it holds, in at
   most two sentences.
 
+Both parts are plain text, with no links, code spans or emphasis, because GitHub shows front matter as text. The docs
+check, `./gradlew -p docs check`, counts a sentence at each full stop, question mark or exclamation mark followed by a
+space or the end, and fails an ADR over either limit.
+
 Neither part names a solution: no mechanism the decision introduces, none of the tool's commands, files or settings.
 One ADR has one objective; a decision that serves two objectives is two ADRs. When the problem no longer exists, the
 decision no longer applies, and the ADR is deleted.
@@ -108,7 +112,8 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
   to explain a decision, its boundary or its evidence, such as `--batch-approve` or `cook.lock` at the repository root.
   Keep detailed usage in the [features](../features/) pages and terminology in the
   [glossary](../features/glossary.md); a concrete reference is not a reason to add an undecided contract.
-- Link the [glossary](../features/glossary.md) at the first use of an engine term in each ADR.
+- Link the [glossary](../features/glossary.md) at the first use of an engine term in each ADR's body; the objective
+  holds no links.
 - A third-party product whose behavior a decision depends on is named with the version that behavior was checked
   against. Prior art and rejected tools are named without a version, because nothing depends on their behavior.
   Build tooling (the JDK, jpackage, Groovy, Gradle) is named without a version, because the build files pin

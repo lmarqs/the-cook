@@ -4,7 +4,7 @@ objective:
     Programs read native configuration that people and other tools also edit. Copying a setup change into
     those files by hand overwrites edits and leaves no reviewable record.
   goal: >-
-    A developer proposes a [recipe](glossary.md)'s file changes against current content, reviews the combined
+    A developer proposes a recipe's file changes against current content, reviews the combined
     diff, and approves the batch while content outside the declared targets stays intact.
 ---
 # Cook recipe contributions
@@ -14,7 +14,7 @@ requirements. For commands supported by the current implementation, see the [roo
 
 ## Overview
 
-Cooking evaluates trusted Groovy recipes into an ordered batch of file operations. Ingredients model programs' native
+Cooking evaluates trusted Groovy [recipes](glossary.md) into an ordered batch of file operations. Ingredients model programs' native
 files and configuration; cookbooks supply ingredients and recipes separately from the engine. The CLI accepts recipe
 paths inside the destination repository or coordinates.
 

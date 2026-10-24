@@ -1,17 +1,3 @@
----
-objective:
-  problem: >-
-    Teams reuse setup across repositories: agent instructions and permissions, editor settings, ignore rules,
-    build and CI files. Copied by hand, the copies drift. Those files are shared: a setup that replaces one whole loses
-    what teammates and other tools wrote in it, and nobody can tell which part came from where or remove a part cleanly.
-    Coding agents widen the problem. Several agents and people work in one repository at once, each agent harness reads
-    its own files for instructions, permissions, hooks and skills, and each agent's worktree needs the same setup to run.
-  goal: >-
-    A setup learned once reaches every repository through one reviewed change, lives beside hand-written content
-    in the same files, and is withdrawn the same way. Contributors who do not run Cook need nothing to contribute: their
-    programs read the native files directly, and the lock and markers Cook leaves are reviewed like any other change.
-    Every agent harness and every worktree reads the same reviewed setup from what its branch commits.
----
 # the-cook
 
 [![release](https://github.com/lmarqs/the-cook/actions/workflows/release.yml/badge.svg)](https://github.com/lmarqs/the-cook/actions/workflows/release.yml)
@@ -23,6 +9,19 @@ objective:
 
 The lab is a repository worked by coding agents. Each agent works at its own station, a worktree of its own. Each
 recipe keeps to the parts of a file it owns, and one person approves one diff before anything is written.
+
+## Objective
+
+**Problem.** Teams reuse setup across repositories: agent instructions and permissions, editor settings, ignore rules,
+build and CI files. Copied by hand, the copies drift. Those files are shared: a setup that replaces one whole loses
+what teammates and other tools wrote in it, and nobody can tell which part came from where or remove a part cleanly.
+Coding agents widen the problem. Several agents and people work in one repository at once, each agent harness reads
+its own files for instructions, permissions, hooks and skills, and each agent's worktree needs the same setup to run.
+
+**Goal.** A setup learned once reaches every repository through one reviewed change, lives beside hand-written content
+in the same files, and is withdrawn the same way. Contributors who do not run Cook need nothing to contribute: their
+programs read the native files directly, and the lock and markers Cook leaves are reviewed like any other change.
+Every agent harness and every worktree reads the same reviewed setup from what its branch commits.
 
 ## Current implementation
 

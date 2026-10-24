@@ -1,8 +1,11 @@
 #!/bin/sh
 # Usage: site/prepare <release tag>
 # Readies a checkout for Jekyll to build the Pages site, run from its root: Jekyll reads its configuration only from
-# the root of the source. The checkout is changed in place, so run it on a copy or a CI checkout.
+# the root of the source, and renders a root README.md only as the index, which site/index.html is. The checkout is
+# changed in place, so run it on a copy or a CI checkout.
 set -eu
 
 [ $# -le 1 ] || { echo 'usage: site/prepare [<release tag>]' >&2; exit 2; }
 sed "s/^release:.*/release: ${1:-}/" site/_config.yml >_config.yml
+{ printf -- '---\n---\n'; cat README.md; } >README.md.page
+mv README.md.page README.md

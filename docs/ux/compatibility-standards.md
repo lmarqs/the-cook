@@ -3,7 +3,7 @@ objective:
   problem: >-
     Repositories upgrade at different times. Changes to command grammar or native configuration can break
     scripts and programs, while broad replacements can erase settings maintained by teammates or other tools. Pinning an
-    engine release alone does not control [cookbook](../features/glossary.md) sources or the effects of executable
+    engine release alone does not control cookbook sources or the effects of executable
     recipes.
   goal: >-
     Users can review compatibility changes deliberately, preserve unrelated content, and distinguish engine
@@ -24,7 +24,7 @@ Keep these version choices distinct, because changing one does not automatically
 | Artifact | Version responsibility | What to review |
 | --- | --- | --- |
 | Cook engine and CLI | The committed wrapper pins an engine version and matching platform-package checksums | Command grammar, operation behavior and the pin change |
-| Ingredients and cookbooks | Cookbook authors maintain program models and recipes in their repositories and builds | Source changes and the native program versions and formats they cover |
+| Ingredients and [cookbooks](../features/glossary.md) | Cookbook authors maintain program models and recipes in their repositories and builds | Source changes and the native program versions and formats they cover |
 | Supplied recipes | Users supply the recipe version they intend to cook | The exact source and its consumed recipe/template dependencies |
 | `cook.lock` | Cook records the source and sha256 that produced each recipe's current ownership | The `cook.lock` change |
 | Native files and sections | The consuming program defines its format and semantics | Actual file changes, key paths, section boundaries and program defaults |

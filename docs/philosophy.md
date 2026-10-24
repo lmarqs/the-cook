@@ -5,7 +5,7 @@ objective:
     share improvements, review changes, and preserve unrelated configuration. A contributor needs to understand which
     part of that problem Cook solves before proposing another responsibility for it.
   goal: >-
-    Readers can judge proposals against Cook's purpose: turn reusable [recipes](features/glossary.md) into
+    Readers can judge proposals against Cook's purpose: turn reusable recipes into
     visible, approved changes to native program files, while keeping program-specific setup separate from the engine.
 ---
 # Philosophy
@@ -28,7 +28,7 @@ programs consume native files, often inside the repository. Reusing their setup 
 
 ## The goals
 
-- Reuse configuration through recipes and ingredients maintained in cookbook repositories.
+- Reuse configuration through [recipes](features/glossary.md) and ingredients maintained in cookbook repositories.
 - Review the combined effect of the requested changes against current content before approving writes.
 - Preserve unrelated content when cooking or discarding recipes.
 - Let configured programs consume their native files directly.

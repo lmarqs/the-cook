@@ -12,9 +12,9 @@
     <article class="prose">
 {%- capture objective %}
 {%- if page.objective %}
-      <dl class="objective" aria-label="Objective">
-        <div><dt>Problem</dt><dd>{{ page.objective.problem | replace: ".md)", ".html)" | replace: ".md#", ".html#" | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
-        <div><dt>Goal</dt><dd>{{ page.objective.goal | replace: ".md)", ".html)" | replace: ".md#", ".html#" | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
+      <dl class="objective">
+        <div><dt>Problem</dt><dd>{{ page.objective.problem | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
+        <div><dt>Goal</dt><dd>{{ page.objective.goal | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
       </dl>
 {%- endif %}
 {%- endcapture %}

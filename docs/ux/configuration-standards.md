@@ -4,14 +4,14 @@ objective:
     Shared configuration can hide conflicting values, mistyped inputs, and credentials. When the scope of a
     change is unclear, reviewers cannot tell what it replaces or how to recover it.
   goal: >-
-    [Recipe](../features/glossary.md) inputs and native output are understandable, the proposed changes are
-    visible before writes, and `cook.lock` records which recipe owns each part.
+    Recipe inputs and native output are understandable, the proposed changes are
+    visible before writes, and cook.lock records which recipe owns each part.
 ---
 # Configuration standards
 
 ## Overview
 
-These standards follow the intended [architecture](../architecture.md). Cook evaluates trusted Groovy recipes into
+These standards follow the intended [architecture](../architecture.md). Cook evaluates trusted Groovy [recipes](../features/glossary.md) into
 ordered file operations; ingredients model a program's native files and configuration, and cookbooks hold and ship
 ingredients and recipes. The [feature reference](../features/README.md) expands these responsibilities.
 

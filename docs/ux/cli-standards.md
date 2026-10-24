@@ -5,7 +5,7 @@ objective:
     withdraw or reverse configuration. Inconsistent argument scope and hidden approval rules make those decisions hard.
   goal: >-
     Cook presents predictable commands and the actual combined diff before target writes. Interactive users
-    approve the whole [batch](../features/glossary.md); unattended callers explicitly preapprove it.
+    approve the whole batch; unattended callers explicitly preapprove it.
 ---
 # CLI standards
 

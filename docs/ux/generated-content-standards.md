@@ -5,13 +5,13 @@ objective:
     and unclear deletion rules make it hard to judge a change or recover earlier values.
   goal: >-
     A developer can see the actual proposed change, approve its full scope, and reverse the changes of a
-    recorded [batch](../features/glossary.md). Content outside the declared targets stays intact.
+    recorded batch. Content outside the declared targets stays intact.
 ---
 # Generated-content standards
 
 ## Overview
 
-These standards follow the intended [architecture](../architecture.md). They cover Cook's declared batch operations. See
+These standards follow the intended [architecture](../architecture.md). They cover Cook's declared [batch](../features/glossary.md) operations. See
 the [root README](../../README.md) for current execution. Cook evaluates trusted Groovy recipes; approval, boundaries,
 and recovery do not sandbox arbitrary effects of recipe code.
 
