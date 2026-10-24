@@ -54,8 +54,9 @@ Each owned part is a `Target` that writes itself, withdraws itself and gives its
 | `FileTarget` | The whole file, with the permissions its declaration names |
 | `LinkTarget` | A symbolic link |
 
-A section or key is never written through a symbolic link, and `TargetPath` refuses paths that leave the kitchen or
-enter `.git`.
+Withdrawing a key drops the JSON object, TOML table or YAML mapping it leaves empty, unless that parent was empty
+before. A section or key is never written through a symbolic link, and `TargetPath` refuses paths that leave the
+kitchen or enter `.git`.
 
 ## Writing
 
@@ -66,16 +67,14 @@ When a write fails, it restores the paths it already wrote and fails.
 
 - `Draft.commit` keeps no journal, so a process killed mid-commit can leave files and `cook.lock` half-written.
 - Models use only their own artifact's types.
-- A YAML document forgets, between invocations, which empty parents it created, so withdrawing a key leaves those
-  parents. JSON and TOML documents drop an object or table that withdrawing its last key leaves empty.
 
 ## Verification
 
 `./gradlew check` runs the core tests, which never read the repository's cookbook: `CookbookCookTest` and
-`CookbookReplicateTest` cook small artifacts built in the test, by coordinates and by path; `DocumentsTest` edits JSON
-and TOML through the documents' own API; `CoordinatesTest` and `RecipeSourceTest` cover coordinates and recipe texts;
-`FilePatchTest` covers the review diff. The root build's `coreBoundaryCheck` fails when code or a build file under
-`core/` names the cookbook's directory.
+`CookbookReplicateTest` cook small artifacts built in the test, by coordinates and by path; `DocumentsTest` edits JSON,
+TOML and YAML through the documents' own API; `CoordinatesTest` and `RecipeSourceTest` cover coordinates and recipe
+texts; `FilePatchTest` covers the review diff. The root build's `coreBoundaryCheck` fails when code or a build file
+under `core/` names the cookbook's directory.
 
 `Kitchens`, a test fixture other builds reuse, publishes any directory as an artifact into a test kitchen and cooks
 from there; the cookbook's tests, under `cookbook/test/`, cook its recipes through it.

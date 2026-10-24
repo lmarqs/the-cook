@@ -117,6 +117,20 @@ class DocumentsTest {
     assert error.message.contains('Duplicate JSON key')
   }
 
+  @Test void yamlRemovesMappingsLeftEmptyByRemovingTheirLastKeyInALaterDocument() {
+    def written = open('yaml', 'name: fixture\nkept: {}\n')
+    set(written, ['hooks', 'stop', 'command'], 'x')
+    assert written.text == '"hooks": \n  "stop": \n    "command": "x"\nname: fixture\nkept: {}\n'
+
+    def reopened = open('yaml', written.text)
+    remove(reopened, ['hooks', 'stop', 'command'])
+    assert reopened.text == 'name: fixture\nkept: {}\n'
+
+    def shared = open('yaml', 'hooks:\n  stop: 1\n  start: 2\n')
+    remove(shared, ['hooks', 'stop'])
+    assert shared.text == 'hooks:\n  start: 2\n'
+  }
+
   @Test void tomlUpdatesAPinWithoutTouchingCommentsOrOtherKeys() {
     def original = '# Team\n[tools]\nnode = "20" # pin\npython = "3.13"\n\n[env]\nAPP_MODE = "dev"\n'
     def document = open('toml', original)

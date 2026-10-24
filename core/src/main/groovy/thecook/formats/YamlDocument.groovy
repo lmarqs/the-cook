@@ -14,9 +14,10 @@ import org.yaml.snakeyaml.nodes.Tag
 
 class YamlDocument implements Document {
   String text
-  final List<List<String>> createdParents = []
+  private final List<List<String>> emptyWhenOpened
   YamlDocument(String text) {
-    this.text = text; root()
+    this.text = text
+    emptyWhenOpened = emptyMappings(root(), [])
   }
   boolean isEmpty() {
     !root() || (root() instanceof MappingNode && root().value.isEmpty())
@@ -130,7 +131,7 @@ class YamlDocument implements Document {
       def parent = path.take(count)
 
       if (!at(parent)) {
-        insert(parent, '{}'); createdParents.add(parent)
+        insert(parent, '{}')
       }
 
       if (!(at(parent) instanceof MappingNode)) {
@@ -174,16 +175,32 @@ class YamlDocument implements Document {
   }
   @Override
   void remove(String id, RegionLocation location) {
-    deleteKey(((KeyLocation) location).path)
-    def deepestFirst = createdParents.sort { -it.size() }.toList()
-
-    deepestFirst.each { path ->
-      def node = at(path)
-
-      if ((node instanceof MappingNode && node.value.isEmpty()) || node?.tag == Tag.NULL) {
-        deleteKey(path)
-        createdParents.remove(path)
+    def removed = ((KeyLocation) location).path
+    deleteKey(removed)
+    removeEmptiedParents(removed.dropRight(1))
+  }
+  // A mapping whose last key was removed is dropped, as JSON drops an emptied object, so withdrawing the key Cook wrote
+  // into a mapping it added leaves no parent behind in a later invocation; one that was empty when opened stays.
+  private void removeEmptiedParents(List<String> path) {
+    for (def parent = path; parent; parent = parent.dropRight(1)) {
+      if (!empty(at(parent)) || parent in emptyWhenOpened) {
+        return
       }
+
+      deleteKey(parent)
+    }
+  }
+  private static boolean empty(Node node) {
+    (node instanceof MappingNode && node.value.isEmpty()) || node?.tag == Tag.NULL
+  }
+  private static List<List<String>> emptyMappings(Node node, List<String> path) {
+    if (!(node instanceof MappingNode)) {
+      return []
+    }
+
+    node.value.collectMany { tuple ->
+      def key = path + [((ScalarNode) tuple.keyNode).value]
+      empty(tuple.valueNode) ? [key] : emptyMappings(tuple.valueNode, key)
     }
   }
   private void deleteKey(List<String> path) {
