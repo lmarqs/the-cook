@@ -5,27 +5,30 @@ import thecook.cookbook.api.recipe.ingredient as Injected
 import thecook.cookbook.api.recipe.param as Param
 import thecook.cookbook.api.recipe.recipe as Self
 import thecook.cookbook.api.recipe.resource as Resource
+import thecook.cookbook.api.ingredient.Ingredient
+import thecook.filesystem.TargetPath
 import thecook.model.Diagnostic
 
 import java.lang.reflect.Field
 
 /**
  * Runs a compiled recipe: binds its `@param` fields from the arguments, sets its `@resource` fields and its `@recipe`
- * fields from its name and the arguments as bound, injects its ingredients, then runs its body.
+ * fields from its name and the arguments as bound, injects its ingredients, runs its body, then reads what the
+ * ingredients declare.
  */
 final class RecipeRun {
   private RecipeRun() { }
 
   /**
-   * Runs `recipe` with `arguments` and returns its ingredients, and the arguments given, normalized: each param's first
-   * name with its values, in declaration order.
+   * Runs `recipe` with `arguments` and returns what its ingredients declare, and the arguments given, normalized: each
+   * param's first name with its values, in declaration order.
    * A bare `--name` is `true` for a yes-or-no param and an error for any other.
    * `resources` holds the text of each `@resource` path.
-   * `name` is the recipe's own name, for its `@recipe` fields. `newIngredient` creates an instance of a model type at a
-   * directory.
+   * `name` is the recipe's own name, for its `@recipe` fields and markers. Each ingredient reads `files` as its
+   * artifact's and `draft` as the destination. A model that declares anything on a new instance is refused.
    */
-  static Map run(CompiledRecipe recipe, String name, List<Argument> arguments, Map<String, String> resources,
-      Closure newIngredient) {
+  static Evaluation run(CompiledRecipe recipe, String name, List<Argument> arguments, Map<String, String> resources,
+      ModelFiles files, Draft draft) {
     def script = (Script) recipe.type.getDeclaredConstructor().newInstance()
     List<Field> fields = recipe.fields.collect { recipe.type.getDeclaredField(it) }
     def params = fields.findAll { it.getAnnotation(Param) }
@@ -80,12 +83,39 @@ final class RecipeRun {
     }
     def ingredients = fields.findAll { it.getAnnotation(Injected) }.collect { field ->
       def injected = field.getAnnotation(Injected)
-      def instance = newIngredient(injected.value(), injected.at())
+      def instance = model(injected.value(), injected.at(), files, draft)
       set(script, field, instance)
       instance
     }
     script.run()
-    [ingredients: ingredients, arguments: given]
+    ingredients*.getClass()
+        .unique()
+        .each { checkPristine(it, files, draft, name) }
+    new Evaluation(Declarations.of(ingredients, name), given)
+  }
+
+  private static CookbookModel model(Class type, String at, ModelFiles files, Draft draft) {
+    if (!type.getAnnotation(Ingredient) || !CookbookModel.isAssignableFrom(type)) {
+      throw new IllegalArgumentException(
+      Diagnostic.text("${type.simpleName} is not a model", 'a model class is marked @Ingredient'))
+    }
+
+    if (at != '.') {
+      TargetPath.of(at)
+    }
+
+    def instance = (CookbookModel) type.getDeclaredConstructor().newInstance()
+    CookbookModel.attach(instance, at, files, draft)
+    instance
+  }
+
+  private static void checkPristine(Class type, ModelFiles files, Draft draft, String name) {
+    def declared = Declarations.of([model(type, '.', files, draft)], name).all
+
+    if (declared) {
+      throw new IllegalArgumentException(Diagnostic.text("${declared.first()} on a new instance",
+      'a model declares only what a recipe asks for'))
+    }
   }
 
   /**
@@ -196,6 +226,17 @@ final class RecipeRun {
   private static void set(Script script, Field field, Object value) {
     field.accessible = true
     field.set(script, value)
+  }
+}
+
+/** What a recipe declares, and the arguments it was given, each param's first name with its values. */
+final class Evaluation {
+  final Declared declared
+  final Map<String, List<String>> arguments
+
+  Evaluation(Declared declared, Map<String, List<String>> arguments) {
+    this.declared = declared
+    this.arguments = arguments
   }
 }
 

@@ -12,39 +12,34 @@ abstract class CookbookModel {
   /** The instance's base inside the destination, with `.` at its root. */
   String directory = '.'
 
-  // Private and read statically: dynamic lookup from a model, in another package, would not find this field.
-  // CodeNarc misses the field access through `this.@engineReads`.
+  // Private and read statically: dynamic lookup from a model, in another package, would not find these fields.
+  // CodeNarc misses the field access through `this.@`.
   @SuppressWarnings('UnusedPrivateField')
-  private ModelReads engineReads
+  private ModelFiles engineFiles
 
-  /** Places `model` at `directory` with the engine's reads. */
+  @SuppressWarnings('UnusedPrivateField')
+  private Draft engineDraft
+
+  /** Places `model` at `directory`, reading `files` as its artifact's and `draft` as the destination. */
   @PackageScope
-  static void attach(CookbookModel model, String directory, ModelReads reads) {
+  static void attach(CookbookModel model, String directory, ModelFiles files, Draft draft) {
     model.directory = directory
-    model.@engineReads = reads
+    model.@engineFiles = files
+    model.@engineDraft = draft
   }
 
   /** The text of the file `name` packaged in this model's artifact, or `null` when the artifact has none. */
   String resource(String name) {
-    this.@engineReads.resource(name)
+    this.@engineFiles.resource(name)
   }
 
   /** Every file packaged under `dir` in this model's artifact, keyed by its path below `dir`. */
   Map<String, String> resources(String dir) {
-    this.@engineReads.resources(dir)
+    this.@engineFiles.resources(dir)
   }
 
   /** The destination file at `path` below `directory`, as the recipes before this one left it; `null` when absent. */
   String current(String path) {
-    this.@engineReads.current(Declarations.join(directory, path))
+    this.@engineDraft.read(Declarations.join(directory, path))
   }
-}
-
-/** What a model reads through the engine. */
-interface ModelReads {
-  String resource(String name)
-
-  Map<String, String> resources(String dir)
-
-  String current(String path)
 }

@@ -16,7 +16,6 @@ final class RecipeLoader {
   private final Map<String, CookbookArtifact> artifacts = [:]
   private final Map<String, ClassLoader> models = [:]
   private final Map<Path, ClassLoader> directoryModels = [:]
-  private final Map<ClassLoader, ModelFiles> modelFiles = [:]
 
   RecipeLoader(File kitchen, CookbookRepositories repositories) {
     this.kitchen = kitchen.toPath().toRealPath()
@@ -42,19 +41,6 @@ final class RecipeLoader {
         relative(kitchen, operand).replaceAll(/\.groovy$/, '')
   }
 
-  /**
-   * What a model of `type` reads: its own artifact's packaged files, the files of its directory for a model beside a
-   * recipe path, and `draft` as the current content.
-   */
-  ModelReads reads(Class type, Draft draft) {
-    def files = modelFiles[type.classLoader]
-    [
-      resource: { String path -> files?.resource(path) },
-      resources: { String path -> files?.resources(path) },
-      current: { draft.read(it) },
-    ] as ModelReads
-  }
-
   private LoadedRecipe fromCoordinates(Coordinates coordinates) {
     def artifact = artifact(coordinates)
     def recipe = coordinates.recipe
@@ -75,7 +61,7 @@ final class RecipeLoader {
       [(path): text]
     }
     new LoadedRecipe(coordinates.recipeName, coordinates.recipeAddress(recipe), true,
-        artifact.sha256, source, recipe, models(coordinates), resources)
+        artifact.sha256, source, recipe, models(coordinates), artifact, resources)
   }
 
   // A path's short name is its place in the kitchen, so moving the file renames the recipe.
@@ -104,7 +90,8 @@ final class RecipeLoader {
     def siblings = modelFiles(path.parent)
     sources.putAll(siblings)
     new LoadedRecipe(name(kitchen, operand), place, false, CookbookArtifact.sourcesSha256(sources), source,
-        file.replaceAll(/\.groovy$/, ''), models(path.parent, siblings), resources)
+        file.replaceAll(/\.groovy$/, ''), models(path.parent, siblings), new KitchenDirectory(kitchen, path.parent),
+        resources)
   }
 
   /** The upper-case `.groovy` files in `directory`, the models of the recipes there, keyed by their kitchen path. */
@@ -168,20 +155,13 @@ final class RecipeLoader {
   }
 
   private ClassLoader models(Coordinates coordinates) {
-    models.computeIfAbsent(coordinates.artifactAddress) {
-      def artifact = artifact(coordinates)
-      def loader = CookbookCompiler.models(artifact)
-      modelFiles[loader] = artifact
-      loader
-    }
+    models.computeIfAbsent(coordinates.artifactAddress) { CookbookCompiler.models(artifact(coordinates)) }
   }
 
   private ClassLoader models(Path directory, Map<String, byte[]> files) {
     directoryModels.computeIfAbsent(directory) {
       Map<String, byte[]> byName = files.collectEntries { place, bytes -> [(place.tokenize('/').last()): bytes] }
-      def loader = CookbookCompiler.models(new CookbookArtifact(null, byName))
-      modelFiles[loader] = new KitchenDirectory(kitchen, directory)
-      loader
+      CookbookCompiler.models(new CookbookArtifact(null, byName))
     }
   }
 }
@@ -189,8 +169,8 @@ final class RecipeLoader {
 /**
  * A resolved recipe: its short name for markers and `cook.lock`, the address the lock records as its source and the
  * review shows, whether it is `released`, read by coordinates rather than from a path in the kitchen, the sha256 of its
- * sources, its text and file name, the class loader its model imports resolve from, and the text of each file its
- * `@resource` lines name, keyed by the path as written.
+ * sources, its text and file name, the class loader its model imports resolve from, the files its models read, and the
+ * text of each file its `@resource` lines name, keyed by the path as written.
  */
 final class LoadedRecipe {
   final String name
@@ -200,10 +180,11 @@ final class LoadedRecipe {
   final String source
   final String fileName
   final ClassLoader models
+  final ModelFiles modelFiles
   final Map<String, String> resources
 
   LoadedRecipe(String name, String address, boolean released, String sha256, String source, String fileName,
-  ClassLoader models, Map<String, String> resources) {
+  ClassLoader models, ModelFiles modelFiles, Map<String, String> resources) {
     this.name = name
     this.address = address
     this.released = released
@@ -211,6 +192,15 @@ final class LoadedRecipe {
     this.source = source
     this.fileName = fileName
     this.models = models
+    this.modelFiles = modelFiles
     this.resources = resources
+  }
+
+  /**
+   * Runs the recipe with `arguments` against `draft`, which its models read as the recipes before it left the
+   * destination, and returns what it declares; the draft does not change.
+   */
+  Evaluation evaluate(List<Argument> arguments, Draft draft) {
+    RecipeRun.run(CookbookCompiler.recipe(source, fileName, models), name, arguments, resources, modelFiles, draft)
   }
 }

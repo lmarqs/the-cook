@@ -1,7 +1,5 @@
 package thecook.cookbook
 
-import thecook.cookbook.api.ingredient.Ingredient
-import thecook.filesystem.TargetPath
 import thecook.model.Diagnostic
 
 import java.lang.reflect.InvocationTargetException
@@ -46,17 +44,9 @@ final class CookbookCook {
           Diagnostic.text("${name} is named twice", null, 'name it once per invocation'))
         }
 
-        def compiled = CookbookCompiler.recipe(recipe.source, recipe.fileName, recipe.models)
-        def run = RecipeRun.run(compiled, name, request.arguments, recipe.resources) { Class type, String at ->
-          model(type, at, loader.reads(type, draft))
-        }
-        def ingredients = run.ingredients
-        ingredients*.getClass()
-            .unique()
-            .each { checkPristine(it, loader.reads(it, draft), name) }
-        def declared = Declarations.of(ingredients, name)
+        def evaluation = recipe.evaluate(request.arguments, draft)
         def recorded = ownership.sha256(name, recipe.address)
-        ownership.cook(name, declared, recipe.address, recipe.sha256, run.arguments)
+        ownership.cook(name, evaluation.declared, recipe.address, recipe.sha256, evaluation.arguments)
 
         if ((request.replayed || recipe.released) && recorded != null && recorded != recipe.sha256) {
           changedSources.add(new ChangedSource(recipe.address, recorded, recipe.sha256))
@@ -79,30 +69,6 @@ final class CookbookCook {
     }
     ownership.save()
     new Proposal(draft, recipes, changedSources, ownership.seeds)
-  }
-
-  private static CookbookModel model(Class type, String at, ModelReads reads) {
-    if (!type.getAnnotation(Ingredient) || !CookbookModel.isAssignableFrom(type)) {
-      throw new IllegalArgumentException(
-      Diagnostic.text("${type.simpleName} is not a model", 'a model class is marked @Ingredient'))
-    }
-
-    if (at != '.') {
-      TargetPath.of(at)
-    }
-
-    def instance = (CookbookModel) type.getDeclaredConstructor().newInstance()
-    CookbookModel.attach(instance, at, reads)
-    instance
-  }
-
-  private static void checkPristine(Class type, ModelReads reads, String name) {
-    def declared = Declarations.of([model(type, '.', reads)], name).all
-
-    if (declared) {
-      throw new IllegalArgumentException(Diagnostic.text("${declared.first()} on a new instance",
-      'a model declares only what a recipe asks for'))
-    }
   }
 }
 
