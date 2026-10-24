@@ -140,23 +140,29 @@ kept() {
 }
 
 # Removes the worktree $1, locked when $2 is true, when this hook created it under the root and it is unlocked, not
-# where prune runs, unchanged for $hours hours, clean, and checked out at a commit that landed, on a branch that landed.
-# Prints why it keeps a worktree it created, and sets $failed when one it would remove stays.
+# where prune runs, unchanged for $minutes minutes, clean, and checked out at a commit that landed, on a branch that
+# landed. Prints why it keeps a worktree it created, and sets $failed when one it would remove stays.
 consider() {
-  [ -n "$(branch_of "$1")" ] && [ -d "$1" ] && [ -e "$(marker "$1")" ] || return 0
-  if [ "$2" = true ]; then kept "$1" 'which is locked' && return 0; fi
-  if [ "$1" = "$here" ]; then kept "$1" 'which holds the current directory' && return 0; fi
+  branch=$(branch_of "$1")
+  [ -n "$branch" ] && [ -d "$1" ] && [ -e "$(marker "$1")" ] || return 0
+  # Each reason returns whether or not it could be printed, so a failing standard error never lets a worktree through.
+  if [ "$2" = true ]; then kept "$1" 'which is locked'; return 0; fi
+  if [ "$1" = "$here" ]; then kept "$1" 'which holds the current directory'; return 0; fi
   # Untouched files keep their dates, so a worktree in use but without commits or edits yet is told apart by them.
-  if [ "$hours" -gt 0 ] && [ -n "$(find "$1" "$(git -C "$1" rev-parse --absolute-git-dir)" -mmin "-$((hours * 60))" \
+  if [ "$minutes" -gt 0 ] && [ -n "$(find "$1" "$(git -C "$1" rev-parse --absolute-git-dir)" -mmin "-$minutes" \
     -print 2>/dev/null | head -n 1)" ]; then
-    kept "$1" "which changed in the last $hours hours" && return 0
+    kept "$1" "which changed in the last $hours hours"
+    return 0
   fi
-  if [ -n "$(git --no-optional-locks -C "$1" status --porcelain)" ]; then
-    kept "$1" 'which has uncommitted or untracked files' && return 0
+  if ! changes=$(git --no-optional-locks -C "$1" status --porcelain); then
+    kept "$1" 'whose status Git could not read'
+    return 0
   fi
+  if [ -n "$changes" ]; then kept "$1" 'which has uncommitted or untracked files'; return 0; fi
   if ! landed_anywhere "$(git -C "$1" rev-parse --verify --quiet 'HEAD^{commit}')" ||
-    { git -C "$main" show-ref --verify --quiet "refs/heads/$(branch_of "$1")" && ! landed_anywhere "$(branch_of "$1")"; }; then
-    kept "$1" "which has commits on neither HEAD nor ${upstream:-the default branch of $remote}" && return 0
+    { git -C "$main" show-ref --verify --quiet "refs/heads/$branch" && ! landed_anywhere "$branch"; }; then
+    kept "$1" "which has commits on neither HEAD nor ${upstream:-the default branch of $remote}"
+    return 0
   fi
   if [ "$dry_run" = true ]; then
     printf 'worktree: would remove %s\n' "$1" >&2
@@ -249,7 +255,13 @@ case ${1:-} in
     case $hours in
       '' | *[!0-9]*) fail "--older-than=$hours is not a whole number of hours" 'such as --older-than=24' ;;
     esac
+    # Shell arithmetic reads a leading zero as octal and overflows past 64 bits.
+    hours=${hours#"${hours%%[!0]*}"}
+    hours=${hours:-0}
+    [ "${#hours}" -le 6 ] || fail "--older-than=$hours is more than 999999 hours" 'such as --older-than=24'
+    minutes=$((hours * 60))
     here=$(git rev-parse --show-toplevel 2>/dev/null) || here=''
+    worktrees=$(git -C "$main" worktree list --porcelain)
     failed=false
     worktree=''
     locked=false
@@ -260,7 +272,7 @@ case ${1:-} in
         '') [ -z "$worktree" ] || consider "$worktree" "$locked" && worktree='' ;;
       esac
     done 3<<EOF
-$(git -C "$main" worktree list --porcelain)
+$worktrees
 
 EOF
     [ "$failed" = false ]

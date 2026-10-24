@@ -505,6 +505,48 @@ class AgentsWorktreeCookTest {
     def age = prune(kitchen, '--older-than=1.5')
     assert age.exit == 1
     assert age.error.startsWith('worktree: --older-than=1.5 is not a whole number of hours\n')
+    def huge = prune(kitchen, '--older-than=99999999999999999999')
+    assert huge.exit == 1
+    assert huge.error.startsWith('worktree: --older-than=99999999999999999999 is more than 999999 hours\n')
+  }
+
+  @Test void pruneReadsAnAgeWithLeadingZerosAsDecimalHours() {
+    def kitchen = repository([harness: ['claude'], 'worktree-root': ['.worktrees']])
+    assert hook(kitchen, 'create', [name: 'young']).exit == 0
+    def young = new File(kitchen, '.worktrees/young').canonicalFile
+
+    def pruned = prune(kitchen, '--dry-run', '--older-than=08')
+
+    assert pruned.exit == 0
+    assert pruned.error.contains("worktree: kept ${young}, which changed in the last 8 hours\n")
+  }
+
+  @Test void pruneKeepsAWorktreeWhoseStatusGitCannotRead() {
+    def kitchen = repository([harness: ['claude'], 'worktree-root': ['.worktrees']])
+    assert hook(kitchen, 'create', [name: 'broken']).exit == 0
+    def broken = new File(kitchen, '.worktrees/broken').canonicalFile
+    new File(broken, 'notes.txt').text = 'work\n'
+    new File(git(broken, 'rev-parse', '--absolute-git-dir'), 'index').text = 'not an index\n'
+    age(broken)
+
+    def pruned = prune(kitchen)
+
+    assert pruned.exit == 0
+    assert pruned.error.contains("worktree: kept ${broken}, whose status Git could not read\n")
+    assert new File(broken, 'notes.txt').exists()
+  }
+
+  @Test void pruneKeepsEveryWorktreeWhenItCannotWriteWhy() {
+    def kitchen = repository([harness: ['claude'], 'worktree-root': ['.worktrees']])
+    assert hook(kitchen, 'create', [name: 'dirty']).exit == 0
+    def dirty = new File(kitchen, '.worktrees/dirty').canonicalFile
+    new File(dirty, 'notes.txt').text = 'work\n'
+    age(dirty)
+
+    def pruned = launch(kitchen, null, 'sh', '-c', '"$0" prune 2>&-', new File(kitchen, HOOK).path)
+
+    assert new File(dirty, 'notes.txt').exists()
+    assert pruned.exit == 0
   }
 
   private File kitchen(String name = 'kitchen') {

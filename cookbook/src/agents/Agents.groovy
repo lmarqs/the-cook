@@ -299,9 +299,10 @@ class Agents {
    * checkout on the branch of that path, a new one starting where `base` says, runs the setup there and prints the
    * worktree's path, or removes the worktree when the setup fails; run as `worktree remove` with `WorktreeRemove`'s
    * input, it runs the teardown, keeping the worktree when that fails, removes the worktree, and deletes its branch
-   * once every patch on it is on `HEAD` or the remote's default branch. A setup or teardown committed on the main
-   * checkout's `HEAD` but missing from the worktree is skipped. The settings are shell-quoted into its variables; it
-   * needs only `sh`, `sed`, `find` and `git`.
+   * once every patch on it is on `HEAD` or the remote's default branch; run as `worktree prune`, it removes the same
+   * way each worktree it created that is unlocked, clean, landed and unchanged for `--older-than` hours, 24 by
+   * default, and keeps the others. A setup or teardown committed on the main checkout's `HEAD` but missing from the
+   * worktree is skipped. The settings are shell-quoted into its variables; it needs only `sh`, `sed`, `find` and `git`.
    */
   @File(path = '.agents/hooks/worktree', mode = '0755')
   String worktreeHook() {
