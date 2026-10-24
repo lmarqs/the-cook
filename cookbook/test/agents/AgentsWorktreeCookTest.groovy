@@ -407,6 +407,106 @@ class AgentsWorktreeCookTest {
     assert failed.error.contains("worktree: .worktrees/setup is not in ${demo.canonicalPath}\n")
   }
 
+  @Test void pruneRemovesOnlyItsOwnCleanLandedWorktreesLeftUnchangedForTheAge() {
+    def kitchen = repository(NAMED) {
+      executable(it, '.worktrees/setup', '#!/bin/sh\n')
+      executable(it, '.worktrees/teardown', "#!/bin/sh\npwd -P >> ${it.canonicalPath}/teardown-ran\n")
+    }
+    remote(kitchen, 'origin')
+    def names = ['done', 'feature/pushed', 'open', 'detached', 'dirty', 'locked', 'young']
+    names.each { assert hook(kitchen, 'create', [name: it]).exit == 0 }
+    def worktrees = names.collectEntries { [(it): new File(kitchen, ".worktrees/${it}").canonicalFile] }
+    def commit = { String name ->
+      new File(worktrees[name], 'work.txt').text = "${name}\n"
+      git(worktrees[name], 'add', 'work.txt')
+      git(worktrees[name], 'commit', '-q', '-m', name)
+    }
+    commit('feature/pushed')
+    git(worktrees['feature/pushed'], 'push', '-q', 'origin', 'HEAD:main')
+    commit('open')
+    git(worktrees.detached, 'checkout', '-q', '--detach')
+    commit('detached')
+    new File(worktrees.dirty, 'new.txt').text = 'untracked\n'
+    git(kitchen, 'worktree', 'lock', worktrees.locked.path)
+    def foreign = new File(kitchen, '.worktrees/foreign')
+    git(kitchen, 'worktree', 'add', '-q', '-b', 'foreign', foreign.path)
+    (worktrees.values() - worktrees.young + foreign).each { age(it) }
+    def kept = [
+      open: 'which has commits on neither HEAD nor origin/main',
+      detached: 'which has commits on neither HEAD nor origin/main',
+      dirty: 'which has uncommitted or untracked files',
+      locked: 'which is locked',
+      young: 'which changed in the last 24 hours',
+    ]
+
+    def dry = prune(kitchen, '--dry-run')
+    assert dry.exit == 0
+    ['done', 'feature/pushed'].each { assert dry.error.contains("worktree: would remove ${worktrees[it]}\n") }
+    kept.each { name, reason -> assert dry.error.contains("worktree: kept ${worktrees[name]}, ${reason}\n") }
+    assert !dry.error.contains(foreign.name)
+    assert worktrees.values().every { it.exists() }
+    assert !new File(kitchen, 'teardown-ran').exists()
+
+    def inside = prune(worktrees.done, '--dry-run')
+    assert inside.error.contains("worktree: kept ${worktrees.done}, which holds the current directory\n")
+
+    def pruned = prune(kitchen)
+    assert pruned.exit == 0
+    ['done', 'feature/pushed'].each { name ->
+      assert pruned.error.contains("worktree: removed ${worktrees[name]}\n")
+      assert !worktrees[name].exists()
+      assert git(kitchen, 'branch', '--list', name) == ''
+    }
+    assert !new File(kitchen, '.worktrees/feature').exists()
+    def removed = [worktrees.done.path, worktrees['feature/pushed'].path] as Set
+    assert new File(kitchen, 'teardown-ran').readLines() as Set == removed
+    kept.each { name, reason ->
+      assert pruned.error.contains("worktree: kept ${worktrees[name]}, ${reason}\n")
+      assert worktrees[name].exists()
+    }
+    assert new File(worktrees.dirty, 'new.txt').text == 'untracked\n'
+    assert foreign.exists()
+
+    def anyAge = prune(kitchen, '--older-than=0')
+    assert anyAge.exit == 0
+    assert anyAge.error.contains("worktree: removed ${worktrees.young}\n")
+    assert !worktrees.young.exists()
+  }
+
+  @Test void pruneKeepsAWorktreeWhoseTeardownFailsAndGoesOnWithTheRest() {
+    def kitchen = repository(NAMED) {
+      executable(it, '.worktrees/setup', '#!/bin/sh\n')
+      executable(it, '.worktrees/teardown', '#!/bin/sh\n[ ! -f fail ] || exit 1\n')
+    }
+    new File(kitchen, '.git/info/exclude') << '/fail\n'
+    ['failing', 'passing'].each { assert hook(kitchen, 'create', [name: it]).exit == 0 }
+    def failing = new File(kitchen, '.worktrees/failing').canonicalFile
+    def passing = new File(kitchen, '.worktrees/passing').canonicalFile
+    new File(failing, 'fail').text = ''
+    [failing, passing].each { age(it) }
+
+    def pruned = prune(kitchen)
+
+    assert pruned.exit == 1
+    assert pruned.error.contains("worktree: .worktrees/teardown failed\n  in ${failing}\n")
+    assert pruned.error.contains("worktree: kept ${failing}, which could not be removed\n")
+    assert pruned.error.contains("worktree: removed ${passing}\n")
+    assert failing.exists()
+    assert !passing.exists()
+    assert git(kitchen, 'show-ref', '--verify', 'refs/heads/failing')
+  }
+
+  @Test void pruneRefusesAnUnknownOptionAndAnAgeThatIsNotAWholeNumberOfHours() {
+    def kitchen = repository([harness: ['claude'], 'worktree-root': ['.worktrees']])
+
+    def unknown = prune(kitchen, '--force')
+    assert unknown.exit == 2
+    assert unknown.error == 'usage: worktree create|remove|prune [--dry-run] [--older-than=<hours>]\n'
+    def age = prune(kitchen, '--older-than=1.5')
+    assert age.exit == 1
+    assert age.error.startsWith('worktree: --older-than=1.5 is not a whole number of hours\n')
+  }
+
   private File kitchen(String name = 'kitchen') {
     def kitchen = folder.newFolder(name)
     publishDirectory(kitchen, 'agents')
@@ -477,6 +577,21 @@ class AgentsWorktreeCookTest {
   private Map hook(File directory, String action, Map input) {
     def kitchen = new File(git(directory, 'rev-parse', '--show-toplevel'))
     launch(directory, JsonOutput.toJson(input), new File(kitchen, HOOK).path, action)
+  }
+
+  private Map prune(File directory, String... options) {
+    def kitchen = new File(git(directory, 'rev-parse', '--show-toplevel'))
+    launch(directory, null, *([new File(kitchen, HOOK).path, 'prune'] + options.toList()))
+  }
+
+  // Dates every file of the worktree, and of its Git directory, 25 hours back, past the default age; `touch -h` dates a
+  // symbolic link itself, as `find -mmin` reads it, where Java would date its target.
+  private void age(File worktree) {
+    def time = new Date(System.currentTimeMillis() - 25 * 60 * 60 * 1000L).format('yyyyMMddHHmm.ss')
+    def gitDirectory = git(worktree, 'rev-parse', '--absolute-git-dir')
+    def touch = ['-exec', 'touch', '-h', '-t', time, '{}', '+']
+    def dated = launch(worktree, null, *(['find', worktree.path, gitDirectory] + touch))
+    assert dated.exit == 0: dated.error
   }
 
   // Runs a command with `input` on standard input and a HOME of its own, so the person's Git configuration stays out

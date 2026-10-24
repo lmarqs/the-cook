@@ -50,7 +50,8 @@ harness when a session starts, in name order, with the harness name, `claude` or
 writes its script there when the person names a path in it by a parameter of that recipe; the team writes its own \
 beside them |
 | `.agents/hooks/worktree` | Run as `worktree create` or `worktree remove` with Claude Code's `WorktreeCreate` or \
-`WorktreeRemove` input on standard input; `create` prints the worktree's absolute path as its last line |
+`WorktreeRemove` input on standard input; `create` prints the worktree's absolute path as its last line. Run as \
+`worktree prune [--dry-run] [--older-than=<hours>]` by a person or an agent, never from a hook |
 | `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
 | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
 
@@ -171,6 +172,14 @@ otherwise it keeps the branch and says so on standard error.
 A setup or teardown committed on the main checkout's `HEAD` but missing from the worktree is skipped with a line on
 standard error: the branch predates it. One missing from the main checkout's `HEAD` too still fails.
 
+`.agents/hooks/worktree prune` goes through `git worktree list` and removes, as `remove` does, each worktree under the
+root that the hook created, once it is not locked, does not hold the directory prune runs from, has no file or Git
+state changed in the last `--older-than` hours, 24 by default and none with `0`, has no uncommitted or untracked files,
+and both its checked-out commit and the branch its path names landed as `remove` checks them. It prints
+`worktree: removed <path>`, or `worktree: kept <path>, <reason>` for each worktree the hook created that it keeps, on
+standard error, and passes over the others silently. `--dry-run` prints `would remove` in place of removing. It exits 1
+when a worktree it would remove stays, such as when its teardown fails, after going through the rest.
+
 A fetch takes only the remote's default branch once `<remote>/HEAD` names it, and the whole remote before. A fetch and
 the lookup of the remote's default branch never wait for a password, a passphrase or a host key: they run with
 `GIT_TERMINAL_PROMPT=0` and, unless `GIT_SSH_COMMAND`, `GIT_SSH` or `core.sshCommand` names another, with
@@ -203,8 +212,10 @@ again.
   untrusted project skip or approve the Codex rules, and no setting refuses them.
 - The worktree hooks cover only worktrees Claude Code itself creates: a `git worktree add` an agent runs through Bash
   bypasses them, and Codex's own worktrees go where Codex puts them.
-- Claude Code keeps the worktrees of subagents and workflows and never runs `WorktreeRemove` for them: remove them with
-  `git worktree remove`, after running the teardown by hand.
+- Claude Code keeps the worktrees of subagents and workflows and never runs `WorktreeRemove` for them: run
+  `.agents/hooks/worktree prune` to remove the ones that landed. A subagent's worktree with neither commits nor edits
+  yet is clean and landed, so only the age tells it is in use: keep prune out of `SessionStart` and other hooks, where
+  a second session would remove the worktrees of the first one's running subagents.
 - Under `fresh`, a subagent's worktree, which Claude Code 2.1.308 names `agent-<id>`, also starts at the remote's
   default branch, without the session's unpushed commits, as Claude Code's own `worktree.baseRef` `fresh` does:
   `--worktree-base=head` starts it at the `HEAD` of the session's `cwd` instead (tested).
