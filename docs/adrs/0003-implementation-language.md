@@ -69,6 +69,6 @@ Must be maintained:
 ## Confirmation
 
 - `./gradlew jpackageTest` builds and smoke-tests the packaged CLI with its bundled runtime.
-- `./gradlew cookbookBuild` builds the cookbooks as a task separate from the engine build.
+- `./gradlew -p cookbook assemble` packages the cookbook artifacts without building the engine.
 - Does the root README's [install section](../../README.md#install) describe the actual local packaging entry path,
   `./gradlew jpackage`?
