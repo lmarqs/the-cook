@@ -114,7 +114,7 @@ jobs:
         run: |
           auth="Authorization: Bearer $(printf '%s:%s' "$MAVEN_CENTRAL_USERNAME" "$MAVEN_CENTRAL_PASSWORD" | base64 -w 0)"
           deployment=$(curl --fail-with-body -sS -X POST -H "$auth" \
-            -F bundle=@build/central/central-bundle.zip \
+            -F bundle=@cookbook/build/central-bundle/central-bundle.zip \
             "https://central.sonatype.com/api/v1/publisher/upload?name=the-cook-$VERSION&publishingType=AUTOMATIC")
           for _ in $(seq 90); do
             state=$(curl --fail-with-body -sS -X POST -H "$auth" \

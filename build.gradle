@@ -66,43 +66,10 @@ tasks.register('codenarc', JavaExec) {
   args '-maxPriority1Violations=0', '-maxPriority2Violations=0', '-maxPriority3Violations=0'
 }
 
-// The Maven Central Portal takes one zip of a Maven-layout tree for a release. The published artifacts are the cookbook
-// artifacts `agents`, `git`, `beads` and `ralph`.
-def releaseVersion = findProperty('releaseVersion') ?: '0.0.0'
-def cookbookArtifacts = ['agents', 'git', 'beads', 'ralph']
-def centralBundle = tasks.register('centralBundle', Zip) {
+tasks.register('centralBundle') {
   group = 'publishing'
-  description = 'Bundle the cookbook artifacts, with their checksums, for the Central Portal.'
-  cookbookArtifacts.each {
-    dependsOn gradle.includedBuild('cookbook').task(":publish${it.capitalize()}PublicationToCentralRepository")
-  }
-  from('cookbook/build/central')
-  exclude '**/maven-metadata.xml*'
-  includeEmptyDirs = false
-  archiveFileName = 'central-bundle.zip'
-  destinationDirectory = layout.buildDirectory.dir('central')
-}
-
-tasks.register('centralBundleTest') {
-  group = 'verification'
-  description = 'Check that the Central bundle holds exactly the published artifacts, each with its checksums.'
-  def bundle = centralBundle.flatMap { it.archiveFile }
-  inputs.file(bundle)
-  doLast {
-    def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
-    def v = releaseVersion
-    def cookbook = cookbookArtifacts.collect { "io/github/lmarqs/cookbook/${it}/${v}/${it}-${v}" }
-    def expected = ['', '-sources', '-javadoc'].collectMany { suffix ->
-      cookbook.collect { "${it}${suffix}.jar" }
-    } + cookbook.collect { "${it}.pom" }
-    def files = entries.findAll { !it.endsWith('/') && !(it ==~ /.*\.(md5|sha1|sha256|sha512|asc)/) }
-    def missing = files.findAll { !(entries.contains(it + '.md5') && entries.contains(it + '.sha1')) }
-
-    if (files.sort() != expected*.toString().sort() || missing) {
-      throw new GradleException("The Central bundle holds ${files}, with ${missing} missing a checksum; " +
-      "expected ${expected}")
-    }
-  }
+  description = 'Bundle the cookbook artifacts released to Maven Central, at cookbook/build/central-bundle/.'
+  dependsOn gradle.includedBuild('cookbook').task(':centralBundle')
 }
 
 // The engine knows no cookbook: no code or build file under core/ may name the cookbook's directory or cook.cookbook,
@@ -131,7 +98,7 @@ tasks.register('coreBoundaryCheck') {
 }
 
 tasks.named('check') {
-  dependsOn 'codenarc', 'centralBundleTest', 'coreBoundaryCheck'
+  dependsOn 'codenarc', 'coreBoundaryCheck'
   dependsOn gradle.includedBuild('core').task(':check'), gradle.includedBuild('infra').task(':check')
   dependsOn gradle.includedBuild('cli').task(':check')
   dependsOn gradle.includedBuild('docs').task(':check')

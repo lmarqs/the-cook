@@ -1,0 +1,116 @@
+// Maven Central requires this POM metadata on every publication and a signature on every file. The release passes the
+// signing key as the properties signingKey and signingPassword; without them nothing is signed.
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+// Of the artifacts under src/, these are the ones released to Maven Central.
+def released = ['agents', 'git', 'beads', 'ralph']
+def packagePath = project.group.toString().replace('.', '/')
+def central = layout.buildDirectory.dir('central')
+def cleanCentral = tasks.register('cleanCentral', Delete) { delete central }
+
+publishing {
+  repositories {
+    maven {
+      name = 'central'
+      url = central
+    }
+  }
+  publications.withType(MavenPublication).configureEach { publication ->
+    pom {
+      name = provider { publication.artifactId }
+      description = provider { project.description }
+      url = 'https://github.com/lmarqs/the-cook'
+      licenses {
+        license {
+          name = 'Apache-2.0'
+          url = 'https://www.apache.org/licenses/LICENSE-2.0'
+        }
+      }
+      developers {
+        developer {
+          id = 'lmarqs'
+          name = 'lmarqs'
+          url = 'https://github.com/lmarqs'
+        }
+      }
+      scm {
+        connection = 'scm:git:https://github.com/lmarqs/the-cook.git'
+        developerConnection = 'scm:git:ssh://git@github.com/lmarqs/the-cook.git'
+        url = 'https://github.com/lmarqs/the-cook'
+      }
+    }
+  }
+}
+
+// Maven Central takes each published artifact with a sources and a javadoc jar. Its jar holds only sources, so the
+// sources jar repeats it, and the javadoc jar holds its README.
+released.each { artifact ->
+  def sources = tasks.register("${artifact}SourcesJar", Jar) {
+    archiveBaseName = artifact
+    archiveClassifier = 'sources'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    from(file("src/${artifact}")) { into("${packagePath}/${artifact}") }
+  }
+  def javadoc = tasks.register("${artifact}JavadocJar", Jar) {
+    archiveBaseName = artifact
+    archiveClassifier = 'javadoc'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    from(file("src/${artifact}/README.md"))
+  }
+
+  publishing.publications.named(artifact, MavenPublication) {
+    it.artifact(sources)
+    it.artifact(javadoc)
+  }
+}
+
+// The bundle holds one release, so each publication to it starts from an empty directory.
+tasks.withType(PublishToMavenRepository).configureEach {
+  if (name.endsWith('ToCentralRepository')) {
+    dependsOn cleanCentral
+  }
+}
+
+if (findProperty('signingKey')) {
+  signing {
+    useInMemoryPgpKeys(findProperty('signingKey'), findProperty('signingPassword'))
+    sign publishing.publications
+  }
+}
+
+// The Maven Central Portal takes one zip of a Maven-layout tree for a release.
+def centralBundle = tasks.register('centralBundle', Zip) {
+  group = 'publishing'
+  description = 'Bundle the released artifacts, with their checksums, for the Central Portal.'
+  dependsOn released.collect { "publish${it.capitalize()}PublicationToCentralRepository" }
+  from(central)
+  exclude '**/maven-metadata.xml*'
+  includeEmptyDirs = false
+  archiveFileName = 'central-bundle.zip'
+  destinationDirectory = layout.buildDirectory.dir('central-bundle')
+}
+
+tasks.register('centralBundleTest') {
+  group = 'verification'
+  description = 'Check that the Central bundle holds exactly the released artifacts, each with its checksums.'
+  def bundle = centralBundle.flatMap { it.archiveFile }
+  def v = project.version.toString()
+  inputs.file(bundle)
+  doLast {
+    def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
+    def paths = released.collect { "${packagePath}/${it}/${v}/${it}-${v}" }
+    def expected = ['', '-sources', '-javadoc'].collectMany { suffix ->
+      paths.collect { "${it}${suffix}.jar" }
+    } + paths.collect { "${it}.pom" }
+    def files = entries.findAll { !it.endsWith('/') && !(it ==~ /.*\.(md5|sha1|sha256|sha512|asc)/) }
+    def missing = files.findAll { !(entries.contains(it + '.md5') && entries.contains(it + '.sha1')) }
+
+    if (files.sort() != expected*.toString().sort() || missing) {
+      throw new GradleException("The Central bundle holds ${files}, with ${missing} missing a checksum; " +
+      "expected ${expected}")
+    }
+  }
+}
+
+tasks.named('check') { dependsOn 'centralBundleTest' }
