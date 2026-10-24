@@ -1,3 +1,8 @@
+buildscript {
+  repositories { mavenCentral() }
+  dependencies { classpath 'org.tomlj:tomlj:1.1.1' }
+}
+
 plugins {
   id 'groovy'
   id 'maven-publish'
@@ -6,7 +11,7 @@ plugins {
 description = 'Recipes and models for the-cook, a recipe driven configuration tool'
 
 // cookbook.toml names the group, which cooking a source directory reads too.
-group = (file('cookbook.toml').text =~ /(?m)^group\s*=\s*"([^"]+)"/)[0][1]
+group = org.tomlj.Toml.parse(file('cookbook.toml').toPath()).getString('group')
 version = findProperty('releaseVersion') ?: '0.0.0'
 
 repositories {

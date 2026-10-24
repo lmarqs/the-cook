@@ -628,12 +628,17 @@ rootProject.name = 'my-cookbook'
 
 ```groovy
 // build.gradle
+buildscript {
+  repositories { mavenCentral() }
+  dependencies { classpath 'org.tomlj:tomlj:1.1.1' }
+}
+
 plugins {
   id 'base'
   id 'maven-publish'
 }
 
-group = (file('cookbook.toml').text =~ /(?m)^group\s*=\s*"([^"]+)"/)[0][1]
+group = org.tomlj.Toml.parse(file('cookbook.toml').toPath()).getString('group')
 version = findProperty('releaseVersion') ?: '0.0.0'
 
 file('src').listFiles().findAll { it.isDirectory() && !it.name.startsWith('.') }.each { artifact ->
