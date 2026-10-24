@@ -18,7 +18,7 @@ final class CookbookDiscard {
   Proposal propose(List<String> operands) {
     def kitchen = destination.toPath().toRealPath()
     def draft = new Draft(destination)
-    def lock = CookLock.parse(draft.read(CookLock.PATH))
+    def ownership = new Ownership(draft)
     Set<String> discarded = []
     operands.each { operand ->
       def name = RecipeLoader.name(kitchen, operand)
@@ -28,22 +28,18 @@ final class CookbookDiscard {
         Diagnostic.text("${name} is discarded twice", null, 'discard it once per invocation'))
       }
 
-      if (!(name in lock.names)) {
+      def listed = ownership.names
+
+      if (!(name in listed)) {
         throw new IllegalArgumentException(Diagnostic.text(
         "${CookLock.PATH} lists no recipe ${name}; nothing was written",
         "discard removes only what ${CookLock.PATH} records for a recipe",
-        "check the recipe's name; ${CookLock.PATH} lists ${lock.names ? lock.names.join(', ') : 'none'}"))
+        "check the recipe's name; ${CookLock.PATH} lists ${listed ? listed.join(', ') : 'none'}"))
       }
 
-      lock.forget(name)*.withdraw(draft)
+      ownership.discard(name)
     }
-
-    if (lock.names) {
-      draft.write(CookLock.PATH, lock.render())
-    } else {
-      draft.delete(CookLock.PATH)
-    }
-
-    new Proposal(draft, [], [], new SeedOutcomes())
+    ownership.save()
+    new Proposal(draft, [], [], ownership.seeds)
   }
 }

@@ -30,11 +30,10 @@ final class CookbookCook {
   Proposal propose(List<RecipeRequest> requests) {
     def loader = new RecipeLoader(destination, repositories)
     def draft = new Draft(destination)
-    def lock = CookLock.parse(draft.read(CookLock.PATH))
+    def ownership = new Ownership(draft, existing)
     Set<String> named = []
     List<CookedRecipe> recipes = []
     List<ChangedSource> changedSources = []
-    def seeds = new SeedOutcomes()
     requests.eachWithIndex { request, index ->
       def label = requests.size() > 1 ? "recipe ${index + 1} (${request.operand})" : request.operand
 
@@ -56,14 +55,13 @@ final class CookbookCook {
             .unique()
             .each { checkPristine(it, loader.reads(it, draft), name) }
         def declared = Declarations.of(ingredients, name)
-        cook(name, declared, draft, lock, seeds)
-        def recorded = lock.sha256(name, recipe.address)
+        def recorded = ownership.sha256(name, recipe.address)
+        ownership.cook(name, declared, recipe.address, recipe.sha256, run.arguments)
 
         if ((request.replayed || recipe.released) && recorded != null && recorded != recipe.sha256) {
           changedSources.add(new ChangedSource(recipe.address, recorded, recipe.sha256))
         }
 
-        lock.record(name, recipe.address, recipe.sha256, run.arguments, declared.owned*.target)
         def texts = RecipeSource.texts(recipe.source, "${recipe.fileName}.groovy")
         recipes.add(new CookedRecipe(recipe.address, texts?.confirm, texts?.yieldText))
       } catch (Exception error) {
@@ -79,9 +77,8 @@ final class CookbookCook {
         throw new IllegalArgumentException("${label}: ${message}", cause)
       }
     }
-    seeds.refuse()
-    draft.write(CookLock.PATH, lock.render())
-    new Proposal(draft, recipes, changedSources, seeds)
+    ownership.save()
+    new Proposal(draft, recipes, changedSources, ownership.seeds)
   }
 
   private static CookbookModel model(Class type, String at, ModelReads reads) {
@@ -105,39 +102,6 @@ final class CookbookCook {
     if (declared) {
       throw new IllegalArgumentException(Diagnostic.text("${declared.first()} on a new instance",
       'a model declares only what a recipe asks for'))
-    }
-  }
-
-  private void cook(String name, Declared declared, Draft draft, CookLock lock, SeedOutcomes seeds) {
-    def owned = declared.owned
-    owned.eachWithIndex { first, index ->
-      def second = owned.drop(index + 1).find { it.target.overlaps(first.target) }
-
-      if (second) {
-        throw new IllegalArgumentException("${first.member} and ${second.member} both declare ${first.target}")
-      }
-    }
-    declared.seeds.each { seed ->
-      if (draft.read(seed.file) == null) {
-        draft.write(seed.file, seed.text, seed.mode)
-      } else if (seed.failsOnExisting && !lock.cooked(name)) {
-        seeds.existing(existing, seed, name, draft)
-      }
-    }
-    def targets = owned*.target
-    lock.owned(name)
-        .findAll { !(it in targets) }
-        *.withdraw(draft)
-    owned.each { it.target.write(draft, it.value) }
-    declared.deletes.each { deletion ->
-      def owner = lock.ownerOf(new FileTarget(deletion.file), name) ?:
-          (targets.any { it.file == deletion.file } ? name : null)
-
-      if (owner) {
-        throw new IllegalArgumentException("${deletion.member} deletes ${deletion.file}, which ${owner} owns")
-      }
-
-      draft.delete(deletion.file)
     }
   }
 }
@@ -185,52 +149,6 @@ final class ChangedSource {
     this.address = address
     this.recorded = recorded
     this.current = current
-  }
-}
-
-/** What cooking a recipe the first time does with a file its `existing = 'fail'` seed writes. */
-enum ExistingSeed {
-  /** Fails, naming the file. */
-  REFUSE,
-  /** Writes the seed over the file, or over the link at its path. */
-  REPLACE,
-  /** Leaves the file as it is. */
-  KEEP
-}
-
-/** The existing files that seeds refused, replaced or kept during one invocation. */
-final class SeedOutcomes {
-  final Set<String> replaced = new TreeSet<>()
-  final Set<String> kept = new TreeSet<>()
-  private final Map<String, String> refused = new TreeMap<>()
-
-  void existing(ExistingSeed choice, Seeding seed, String recipe, Draft draft) {
-    if (choice == ExistingSeed.REPLACE) {
-      draft.write(seed.file, seed.text, seed.mode)
-      replaced.add(seed.file)
-    } else if (choice == ExistingSeed.KEEP) {
-      kept.add(seed.file)
-    } else {
-      refused[seed.file] = recipe
-    }
-  }
-
-  /** Fails when seeds refused existing files, naming each file, its recipe and the options that resolve them. */
-  void refuse() {
-    if (refused.size() == 1) {
-      def only = refused.entrySet().first()
-      throw new IllegalArgumentException(Diagnostic.text("${only.key} already exists",
-      "${only.value} writes it from a template the first time it is cooked",
-      'run with --force to replace it, or --skip to keep it'))
-    }
-
-    if (refused) {
-      def header = 'These files already exist, and their recipes write them from a template ' +
-          'the first time they are cooked:'
-      def files = refused.collect { file, recipe -> "  ${file} (${recipe})" }
-      def footer = '  run with --force to replace them, or --skip to keep them'
-      throw new IllegalArgumentException(([header] + files + [footer]).join('\n'))
-    }
   }
 }
 
