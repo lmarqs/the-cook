@@ -146,7 +146,7 @@ artifact's sources when one of its recipes is cooked. `./gradlew -p cookbook tes
 
 ### Development tooling
 
-`./gradlew check` includes `spotlessCheck`, which enforces the format of Groovy and Gradle (Groovy-Eclipse, [settings](gradle/spotless/greclipse.properties)) and plain-text files, with 2-space indentation per [`.editorconfig`](.editorconfig). `./gradlew spotlessApply` fixes violations. On first use the formatter downloads Groovy-Eclipse from the Eclipse mirror that `build.gradle` names, into `~/.gradle/caches/p2-data`; when that mirror is down, name another Eclipse mirror there. The Groovy formatter on Java 17 cannot parse the `!in` operator or a GString nested inside another; write `!(a in b)` and build such strings with `+`.
+`./gradlew check` includes `spotlessCheck`, which enforces the format of Groovy and Gradle (Groovy-Eclipse, [settings](gradle/spotless/greclipse.properties)) and plain-text files, with 2-space indentation per [`.editorconfig`](.editorconfig). `./gradlew spotlessApply` fixes violations. On first use the formatter downloads Groovy-Eclipse from the Eclipse mirror that [`thecook.lint.gradle`](build-logic/src/main/groovy/thecook.lint.gradle) names, into `~/.gradle/caches/p2-data`; when that mirror is down, name another Eclipse mirror there. The Groovy formatter on Java 17 cannot parse the `!in` operator or a GString nested inside another; write `!(a in b)` and build such strings with `+`.
 
 `./gradlew check` also lints Groovy and Gradle files with CodeNarc (`./gradlew codenarc`), using its `basic`, `braces`,
 `imports`, `unused` and `formatting` rulesets ([rules](gradle/lint/codenarc.groovy)). Every `if`/`else`/`for`/`while`

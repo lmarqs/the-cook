@@ -1,20 +1,11 @@
 plugins {
-  id 'groovy'
+  id 'thecook.module'
   id 'application'
-}
-group = 'io.github.lmarqs'
-version = findProperty('releaseVersion') ?: '0.0.0'
-repositories { mavenCentral() }
-java {
-  toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
-  }
 }
 dependencies {
   implementation "io.github.lmarqs:the-cook-core:${version}"
   implementation "io.github.lmarqs:the-cook-infra:${version}"
   implementation 'info.picocli:picocli:4.7.7'
-  testImplementation 'junit:junit:4.13.2'
 }
 application {
   applicationName = 'cook'
@@ -34,9 +25,6 @@ tasks.named('test') {
   // The cookbook README's rendered help is checked against the help of the repository's own cookbook.
   inputs.files(fileTree('../cookbook') { exclude 'build/**', '.gradle/**', 'test/**' })
   systemProperty 'cook.repository', file('..').absolutePath
-  useJUnit(); testLogging {
-    events 'failed'
-  }
 }
 
 apply from: 'gradle/jpackage.gradle'

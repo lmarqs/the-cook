@@ -4,8 +4,8 @@ This repository builds the-cook, a recipe driven configuration tool, and the `ag
 cookbook artifacts it cooks. The [README](README.md#objective) says who it is for, and
 [Quick start](README.md#quick-start) how to try it.
 
-Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-wrapper.properties`), JUnit 4
-(`core/build.gradle`), Spotless and CodeNarc (`build.gradle`), semantic-release (`.github/workflows/release.yml`).
+Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-wrapper.properties`), JUnit 4,
+Spotless and CodeNarc (`build-logic/`), semantic-release (`.github/workflows/release.yml`).
 
 ## Quick reference
 
@@ -16,7 +16,7 @@ Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-w
 - Test one file: `./gradlew -p <module> test --tests <class>`, as
   `./gradlew -p core test --tests thecook.CoordinatesTest`.
 - Lint or format one file: `./gradlew spotlessApply -PspotlessIdeHook=<absolute path>` formats one file;
-  `./gradlew codenarc` lints every Groovy and Gradle file.
+  `./gradlew codenarc` lints every Groovy and Gradle file, `./gradlew -p <module> lint` one module.
 - Generate code: none.
 - Local services: none.
 <!-- cook:begin io.github.lmarqs.cookbook:git#worktrees/worktrees -->
@@ -55,7 +55,7 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 ## Where things go
 
 - New code: in its existing module: `core/` the engine, `infra/` the kitchen's `cook.toml` and cookbook fetching,
-  `cli/` the command line, `cookbook/src/<artifact>/` recipes. The design is
+  `cli/` the command line, `cookbook/src/<artifact>/` recipes, `build-logic/` shared build setup. The design is
   [docs/architecture.md](docs/architecture.md).
 - Tests: `<module>/src/test/groovy/thecook/`, one `<Subject>Test.groovy` per subject, as
   `core/src/test/groovy/thecook/CoordinatesTest.groovy`; recipe tests in `cookbook/test/<artifact>/`, never in core.
@@ -85,7 +85,8 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 
 ## Gotchas
 
-- The Quick check skips Spotless and CodeNarc, which only the root build runs; the Done check catches them.
+- The Quick check skips Spotless and CodeNarc; the Done check runs them, and `./gradlew -p <module> lint`
+  for `core`, `infra` and `cli`.
 - The Groovy formatter rejects some syntax, and a long line in a recipe's `@help` continues after a trailing `\`; see
   [Development tooling](README.md#development-tooling).
 

@@ -1,0 +1,27 @@
+// The setup that the core, infra and cli builds share. The cookbook build stays standalone: cookbook authors copy it.
+plugins {
+  id 'groovy'
+  id 'thecook.lint'
+}
+
+group = 'io.github.lmarqs'
+version = findProperty('releaseVersion') ?: '0.0.0'
+
+repositories {
+  mavenCentral()
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
+dependencies {
+  testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.named('test') {
+  useJUnit()
+  testLogging { events 'failed' }
+}

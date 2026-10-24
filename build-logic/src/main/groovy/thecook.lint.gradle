@@ -1,0 +1,93 @@
+// Formats and lints a build's Groovy, Gradle and plain-text files with the settings in the repository's gradle/.
+plugins {
+  id 'base'
+  id 'com.diffplug.spotless'
+}
+
+// Every build of this repository sits at its root or one directory below it.
+def repository = [layout.settingsDirectory.asFile, layout.settingsDirectory.asFile.parentFile].find {
+  new File(it, 'gradle/lint/codenarc.groovy').file
+}
+
+if (!repository) {
+  throw new GradleException("No gradle/lint/codenarc.groovy at or above ${layout.settingsDirectory.asFile}")
+}
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  codenarc {
+    attributes.attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+  }
+}
+
+dependencies {
+  codenarc 'org.codenarc:CodeNarc:3.7.0-groovy-4.0'
+}
+
+spotless {
+  // The build that applies this plugin decides whether its check runs lint.
+  enforceCheck = false
+  def generated = ['**/build/**', '**/.gradle/**', '.worktrees/**']
+  def greclipseSettings = new File(repository, 'gradle/spotless/greclipse.properties')
+  // download.eclipse.org can be shut down for days; an Eclipse Foundation mirror serves the same update sites.
+  // Spotless refuses an update site with no entry, so the Groovy-Eclipse site maps to itself.
+  def groovyEclipse = 'https://groovy.jfrog.io/artifactory/plugins-release/'
+  def eclipseMirror = ['https://download.eclipse.org/': 'https://ftp.fau.de/eclipse/', (groovyEclipse): groovyEclipse]
+  groovy {
+    target '**/*.groovy'
+    // The formatter cannot parse the quoted `default` member that recipes write as `@param(default = ...)`.
+    targetExclude generated + ['**/thecook/cookbook/api/recipe/RecipeAnnotations.groovy']
+    greclipse()
+        .configFile(greclipseSettings)
+        .withP2Mirrors(eclipseMirror)
+  }
+  groovyGradle {
+    target '**/*.gradle'
+    targetExclude generated
+    greclipse()
+        .configFile(greclipseSettings)
+        .withP2Mirrors(eclipseMirror)
+  }
+  format 'misc', {
+    target '**/*.md', '**/*.properties', '**/*.sh', '**/*.toml', '.gitignore'
+    targetExclude generated + ['gradle/wrapper/**']
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}
+
+tasks.register('codenarc', JavaExec) {
+  description = 'Lints Groovy and Gradle files with the rulesets in gradle/lint/codenarc.groovy.'
+  group = 'verification'
+  classpath = configurations.codenarc
+  mainClass = 'org.codenarc.CodeNarc'
+  // codenarc.groovy names its custom rules by paths relative to the repository.
+  workingDir = repository
+  inputs.files(fileTree(projectDir) {
+    include '**/*.groovy', '**/*.gradle'
+    exclude '**/build/**', '**/.gradle/**', '.worktrees/**'
+  }).withPathSensitivity(PathSensitivity.RELATIVE)
+  inputs.dir(new File(repository, 'gradle/lint')).withPathSensitivity(PathSensitivity.RELATIVE)
+  // A report file lets Gradle skip the task while no input has changed.
+  def report = layout.buildDirectory.file('reports/codenarc.txt')
+  outputs.file(report)
+  args '-basedir=' + projectDir,
+      '-includes=**/*.groovy,**/*.gradle',
+      '-excludes=**/build/**,**/.gradle/**,.worktrees/**',
+      '-rulesetfiles=file:' + new File(repository, 'gradle/lint/codenarc.groovy'),
+      '-failOnError=true',
+      '-report=console',
+      '-maxPriority1Violations=0',
+      '-maxPriority2Violations=0',
+      '-maxPriority3Violations=0'
+  doLast { report.get().asFile.text = 'CodeNarc found no violations\n' }
+}
+
+tasks.register('lint') {
+  description = 'Checks the format and lints the Groovy and Gradle files of this build.'
+  group = 'verification'
+  dependsOn 'spotlessCheck', 'codenarc'
+}

@@ -1,21 +1,7 @@
 plugins {
-  id 'groovy'
+  id 'thecook.module'
   id 'java-library'
   id 'java-test-fixtures'
-}
-
-group = 'io.github.lmarqs'
-
-version = findProperty('releaseVersion') ?: '0.0.0'
-
-repositories {
-  mavenCentral()
-}
-
-java {
-  toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
-  }
 }
 
 dependencies {
@@ -31,10 +17,4 @@ dependencies {
       exclude group: 'org.apache.groovy'
     }
   }
-  testImplementation 'junit:junit:4.13.2'
-}
-
-tasks.named('test') {
-  useJUnit()
-  testLogging { events 'failed' }
 }

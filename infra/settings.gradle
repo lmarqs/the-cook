@@ -1,2 +1,6 @@
+pluginManagement {
+  includeBuild('../build-logic')
+}
+
 rootProject.name = 'the-cook-infra'
 includeBuild('../core')

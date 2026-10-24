@@ -1,7 +1,5 @@
 // Package the same classpath as installDist, using the project's Java toolchain.
-def packagingJava = javaToolchains.launcherFor {
-  languageVersion = JavaLanguageVersion.of(17)
-}
+def packagingJava = javaToolchains.launcherFor(java.toolchain)
 def windows = System.getProperty('os.name').startsWith('Windows')
 def mac = System.getProperty('os.name').startsWith('Mac')
 def packageInput = layout.buildDirectory.dir('jpackage-input')
