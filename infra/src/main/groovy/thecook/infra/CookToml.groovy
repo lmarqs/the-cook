@@ -59,8 +59,7 @@ final class CookToml {
   }
 
   private static CookbookRepository repository(String entry, File kitchen, File home, File manifest) {
-    def (Path directory, String path) = base(entry, kitchen, home)
-    def uri = directory.toUri().resolve(path.endsWith('/') ? path : "${path}/")
+    def uri = entry.contains('://') ? URI.create(slashed(entry)) : directory(entry, kitchen, home)
 
     if (!(uri.scheme in ['https', 'file'])) {
       throw new IllegalArgumentException("${manifest}: repository ${entry} must be an https:// URL or a path")
@@ -73,11 +72,16 @@ final class CookToml {
     new MavenRepository(uri)
   }
 
-  // A path entry's directory and its path from there: the user's home for `~/`, as shells read it, otherwise the
-  // kitchen.
-  private static Tuple2<Path, String> base(String entry, File kitchen, File home) {
-    entry.startsWith('~/')
-        ? new Tuple2<>(home.toPath().toAbsolutePath(), entry.substring(2))
-        : new Tuple2<>(kitchen.toPath().toAbsolutePath(), entry)
+  // A path entry's directory, from the user's home for `~/`, as shells read it, otherwise from the kitchen.
+  private static URI directory(String entry, File kitchen, File home) {
+    Path path = entry.startsWith('~/') ? home.toPath().resolve(entry.substring(2)) : kitchen.toPath().resolve(entry)
+    def file = path.toAbsolutePath()
+        .normalize()
+        .toFile()
+    URI.create(slashed(file.toURI().toString()))
+  }
+
+  private static String slashed(String uri) {
+    uri.endsWith('/') ? uri : "${uri}/"
   }
 }

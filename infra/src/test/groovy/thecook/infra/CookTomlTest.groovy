@@ -103,6 +103,16 @@ class CookTomlTest {
     assert error.message.endsWith('publish it there, or list its repository in cook.toml')
   }
 
+  @Test void readsARepositoryWhosePathHoldsASpace() {
+    def kitchen = folder.newFolder('kitchen')
+    publish(new File(kitchen, 'my repository'), ['acme/notes/notes.groovy': 'published notes'])
+    new File(kitchen, 'cook.toml').text = 'repositories = ["my repository"]\n'
+
+    def artifact = repositories(kitchen).artifact(Coordinates.parse('acme:notes:1.2.3'))
+
+    assert artifact.recipeSource('notes') == 'published notes'
+  }
+
   @Test void withoutCookTomlTheRepositoryIsMavenCentral() {
     assert repositories(folder.newFolder('kitchen')).repositories*.toString() == [CookToml.CENTRAL.toString()]
   }
