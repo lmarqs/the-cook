@@ -44,12 +44,13 @@ objective:
 4. An upgrade replaces the committed wrapper with another release's, changing the version and corresponding package
    checksums together for review.
    Ordinary invocations do not move the pin. A pin change does not automatically rewrite project files, migrate
-   configuration, update cookbooks, or choose a recipe version.
+   configuration, update cookbooks, or choose a recipe version; requested recipe updates follow
+   [0032](0032-recipe-updates.md).
 5. The wrapper passes CLI arguments to the engine. The invocation's current working directory remains the destination
    for declared writes regardless of the wrapper or package location. CI that chooses to invoke Cook uses the same
    pin and verification flow.
-6. Engine pinning is separate from cookbook distribution and recipe trust. Users manage recipe versions and supply
-   the version to cook.
+6. Engine pinning is separate from cookbook distribution and recipe trust; recipe-version selection follows
+   [0032](0032-recipe-updates.md).
 
 ## Reasons
 

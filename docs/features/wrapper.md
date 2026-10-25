@@ -70,9 +70,9 @@ checksums together. Review the pin change; on the next use, the wrapper obtains 
 verified download/cache flow. An ordinary
 invocation does not move the pin or select a newer engine release.
 
-Changing the engine pin does not manage recipe versions, fetch cookbook updates, or automatically cook recipes into
-project files. Cookbooks ship ingredients and recipes through their repositories and can have separate builds. Users
-supply the recipe version to cook.
+An engine upgrade does not move recipe versions, fetch cookbook updates, or automatically cook recipes into project
+files. Cookbooks ship ingredients and recipes through their repositories and can have separate builds. Users supply
+an exact recipe version when cooking or request a newer release under [0032](../adrs/0032-recipe-updates.md).
 
 ## CI
 

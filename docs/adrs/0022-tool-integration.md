@@ -55,8 +55,9 @@ objective:
   trade is that a recipe can propose replacing an edited target; the combined diff and whole-batch approval make that
   change visible.
 - **4.** The wrapper selects an engine package, not a team's program setup. Keeping these responsibilities distinct
-  avoids coupling cookbook maintenance to engine upgrades. The trade is that users select recipe versions themselves;
-  engine checksum verification does not establish cookbook trust ([0026](0026-cookbook-trust.md)).
+  avoids coupling cookbook maintenance to engine upgrades. Recipe-version selection follows
+  [0032](0032-recipe-updates.md); engine checksum verification does not establish cookbook trust
+  ([0026](0026-cookbook-trust.md)). The trade is that cookbook maintenance remains a separate request.
 
 ## Rejected alternatives
 

@@ -25,7 +25,8 @@ objective:
   or verify cookbook content ([0021](0021-release-trust.md)). A checksum obtained from the same replaceable source as
   an asset cannot independently establish that asset's author or trustworthiness.
 - `cook.lock` records each cooked recipe's source, sha256, normalized supplied arguments and owned targets (FR-14);
-  users manage recipe versions, and replicate replays recorded inputs ([0007](0007-ownership.md)).
+  replicate replays recorded inputs ([0007](0007-ownership.md)), and requested version changes follow
+  [0032](0032-recipe-updates.md).
 
 ## Decision
 
@@ -54,18 +55,18 @@ objective:
 - **3.** FR-9 and FR-11 through FR-13 make visible requested changes and explicit approval the write boundary. An
   ownership veto or an import step would add a reconciliation step that the diff makes unnecessary. The trade is that
   edited values can be replaced after review; recovery protects declared writes, not every effect of the supplied code.
-- **4.** FR-26 pins the engine package, while FR-2 leaves cookbook distribution separate and users supply recipe
-  versions. The sha256 in `cook.lock` identifies which recipe version produced the current ownership (FR-14); it does
-  not vouch for that source. Keeping the verification claims separate prevents a trusted engine from implying trusted
-  inputs. The trade is that no engine check establishes cookbook authenticity.
+- **4.** FR-26 pins the engine package, while FR-2 leaves cookbook distribution separate; recipe-version selection
+  follows [0032](0032-recipe-updates.md). The sha256 in `cook.lock` identifies which recipe version produced the current
+  ownership (FR-14); it does not vouch for that source. Keeping the verification claims separate prevents a trusted
+  engine from implying trusted inputs. The trade is that no engine check establishes cookbook authenticity.
 
 ## Rejected alternatives
 
 ### Commit a reviewed hash for every cookbook source
 
 At its best, committed hashes verified on each load detect changed bytes after selection. It loses because they do
-not prove the code is safe or its author authentic, and the architecture does not select them; users manage the
-versions they supply.
+not prove the code is safe or its author authentic, and the architecture does not select them; requested version
+selection follows [0032](0032-recipe-updates.md).
 
 ### Treat the engine checksum or batch approval as cookbook authentication
 
@@ -89,7 +90,8 @@ make, and authenticated code would still require trust.
 Costs:
 
 - Users trust sources before execution; declared-operation review and rollback cannot recover arbitrary code effects.
-- Users manage recipe versions independently of engine package pins; an engine upgrade cannot establish input trust.
+- Recipe updates follow [0032](0032-recipe-updates.md), independently of engine package pins; an engine upgrade
+  cannot establish input trust.
 
 Must be maintained:
 

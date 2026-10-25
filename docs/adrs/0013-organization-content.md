@@ -33,10 +33,10 @@ objective:
    becoming engine policy. Cook handles recipe evaluation and the ordered file-operation batch, review, recovery
    and writes; ingredients model native program configuration.
 2. Cookbooks distribute their ingredients and recipes through their repositories and may build independently.
-   Engine upgrades do not manage recipe versions.
+   An engine upgrade does not move recipe versions.
 3. Reused content can participate in recipe evaluation from paths inside the destination repository or by
-   coordinates from a cookbook release ([0029](0029-cookbook-distribution.md)). Users manage recipe versions
-   and supply the version to cook; replicate repeats the inputs recorded in `cook.lock`
+   coordinates from a cookbook release ([0029](0029-cookbook-distribution.md)). Requested recipe-version changes
+   follow [0032](0032-recipe-updates.md); replicate repeats the inputs recorded in `cook.lock`
    ([0007](0007-ownership.md)).
 4. Ordered composition, ownership and review of the resulting changes follow [0007](0007-ownership.md).
 5. Native output stays readable without Cook ([0010](0010-dependence-on-the-binary.md)), and `cook.lock` names the
@@ -76,8 +76,8 @@ and captured consumed sources provide distinct views without forbidding composit
 
 At its best, content written only where a target is absent never overwrites a local change, and a three-way merge
 against a stored copy of a recipe's previous output reconciles upstream and local edits. It loses because add-only
-writes prevent intentional updates, and three-way merges make the engine store and manage recipe versions. Users
-supply recipe versions, and the diff against current content shows local edits before approval.
+writes prevent intentional updates, and three-way merges require stored copies of earlier output. Requested version
+changes follow [0032](0032-recipe-updates.md), and the diff against current content shows local edits before approval.
 
 ## Consequences
 
@@ -91,7 +91,7 @@ Costs:
 Must be maintained:
 
 - Cookbook authors maintain program models and shared recipes independently; teams review the resulting native-file
-  changes and manage the recipe versions they supply.
+  changes, including recipe-version changes under [0032](0032-recipe-updates.md).
 
 ## Confirmation
 

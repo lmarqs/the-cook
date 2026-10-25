@@ -25,7 +25,7 @@ define ordered file changes, review, recorded ownership and discard.
    invocations. Recipes and their operations compose left to right into one final batch diff; later declarations
    can replace earlier values. Cooking a recipe does not remove outputs another recipe owns. Existing or edited
    targets use the same review and approval flow; recorded ownership never blocks a change.
-3. Users manage recipe versions and supply the version they intend to cook. Each recipe has a short name that
+3. Recipe-version selection follows [0032](0032-recipe-updates.md). Each recipe has a short name that
    markers and `cook.lock` use: a path's place in the repository without `.groovy`, such as `recipes/setup`, or
    coordinates without the version, such as `com.acme.cookbook:editor#setup`. `cook.lock` records its source,
    sha256, normalized supplied arguments and owned targets; replicate replays those inputs
@@ -53,9 +53,9 @@ define ordered file changes, review, recorded ownership and discard.
   later recipe can replace a local value; whole-batch review exposes that change.
 - **3.** FR-14 records what each recipe owns, so a new version's removals follow from the lock rather than from
   reevaluating an earlier version, and FR-15 discards a recipe from the lock alone. The short name ties
-  versions of one recipe together without a stored copy of the previous version for merging, which would add version
-  management outside the agreed design. Users supply a version to change it or name a recorded recipe to repeat its
-  source and arguments through replicate ([0007](0007-ownership.md)). Both short-name rules come from the operand
+  versions of one recipe together without a stored copy of the previous version for merging. Requested version
+  changes follow [0032](0032-recipe-updates.md); replicate repeats recorded sources and arguments
+  ([0007](0007-ownership.md)). Both short-name rules come from the operand
   alone, so discard names a recipe whose file is gone.
   The trade of renaming by discard is a second command after moving a file.
 - **4.** The lock's source and sha256 identify which recipe version produced the current output; the repository or
@@ -110,7 +110,7 @@ is a second way to declare an input that the engine cannot see before the recipe
 
 Costs:
 
-- Users choose and maintain the recipe versions they supply.
+- Users review recipe updates under [0032](0032-recipe-updates.md).
 - A reviewed batch is not proof that tests ran or that arbitrary recipe effects are recoverable.
 
 Must be maintained:

@@ -306,9 +306,10 @@ Suppose the recipe declares `@resource('../templates/settings.toml') String sett
 ## Command line and build boundary
 
 The CLI is the public cooking interface, and Gradle builds and packages Cook and cookbooks (FR-5). Without a command
-word, `./cook` cooks the recipes it is given; `discard`, `replicate` and `help` are the other commands. Replicate cooks
-from recorded sources and arguments. Batch options precede the first recipe operand, and recipe arguments follow
-their recipe when cooking; discard and replicate take none. The [CLI reference](features/cli.md) defines the
+word, `./cook` cooks the recipes it is given; `check`, `update`, `discard`, `replicate` and `help` are the other
+commands. Replicate cooks from recorded sources and arguments; update requests newer recipe releases
+([0032](adrs/0032-recipe-updates.md)). Batch options precede the first recipe operand, and recipe arguments follow
+their recipe when cooking; check, update, discard and replicate take none. The [CLI reference](features/cli.md) defines the
 syntax, recipe operands, argument scope, and batch options (FR-17 through FR-20).
 
 ## Engine distribution
@@ -329,8 +330,9 @@ each package; [the wrapper](features/wrapper.md) describes pinning, checksum ver
 caching, and explicit upgrades.
 
 Engine releases supply the packaged runtime. Cookbook repositories hold and ship ingredients and recipes, with
-builds that can be independent of the engine build. Users supply the recipe version they intend to cook;
-`cook.lock` records which version produced the current ownership.
+builds that can be independent of the engine build. Users supply an exact recipe version when cooking or ask Cook
+to choose a newer release ([0032](adrs/0032-recipe-updates.md)); `cook.lock` records which exact version produced the
+current ownership. An engine upgrade does not move recipe versions.
 
 The root README's [install section](../README.md#install) describes installing a release.
 
@@ -405,11 +407,12 @@ Other documents cite these requirements by number.
 ### CLI grammar
 
 - **FR-17:** The commands are `./cook [batch-options] <recipe> [recipe-arguments]...`, which cooks the recipes,
-  `./cook check [<name>]...`, `./cook replicate [batch-options] [<name>]...`,
+  `./cook check [<name>]...`, `./cook update [batch-options] [--major] [<name>]...`,
+  `./cook replicate [batch-options] [<name>]...`,
   `./cook discard [batch-options] <name>...`, and `./cook help [<recipe>]...`. With no arguments, `help` alone, or
   `--help` alone, show the usage. `help` prints each recipe's help from its source without running it. A first operand
-  of exactly `check`, `discard`, `replicate` or `help` selects that command; a recipe file with one of those names is
-  supplied as a path, such as `./replicate`. Cook exits 0 when it did what was asked, 1 when nothing was written
+  of exactly `check`, `update`, `discard`, `replicate` or `help` selects that command; a recipe file with one of those
+  names is supplied as a path, such as `./replicate`. Cook exits 0 when it did what was asked, 1 when nothing was written
   because approval was declined or missing or `check` found a difference, and 2 on an error.
 - **FR-18:** Recipe operands are paths inside the destination repository, or coordinates
   `group:artifact:version#recipe` resolved from the repositories the destination's `cook.toml` lists. An operand
@@ -420,10 +423,11 @@ Other documents cite these requirements by number.
   as `--name=value` or `--name value`, including shell-quoted values. After `--name`, the next word is its value unless
   it is a recipe operand, so a value that looks like an operand is written with `=`. A yes-or-no param is a bare
   `--name`, or `--name=false`, and takes no separate value. A recipe appears once per invocation. A misplaced batch
-  option after a recipe receives the normal unknown-option error. Check, replicate and discard take recipes
+  option after a recipe receives the normal unknown-option error. Check, update, replicate and discard take recipes
   without arguments, only by the lock's version-less name, such as `group:artifact#recipe`. Check and replicate take
   source versions and arguments only from the lock; replicate's batch options are kitchen selection, `--dry-run` and
-  `--batch-approve`, and check takes only kitchen selection.
+  `--batch-approve`, and check takes only kitchen selection. Update takes kitchen selection, `--dry-run`,
+  `--batch-approve` and `--major`, selecting newer releases under [0032](adrs/0032-recipe-updates.md).
 - **FR-20:** `--batch-approve` is the only preapproval spelling.
 
 ### Paths

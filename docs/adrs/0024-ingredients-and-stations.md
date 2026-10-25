@@ -30,8 +30,8 @@ objective:
    current content; nothing marks setup as already cooked. Later operations can replace earlier values in
    one combined diff. Existing or edited content uses the same whole-batch approval flow; recorded ownership never
    blocks a change. Omitting a recipe leaves its earlier output in place.
-3. Engine version and checksum pinning is separate from cookbook builds and user-managed recipe versions. `cook.lock`
-   records which recipe version produced the current ownership without selecting the next one.
+3. Engine version and checksum pinning is separate from cookbook builds and recipe-version selection
+   ([0032](0032-recipe-updates.md)). `cook.lock` records which recipe version produced the current ownership.
 
 ## Reasons
 
@@ -42,9 +42,9 @@ objective:
   add-only or already-cooked rule would silently replace that contract. The trade is that cooking shared setup can
   propose replacing a local value; the reviewer sees the final diff before approving the batch.
 - **3.** An engine pin chooses an executable package, while a supplied recipe chooses the requested setup. Treating
-  the lock as an update baseline would add the recipe-version management the architecture excludes;
-  the lock records inputs and ownership, and replicate replays those inputs ([0007](0007-ownership.md), FR-14, FR-25).
-  The trade is that users supply new versions explicitly, independently of engine upgrades.
+  recorded inputs as an instruction to upgrade would conflate replay with a request for newer content
+  ([0032](0032-recipe-updates.md)); replicate replays recorded inputs ([0007](0007-ownership.md), FR-14, FR-25).
+  The trade is that recipe updates need a separate request, independently of engine upgrades.
 
 ## Rejected alternatives
 
@@ -65,8 +65,8 @@ requested diff replaces a first-value-wins engine rule.
 
 Costs:
 
-- Updating reusable setup requires supplying the intended recipe version and reviewing changes to current content;
-  engine pins and the lock do not perform that selection.
+- Updating reusable setup requires a request under [0032](0032-recipe-updates.md) and review of changes to current
+  content, separately from engine pin changes.
 
 Must be maintained:
 
