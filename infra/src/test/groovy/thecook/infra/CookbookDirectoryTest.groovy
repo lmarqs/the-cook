@@ -61,6 +61,14 @@ class CookbookDirectoryTest {
     assert error.message == "${new File(book, 'cookbook.toml')} must name the cookbook's group"
   }
 
+  @Test void cannotListReleasesForAnArtifactItServes() {
+    def book = cookbook(['src/notes/notes.groovy': 'notes'])
+
+    assert book.versions('acme', 'notes') == null
+    assert book.versions('other', 'notes') == []
+    assert book.versions('acme', 'missing') == []
+  }
+
   private CookbookDirectory cookbook(Map<String, String> files) {
     def book = folder.newFolder('book')
     new File(book, 'cookbook.toml').text = 'group = "acme"\n'

@@ -30,9 +30,3 @@ final class CookbookRepositories {
     'publish it there, or list its repository in cook.toml'))
   }
 }
-
-/** A repository that cookbook artifacts resolve from. Its `toString` names it in messages. */
-interface CookbookRepository {
-  /** The artifact that `coordinates` name, or `null` when this repository does not hold it. */
-  CookbookArtifact artifact(Coordinates coordinates)
-}

@@ -50,6 +50,10 @@ final class CookbookDirectory implements CookbookRepository {
     new CookbookArtifact(coordinates, files)
   }
 
+  List<String> versions(String group, String artifact) {
+    group == this.group && new File(directory, "src/${artifact}").isDirectory() ? null : []
+  }
+
   @Override String toString() {
     uri.toString()
   }
