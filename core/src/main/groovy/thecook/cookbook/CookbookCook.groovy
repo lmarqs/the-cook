@@ -24,8 +24,11 @@ final class CookbookCook {
     this.existing = existing
   }
 
-  /** Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`. */
-  Proposal propose(List<RecipeRequest> requests) {
+  /**
+   * Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`.
+   * `updating` directs failed recorded arguments to the new release's help.
+   */
+  Proposal propose(List<RecipeRequest> requests, boolean updating = false) {
     def loader = new RecipeLoader(destination, repositories)
     def draft = new Draft(destination)
     def ownership = new Ownership(draft, existing)
@@ -60,8 +63,10 @@ final class CookbookCook {
 
         if (request.replayed && cause instanceof ArgumentBindingException) {
           def line = request.arguments.collect { "--${it.name}=${it.value}" }.join(' ')
-          message = Diagnostic.text(message, "arguments recorded in ${CookLock.PATH}: ${line}",
-              'cook it with its arguments')
+          def next = updating ? "read `./cook help ${request.operand}` and cook it with its new arguments" :
+              'cook it with its arguments'
+          message = Diagnostic.text(updating ? cause.withArguments : message,
+              "arguments recorded in ${CookLock.PATH}: ${line}", next)
         }
 
         throw new IllegalArgumentException("${label}: ${message}", cause)

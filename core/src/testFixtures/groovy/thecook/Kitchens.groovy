@@ -50,13 +50,21 @@ class Kitchens {
     jar
   }
 
-  /** The repositories that resolve the jars `publish` wrote under the kitchen. */
+  /** The repositories that resolve and list the releases `publish` wrote under the kitchen. */
   static CookbookRepositories repositories(File kitchen) {
     def directory = new File(kitchen, 'repository')
-    def jars = { Coordinates coordinates ->
-      def jar = new File(directory, coordinates.jarPath)
-      jar.isFile() ? CookbookArtifact.fromZip(coordinates, jar.bytes, coordinates.packagePath) : null
-    } as CookbookRepository
+    def jars = [
+      artifact: { Coordinates coordinates ->
+        def jar = new File(directory, coordinates.jarPath)
+        jar.isFile() ? CookbookArtifact.fromZip(coordinates, jar.bytes, coordinates.packagePath) : null
+      },
+      versions: { String group, String artifact ->
+        def releases = new File(directory, "${group.replace('.', '/')}/${artifact}")
+        (releases.listFiles() ?: []).findAll { release ->
+          release.isDirectory() && new File(release, "${artifact}-${release.name}.jar").isFile()
+        }*.name.sort()
+      },
+    ] as CookbookRepository
     new CookbookRepositories([jars], directory.path)
   }
 

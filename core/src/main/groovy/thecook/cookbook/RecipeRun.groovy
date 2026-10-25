@@ -38,12 +38,11 @@ final class RecipeRun {
           .toList()
     }
     Map<String, List<String>> given = [:]
+    def unknown = arguments*.name.findAll { !(it in names) }
+    def takes = names ? 'its arguments are ' + names.collect { "--${it}" }.join(', ') : 'it takes no arguments'
 
     try {
-      def unknown = arguments*.name.findAll { !(it in names) }
-
       if (unknown) {
-        def takes = names ? 'its arguments are ' + names.collect { "--${it}" }.join(', ') : 'it takes no arguments'
         throw new IllegalArgumentException(Diagnostic.text("Unknown argument --${unknown.first()}", takes))
       }
 
@@ -57,7 +56,7 @@ final class RecipeRun {
         }
       }
     } catch (IllegalArgumentException error) {
-      throw new ArgumentBindingException(error)
+      throw new ArgumentBindingException(error, unknown ? error.message : Diagnostic.text(error.message, takes))
     }
 
     fields.findAll { it.getAnnotation(Resource) }.each { field ->
@@ -242,7 +241,10 @@ final class Evaluation {
 
 /** An argument rejected while binding params, before the recipe's body runs. */
 final class ArgumentBindingException extends IllegalArgumentException {
-  ArgumentBindingException(IllegalArgumentException cause) {
+  final String withArguments
+
+  ArgumentBindingException(IllegalArgumentException cause, String withArguments) {
     super(cause.message, cause)
+    this.withArguments = withArguments
   }
 }
