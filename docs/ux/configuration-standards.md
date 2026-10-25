@@ -30,7 +30,7 @@ of the batch they approve.
 | --- | --- | --- |
 | Native configuration and guidance | Paths declared by recipes within the destination, where the program reads them | Settings, ignore entries, instruction files, skills, and other requested output |
 | Recipe and template sources | Paths inside the destination repository, or coordinates from a cookbook release | Trusted input; relative references resolve from the referencing recipe's location |
-| Ownership lock | Committed `cook.lock` at the repository root | Each cooked recipe's short name, source, sha256, and owned sections, keys, and files |
+| Ownership lock | Committed `cook.lock` at the repository root | Each cooked recipe's short name, source, sha256, arguments, and owned sections, keys, files, and links |
 | Engine wrapper | Committed `./cook` | Pins the engine version and package checksum; first use fetches and caches the platform package |
 
 Committed ownership lives in `cook.lock`; Cook keeps no other state in the destination. A recipe may use shared
