@@ -38,8 +38,8 @@ stage the layout before running it on uncommitted work. Then make the checks a s
 - `.agents/README.md` and `.agents/permission/policy.yaml` differ from `.agents/skills/agents-layout/templates/` only
   where the team chose to. Seeded files are written once, so a later release's template changes reach them by hand.
 - `git ls-files .claude .codex` lists only links.
-- `./cook --check io.github.lmarqs.cookbook:agents:<version>#connect`, naming every harness the team uses, exits 0
-  with `Already cooked.`; exit 1 and a diff mean the adapters or links no longer match `policy.yaml`.
+- `./cook check io.github.lmarqs.cookbook:agents#connect` exits 0 with `Already cooked.`, and `cook.lock` records every
+  harness the team uses; exit 1 and a diff mean the adapters or links no longer match `policy.yaml`.
 
 Report each finding as the script does: what, where, and the step that closes it.
 

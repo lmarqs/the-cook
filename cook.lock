@@ -3,7 +3,7 @@ version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
-    sha256: "22ed031cc44f9a635d2e9c2b56a9054dea7bf43cb391c79bd7d26550f4c87f11"
+    sha256: "38d3d3bf73f39e4f5574382a44b9495376323ec1ee964961c55a73b43530d578"
     arguments:
       "harness": ["claude","codex"]
       "worktree-setup": [".worktrees/setup"]
@@ -43,7 +43,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "ee171e0e01345b9029b759de0fb138287386575d59aa02ebbe9a736303463345"
+    sha256: "38d3d3bf73f39e4f5574382a44b9495376323ec1ee964961c55a73b43530d578"
     arguments: {}
     owns:
       files:
@@ -61,7 +61,7 @@ recipes:
         - ".agents/skills/agents-layout/templates/policy.template.yaml"
   - name: "io.github.lmarqs.cookbook:git#worktrees"
     source: "io.github.lmarqs.cookbook:git:4.2.0#worktrees"
-    sha256: "a48d044b0801e6129bb5270999753f887ec1231ea98bbe322e615952139df0e7"
+    sha256: "f7213b67b20747c9597662c99d7a183fe26c65d48816e98d8b76776ac31b2895"
     arguments:
       "instructions": ["AGENTS.md"]
     owns:
