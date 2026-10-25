@@ -5,7 +5,12 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git push *)",
-      "Bash(./gradlew check *)"
+      "Bash(./gradlew check *)",
+      "Bash(./gradlew -p core check *)",
+      "Bash(./gradlew -p infra check *)",
+      "Bash(./gradlew -p cli check *)",
+      "Bash(./gradlew -p docs check *)",
+      "Bash(./gradlew -p cookbook check *)"
     ],
     "ask": [],
     "deny": [

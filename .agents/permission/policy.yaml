@@ -20,6 +20,7 @@ commands:
   allow:
     - [git, [status, diff, log, push]]
     - [./gradlew, check]
+    - [./gradlew, -p, [core, infra, cli, docs, cookbook], check]
   ask: []
   deny:
     - [git, reset, --hard]
