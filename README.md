@@ -145,10 +145,9 @@ A path outside the kitchen, through a symbolic link too, is refused.
 
 Of the [cookbook](cookbook/README.md), the `agents`, `git`, `beads`, `ralph` and `hello` artifacts run; the other
 directories are a design sketch that has not been compiled. `./gradlew -p cookbook publishToMavenLocal` packages the
-cookbook with
-plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the engine compiles an
-artifact's sources when one of its recipes is cooked. `./gradlew -p cookbook test` runs the recipes' tests, under
-`cookbook/test/`.
+cookbook with plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the
+engine compiles an artifact's sources when one of its recipes is cooked. `./gradlew -p cookbook test` runs the recipes'
+tests, under `cookbook/test/`.
 
 ### Development tooling
 
