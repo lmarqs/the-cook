@@ -216,7 +216,7 @@ A recipe's `@help` describes it by what it provides, consumes and connects to, b
    that must agree.
 6. **Run-time effects:** what the scripts it installs do when run.
 7. **Re-cooking:** the arguments to repeat, what cooking a newer version changes, and how conditional parts behave under
-   `--check`.
+   `./cook check`.
 8. **Traps:** known faults of the versions written for.
 
 What to do after cooking belongs in `@yield`, which `help` prints as "After cooking".

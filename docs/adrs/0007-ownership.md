@@ -50,11 +50,11 @@ objective:
    - Discarding recipes removes what `cook.lock` lists for each, without evaluating them: a section with its markers,
      a key, a whole file or a link. A file left empty is deleted, and each recipe's entry leaves the lock. Discard
      restores no value the recipe replaced. It follows the same diff and whole-batch approval as cooking.
-   - Replicate evaluates named recipes again from their recorded sources and arguments, in operand order, through
-     cooking's diff and whole-batch approval. It uses the recorded version even when an operand names another, and
-     refuses a missing entry or one whose arguments are unrecorded or unreadable; `arguments: {}` is valid. A changed
-     source, including a changed recipe path, is reported before the diff. Replicate rebuilds output against current
-     content; it does not restore saved bytes.
+   - Replicate evaluates named recipes, or every recipe the lock lists, again from their recorded sources and
+     arguments, in operand order, through cooking's diff and whole-batch approval. It takes recipes by their lock
+     names, uses the recorded version, and refuses a missing entry or one whose arguments are unrecorded or
+     unreadable; `arguments: {}` is valid. A changed source, including a changed recipe path, is reported before the
+     diff. Replicate rebuilds output against current content; it does not restore saved bytes.
 7. Cooking supplied recipes does not require `cook.lock`; replicate requires its recorded inputs. Both evaluate
    recipes again; cooking never skips a recipe as already cooked. An unchanged result may have an empty diff.
 8. Cook keeps no history of its own. `cook.lock` is its only record; on a write failure, Cook rolls back the batch's
@@ -160,6 +160,6 @@ Must be maintained:
   invocation evaluates again.
 - In a fresh clone with ignored output absent, replicating a named recipe rebuilds it from the recorded source and
   arguments and shows the combined diff before approval. A second replicate evaluates again and can have no changes.
-- Replicate refuses an entry without recorded arguments but accepts `arguments: {}`; a versioned operand still uses
-  the recorded source version, and a changed source is reported before the diff.
+- Replicate refuses an entry without recorded arguments but accepts `arguments: {}`; a versioned operand is refused
+  with the lock name, and a changed source is reported before the diff.
 - A write failure rolls back completed batch changes and leaves no file of Cook's behind.

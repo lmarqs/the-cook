@@ -184,7 +184,7 @@ apply is omitted: a recipe that installs no script has no Run-time effects.
 | Produces | A table of `Target`, `Part`, `When` and `Kind`. `When` is the argument value or draft condition that triggers the row, or `Always`. `Kind` is `owned`, rewritten on every cook and removed by discard; `seed`, written when absent and never owned; or `link`, an owned symbolic link. Then how the written setup behaves, closing with `Never touches:` and the files in its topic it leaves to others |
 | Connections | Each contact point with another recipe, tool or person, and who makes it: Cook, automatically, only between the recipe's own files; the person, by a parameter, for every contact with another recipe's or the team's files ([0030](../docs/adrs/0030-recipe-connections.md)); the team, in seeds it owns; the session, at launch. Then the order and the arguments that must agree |
 | Run-time effects | What the scripts the recipe installs do when run |
-| Re-cooking | The arguments to repeat, as the opening line of its owned sections names them; what cooking a newer version changes; how its conditional parts behave under `--check` |
+| Re-cooking | The arguments to repeat, as the opening line of its owned sections names them; what cooking a newer version changes; how its conditional parts behave under `./cook check` |
 | Traps | Known faults of the versions written for, each with its workaround |
 
 What to do after cooking is not a section of `@help`: it belongs in `@yield`, which `help` prints as "After cooking".

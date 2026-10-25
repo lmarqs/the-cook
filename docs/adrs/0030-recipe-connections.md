@@ -16,11 +16,11 @@ objective:
 - `cook.lock` records each recipe's source and normalized supplied arguments, which replicate replays
   ([0007](0007-ownership.md)). Every owned section also opens with a comment line naming the recipe and those
   arguments ([generated content](../ux/generated-content-standards.md)), so a reader sees them beside the output.
-  Re-cooking repeats those arguments, and `--check` compares the result with the destination.
+  Re-cooking repeats those arguments, and `./cook check` compares the result with the destination.
 - A model can read the current content of any file in the destination, including a file another recipe in the same
   invocation writes.
 - Worked example: acme cooks a tracker recipe that adds a session-start script whenever it finds an agents layout's
-  hooks directory. A later commit adds the layout. `./cook --check` with the tracker's unchanged arguments now reports
+  hooks directory. A later commit adds the layout. `./cook check` with the tracker's unchanged arguments now reports
   the tracker as changed, and removing the layout makes the script disappear on the next cook, although nobody asked
   for either.
 - Programs ship adapters to other programs themselves: bd 1.3.1's `bd setup` lists integrations for 14 coding agents,
@@ -50,9 +50,9 @@ objective:
 ## Reasons
 
 - **1.** The arguments in the lock are what replicate repeats, and the opening line shows them beside a section for
-  review and an explicit re-cook or `--check`. A write that depends on another recipe's files makes `--check` report a
-  change with no argument changed, and makes the result depend on which recipe was cooked first. The trade is an
-  argument to type where detection would have guessed right.
+  review and an explicit re-cook or `./cook check`. A write that depends on another recipe's files makes the check
+  report a change with no argument changed, and makes the result depend on which recipe was cooked first. The trade
+  is an argument to type where detection would have guessed right.
 - **2.** A parameter puts the connection in the lock and on the argument line, so it is reviewed, repeated on every
   replicate and removed by cooking without it. The recipe knows the shape of the meeting point, a directory of scripts
   or a settings file, and not which recipe provides it, so either side can change without the other. The trade is that
@@ -73,7 +73,7 @@ objective:
 
 At its best, a person cooks two recipes and they find each other with no argument, and the setup appears as soon as
 both sides exist. It loses because the result changes with files the recipe does not own, which no argument records,
-so reviewing, re-cooking and `--check` cannot explain it.
+so reviewing, re-cooking and `./cook check` cannot explain it.
 
 ### A convention directory every recipe writes to
 

@@ -10,8 +10,9 @@ see the root README's [current implementation](../../README.md#current-implement
 
 ```text
 ./cook [-C <dir>] [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
-./cook discard [-C <dir>] [batch-options] <recipe>...
-./cook replicate [-C <dir>] [batch-options] <recipe>...
+./cook check [-C <dir>] [<name>]...
+./cook replicate [-C <dir>] [batch-options] [<name>]...
+./cook discard [-C <dir>] [batch-options] <name>...
 ./cook help [-C <dir>] [<recipe>]...
 ./cook --help
 ./cook --version
@@ -24,25 +25,29 @@ version the build wrote into the engine, and takes no other arguments either.
 
 ## Commands
 
-| Operation | Operand | Proposed change |
-| --- | --- | --- |
-| Cook, without a command word | One or more recipes, with arguments for each | Declared additions and updates against current content, and removal of what each recipe's previous version owned and no longer declares |
-| Discard | One or more recipes, without arguments | Removal of what `cook.lock` lists for each recipe; no recipe runs |
-| Replicate | One or more recipes, without arguments | Cook again from the sources and arguments recorded in `cook.lock` |
-| Help | One or more recipes, without arguments | Show each recipe's help in order; read only, and no recipe runs |
+| Operation | Operand | Proposed change | Use it to |
+| --- | --- | --- | --- |
+| Cook, without a command word | One or more recipes, with arguments for each | Declared additions and updates against current content, and removal of what each recipe's previous version owned and no longer declares | Choose or change a recipe's version or arguments |
+| Check | Lock names, without arguments; none is every recipe `cook.lock` lists | None: it reports what replicate would change and exits 1 when anything would | Find a kitchen that differs from its lock, in CI or before a commit |
+| Replicate | Lock names, without arguments; none is every recipe `cook.lock` lists | Cook again from the sources and arguments recorded in `cook.lock` | Fix what check reports, or recreate output a clone does not commit |
+| Discard | One or more lock names, without arguments | Removal of what `cook.lock` lists for each recipe; no recipe runs | Remove what a recipe owns |
+| Help | One or more recipes, without arguments | Show each recipe's help in order; read only, and no recipe runs | Read a recipe |
 
-The [architecture](../architecture.md#cooking-and-discard) defines these operations; [cooking](cook.md) and
-[discard](discard.md) and [replicate](replicate.md) explain them with examples.
+The [architecture](../architecture.md#cooking-and-discard) defines these operations; [cooking](cook.md),
+[check](#check), [replicate](replicate.md) and [discard](discard.md) explain them with examples.
 
 ```sh
 # Cook a recipe
 ./cook ./recipe.groovy
 
-# Remove what two recipes own
-./cook discard io.github.lmarqs.cookbook:agents#connect ./recipe.groovy
+# Report whether the kitchen matches cook.lock
+./cook check
 
 # Recreate a recipe's output from the lock
 ./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
+
+# Remove what two recipes own
+./cook discard io.github.lmarqs.cookbook:agents#connect recipe
 ```
 
 ## Recipe operands
@@ -69,14 +74,21 @@ from its source without running it or resolving its imports. It is the one way t
 ./cook help ./recipes/project.groovy ./recipes/dependency.groovy
 ```
 
-Discard and replicate also accept the short name as `cook.lock` writes it: `group:artifact#recipe`, without a
-version, or a path's place in the kitchen without `.groovy`, such as `recipes/setup`. Cooking and help still require
-versioned coordinates. Discard and replicate take no recipe arguments and match by short name, so a versioned operand
-identifies whichever version the lock records. Discard resolves no coordinates, and a path matches after its file is
-gone. Replicate loads the recorded source and arguments, so that source must be available.
+## Lock names
 
-A first operand equal to `discard`, `replicate` or `help` selects that command. To cook a recipe file named `discard`,
-`replicate` or `help`, make its path explicit:
+Check, replicate and discard read `cook.lock`, so they take a recipe only by its lock name, the short name `cook.lock`
+writes: `group:artifact#recipe`, without a version, or a path's place in the kitchen without `.groovy`, such as
+`recipes/setup`. A versioned operand or a `.groovy` path is refused with the lock name to write instead, such as
+`acme:notes:1.2.3#notes is not a name cook.lock writes` above `write acme:notes#notes`, because the lock, not the
+operand, selects the version. A lock name that is not in `cook.lock` is refused with the names it lists. These
+commands take no recipe arguments. Discard resolves no coordinates, so a path's lock name matches after its file is
+gone. Check and replicate load the recorded source and arguments, so that source must be available.
+
+Without names, check and replicate take every recipe `cook.lock` lists, in the order it lists them, and refuse a
+kitchen without `cook.lock`. Discard always takes names, because it removes output.
+
+A first operand equal to `check`, `discard`, `replicate` or `help` selects that command. To cook a recipe file named
+`check`, `discard`, `replicate` or `help`, make its path explicit:
 
 ```sh
 ./cook ./discard
@@ -188,7 +200,6 @@ cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
 | --- | --- | --- | --- |
 | `--batch-approve` | Cooking, `discard` and `replicate` | Before the first recipe operand | Displays the final diff and proceeds without prompting; approval covers the whole batch |
 | `--dry-run` | Cooking, `discard` and `replicate` | Before the first recipe operand | Displays the final diff and writes nothing |
-| `--check` | Cooking | Before the first recipe operand | Displays what `--dry-run` displays, writes nothing, and exits 1 when anything would change; `Already cooked.` exits 0. It excludes `--batch-approve` |
 
 `--batch-approve` is the batch option and the only preapproval spelling. Without it, Cook asks before changing target
 files. Noninteractive execution without this flag does not silently authorize writes.
@@ -201,16 +212,7 @@ follows shows what the changed sources write. Replicate also reports edited path
 ```sh
 ./cook --batch-approve ./recipe.groovy
 ./cook --batch-approve ./a.groovy ./b.groovy
-./cook discard --batch-approve ./recipe.groovy
-```
-
-`--check` is for CI: a step that cooks the kitchen's recipes with it fails when someone changed a recipe's input, such
-as a policy file, and did not cook and commit the result. It ends with this diagnostic on stderr:
-
-```text
-cook: the recipes would change 2 files; nothing was written
-  --check reports what a cook would change
-  cook the same recipes without --check, review the diff and commit it
+./cook discard --batch-approve recipe
 ```
 
 A batch option after a recipe receives the normal unknown-option error. This invocation fails:
@@ -224,6 +226,43 @@ Put the option before the first recipe instead:
 ```sh
 ./cook --batch-approve ./a.groovy
 ```
+
+## Check
+
+`./cook check` answers whether the kitchen matches `cook.lock`: it cooks each named recipe, or every recipe the lock
+lists, again from the source and arguments the lock records, as [replicate](replicate.md) does, and writes nothing. A
+CI step or a pre-commit hook runs it to fail when someone changed a recipe's input, such as a policy file, and did not
+cook and commit the result. The step names no version and no argument, so it stays as it is when a recipe is upgraded
+or cooked with other arguments.
+
+```sh
+./cook check
+./cook check io.github.lmarqs.cookbook:agents#connect
+```
+
+When nothing would change, check prints `Already cooked.` and exits 0. Otherwise it prints each `Changed source`
+notice, the diff and a `Would create`, `Would update`, `Would delete` or `Would replace` line per path, and exits 1 with
+this diagnostic on stderr, naming the recipes it was given:
+
+```text
+cook: check: 2 files differ from what cook.lock records; nothing was written
+  check cooks each recipe again from the source and arguments cook.lock records
+  run ./cook replicate, review the diff and commit it
+```
+
+Check shows no `Confirm` texts and asks nothing, because it never writes; it takes `-C` and no batch option. Output a
+clone does not commit, such as `.ralph-tui/` with `--share=clone`, is absent from a fresh clone, so check reports it
+there; a CI step names the recipes whose output is committed.
+
+## Exit status
+
+| Status | Meaning |
+| --- | --- |
+| 0 | The command did what it was asked: it wrote the changes, found nothing to change or printed what was asked |
+| 1 | Nothing was written because the approval was declined or missing, or check found a difference |
+| 2 | An error: a misused command line, a refused operand, a recipe that failed to load or evaluate, or a failed write |
+
+A CI step therefore tells a kitchen that differs from its lock, status 1, from a check that could not run, status 2.
 
 ## Kitchen
 

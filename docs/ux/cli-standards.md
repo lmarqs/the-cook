@@ -35,10 +35,12 @@ recipe and template references resolve.
 
 ## Command grammar
 
-The [CLI reference](../features/cli.md) defines the commands: cooking, with no command word, as the default; `discard`
-and `replicate` with named recipes; and `help` with recipes. Discard and replicate accept the version-less lock name,
-versioned coordinates or a recipe path, without recipe arguments. It also defines recipe operands, per-recipe argument
-scope and the placement of batch options before the first operand. Help, messages and examples follow that grammar,
+The [CLI reference](../features/cli.md) defines the commands: cooking, with no command word, as the default; `check`,
+`replicate` and `discard`, which read `cook.lock`; and `help` with recipes. The commands that read `cook.lock` take
+recipes only by the lock name, without recipe arguments, and refuse versioned coordinates or a `.groovy` path with the
+lock name to write, because a second spelling for one entry would let an operand name a version the lock overrides.
+It also defines recipe operands, per-recipe argument scope and the placement of batch options before the first
+operand. Help, messages and examples follow that grammar,
 because callers predict what a command does from its operands and argument scope.
 
 Each argument has one spelling and one position, and an action other than cooking is a command, not an option. A
@@ -71,9 +73,12 @@ Replicate refuses an entry whose arguments were never recorded and asks for one 
 
 ### Checking for drift
 
-`--check` reports what a cook would change and exits 1 when anything would, so a CI step can fail on a kitchen whose
-committed files no longer match its recipes. It writes nothing, and it refuses `--batch-approve`, because a check that
-could write would make a CI step's result depend on its own side effect.
+`check` reports what replicate would change and exits 1 when anything would, so a CI step can fail on a kitchen whose
+committed files no longer match `cook.lock`. It is a command, not an option of cooking, because it answers a question
+about the lock rather than cooking supplied inputs, and its inputs come only from the lock, so the step names no
+version or argument that a later cook could leave behind. It writes nothing and takes no batch option, because a
+check that could write would make a CI step's result depend on its own side effect. Replicate has no check option:
+`check` is the one spelling. See [ADR 0031](../adrs/0031-drift-check.md).
 
 ## Batch review and approval
 
@@ -156,7 +161,9 @@ line and column so the reader can locate the problem. Invalid usage explains the
 a misplaced `--batch-approve` message directs the caller to put it before the first recipe.
 
 Keep routine diagnostics focused on information the caller can act on, rather than internal identifiers or stack traces.
-Exit-code meanings are not assigned in this design.
+Exit 0 when the command did what it was asked, 1 when nothing was written because approval was declined or missing or
+`check` found a difference, and 2 on any error, so a script tells a difference from a failure; the
+[CLI reference](../features/cli.md#exit-status) lists them.
 
 ## Non-interactive operation
 
@@ -179,8 +186,9 @@ Help advertises only the commands in the [command grammar](#command-grammar), be
 
 ## Command set
 
-The command set is cooking, which takes no command word, `discard`, `replicate` and `help`. Reserving `discard`,
-`replicate` and `help` means a recipe file with one of those names is given as a path, such as `./replicate`.
+The command set is cooking, which takes no command word, `check`, `replicate`, `discard` and `help`. Reserving
+`check`, `replicate`, `discard` and `help` means a recipe file with one of those names is given as a path, such as
+`./replicate`.
 [What counts as breaking](compatibility-standards.md#what-counts-as-breaking) covers removing or renaming a command.
 
 ## Prior art

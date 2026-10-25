@@ -42,7 +42,7 @@ Each recipe's help, read with `./cook help <coordinates>`, says what it writes.
 | Unattended loop runs | `ralph#ralph-tui` writes `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>` on the branch `ralph/<name>`, and `bin/clean`, which without `--force` refuses to delete commits that have not landed. With `--worker-check`, a task completes only once the team's check passes | [ralph](cookbook/src/ralph/README.md) |
 | Output kept to one clone | With `--share=clone`, `ralph#ralph-tui` keeps ralph-tui's configuration out of commits and `beads#tracker` keeps the Beads issues out of them. `replicate` cooks ralph-tui's configuration again in a fresh clone from the source and arguments `cook.lock` records | [replicate](docs/features/replicate.md) |
 | A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](docs/architecture.md#ownership-and-the-lock) |
-| Drift caught in CI | `--check` exits 1 when cooking would change anything, such as a policy edited and not cooked | [batch options](docs/features/cli.md#batch-options-and-approval) |
+| Drift caught in CI | `./cook check` exits 1 when the kitchen differs from what `cook.lock` records, such as a policy edited and not cooked | [check](docs/features/cli.md#check) |
 
 Every change in this table goes through the review, the lock and the recovery that [What runs](#what-runs) lists.
 
@@ -100,11 +100,13 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
   supplied arguments and what it owns, so a later run withdraws what a recipe no longer declares
   ([the lock](docs/architecture.md#ownership-and-the-lock)).
 - A failed write rolls back the writes already made, so the files are as they were, and prints the error.
-- `./cook discard [--dry-run] [--batch-approve] <recipe>...`, which removes what `cook.lock` lists for each recipe,
+- `./cook check [<name>...]`, which cooks the named recipes, or every recipe in `cook.lock`, again from the sources and
+  arguments it records, writes nothing and exits 1 when anything would change ([check](docs/features/cli.md#check)).
+- `./cook discard [--dry-run] [--batch-approve] <name>...`, which removes what `cook.lock` lists for each recipe,
   without running it, through the same review: each section with its markers, each key, each whole file and link,
   deleting a file left empty, and the recipe's lock entry ([discard](docs/features/discard.md)).
-- `./cook replicate [--dry-run] [--batch-approve] <recipe>...`, which cooks named recipes again from the sources and
-  arguments recorded in `cook.lock`, including ignored output missing from a fresh clone
+- `./cook replicate [--dry-run] [--batch-approve] [<name>...]`, which cooks the named recipes, or every recipe in
+  `cook.lock`, again from the sources and arguments it records, including ignored output missing from a fresh clone
   ([replicate](docs/features/replicate.md)).
 - `help` on an artifact, a recipe or a recipe path, read without running it.
 

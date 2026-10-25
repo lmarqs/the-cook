@@ -155,10 +155,10 @@ summary: the-cook writes the setup a repository shares, such as agent instructio
         <a class="more" href="{{ '/docs/architecture.html#ownership-and-the-lock' | relative_url }}">The lock</a>
       </div>
       <div class="card">
-        <p class="recipe">--check</p>
+        <p class="recipe">check</p>
         <h3>Drift caught in CI</h3>
-        <p><code>--check</code> exits 1 when cooking would change anything, such as a policy edited and not cooked.</p>
-        <a class="more" href="{{ '/docs/features/cli.html#batch-options-and-approval' | relative_url }}">Batch options</a>
+        <p><code>./cook check</code> exits 1 when the kitchen differs from what <code>cook.lock</code> records, such as a policy edited and not cooked.</p>
+        <a class="more" href="{{ '/docs/features/cli.html#check' | relative_url }}">Check</a>
       </div>
     </div>
     <p class="note">The other directories of the <a href="{{ '/cookbook/' | relative_url }}">cookbook</a> are a design
@@ -179,7 +179,7 @@ summary: the-cook writes the setup a repository shares, such as agent instructio
         <li class="step"><h3>Commit one change</h3>
           <p>The policy and the settings it renders go into one commit, reviewed like any other.</p></li>
         <li class="step"><h3>Cook again</h3>
-          <p>Nothing changed, so Cook prints <code>Already cooked.</code> and asks nothing. In CI, <code>--check</code> fails when a cook would change anything.</p></li>
+          <p>Nothing changed, so Cook prints <code>Already cooked.</code> and asks nothing. In CI, <code>./cook check</code> fails when the kitchen differs from <code>cook.lock</code>.</p></li>
       </ol>
       <div class="terminal" role="img" aria-label="Terminal: cooking agents#connect shows a diff of .agents/adapters/claude/settings.json and asks Write these changes?">
         <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
@@ -220,12 +220,12 @@ Already cooked.</pre>
     <div class="ops">
       <div class="op"><pre>./cook &lt;recipe&gt;...</pre>
         <p>Cooks recipes left to right in one batch: one diff, one question, then the writes, rolled back if one fails.</p></div>
-      <div class="op"><pre>./cook discard &lt;recipe&gt;...</pre>
+      <div class="op"><pre>./cook discard &lt;name&gt;...</pre>
         <p>Removes what <code>cook.lock</code> lists for each recipe, without running it: its sections, keys, files and links.</p></div>
-      <div class="op"><pre>./cook replicate &lt;recipe&gt;...</pre>
-        <p>Cooks recipes again from the sources and arguments <code>cook.lock</code> records, including ignored output missing from a fresh clone.</p></div>
-      <div class="op"><pre>./cook --check &lt;recipe&gt;...</pre>
-        <p>Shows what a cook would change, writes nothing, and exits 1 when anything would change.</p></div>
+      <div class="op"><pre>./cook replicate [&lt;name&gt;...]</pre>
+        <p>Cooks recipes, or every recipe in <code>cook.lock</code>, again from the sources and arguments it records, including ignored output missing from a fresh clone.</p></div>
+      <div class="op"><pre>./cook check [&lt;name&gt;...]</pre>
+        <p>Cooks the same way and writes nothing: exits 1 when the kitchen differs from what <code>cook.lock</code> records, 2 on an error.</p></div>
     </div>
     <p class="note"><a href="{{ '/docs/features/cli.html' | relative_url }}">The CLI reference</a> lists every option.</p>
   </div>

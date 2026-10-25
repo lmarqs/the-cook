@@ -23,7 +23,7 @@ evaluate the recipe or fetch its cookbook, so it works after the recipe's source
 | --- | --- | --- |
 | Add or update declared contributions | `./cook ./recipe.groovy` | Supplied recipes against current content and `cook.lock` |
 | Remove what a recipe's new version omits | `./cook ./recipe.groovy` with the new version | Ownership recorded for the recipe in `cook.lock` |
-| Remove everything a recipe owns | `./cook discard ./recipe.groovy` | Ownership recorded for the recipe in `cook.lock` |
+| Remove everything a recipe owns | `./cook discard recipe` | Ownership recorded for the recipe in `cook.lock` |
 | Get back content from before a run | The repository's version control, such as `git revert` | The commit history |
 | Keep the configured native files and stop invoking Cook | Stop invoking Cook | Programs consume their native files directly |
 
@@ -32,14 +32,13 @@ Omitting a recipe from a later invocation leaves its output in place; see [cooki
 ## Reference
 
 ```text
-./cook discard [batch-options] <recipe>...
+./cook discard [batch-options] <name>...
 ```
 
-Each recipe is written as its short name in `cook.lock`, `group:artifact#recipe`, versioned coordinates
-`group:artifact:version#recipe`, or a `.groovy` path in the kitchen. Discard matches the recipe's short name, so the
-version in coordinates does not need to be the cooked one, and a path's file does not need to exist any more. A path's
-lock name also works without `.groovy`, such as `./cook discard recipes/setup`. Cooking and help still require a
-version in coordinates. [Replicate](replicate.md) accepts the same lock names to cook again from recorded inputs.
+Each recipe is written as its [lock name](cli.md#lock-names), `group:artifact#recipe` or a path's place in the
+kitchen without `.groovy`, such as `./cook discard recipes/setup`, so a path's file does not need to exist any more.
+Cooking and help still require a version in coordinates. [Replicate](replicate.md) and [check](cli.md#check) take the
+same lock names.
 Discard takes no recipe arguments. Batch options precede the first recipe; the [CLI reference](cli.md) defines them.
 
 ## What discard removes
@@ -116,7 +115,7 @@ old name removes what the lock still lists for it, although its file is gone:
 ```sh
 git mv recipes/a.groovy recipes/b.groovy
 ./cook recipes/b.groovy
-./cook discard recipes/a.groovy
+./cook discard recipes/a
 ```
 
 A recipe cooked by coordinates keeps its short name across versions, so only a changed group, artifact or recipe

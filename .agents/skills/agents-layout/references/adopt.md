@@ -332,8 +332,8 @@ step 4.
 
    ```sh
    grep 'name:' cook.lock
-   ./cook discard --dry-run io.github.lmarqs:agents:0.0.0#connect io.github.lmarqs:agents:0.0.0#instructions
-   ./cook discard --batch-approve io.github.lmarqs:agents:0.0.0#connect io.github.lmarqs:agents:0.0.0#instructions
+   ./cook discard --dry-run io.github.lmarqs:agents#connect io.github.lmarqs:agents#instructions
+   ./cook discard --batch-approve io.github.lmarqs:agents#connect io.github.lmarqs:agents#instructions
    ```
 
    Discard reads only `cook.lock`, so it works although those coordinates no longer resolve, and it ignores the

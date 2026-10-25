@@ -58,7 +58,7 @@ teammates who did not choose Cook, and Cook becomes responsible for running prog
 At its best, the repository commits only the sources, such as an agent policy, and Git holds no rendered settings or
 links: each checkout cooks them. It loses because every clone, worktree, cloud session and CI job then needs the engine
 and a setup step before a program reads its configuration, and one that skips the step runs the program with no
-settings and no warning. `cook.lock` would also own files no clean checkout has, so `cook --check` fails there.
+settings and no warning. `cook.lock` would also own files no clean checkout has, so `./cook check` fails there.
 
 ### Run Cook from agent session hooks
 

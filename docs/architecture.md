@@ -256,14 +256,19 @@ owns, discarding that recipe proposes, besides removing the links and files it o
 Discard follows the same diff, whole-batch approval and failure rollback as cooking. To get back content from before
 a run, use the repository's version control.
 
-**Replicate** cooks named recipes again from the sources and arguments `cook.lock` records, in operand order, through
-the same evaluation, combined diff, approval and rollback as cooking. It accepts short lock names, versioned
-coordinates and recipe paths; each identifies the lock entry by short name. The recorded source selects the version,
-even when the operand names another. A missing entry, or one whose arguments are unrecorded or unreadable, is refused
+**Replicate** cooks named recipes, or every recipe the lock lists in its order when none is named, again from the
+sources and arguments `cook.lock` records, in operand order, through the same evaluation, combined diff, approval and
+rollback as cooking. It takes each recipe only by its short lock name and refuses versioned coordinates or a recipe
+path with the lock name to write; the recorded source selects the version. Without names it refuses a kitchen with no
+lock. A missing entry, or one whose arguments are unrecorded or unreadable, is refused
 before any recipe runs; `arguments: {}` is valid. A changed source, including a recipe path, is reported before the
 diff and cooked as it is now. Arguments that no longer bind are reported with their recorded line and a next step to
 cook with arguments. Replicate evaluates against current content, so changed sources, defaults or other inputs can
 produce different output.
+
+**Check** runs replicate's evaluation and writes nothing: it shows the changed sources and the diff without confirm
+texts or approval, and exits 1 when anything would change, so a CI step fails on a kitchen that differs from its lock
+([0031](adrs/0031-drift-check.md)).
 
 ## Destination and source origins
 
@@ -400,11 +405,12 @@ Other documents cite these requirements by number.
 ### CLI grammar
 
 - **FR-17:** The commands are `./cook [batch-options] <recipe> [recipe-arguments]...`, which cooks the recipes,
-  `./cook discard [batch-options] <recipe>...`, `./cook replicate [batch-options] <recipe>...`, and
-  `./cook help [<recipe>]...`. With no arguments, `help` alone, or `--help` alone, show the usage. `help` prints each
-  recipe's help from its source without running it. A first operand
-  of exactly `discard`, `replicate` or `help` selects that command; a recipe file with one of those names is supplied
-  as a path, such as `./replicate`.
+  `./cook check [<name>]...`, `./cook replicate [batch-options] [<name>]...`,
+  `./cook discard [batch-options] <name>...`, and `./cook help [<recipe>]...`. With no arguments, `help` alone, or
+  `--help` alone, show the usage. `help` prints each recipe's help from its source without running it. A first operand
+  of exactly `check`, `discard`, `replicate` or `help` selects that command; a recipe file with one of those names is
+  supplied as a path, such as `./replicate`. Cook exits 0 when it did what was asked, 1 when nothing was written
+  because approval was declined or missing or `check` found a difference, and 2 on an error.
 - **FR-18:** Recipe operands are paths inside the destination repository, or coordinates
   `group:artifact:version#recipe` resolved from the repositories the destination's `cook.toml` lists. An operand
   containing `://` is refused. A word is a
@@ -414,9 +420,10 @@ Other documents cite these requirements by number.
   as `--name=value` or `--name value`, including shell-quoted values. After `--name`, the next word is its value unless
   it is a recipe operand, so a value that looks like an operand is written with `=`. A yes-or-no param is a bare
   `--name`, or `--name=false`, and takes no separate value. A recipe appears once per invocation. A misplaced batch
-  option after a recipe receives the normal unknown-option error. Discard and replicate take recipes without
-  arguments and also accept the lock's version-less name, `group:artifact#recipe`. Replicate takes source versions
-  and arguments only from the lock; its batch options are kitchen selection, `--dry-run` and `--batch-approve`.
+  option after a recipe receives the normal unknown-option error. Check, replicate and discard take recipes
+  without arguments, only by the lock's version-less name, such as `group:artifact#recipe`. Check and replicate take
+  source versions and arguments only from the lock; replicate's batch options are kitchen selection, `--dry-run` and
+  `--batch-approve`, and check takes only kitchen selection.
 - **FR-20:** `--batch-approve` is the only preapproval spelling.
 
 ### Paths

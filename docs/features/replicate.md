@@ -4,7 +4,7 @@ objective:
     A fresh clone keeps cook.lock but can lack a recipe's ignored output. A developer wants to recreate
     those files without finding and retyping the arguments used to cook them.
   goal: >-
-    Replicating named recipes cooks them again from the sources and arguments recorded in cook.lock, with
+    Replicating recipes cooks them again from the sources and arguments recorded in cook.lock, with
     one diff and approval for the whole batch.
 ---
 # Replicate recipes
@@ -41,17 +41,18 @@ a reader, but replicate reads them from the lock, so it works when the file is a
 ## Reference
 
 ```text
-./cook replicate [-C <dir>] [batch-options] <recipe>...
+./cook replicate [-C <dir>] [batch-options] [<name>]...
 ```
 
-Each recipe is written as its short name in `cook.lock`, such as `group:artifact#recipe` or `recipes/setup`, versioned
-coordinates `group:artifact:version#recipe`, or a `.groovy` path in the kitchen. The operand only picks the lock
-entry: replicate loads the recorded source and version even when the operand names another version. A path recipe's
-source file must still exist, because replicate recreates output, not recipe sources.
+Each recipe is written as its [lock name](cli.md#lock-names), such as `group:artifact#recipe` or `recipes/setup`;
+replicate loads the version the lock records. A path recipe's source file must still exist, because replicate
+recreates output, not recipe sources.
 
-Replicate takes one or more named recipes and no recipe arguments. It cooks them in the order given, since
-`cook.lock` records neither the order nor the grouping of the original invocation. When recipes write the same
+Replicate takes recipe names and no recipe arguments. Without names, it cooks every recipe `cook.lock` lists, in the
+order the lock lists them, and refuses a kitchen without `cook.lock`. With names, it cooks them in the order given,
+since `cook.lock` records neither the order nor the grouping of the original invocation. When recipes write the same
 target, choose the order deliberately; the last writer wins, as in [ordered operations](cook.md#ordered-operations).
+[Check](cli.md#check) runs the same evaluation and writes nothing, so its report is what replicate proposes.
 
 Replicate refuses the whole request before writing anything if a recipe is named twice, is absent from `cook.lock`,
 has no recorded arguments, or records them in a form Cook cannot read. An entry without an `arguments` field needs one
@@ -74,7 +75,7 @@ lock and output.
 ### Approval, boundaries, and recovery
 
 Replicate accepts `--dry-run` and `--batch-approve` before the first recipe, and `-C <dir>` or `--kitchen=<dir>` to
-select the kitchen. It does not accept `--check`, `--force` or `--skip`. The [CLI reference](cli.md) defines these
+select the kitchen. It does not accept `--force` or `--skip`. The [CLI reference](cli.md) defines these
 options and their scope.
 
 Replicate uses cooking's confirm texts, terminal diff, whole-batch approval, yield texts and write-failure rollback;
