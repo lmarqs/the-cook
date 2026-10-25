@@ -29,10 +29,22 @@ final class CookbookRepositories {
     Diagnostic.text("${coordinates.artifactAddress} not found in ${origin}", null,
     'publish it there, or list its repository in cook.toml'))
   }
+
+  /** The newest release of `group:artifact` that any repository lists, or `null` when none lists a release. */
+  String latest(String group, String artifact) {
+    repositories.collectMany { it.versions(group, artifact) }
+    .findAll { Coordinates.valid("${group}:${artifact}:${it}") }
+    .max { a, b -> Coordinates.compareVersions(a, b) }
+  }
 }
 
 /** A repository that cookbook artifacts resolve from. Its `toString` names it in messages. */
 interface CookbookRepository {
   /** The artifact that `coordinates` name, or `null` when this repository does not hold it. */
   CookbookArtifact artifact(Coordinates coordinates)
+
+  /** The releases of `group:artifact` this repository lists; none when it cannot list them. */
+  default List<String> versions(String group, String artifact) {
+    []
+  }
 }

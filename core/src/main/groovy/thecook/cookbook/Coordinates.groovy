@@ -66,6 +66,18 @@ final class Coordinates {
     "${group}:${artifact}#${recipe}"
   }
 
+  /** Orders two exact release versions by their numbers. */
+  static int compareVersions(String a, String b) {
+    [a.tokenize('.'), b.tokenize('.')].transpose()
+    .collect { (it[0] as int) <=> (it[1] as int) }
+    .find { it != 0 } ?: 0
+  }
+
+  /** These coordinates at `release`. */
+  Coordinates at(String release) {
+    new Coordinates(group, artifact, release, recipe)
+  }
+
   /** The address of `name`, a recipe in this artifact. */
   String recipeAddress(String name) {
     "${artifactAddress}#${name}"
