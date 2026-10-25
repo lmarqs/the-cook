@@ -5,7 +5,7 @@ cookbook artifacts it cooks. The [README](README.md#objective) says who it is fo
 [Quick start](README.md#quick-start) how to try it.
 
 Stack: Groovy 4.0 on Java 17 (`mise.toml`), Gradle 9.8 (`gradle/wrapper/gradle-wrapper.properties`), JUnit 4,
-Spotless and CodeNarc (`build-logic/`), semantic-release (`.github/workflows/release.yml`).
+Spotless and CodeNarc (`build-conventions/`), semantic-release (`.github/workflows/release.yml`).
 
 ## Quick reference
 
@@ -55,7 +55,7 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 ## Where things go
 
 - New code: in its existing module: `core/` the engine, `infra/` the kitchen's `cook.toml` and cookbook fetching,
-  `cli/` the command line, `cookbook/src/<artifact>/` recipes, `build-logic/` shared build setup. The design is
+  `cli/` the command line, `cookbook/src/<artifact>/` recipes, `build-conventions/` shared build setup. The design is
   [docs/architecture.md](docs/architecture.md).
 - Tests: `<module>/src/test/groovy/thecook/`, one `<Subject>Test.groovy` per subject, as
   `core/src/test/groovy/thecook/CoordinatesTest.groovy`; recipe tests in `cookbook/test/<artifact>/`, never in core.
