@@ -1,5 +1,6 @@
 #!/bin/sh
-# Usage: worktree create|remove, with Claude Code's WorktreeCreate or WorktreeRemove input on standard input.
+# Usage: worktree create|remove, with Claude Code's WorktreeCreate or WorktreeRemove input on standard input, or
+# worktree prune [--dry-run] [--older-than=<hours>], run by a person or an agent.
 # create prints the worktree's path as its last line; everything else goes to standard error.
 set -eu
 
@@ -12,6 +13,8 @@ base='fresh'
 fetch='stale'
 remote='origin'
 branch_prefix=''
+upstream=''
+refreshed=false
 
 fail() {
   printf 'worktree: %s\n' "$1" >&2
@@ -59,8 +62,10 @@ unprompted() {
 
 # Fetches the remote as $fetch says, stale fetching once its last fetch is a day old, only its default branch once that
 # is known, and sets $upstream to the remote's default branch, such as origin/main, or to nothing when it is not known.
+# Only the first call in a run fetches.
 refresh() {
-  upstream=''
+  [ "$refreshed" = false ] || return 0
+  refreshed=true
   git -C "$main" remote get-url "$remote" >/dev/null 2>&1 || return 0
   fetched=$(git -C "$main" rev-parse --absolute-git-dir)/FETCH_HEAD
   reachable=true
@@ -93,13 +98,97 @@ landed() {
   ! printf '%s\n' "$cherry" | grep -q '^+'
 }
 
+# Whether every patch on $1 is on the main checkout's HEAD or, fetched as $fetch says only when it is not, on the
+# remote's default branch.
+landed_anywhere() {
+  landed "$1" HEAD || { refresh && landed "$1" "$upstream"; }
+}
+
+# The branch create made for the worktree $1: its path under the root, whichever branch it has checked out since; nothing
+# for a worktree outside the root.
+branch_of() {
+  case $1 in
+    "$main/$root"/*) printf '%s\n' "${1#"$main/$root"/}" ;;
+  esac
+}
+
+# Runs the teardown in the worktree $1, which this hook created, removes it, then forgets it.
+discard() {
+  if [ -n "$teardown" ]; then run_script "$1" "$teardown"; fi
+  git -C "$main" worktree remove --force "$1" >&2 || return 1
+  forget "$1"
+}
+
+# Removes the directories under the root the worktree $1 left empty, and the branch its path names once it landed.
+forget() {
+  branch=$(branch_of "$1")
+  [ -n "$branch" ] || return 0
+  parent=$(dirname -- "$1")
+  while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
+  git -C "$main" show-ref --verify --quiet "refs/heads/$branch" || return 0
+  if landed_anywhere "$branch"; then
+    git -C "$main" branch -D "$branch" >&2 ||
+      printf 'worktree: kept the branch %s, which Git would not delete\n' "$branch" >&2
+  else
+    printf 'worktree: kept the branch %s, which has commits on neither HEAD nor %s\n' "$branch" \
+      "${upstream:-the default branch of $remote}" >&2
+  fi
+}
+
+kept() {
+  printf 'worktree: kept %s, %s\n' "$1" "$2" >&2
+}
+
+# Removes the worktree $1, locked when $2 is true, when this hook created it under the root and it is unlocked, not
+# where prune runs, unchanged for $minutes minutes, clean, and checked out at a commit that landed, on a branch that
+# landed. Prints why it keeps a worktree it created, and sets $failed when one it would remove stays.
+consider() {
+  branch=$(branch_of "$1")
+  [ -n "$branch" ] && [ -d "$1" ] && [ -e "$(marker "$1")" ] || return 0
+  # Each reason returns whether or not it could be printed, so a failing standard error never lets a worktree through.
+  if [ "$2" = true ]; then kept "$1" 'which is locked'; return 0; fi
+  if [ "$1" = "$here" ]; then kept "$1" 'which holds the current directory'; return 0; fi
+  # Untouched files keep their dates, so a worktree in use but without commits or edits yet is told apart by them.
+  if [ "$minutes" -gt 0 ]; then
+    if ! recent=$(find "$1" "$(git -C "$1" rev-parse --absolute-git-dir)" -mmin "-$minutes" -print -quit 2>/dev/null) &&
+      [ -z "$recent" ]; then
+      kept "$1" 'whose age find could not read'
+      return 0
+    fi
+    if [ -n "$recent" ]; then kept "$1" "which changed in the last $hours hours"; return 0; fi
+  fi
+  if ! changes=$(git --no-optional-locks -C "$1" status --porcelain); then
+    kept "$1" 'whose status Git could not read'
+    return 0
+  fi
+  if [ -n "$changes" ]; then kept "$1" 'which has uncommitted or untracked files'; return 0; fi
+  if ! landed_anywhere "$(git -C "$1" rev-parse --verify --quiet 'HEAD^{commit}')" ||
+    { git -C "$main" show-ref --verify --quiet "refs/heads/$branch" && ! landed_anywhere "$branch"; }; then
+    kept "$1" "which has commits on neither HEAD nor ${upstream:-the default branch of $remote}"
+    return 0
+  fi
+  if [ "$dry_run" = true ]; then
+    printf 'worktree: would remove %s\n' "$1" >&2
+  elif (discard "$1"); then
+    printf 'worktree: removed %s\n' "$1" >&2
+  else
+    kept "$1" 'which could not be removed'
+    failed=true
+  fi
+}
+
+usage() {
+  echo 'usage: worktree create|remove|prune [--dry-run] [--older-than=<hours>]' >&2
+  exit 2
+}
+
 [ -n "$root" ] && [ -n "$base" ] && [ -n "$fetch" ] && [ -n "$remote" ] ||
   fail 'the worktree hook has no settings' 'cook io.github.lmarqs.cookbook:agents#connect with a --worktree-* param'
-input=$(cat)
 main=$(git -C "$(dirname -- "$0")" worktree list --porcelain | sed -n '1s/^worktree //p')
 
 case ${1:-} in
   create)
+    input=$(cat)
     name=$(field name)
     branch=$branch_prefix$name
     [ -n "$name" ] && git check-ref-format --branch "$branch" >/dev/null 2>&1 ||
@@ -141,39 +230,57 @@ case ${1:-} in
     printf '%s\n' "$worktree"
     ;;
   remove)
+    input=$(cat)
     worktree=$(field worktree_path)
     [ -n "$worktree" ] || fail 'the input has no worktree_path'
     [ "$worktree" != "$main" ] || fail "$worktree is the main checkout" 'only a linked worktree is removed'
-    # The branch create made is the worktree's path under the root, whichever branch it has checked out since.
-    case $worktree in
-      "$main/$root"/*) branch=${worktree#"$main/$root"/} ;;
-      *) branch='' ;;
-    esac
     if [ -d "$worktree" ]; then
       [ -e "$(marker "$worktree")" ] || fail "$worktree is a worktree this hook did not create" 'it is kept'
       [ -z "$(git -C "$worktree" status --porcelain)" ] || fail "$worktree has uncommitted or untracked files" \
         'commit or stash them, or run the teardown and git worktree remove --force by hand'
-      if [ -n "$teardown" ]; then run_script "$worktree" "$teardown"; fi
-      git -C "$main" worktree remove --force "$worktree" >&2
+      discard "$worktree"
     else
       git -C "$main" worktree prune >&2
-    fi
-    [ -n "$branch" ] || exit 0
-    parent=$(dirname -- "$worktree")
-    while [ "$parent" != "$main/$root" ] && rmdir -- "$parent" 2>/dev/null; do parent=$(dirname -- "$parent"); done
-    if git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
-      upstream=''
-      if landed "$branch" HEAD || { refresh && landed "$branch" "$upstream"; }; then
-        git -C "$main" branch -D "$branch" >&2 ||
-          printf 'worktree: kept the branch %s, which Git would not delete\n' "$branch" >&2
-      else
-        printf 'worktree: kept the branch %s, which has commits on neither HEAD nor %s\n' "$branch" \
-          "${upstream:-the default branch of $remote}" >&2
-      fi
+      forget "$worktree"
     fi
     ;;
+  prune)
+    shift
+    dry_run=false
+    hours=24
+    for option do
+      case $option in
+        --dry-run) dry_run=true ;;
+        --older-than=*) hours=${option#--older-than=} ;;
+        *) usage ;;
+      esac
+    done
+    case $hours in
+      '' | *[!0-9]*) fail "--older-than=$hours is not a whole number of hours" 'such as --older-than=24' ;;
+    esac
+    # Shell arithmetic reads a leading zero as octal and overflows past 64 bits.
+    decimal=${hours#"${hours%%[!0]*}"}
+    [ "${#decimal}" -le 6 ] || fail "--older-than=$hours is more than 999999 hours" 'such as --older-than=24'
+    hours=${decimal:-0}
+    minutes=$((hours * 60))
+    here=$(git rev-parse --show-toplevel 2>/dev/null) || here=''
+    worktrees=$(git -C "$main" worktree list --porcelain)
+    failed=false
+    worktree=''
+    locked=false
+    while IFS= read -r line <&3; do
+      case $line in
+        'worktree '*) worktree=${line#worktree } && locked=false ;;
+        locked | 'locked '*) locked=true ;;
+        '') [ -z "$worktree" ] || consider "$worktree" "$locked" && worktree='' ;;
+      esac
+    done 3<<EOF
+$worktrees
+
+EOF
+    [ "$failed" = false ]
+    ;;
   *)
-    echo 'usage: worktree create|remove' >&2
-    exit 2
+    usage
     ;;
 esac
