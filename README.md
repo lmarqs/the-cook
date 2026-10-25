@@ -162,7 +162,7 @@ line ([rule](gradle/lint/ChainedCallsRule.groovy)). Both cover `cookbook/`, the 
 over 120 characters inside a `'''` string, such as a Markdown table row in `@help`, continues on the next source line
 after a trailing `\`, which leaves the string's value unchanged.
 
-`docs/` is its own build. `./gradlew -p docs check`, which `./gradlew check` includes, fails on a relative link in
+`docs/` is a project of the build. `./gradlew -p docs check`, which `./gradlew check` includes, fails on a relative link in
 `docs/` that points to a missing file or heading anchor; [`docs/build.gradle`](docs/build.gradle) defines the check.
 
 See [the core implementation](core/README.md) for how the engine cooks a recipe and how it differs from the

@@ -5,6 +5,6 @@ plugins {
 
 dependencies {
   // CookToml returns core's CookbookRepositories, so callers compile against core.
-  api "io.github.lmarqs:the-cook-core:${version}"
+  api project(':core')
   implementation 'org.tomlj:tomlj:1.1.1'
 }

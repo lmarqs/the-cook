@@ -24,8 +24,8 @@ objective:
 - The core proposes the batch and writes and records only the changes it receives as accepted; choosing individual
   changes is a separate interface decision (FR-11).
 - Ingredients model native program files and configuration in cookbooks ([0022](0022-tool-integration.md)).
-- In the `core` and `cli` builds of this repository, `cli/build.gradle` depends on the core artifact
-  `io.github.lmarqs:the-cook-core`, and `core/build.gradle` declares no dependency on the CLI.
+- In this repository's build, `cli/build.gradle` depends on the `core` project, and `core/build.gradle` declares no
+  dependency on the CLI.
 
 ## Decision
 
@@ -87,8 +87,8 @@ Must be maintained:
 
 ## Confirmation
 
-- Review `core/build.gradle` and `cli/build.gradle`: does the core build still declare no dependency on the CLI, and
-  does a change to a core class import nothing from the CLI or from a connection?
+- Review `core/build.gradle` and `cli/build.gradle`: does `core/build.gradle` still declare no dependency on the CLI,
+  and does a change to a core class import nothing from the CLI or from a connection?
 - Review against FR-21 and FR-22: does an HTTPS recipe still target the invocation directory, resolve its relative
   sources against its URL, and is a local recipe outside the repository refused?
 - Review against FR-13, FR-15 and FR-25: does cooking work without `cook.lock`, does discard work from the lock alone,

@@ -38,8 +38,8 @@ sourceSets {
 }
 
 dependencies {
-  testImplementation 'io.github.lmarqs:the-cook-core'
-  testImplementation testFixtures('io.github.lmarqs:the-cook-core')
+  testImplementation project(':core')
+  testImplementation testFixtures(project(':core'))
   testImplementation 'junit:junit:4.13.2'
 }
 

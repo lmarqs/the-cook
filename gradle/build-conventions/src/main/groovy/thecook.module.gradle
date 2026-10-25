@@ -1,4 +1,4 @@
-// The setup that the core, infra and cli builds share. The cookbook build stays standalone: cookbook authors copy it.
+// The setup that the core, infra and cli projects share.
 plugins {
   id 'groovy'
   id 'thecook.lint'
@@ -6,6 +6,10 @@ plugins {
 
 group = 'io.github.lmarqs'
 version = findProperty('releaseVersion') ?: '0.0.0'
+
+base {
+  archivesName = "the-cook-${project.name}"
+}
 
 repositories {
   mavenCentral()

@@ -1,7 +1,0 @@
-pluginManagement {
-  includeBuild('../gradle/build-conventions')
-}
-
-rootProject.name = 'the-cook-cli'
-includeBuild('../core')
-includeBuild('../infra')

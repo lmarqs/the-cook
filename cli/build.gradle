@@ -3,8 +3,8 @@ plugins {
   id 'application'
 }
 dependencies {
-  implementation "io.github.lmarqs:the-cook-core:${version}"
-  implementation "io.github.lmarqs:the-cook-infra:${version}"
+  implementation project(':core')
+  implementation project(':infra')
   implementation 'info.picocli:picocli:4.7.7'
 }
 application {

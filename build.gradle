@@ -2,12 +2,6 @@ plugins {
   id 'thecook.lint'
 }
 
-tasks.register('centralBundle') {
-  group = 'publishing'
-  description = 'Bundle the cookbook artifacts released to Maven Central, at cookbook/build/central-bundle/.'
-  dependsOn gradle.includedBuild('cookbook').task(':centralBundle')
-}
-
 // The engine knows no cookbook: no code or build file under core/ may name the cookbook's directory or cook.cookbook,
 // the property that passes its path to the cookbook's tests. Coordinates such as io.github.lmarqs.cookbook:agents are
 // data, and its documentation may name the cookbook.
@@ -35,28 +29,6 @@ tasks.register('coreBoundaryCheck') {
 
 tasks.named('check') {
   dependsOn 'lint', 'coreBoundaryCheck'
-  dependsOn gradle.includedBuild('core').task(':check'), gradle.includedBuild('infra').task(':check')
-  dependsOn gradle.includedBuild('cli').task(':check')
-  dependsOn gradle.includedBuild('docs').task(':check')
-  dependsOn gradle.includedBuild('cookbook').task(':check')
 }
 
-tasks.register('cliBuild') { dependsOn gradle.includedBuild('cli').task(':installDist') }
-
-tasks.register('jpackage') {
-  group = 'distribution'
-  description = 'Build the CLI with a bundled Java runtime for this platform.'
-  dependsOn gradle.includedBuild('cli').task(':jpackage')
-}
-
-tasks.register('jpackageArchive') {
-  group = 'distribution'
-  description = 'Archive the Linux app image for this architecture, with its sha256.'
-  dependsOn gradle.includedBuild('cli').task(':jpackageArchive')
-}
-
-tasks.register('jpackageTest') {
-  group = 'verification'
-  description = 'Build and smoke-test the packaged CLI.'
-  dependsOn gradle.includedBuild('cli').task(':jpackageTest')
-}
+tasks.register('cliBuild') { dependsOn ':cli:installDist' }
