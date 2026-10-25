@@ -1,17 +1,10 @@
-// Formats and lints a build's Groovy, Gradle and plain-text files with the settings in the repository's gradle/.
+// Formats and lints a project's Groovy, Gradle and plain-text files with the settings in the repository's gradle/.
 plugins {
   id 'base'
   id 'com.diffplug.spotless'
 }
 
-// Every build of this repository sits at its root or one directory below it.
-def repository = [layout.settingsDirectory.asFile, layout.settingsDirectory.asFile.parentFile].find {
-  new File(it, 'gradle/lint/codenarc.groovy').file
-}
-
-if (!repository) {
-  throw new GradleException("No gradle/lint/codenarc.groovy at or above ${layout.settingsDirectory.asFile}")
-}
+def repository = layout.settingsDirectory.asFile
 
 repositories {
   mavenCentral()
@@ -28,7 +21,7 @@ dependencies {
 }
 
 spotless {
-  // The build that applies this plugin decides whether its check runs lint.
+  // The project that applies this plugin decides whether its check runs lint.
   enforceCheck = false
   def generated = ['**/build/**', '**/.gradle/**', '.worktrees/**']
   def greclipseSettings = new File(repository, 'gradle/spotless/greclipse.properties')
@@ -87,7 +80,7 @@ tasks.register('codenarc', JavaExec) {
 }
 
 tasks.register('lint') {
-  description = 'Checks the format and lints the Groovy and Gradle files of this build.'
+  description = 'Checks the format and lints the Groovy and Gradle files of this project.'
   group = 'verification'
   dependsOn 'spotlessCheck', 'codenarc'
 }
