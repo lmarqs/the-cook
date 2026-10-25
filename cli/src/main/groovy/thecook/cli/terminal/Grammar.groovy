@@ -42,7 +42,8 @@ footer = [
   "A recipe is coordinates, group:artifact:version#recipe, resolved from the repositories listed in the kitchen's " +
   'cook.toml, or a .groovy path inside the kitchen. Arguments follow their recipe as --name=value or --name value, ' +
   'and a yes-or-no argument as --name or --name=false. A word that contains / or : or ends with .groovy starts the ' +
-  'next recipe: ./cook a:b:1.0.0#x --name value ./setup.groovy',
+  'next recipe:',
+  '  ./cook a:b:1.0.0#x --name value ./setup.groovy',
   '--help takes no other arguments; read a recipe with help <recipe>.',
 ]
 )

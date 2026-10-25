@@ -11,6 +11,15 @@ class CookCommandTest {
     assert stderr.size() == 0
   }
 
+  @Test void theUsageKeepsItsExampleInvocationOnOneLine() {
+    def stdout = new ByteArrayOutputStream()
+    assert command(stdout, new ByteArrayOutputStream()).execute(['--help'] as String[]) == 0
+    assert stdout.toString('UTF-8')
+    .readLines()
+    *.trim()
+    .contains('./cook a:b:1.0.0#x --name value ./setup.groovy')
+  }
+
   @Test void missingUnknownAndRemovedOptionsAreUsageErrors() {
     def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
     def cli = command(stdout, stderr)
