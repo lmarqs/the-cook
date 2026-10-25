@@ -14,6 +14,7 @@ class JpackageTest {
       def usage = run(root, '--help')
       assert usage.contains('Usage:')
       assert usage.contains('replicate  Cook recipes again from cook.lock.')
+      assert usage.contains('update     Cook recipes from cook.lock again at their newest release.')
       assert run(root, '--version') == "cook ${System.getProperty('cook.version')}\n"
       Fixtures.notesCookbook(root)
       new File(root, 'Notes.groovy').text = Fixtures.NOTES_MODEL
@@ -59,6 +60,7 @@ notes.add('local')
       def usage = runLauncher(root, unpacked, '--help')
       assert usage.contains('Usage:')
       assert usage.contains('replicate  Cook recipes again from cook.lock.')
+      assert usage.contains('update     Cook recipes from cook.lock again at their newest release.')
     } finally {
       root.deleteDir()
     }

@@ -7,6 +7,7 @@ import thecook.cookbook.CookbookArtifact
 import thecook.cookbook.CookbookDiscard
 import thecook.cookbook.CookbookReplicate
 import thecook.cookbook.CookbookRepositories
+import thecook.cookbook.CookbookUpdate
 import thecook.cookbook.Coordinates
 import thecook.cookbook.ExistingSeed
 import thecook.cookbook.Proposal
@@ -147,6 +148,8 @@ final class CookCommand {
         return discard(kitchen, (DiscardArgs) command)
       case ReplicateArgs:
         return replicate(kitchen, (ReplicateArgs) command)
+      case UpdateArgs:
+        return update(kitchen, (UpdateArgs) command)
       default:
         throw new IllegalStateException("Unhandled command: ${command}")
     }
@@ -213,6 +216,44 @@ final class CookCommand {
       ->
       def proposal = new CookbookReplicate(kitchen, repositories.apply(kitchen)).propose(args.recipes)
       write(proposal, args.dryRun, args.batchApprove)
+    }
+  }
+
+  private Closure<Boolean> update(File kitchen, UpdateArgs args) {
+    lockNames(args.recipes)
+    return {
+      ->
+      def resolved = repositories.apply(kitchen)
+      def updater = new CookbookUpdate(kitchen, resolved)
+      def plan = updater.plan(args.recipes, args.major)
+      plan.each { recipe ->
+        if (!recipe.known) {
+          def unknown = resolved.repositories.findAll {
+            it.versions(recipe.source.group, recipe.source.artifact) == null
+          }
+          diagnose(Diagnostic.text("warning: skipping ${recipe.name}; releases are unknown",
+              "repository ${unknown.join(', ')} cannot list releases",
+              "cook the release you want by its coordinates, such as ./cook ${recipe.source}"))
+        } else if (recipe.to != null) {
+          stdout.println("Update ${recipe.name} ${recipe.from} -> ${recipe.to}")
+        } else if (recipe.newestOverall != null) {
+          stdout.println("Holding ${recipe.name} ${recipe.from}; ${recipe.newestOverall} needs --major")
+        }
+      }
+
+      if (!plan.any { it.to != null }) {
+        stdout.println('Already at the newest releases.')
+        return true
+      }
+
+      def proposal = updater.propose(plan)
+
+      if (args.dryRun) {
+        write(proposal, true, args.batchApprove)
+        return false
+      }
+
+      write(proposal, false, args.batchApprove)
     }
   }
 

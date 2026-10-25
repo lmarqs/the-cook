@@ -10,6 +10,8 @@ class CookCommandTest {
     assert cli.execute(['--help'] as String[]) == 0
     assert stdout.toString('UTF-8').contains('Cooks recipes')
     assert stdout.toString('UTF-8').contains('replicate  Cook recipes again from cook.lock.')
+    assert stdout.toString('UTF-8').contains(
+    'update     Cook recipes from cook.lock again at their newest release.')
     assert stdout.toString('UTF-8').contains('check      Compare the kitchen with what cook.lock records')
     [
       ['--mystery', 'x.groovy'],
@@ -203,6 +205,8 @@ After cooking
       stdout.reset()
       assert cli.execute(['help'] as String[]) == 0 && stdout.toString('UTF-8').startsWith('Usage:')
       assert stdout.toString('UTF-8').contains('replicate  Cook recipes again from cook.lock.')
+      assert stdout.toString('UTF-8').contains(
+      'update     Cook recipes from cook.lock again at their newest release.')
       assert repo.list() as Set == ['notes.groovy', 'bare.groovy'] as Set
     }
   }
@@ -513,6 +517,188 @@ notes.add('local')
       assert cli.execute((['replicate', '-C', repo.path] + operands) as String[]) == 0
       assert stdout.toString('UTF-8') == 'Already cooked.\n'
       assert stderr.toString('UTF-8') == ''
+    }
+  }
+
+  @Test void updateDryRunReviewsEveryMoveWithoutWritingAndApprovalWritesTheWholeBatch() {
+    workspace { root, repo ->
+      Fixtures.notesReleases(repo, '1.2.3', '1.3.0', '2.0.0')
+      Fixtures.notesCookbook(repo, ['acme/notes/more.groovy': '''import acme.notes.Notes
+@ingredient(Notes) def notes
+notes.add('newer')
+'''], '1.3.0')
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      def recipes = ['acme:notes:1.2.3#notes', '--line=recorded', 'acme:notes:1.2.3#more']
+      assert cli.execute((['-C', repo.path, '--batch-approve'] + recipes) as String[]) == 0
+      def lock = new File(repo, 'cook.lock'); def notes = new File(repo, 'NOTES.md')
+      def recorded = lock.text; def content = notes.text
+
+      stdout.reset()
+      assert cli.execute(['update', '--kitchen=' + repo.path, '--dry-run', '--batch-approve'] as String[]) == 1 :
+      stderr.toString('UTF-8')
+      def moves = 'Update acme:notes#more 1.2.3 -> 1.3.0\nUpdate acme:notes#notes 1.2.3 -> 1.3.0\n'
+      assert stdout.toString('UTF-8').startsWith(moves + 'Confirm acme:notes:1.3.0#notes\n')
+      assert stdout.toString('UTF-8').contains('\n-more\n+newer\n')
+      assert stdout.toString('UTF-8').contains('--- a/cook.lock\n+++ b/cook.lock\n')
+      assert stdout.toString('UTF-8').endsWith('Would update NOTES.md\nWould update cook.lock\n')
+      assert !stdout.toString('UTF-8').contains('Write these changes?')
+      assert !stdout.toString('UTF-8').contains('Holding ')
+      assert lock.text == recorded
+      assert notes.text == content
+      assert stderr.toString('UTF-8') == ''
+
+      stdout.reset()
+      assert command(stdout, stderr, 'yes\n').execute(['-C', repo.path, 'update'] as String[]) == 0
+      assert stdout.toString('UTF-8').startsWith(moves + 'Confirm acme:notes:1.3.0#notes\n')
+      assert stdout.toString('UTF-8').count('Write these changes? [y/N]') == 1
+      assert stdout.toString('UTF-8').contains('Updated NOTES.md\nUpdated cook.lock\n')
+      assert notes.text.contains('\nrecorded\n')
+      assert notes.text.contains('\nnewer\n')
+      assert !lock.text.contains('1.2.3')
+    }
+  }
+
+  @Test void updateRequiresApprovalAndBatchApproveWritesAfterReview() {
+    workspace { root, repo ->
+      Fixtures.notesReleases(repo, '1.2.3', '1.2.4')
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      assert cli.execute(['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#more'] as String[]) == 0
+      def lock = new File(repo, 'cook.lock'); def recorded = lock.text
+      def notes = new File(repo, 'NOTES.md'); def content = notes.text
+
+      stdout.reset()
+      assert cli.execute(['update', '-C', repo.path] as String[]) == 1
+      assert stdout.toString('UTF-8').startsWith('Update acme:notes#more 1.2.3 -> 1.2.4\n')
+      assert stdout.toString('UTF-8').contains('--- a/cook.lock\n+++ b/cook.lock\n')
+      assert stderr.toString('UTF-8').startsWith('cook: update: approval required; nothing was written\n')
+      assert lock.text == recorded
+      assert notes.text == content
+
+      stdout.reset(); stderr.reset()
+      assert command(stdout, stderr, 'n\n').execute(['update', '-C', repo.path] as String[]) == 1
+      assert stdout.toString('UTF-8').endsWith('Write these changes? [y/N] ')
+      assert stderr.toString('UTF-8') == 'cook: update: nothing was written\n  the answer was not y or yes\n'
+      assert lock.text == recorded
+      assert notes.text == content
+
+      stdout.reset(); stderr.reset()
+      assert cli.execute(['update', '-C', repo.path, '--batch-approve'] as String[]) == 0
+      assert stdout.toString('UTF-8').contains('--- a/cook.lock\n+++ b/cook.lock\n')
+      assert stdout.toString('UTF-8').endsWith('Updated cook.lock\n')
+      assert !stdout.toString('UTF-8').contains('Write these changes?')
+      assert lock.text.contains('acme:notes:1.2.4#more')
+      assert stderr.toString('UTF-8') == ''
+      [[], ['--dry-run']].each { options ->
+        stdout.reset()
+        assert cli.execute((['update', '-C', repo.path] + options) as String[]) == 0
+        assert stdout.toString('UTF-8') == 'Already at the newest releases.\n'
+      }
+    }
+  }
+
+  @Test void updateHoldsANewerMajorUntilMajorIsRequested() {
+    workspace { root, repo ->
+      Fixtures.notesReleases(repo, '1.2.3', '2.0.0')
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      assert cli.execute(['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#more'] as String[]) == 0
+      def lock = new File(repo, 'cook.lock'); def recorded = lock.text
+      [[], ['--dry-run']].each { options ->
+        stdout.reset()
+        assert cli.execute((['update', '-C', repo.path] + options) as String[]) == 0
+        assert stdout.toString('UTF-8') ==
+        'Holding acme:notes#more 1.2.3; 2.0.0 needs --major\nAlready at the newest releases.\n'
+        assert lock.text == recorded
+      }
+      stdout.reset()
+      assert cli.execute(['update', '-C', repo.path, '--major', '--dry-run'] as String[]) == 1
+      assert stdout.toString('UTF-8').startsWith('Update acme:notes#more 1.2.3 -> 2.0.0\n')
+      assert lock.text == recorded
+      assert cli.execute(['update', '-C', repo.path, '--major', '--batch-approve'] as String[]) == 0
+      assert lock.text.contains('acme:notes:2.0.0#more')
+      assert stderr.toString('UTF-8') == ''
+    }
+  }
+
+  @Test void updateTakesOnlyTheNamedLockRecipes() {
+    workspace { root, repo ->
+      Fixtures.notesReleases(repo, '1.2.3', '1.3.0')
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      def recipes = ['acme:notes:1.2.3#notes', '--line=recorded', 'acme:notes:1.2.3#more']
+      assert cli.execute((['-C', repo.path, '--batch-approve'] + recipes) as String[]) == 0
+      stdout.reset()
+      assert cli.execute(['update', '-C', repo.path, '--batch-approve', 'acme:notes#more'] as String[]) == 0
+      assert stdout.toString('UTF-8').startsWith('Update acme:notes#more 1.2.3 -> 1.3.0\n')
+      assert !stdout.toString('UTF-8').contains('Update acme:notes#notes')
+      def lock = new File(repo, 'cook.lock')
+      assert lock.text.contains('acme:notes:1.2.3#notes')
+      assert lock.text.contains('acme:notes:1.3.0#more')
+      assert stderr.toString('UTF-8') == ''
+    }
+  }
+
+  @Test void updateWarnsAboutUnknownReleasesAndContinuesWithTheOtherRecipes() {
+    workspace { root, repo ->
+      Fixtures.notesReleases(repo, '1.2.3', '1.3.0')
+      def cookbook = new File(repo, 'sources'); cookbook.mkdirs()
+      new File(cookbook, 'cookbook.toml').text = 'group = "acme"\n'
+      def artifact = new File(cookbook, 'src/local'); artifact.mkdirs()
+      new File(artifact, 'local.groovy').text = 'assert true\n'
+      new File(repo, 'cook.toml').text = 'repositories = ["sources", "repository"]\n'
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      def recipes = ['acme:local:1.0.0#local', 'acme:notes:1.2.3#more']
+      assert cli.execute((['-C', repo.path, '--batch-approve'] + recipes) as String[]) == 0
+      stdout.reset()
+      assert cli.execute(['update', '-C', repo.path, '--batch-approve'] as String[]) == 0
+      assert stdout.toString('UTF-8').startsWith('Update acme:notes#more 1.2.3 -> 1.3.0\n')
+      assert new File(repo, 'cook.lock').text.contains('acme:notes:1.3.0#more')
+      def warning = stderr.toString('UTF-8')
+      assert warning.startsWith('cook: update: warning: skipping acme:local#local; releases are unknown\n')
+      assert warning.contains("  repository ${cookbook.toURI()} cannot list releases\n")
+      assert warning.contains('  cook the release you want by its coordinates, such as ./cook acme:local:1.0.0#local\n')
+      [[], ['--dry-run']].each { options ->
+        stdout.reset(); stderr.reset()
+        assert cli.execute((['update', '-C', repo.path] + options) as String[]) == 0
+        assert stdout.toString('UTF-8') == 'Already at the newest releases.\n'
+        assert stderr.toString('UTF-8') == warning
+      }
+      stderr.reset()
+      assert cli.execute(['update', '-C', repo.path, 'acme:local#local'] as String[]) == 2
+      assert stderr.toString('UTF-8').startsWith('cook: update: acme:local#local has no known releases')
+    }
+  }
+
+  @Test void updateRejectsRecipeArgumentsVersionedNamesAndMisplacedOrUnsupportedOptions() {
+    workspace { root, repo ->
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+      def cli = command(stdout, stderr)
+      assert cli.execute(['update', '-C', repo.path, '--dry-run'] as String[]) == 2
+      assert stderr.toString('UTF-8').startsWith('cook: update: there is no cook.lock\n')
+      Fixtures.notesReleases(repo, '1.2.3')
+      assert cli.execute(['-C', repo.path, '--batch-approve', 'acme:notes:1.2.3#more'] as String[]) == 0
+      [
+        [['update', 'acme:notes:1.2.3#more'], 'acme:notes:1.2.3#more is not a name cook.lock writes'],
+        [['update', 'missing'], 'cook.lock lists no recipe missing; nothing was written'],
+        [['update', 'acme:notes#more', '--line=a'], 'update takes no recipe arguments: --line=a'],
+        [['update', 'acme:notes#more', '--batch-approve'], '--batch-approve goes before the first recipe'],
+        [['update', 'acme:notes#more', '--dry-run'], '--dry-run goes before the first recipe'],
+        [['update', '--force'], "Unknown option: '--force'"],
+        [['update', '--skip'], "Unknown option: '--skip'"],
+      ].each { arguments, message ->
+        stderr.reset()
+        assert cli.execute((['-C', repo.path] + arguments) as String[]) == 2 : arguments
+        assert stderr.toString('UTF-8').startsWith("cook: update: ${message}\n")
+      }
+      ['--dry-run', '--batch-approve', '--force', '--skip'].each { option ->
+        stderr.reset()
+        assert cli.execute(['-C', repo.path, option, 'update'] as String[]) == 2
+        assert stderr.toString('UTF-8') == 'cook: update: --dry-run, --batch-approve, --force and --skip ' +
+        'go before a recipe, not before a command\n  run: ./cook help\n'
+      }
     }
   }
 

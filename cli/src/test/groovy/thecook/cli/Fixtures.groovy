@@ -14,11 +14,11 @@ class Notes {
 """
 
   /**
-   * Writes into `kitchen` a Maven-layout repository holding `acme:notes:1.2.3`, with `extra` files beside its own, and
+   * Writes into `kitchen` a Maven-layout repository holding `acme:notes` at `version`, with `extra` files, and
    * a `cook.toml` listing it.
    */
-  static void notesCookbook(File kitchen, Map<String, String> extra = [:]) {
-    def jar = new File(kitchen, 'repository/acme/notes/1.2.3/notes-1.2.3.jar'); jar.parentFile.mkdirs()
+  static void notesCookbook(File kitchen, Map<String, String> extra = [:], String version = '1.2.3') {
+    def jar = new File(kitchen, "repository/acme/notes/${version}/notes-${version}.jar"); jar.parentFile.mkdirs()
     new java.util.jar.JarOutputStream(jar.newOutputStream()).withCloseable { out ->
       (['acme/notes/Notes.groovy': NOTES_MODEL, 'acme/notes/notes.groovy': """@help('Adds a line to `NOTES.md`.')
 @confirm('Everyone reads `NOTES.md`.')
@@ -41,5 +41,14 @@ notes.add('more')
       }
     }
     new File(kitchen, 'cook.toml').text = 'repositories = ["repository"]\n'
+  }
+
+  /** Publishes notes releases and the Maven metadata that lists them. */
+  static void notesReleases(File kitchen, String... versions) {
+    versions.each { notesCookbook(kitchen, [:], it) }
+    new File(kitchen, 'repository/acme/notes/maven-metadata.xml').text =
+        '<metadata><versioning><versions>' +
+        versions.collect { "<version>${it}</version>" }.join('') +
+        '</versions></versioning></metadata>'
   }
 }
