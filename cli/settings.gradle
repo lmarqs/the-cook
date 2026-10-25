@@ -1,5 +1,5 @@
 pluginManagement {
-  includeBuild('../build-conventions')
+  includeBuild('../gradle/build-conventions')
 }
 
 rootProject.name = 'the-cook-cli'
