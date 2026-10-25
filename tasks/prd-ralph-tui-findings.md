@@ -14,8 +14,8 @@ A run of the medprev-rest-api #1316 epic, with Codex on ralph-tui 0.12.0, surfac
    export in `cookbook/src/ralph/bin/run.sh` does not get it past the check.
 2. **An entry's `model` silently wins over `ralph-tui run --model`.** ralph-tui passes the agent
    `[...defaultFlags, --model <run>, ...pluginArgs]`, and the plugin's arguments carry `--model <entry>` after it.
-   Codex's `exec` keeps the entry's. The recipe never seeds `model`, but `RalphTui.groovy:15-16` presents the two as
-   interchangeable.
+   Codex's `exec` keeps the entry's, and Claude Code keeps the last of two `--model` flags, so it does too. The recipe
+   never seeds `model`, but `RalphTui.groovy:15-16` presents the two as interchangeable.
 
 The fix seeds `[trackerOptions] beadsDir` in the configuration with the depth that `--worktree-root` gives, and
 documents both behaviors.
@@ -53,7 +53,7 @@ its tasks.
 - [ ] The value is relative: one `../` for each segment of `worktreeRoot`, ignoring empty and `.` segments, plus two
       for `ralph/<name>`, then `.beads`. The default `.worktrees` gives `"../../../.beads"`, and `--worktree-root=a/b`
       gives `"../../../../.beads"`.
-- [ ] A one-line TOML comment above the table says why: ralph-tui's beads trackers only check that the directory
+- [ ] A TOML comment above the table says why: ralph-tui's beads trackers only check that the directory
       exists, and a run worktree has none.
 - [ ] `config()`'s doc comment and the `.ralph-tui/config.toml` row of the help's write table
       (`cookbook/src/ralph/ralph-tui.groovy`) name `beadsDir`.
@@ -73,11 +73,11 @@ when both an entry and the run name one, so that a per-run `--model` is not sile
 
 **Acceptance Criteria:**
 - [ ] The model sentence in `RalphTui.groovy`'s class doc (lines 15-17) states three things: ralph-tui 0.12 passes a
-      run's `--model` before the plugin's arguments, the plugin's arguments carry the entry's `model`, and Codex runs
-      the entry's. It also says to set a model per entry or per run, not both.
+      run's `--model` before the plugin's arguments, the plugin's arguments carry the entry's `model`, and Claude
+      Code and Codex both run the entry's. It also says to set a model per entry or per run, not both.
 - [ ] The "Model and effort" row of the help's Connections table says the same in one line.
-- [ ] A trap in the help says: ralph-tui 0.12 passes both models with the entry's last, Codex takes the entry's, and
-      nothing in the log says the run's was dropped.
+- [ ] A trap in the help says: ralph-tui 0.12 passes both models with the entry's last, Claude Code and Codex take
+      the entry's, and nothing in the log says the run's was dropped.
 - [ ] `theModelDocumentsTheEntriesToAdd` or `theHelpStatesTheKnownLimits` asserts the new text.
 - [ ] No seeded entry gains or loses a `model` key.
 
@@ -90,7 +90,7 @@ when both an entry and the run name one, so that a per-run `--model` is not sile
 - FR-3: `beadsDir` must be a relative path, because ralph-tui joins it onto the working directory.
 - FR-4: The help must name every case where the seeded `beadsDir` does not hold.
 - FR-5: The class doc and help must state that an entry's `model` follows a run's `--model` on the worker's command
-  line, and that Codex runs the entry's.
+  line, and that Claude Code and Codex run the entry's.
 
 ## Non-Goals
 
@@ -122,10 +122,9 @@ when both an entry and the run name one, so that a per-run `--model` is not sile
 - In a scratch repository with `/.beads/` ignored and one ready bead under an epic, a cook of the local cookbook with
   `--tracker=beads`, followed by `.ralph-tui/bin/run demo --agent claude --epic <id> --headless --iterations 1`,
   starts the task instead of stopping as `no_tasks`. The same holds with `--tracker=beads-bv`.
-- A reader of `./cook help io.github.lmarqs.cookbook:ralph#ralph-tui` can tell which model a Codex worker runs when an
-  entry and the run both name one.
+- A reader of `./cook help io.github.lmarqs.cookbook:ralph#ralph-tui` can tell which model a Claude or Codex worker runs
+  when an entry and the run both name one.
 
 ## Open Questions
 
-- Does Claude Code's CLI keep the last `--model` too? The argument order is verified, but Claude's behavior with both
-  flags is not. The docs therefore name Codex only.
+None.
