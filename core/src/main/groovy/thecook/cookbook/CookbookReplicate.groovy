@@ -25,34 +25,7 @@ final class CookbookReplicate {
       "${CookLock.PATH} records the recipes to cook again", 'run in the kitchen that holds it'))
     }
 
-    def lock = CookLock.parse(text)
-    Set<String> replicated = []
-    List<RecipeRequest> requests = (operands ?: lock.names as List).collect { operand ->
-      def name = RecipeLoader.lockName(kitchen, operand)
-
-      if (!replicated.add(name)) {
-        throw new IllegalArgumentException(
-        Diagnostic.text("${name} is named twice", null, 'name it once per invocation'))
-      }
-
-      if (!(name in lock.names)) {
-        throw new IllegalArgumentException(Diagnostic.text(
-        "${CookLock.PATH} lists no recipe ${name}; nothing was written",
-        "only a recipe ${CookLock.PATH} records is cooked again from it",
-        "check the recipe's name; ${CookLock.PATH} lists ${lock.names ? lock.names.join(', ') : 'none'}"))
-      }
-
-      def recorded = lock.arguments(name)
-
-      if (recorded == null) {
-        throw new IllegalArgumentException(Diagnostic.text("${name} has no recorded arguments in ${CookLock.PATH}",
-        null, 'cook it once with its arguments'))
-      }
-
-      new RecipeRequest(lock.source(name), recorded.collectMany { option, values ->
-        values.collect { Argument.inline(option, it) }
-      }, true)
-    }
-    new CookbookCook(destination, repositories).propose(requests)
+    def recipes = LockedRecipe.select(CookLock.parse(text), kitchen, operands, 'is cooked again from it')
+    new CookbookCook(destination, repositories).propose(recipes*.replay())
   }
 }

@@ -14,63 +14,36 @@ final class CookbookUpdate {
 
   /**
    * Plans updates in operand order, or lock order without operands, omitting path recipes. Only `major` permits
-   * crossing the compatible range. An unknown release listing is refused when its recipe was named explicitly.
+   * crossing the compatible range. A path recipe or an unknown release listing is refused when its recipe was named
+   * explicitly.
    */
   List<RecipeUpdate> plan(List<String> operands, boolean major = false) {
     def kitchen = destination.toPath().toRealPath()
-    def lock = readLock()
-    Set<String> named = []
-    def names = (operands ?: lock.names as List).collect { operand ->
-      def name = RecipeLoader.lockName(kitchen, operand)
+    def recipes = LockedRecipe.select(readLock(), kitchen, operands, 'can be updated')
+    def unversioned = recipes.find { !Coordinates.valid(it.source) }
 
-      if (!named.add(name)) {
-        throw new IllegalArgumentException(
-        Diagnostic.text("${name} is named twice", null, 'name it once per invocation'))
-      }
-
-      if (!(name in lock.names)) {
-        throw new IllegalArgumentException(Diagnostic.text(
-        "${CookLock.PATH} lists no recipe ${name}; nothing was written",
-        "only a recipe ${CookLock.PATH} records can be updated",
-        "check the recipe's name; ${CookLock.PATH} lists ${lock.names ? lock.names.join(', ') : 'none'}"))
-      }
-
-      if (operands && !Coordinates.valid(lock.source(name))) {
-        throw new IllegalArgumentException(Diagnostic.text("${name} has no version to update", null,
-        'cook it again from its path'))
-      }
-
-      name
+    if (operands && unversioned) {
+      throw new IllegalArgumentException(Diagnostic.text("${unversioned.name} has no version to update", null,
+      'cook it again from its path'))
     }
-    names.findAll { Coordinates.valid(lock.source(it)) }.collect { name ->
-      def source = Coordinates.parse(lock.source(name))
-      def selection = repositories.selectRelease(source, major)
 
-      if (operands && !selection.known) {
-        throw new IllegalArgumentException(Diagnostic.text("${name} has no known releases; nothing was written",
+    recipes.findAll { Coordinates.valid(it.source) }.collect { recipe ->
+      def source = Coordinates.parse(recipe.source)
+      def update = new RecipeUpdate(recipe, source, repositories.selectRelease(source, major))
+
+      if (operands && !update.known) {
+        throw new IllegalArgumentException(Diagnostic.text("${recipe.name} has no known releases; nothing was written",
         'its repository cannot list releases', 'use a repository that lists releases, or cook an exact version'))
       }
 
-      new RecipeUpdate(name, source, selection)
+      update
     }
   }
 
   /** Cooks only moves, with their recorded arguments, in plan order; only `Proposal.commit` writes changes. */
   Proposal propose(List<RecipeUpdate> updates) {
-    def lock = readLock()
-    List<RecipeRequest> requests = updates.findAll { it.to != null }.collect { update ->
-      def recorded = lock.arguments(update.name)
-
-      if (recorded == null) {
-        throw new IllegalArgumentException(Diagnostic.text(
-        "${update.name} has no recorded arguments in ${CookLock.PATH}", null, 'cook it once with its arguments'))
-      }
-
-      new RecipeRequest(update.source.at(update.to).toString(), recorded.collectMany { option, values ->
-        values.collect { Argument.inline(option, it) }
-      }, true)
-    }
-    new CookbookCook(destination, repositories).propose(requests, true)
+    def requests = updates.findAll { it.to != null }.collect { it.recipe.replay(it.source.at(it.to).toString()) }
+    new CookbookCook(destination, repositories).propose(requests)
   }
 
   private CookLock readLock() {
@@ -85,28 +58,45 @@ final class CookbookUpdate {
   }
 }
 
-/** One lock recipe's release selection: `move`, `current`, or `unknown`, with versions for a CLI to review. */
+/**
+ * One lock recipe's release selection: it moves when `to` is set, is current when known without `to`, and is unknown
+ * when a repository cannot list its releases.
+ */
 final class RecipeUpdate {
-  final String name
+  final LockedRecipe recipe
   final Coordinates source
-  final boolean known
-  final String to
-  /** A newer release outside the compatible range, when one is available. */
-  final String newestOverall
+  private final CookbookRepositories.ReleaseSelection selection
 
-  RecipeUpdate(String name, Coordinates source, CookbookRepositories.ReleaseSelection selection) {
-    this.name = name
+  RecipeUpdate(LockedRecipe recipe, Coordinates source, CookbookRepositories.ReleaseSelection selection) {
+    this.recipe = recipe
     this.source = source
-    this.known = selection.known
-    this.to = selection.target?.version
-    this.newestOverall = selection.newestOverall?.version
+    this.selection = selection
+  }
+
+  String getName() {
+    recipe.name
   }
 
   String getFrom() {
     source.version
   }
 
-  String getStatus() {
-    !known ? 'unknown' : to != null ? 'move' : 'current'
+  /** The release to move to, or `null` when there is no newer release in the requested range. */
+  String getTo() {
+    selection.target?.version
+  }
+
+  /** A newer release outside the compatible range, when one is available. */
+  String getNewestOverall() {
+    selection.newestOverall?.version
+  }
+
+  boolean isKnown() {
+    selection.known
+  }
+
+  /** The repositories that hold the artifact but cannot list its releases. */
+  List<CookbookRepository> getUnlisted() {
+    selection.unlisted
   }
 }

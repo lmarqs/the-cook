@@ -24,11 +24,8 @@ final class CookbookCook {
     this.existing = existing
   }
 
-  /**
-   * Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`.
-   * `updating` directs failed recorded arguments to the new release's help.
-   */
-  Proposal propose(List<RecipeRequest> requests, boolean updating = false) {
+  /** Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`. */
+  Proposal propose(List<RecipeRequest> requests) {
     def loader = new RecipeLoader(destination, repositories)
     def draft = new Draft(destination)
     def ownership = new Ownership(draft, existing)
@@ -63,10 +60,11 @@ final class CookbookCook {
 
         if (request.replayed && cause instanceof ArgumentBindingException) {
           def line = request.arguments.collect { "--${it.name}=${it.value}" }.join(' ')
-          def next = updating ? "read `./cook help ${request.operand}` and cook it with its new arguments" :
-              'cook it with its arguments'
-          message = Diagnostic.text(updating ? cause.withArguments : message,
-              "arguments recorded in ${CookLock.PATH}: ${line}", next)
+          def recorded = "arguments recorded in ${CookLock.PATH}: ${line}"
+          message = request.moved ?
+              Diagnostic.text(Diagnostic.text(cause.reason, cause.accepted), recorded,
+              "read `./cook help ${request.operand}` and cook it with its new arguments") :
+              Diagnostic.text(message, recorded, 'cook it with its arguments')
         }
 
         throw new IllegalArgumentException("${label}: ${message}", cause)
@@ -79,18 +77,27 @@ final class CookbookCook {
 
 /**
  * One recipe to cook: its operand as written, coordinates or a path in the kitchen, and its arguments in order.
- * A request `replayed` from `cook.lock` reports a changed path source, and arguments that no longer bind as the ones
- * the lock recorded.
+ * A request replayed from `cook.lock` names the `recordedSource` its arguments were recorded with; it reports a changed
+ * path source, and arguments that no longer bind as the ones the lock recorded.
  */
 final class RecipeRequest {
   final String operand
   final List<Argument> arguments
-  final boolean replayed
+  final String recordedSource
 
-  RecipeRequest(String operand, List<Argument> arguments, boolean replayed = false) {
+  RecipeRequest(String operand, List<Argument> arguments, String recordedSource = null) {
     this.operand = operand
     this.arguments = arguments
-    this.replayed = replayed
+    this.recordedSource = recordedSource
+  }
+
+  boolean isReplayed() {
+    recordedSource != null
+  }
+
+  /** Whether the request cooks recorded arguments at a source other than the one they were recorded with. */
+  boolean isMoved() {
+    replayed && operand != recordedSource
   }
 }
 

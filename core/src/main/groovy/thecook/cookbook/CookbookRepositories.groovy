@@ -17,13 +17,15 @@ final class CookbookRepositories {
 
   /** Chooses a newer release from all listings, unless any repository cannot list this artifact's releases. */
   ReleaseSelection selectRelease(Coordinates recorded, boolean major) {
-    def listings = repositories.collect { it.versions(recorded.group, recorded.artifact) }
+    def listings = repositories.collectEntries { [(it): it.versions(recorded.group, recorded.artifact)] }
+    def unlisted = listings.findAll { it.value == null }*.key
 
-    if (listings.any { it == null }) {
-      return new ReleaseSelection(false, null, null)
+    if (unlisted) {
+      return new ReleaseSelection(unlisted, null, null)
     }
 
-    def releases = listings.flatten()
+    def releases = listings.values()
+        .flatten()
         .findAll { version ->
           !version.contains('#') && Coordinates.valid("${recorded.group}:${recorded.artifact}:${version}")
         }
@@ -34,7 +36,7 @@ final class CookbookRepositories {
     def target = releases.find { major || compatible(recorded.version, it.version) }
     def newerOverall = !major && newest &&
         Coordinates.compareVersions(newest.version, target?.version ?: recorded.version) > 0 ? newest : null
-    new ReleaseSelection(true, target, newerOverall)
+    new ReleaseSelection([], target, newerOverall)
   }
 
   private static boolean compatible(String recorded, String candidate) {
@@ -59,18 +61,35 @@ final class CookbookRepositories {
     'publish it there, or list its repository in cook.toml'))
   }
 
-  /** A known listing with an optional update target, or an unknown listing with neither release populated. */
+  /** A known listing with an optional update target, or the repositories that cannot list, with neither release. */
   static final class ReleaseSelection {
-    final boolean known
+    /** The repositories that hold the artifact but cannot list its releases; empty when the listing is known. */
+    final List<CookbookRepository> unlisted
     /** The chosen newer coordinates, or `null` when there is no newer release in the requested range. */
     final Coordinates target
     /** A release above the selected target (or recorded version), available only outside the compatible range. */
     final Coordinates newestOverall
 
-    private ReleaseSelection(boolean known, Coordinates target, Coordinates newestOverall) {
-      this.known = known
+    private ReleaseSelection(List<CookbookRepository> unlisted, Coordinates target, Coordinates newestOverall) {
+      this.unlisted = unlisted
       this.target = target
       this.newestOverall = newestOverall
     }
+
+    boolean isKnown() {
+      !unlisted
+    }
   }
+}
+
+/** A repository that cookbook artifacts resolve from. Its `toString` names it in messages. */
+interface CookbookRepository {
+  /** The artifact that `coordinates` name, or `null` when this repository does not hold it. */
+  CookbookArtifact artifact(Coordinates coordinates)
+
+  /**
+   * The releases listed for `group` and `artifact`, an empty list when this repository does not hold the artifact, or
+   * `null` when it holds the artifact but cannot list its releases.
+   */
+  List<String> versions(String group, String artifact)
 }

@@ -49,7 +49,7 @@ text.text = value.join(':')
     def plan = update.plan([], false)
 
     assert plan*.name == [NAME]
-    assert plan*.status == ['move']
+    assert plan*.known == [true]
     assert plan*.from == ['1.0.0']
     assert plan*.to == ['1.9.0']
     assert plan*.newestOverall == ['2.0.0']
@@ -76,13 +76,13 @@ text.text = value.join(':')
 
     def compatible = update.plan([NAME], false)
 
-    assert compatible*.status == ['current']
+    assert compatible*.known == [true]
     assert compatible*.to == [null]
     assert compatible*.newestOverall == ['2.0.0']
     assert update.propose(compatible).recipes.empty
     assert update.propose(compatible).changes.empty
     def major = update.plan([NAME], true)
-    assert major*.status == ['move']
+    assert major*.known == [true]
     assert major*.to == ['2.0.0']
     assert major*.newestOverall == [null]
     assert update.propose(major).recipes*.address == ['acme:text:2.0.0#write']
@@ -95,7 +95,8 @@ text.text = value.join(':')
 
     def plan = update.plan([], false)
 
-    assert plan*.status == ['current']
+    assert plan*.known == [true]
+    assert plan*.to == [null]
     assert plan*.newestOverall == [null]
     assert update.propose(plan).changes.empty
     assert update.propose(plan).recipes.empty
@@ -240,7 +241,8 @@ text.text = value.join(':')
     def plan = update.plan([], false)
 
     assert plan*.name == [NAME]
-    assert plan*.status == ['unknown']
+    assert plan*.known == [false]
+    assert plan*.unlisted == [[unknown]]
     assert plan*.to == [null]
     assert update.propose(plan).recipes.empty
     assert update.propose(plan).changes.empty

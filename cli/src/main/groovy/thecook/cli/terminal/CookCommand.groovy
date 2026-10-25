@@ -223,16 +223,12 @@ final class CookCommand {
     lockNames(args.recipes)
     return {
       ->
-      def resolved = repositories.apply(kitchen)
-      def updater = new CookbookUpdate(kitchen, resolved)
+      def updater = new CookbookUpdate(kitchen, repositories.apply(kitchen))
       def plan = updater.plan(args.recipes, args.major)
       plan.each { recipe ->
         if (!recipe.known) {
-          def unknown = resolved.repositories.findAll {
-            it.versions(recipe.source.group, recipe.source.artifact) == null
-          }
           diagnose(Diagnostic.text("warning: skipping ${recipe.name}; releases are unknown",
-              "repository ${unknown.join(', ')} cannot list releases",
+              "repository ${recipe.unlisted.join(', ')} cannot list releases",
               "cook the release you want by its coordinates, such as ./cook ${recipe.source}"))
         } else if (recipe.to != null) {
           stdout.println("Update ${recipe.name} ${recipe.from} -> ${recipe.to}")
@@ -246,14 +242,8 @@ final class CookCommand {
         return true
       }
 
-      def proposal = updater.propose(plan)
-
-      if (args.dryRun) {
-        write(proposal, true, args.batchApprove)
-        return false
-      }
-
-      write(proposal, false, args.batchApprove)
+      def written = write(updater.propose(plan), args.dryRun, args.batchApprove)
+      !args.dryRun && written
     }
   }
 

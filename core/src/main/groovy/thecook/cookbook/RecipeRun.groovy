@@ -38,14 +38,14 @@ final class RecipeRun {
           .toList()
     }
     Map<String, List<String>> given = [:]
-    def unknown = arguments*.name.findAll { !(it in names) }
     def takes = names ? 'its arguments are ' + names.collect { "--${it}" }.join(', ') : 'it takes no arguments'
+    def unknown = arguments*.name.find { !(it in names) }
+
+    if (unknown) {
+      throw new ArgumentBindingException("Unknown argument --${unknown}", takes, true)
+    }
 
     try {
-      if (unknown) {
-        throw new IllegalArgumentException(Diagnostic.text("Unknown argument --${unknown.first()}", takes))
-      }
-
       params.each { field ->
         def bound = bind(field, arguments, recipe)
         set(script, field, bound.value)
@@ -56,7 +56,7 @@ final class RecipeRun {
         }
       }
     } catch (IllegalArgumentException error) {
-      throw new ArgumentBindingException(error, unknown ? error.message : Diagnostic.text(error.message, takes))
+      throw new ArgumentBindingException(error.message, takes, false, error)
     }
 
     fields.findAll { it.getAnnotation(Resource) }.each { field ->
@@ -239,12 +239,17 @@ final class Evaluation {
   }
 }
 
-/** An argument rejected while binding params, before the recipe's body runs. */
+/**
+ * An argument rejected while binding params, before the recipe's body runs: the `reason`, and the arguments the recipe
+ * `accepted`, which the message adds when `listAccepted`.
+ */
 final class ArgumentBindingException extends IllegalArgumentException {
-  final String withArguments
+  final String reason
+  final String accepted
 
-  ArgumentBindingException(IllegalArgumentException cause, String withArguments) {
-    super(cause.message, cause)
-    this.withArguments = withArguments
+  ArgumentBindingException(String reason, String accepted, boolean listAccepted, Throwable cause = null) {
+    super(listAccepted ? Diagnostic.text(reason, accepted) : reason, cause)
+    this.reason = reason
+    this.accepted = accepted
   }
 }

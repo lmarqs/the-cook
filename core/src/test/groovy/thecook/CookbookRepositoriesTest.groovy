@@ -72,8 +72,10 @@ class CookbookRepositoriesTest {
 
     [[null], [null, ['9.0.1']], [['9.0.1'], null]].each { listings ->
       [false, true].each { major ->
-        def selection = repositoriesWith(*listings).selectRelease(recorded, major)
+        def repositories = repositoriesWith(*listings)
+        def selection = repositories.selectRelease(recorded, major)
         assert !selection.known
+        assert selection.unlisted == repositories.repositories.findAll { it.listing == null }
         assert selection.target == null
         assert selection.newestOverall == null
       }
