@@ -10,6 +10,7 @@ see the root README's [current implementation](../../README.md#current-implement
 
 ```text
 ./cook [-C <dir>] [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
+./cook [-C <dir>] <command> ...
 ./cook check [-C <dir>] [<name>]...
 ./cook replicate [-C <dir>] [batch-options] [<name>]...
 ./cook update [-C <dir>] [batch-options] [--major] [<name>]...
@@ -221,7 +222,7 @@ follows shows what the changed sources write. Replicate also reports edited path
 ./cook discard --batch-approve recipe
 ```
 
-A batch option after a recipe receives the normal unknown-option error. This invocation fails:
+A batch option after a recipe fails with `cook: --batch-approve goes before the first recipe`. This invocation fails:
 
 ```sh
 ./cook ./a.groovy --batch-approve
@@ -279,7 +280,7 @@ current working directory.
 
 | Option | Used with | Position | Effect |
 | --- | --- | --- | --- |
-| `-C <dir>`, `--kitchen=<dir>` | Every command | Before the first recipe operand; once | Cooks in `<dir>` as if Cook had started there: recipe operands and other relative paths resolve against it |
+| `-C <dir>`, `--kitchen=<dir>` | Every command | Before the first recipe operand, and before or after a command word; once | Cooks in `<dir>` as if Cook had started there: recipe operands and other relative paths resolve against it |
 
 ```sh
 ./cook -C services/api ./recipe.groovy
