@@ -89,6 +89,16 @@ class CookCommandTest {
     }
   }
 
+  @Test void aRecipeThatFailsAnAssertionExitsTwo() {
+    workspace { root, repo ->
+      new File(repo, 'failing.groovy').text = "assert 1 == 2\n"
+      def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+
+      assert command(stdout, stderr).execute(['-C', repo.path, '--dry-run', 'failing.groovy'] as String[]) == 2
+      assert stderr.toString('UTF-8').startsWith('cook: ')
+    }
+  }
+
   @Test void kitchenOptionCooksAsIfStartedThereAndGoesBeforeTheRecipe() {
     workspace { root, repo ->
       Fixtures.notesCookbook(repo)

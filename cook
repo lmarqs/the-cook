@@ -4,6 +4,6 @@ repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cli_path="$repo_dir/cli/build/install/cook/bin/cook"
 if [ ! -x "$cli_path" ]; then
     echo "Build the CLI first: ./gradlew cliBuild" >&2
-    exit 1
+    exit 2
 fi
 exec "$cli_path" "$@"

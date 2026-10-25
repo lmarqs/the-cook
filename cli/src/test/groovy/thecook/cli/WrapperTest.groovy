@@ -57,7 +57,7 @@ class WrapperTest {
 
       def result = run(cook, folder.root, System.getenv('PATH'), 'help')
 
-      assert result.status == 1
+      assert result.status == 2
       assert result.out == ''
       assert result.err.endsWith("cook: ${PACKAGE.substring(1)} has sha256 ${actual}, not the ${pinned} this " +
       'wrapper pins; refusing to run it\n')
@@ -118,7 +118,7 @@ class WrapperTest {
       ],
     ].each { path, message ->
       def result = run(cook, folder.root, path, 'help')
-      assert result.status == 1
+      assert result.status == 2
       assert result.err == message
     }
   }

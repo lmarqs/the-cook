@@ -34,19 +34,19 @@ recipe ownership.
 
 1. Select the package from `uname -s` and `uname -m`: on `Linux`, `x86_64` or `amd64` is `linux-x64` and `aarch64` or
    `arm64` is `linux-arm64`; on `Darwin`, `arm64` is `macos-arm64`. Any other platform is refused, named, with exit
-   status 1.
+   status 2.
 2. If the package's launcher exists under `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/<platform>/`, launch
    it: `cook/bin/cook` on Linux, `cook.app/Contents/MacOS/cook` on macOS.
 3. Otherwise download `the-cook-<version>-<platform>.tar.gz` from the release with `curl`, or `wget` when `curl` is
    absent, and compute its sha256 with `sha256sum`, or `shasum -a 256` when `sha256sum` is absent.
 4. Refuse a download whose sha256 differs from the one in the wrapper: print the file and both hashes, exit with
-   status 1, and cache nothing.
+   status 2, and cache nothing.
 5. Unpack the verified package beside the cache and move it in with one rename, so the cache never holds a partial
    package, then launch it with the supplied CLI arguments. A package another run cached meanwhile stays in place and
    is the one launched.
 
 First use of an uncached version needs access to the release, `tar`, one of `curl` and `wget`, and one of `sha256sum`
-and `shasum`; without them the wrapper names the tool it needs and exits with status 1. Later use of the cached
+and `shasum`; without them the wrapper names the tool it needs and exits with status 2. Later use of the cached
 package requires no download. The cache keeps each version and platform apart; a package built for one architecture
 is not a substitute for another.
 

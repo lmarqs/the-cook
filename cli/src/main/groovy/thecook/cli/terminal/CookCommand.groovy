@@ -69,7 +69,8 @@ final class CookCommand {
 
       stdout.flush()
       return 0
-    } catch (Exception error) {
+    } catch (Throwable error) {
+      // An Error, such as a recipe's failed assert, would otherwise end the JVM with 1, which reads as a difference.
       diagnose(error.message ?: error.class.simpleName)
       return 2
     }
