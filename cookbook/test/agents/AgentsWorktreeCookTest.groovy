@@ -508,6 +508,8 @@ class AgentsWorktreeCookTest {
     def huge = prune(kitchen, '--older-than=99999999999999999999')
     assert huge.exit == 1
     assert huge.error.startsWith('worktree: --older-than=99999999999999999999 is more than 999999 hours\n')
+    def padded = prune(kitchen, '--older-than=01234567')
+    assert padded.error.startsWith('worktree: --older-than=01234567 is more than 999999 hours\n')
   }
 
   @Test void pruneReadsAnAgeWithLeadingZerosAsDecimalHours() {
@@ -534,6 +536,29 @@ class AgentsWorktreeCookTest {
     assert pruned.exit == 0
     assert pruned.error.contains("worktree: kept ${broken}, whose status Git could not read\n")
     assert new File(broken, 'notes.txt').exists()
+  }
+
+  @Test void pruneKeepsAWorktreeWhoseAgeFindCannotRead() {
+    def kitchen = repository([harness: ['claude'], 'worktree-root': ['.worktrees']])
+    new File(kitchen, '.git/info/exclude') << '/hidden/\n'
+    assert hook(kitchen, 'create', [name: 'sealed']).exit == 0
+    def sealed = new File(kitchen, '.worktrees/sealed').canonicalFile
+    def hidden = new File(sealed, 'hidden')
+    hidden.mkdirs()
+    def notes = new File(hidden, 'notes.txt')
+    notes.text = 'work\n'
+    age(sealed)
+    notes.text = 'more work\n'
+    hidden.setReadable(false, false)
+
+    try {
+      def pruned = prune(kitchen, '--dry-run')
+
+      assert pruned.exit == 0
+      assert pruned.error.contains("worktree: kept ${sealed}, whose age find could not read\n")
+    } finally {
+      hidden.setReadable(true, false)
+    }
   }
 
   @Test void pruneKeepsEveryWorktreeWhenItCannotWriteWhy() {

@@ -149,10 +149,13 @@ consider() {
   if [ "$2" = true ]; then kept "$1" 'which is locked'; return 0; fi
   if [ "$1" = "$here" ]; then kept "$1" 'which holds the current directory'; return 0; fi
   # Untouched files keep their dates, so a worktree in use but without commits or edits yet is told apart by them.
-  if [ "$minutes" -gt 0 ] && [ -n "$(find "$1" "$(git -C "$1" rev-parse --absolute-git-dir)" -mmin "-$minutes" \
-    -print 2>/dev/null | head -n 1)" ]; then
-    kept "$1" "which changed in the last $hours hours"
-    return 0
+  if [ "$minutes" -gt 0 ]; then
+    if ! recent=$(find "$1" "$(git -C "$1" rev-parse --absolute-git-dir)" -mmin "-$minutes" -print -quit 2>/dev/null) &&
+      [ -z "$recent" ]; then
+      kept "$1" 'whose age find could not read'
+      return 0
+    fi
+    if [ -n "$recent" ]; then kept "$1" "which changed in the last $hours hours"; return 0; fi
   fi
   if ! changes=$(git --no-optional-locks -C "$1" status --porcelain); then
     kept "$1" 'whose status Git could not read'
@@ -256,9 +259,9 @@ case ${1:-} in
       '' | *[!0-9]*) fail "--older-than=$hours is not a whole number of hours" 'such as --older-than=24' ;;
     esac
     # Shell arithmetic reads a leading zero as octal and overflows past 64 bits.
-    hours=${hours#"${hours%%[!0]*}"}
-    hours=${hours:-0}
-    [ "${#hours}" -le 6 ] || fail "--older-than=$hours is more than 999999 hours" 'such as --older-than=24'
+    decimal=${hours#"${hours%%[!0]*}"}
+    [ "${#decimal}" -le 6 ] || fail "--older-than=$hours is more than 999999 hours" 'such as --older-than=24'
+    hours=${decimal:-0}
     minutes=$((hours * 60))
     here=$(git rev-parse --show-toplevel 2>/dev/null) || here=''
     worktrees=$(git -C "$main" worktree list --porcelain)
