@@ -33,6 +33,11 @@ final class Coordinates {
     operand.contains(':') && !operand.contains('://') && !operand.endsWith('.groovy')
   }
 
+  /** Whether `text` is coordinates that `parse` accepts. */
+  static boolean valid(String text) {
+    text ==~ "^${PATTERN}\$"
+  }
+
   /** Parses `text`, rejecting anything but `group:artifact:version[#recipe]` with an exact release version. */
   static Coordinates parse(String text) {
     Matcher match = text =~ "^${PATTERN}\$"

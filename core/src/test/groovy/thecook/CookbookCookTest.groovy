@@ -922,6 +922,27 @@ notes.set('kept')
     assert CookLock.parse(new File(kitchen, 'cook.lock').text).names == ['recipes/b'] as Set
   }
 
+  @Test void discardTakesTheLockNameOfAPathRecipeWhoseNameHoldsAColon() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'Notes.groovy', '''package acme.notes
+
+@Ingredient
+class Notes {
+  private String line
+  void set(String value) { line = value }
+  @Section(path = 'NOTES.md', id = 'notes')
+  List<String> section() { line ? [line] : null }
+}
+''')
+    recipe(kitchen, 'a:notes.groovy', "import acme.notes.Notes\n@ingredient(Notes) def notes\nnotes.set('kept')\n")
+    cook(kitchen, 'a:notes.groovy', [:]).commit()
+    assert CookLock.parse(new File(kitchen, 'cook.lock').text).names == ['a:notes'] as Set
+
+    new CookbookDiscard(kitchen).propose(['a:notes']).commit()
+
+    assert !new File(kitchen, 'cook.lock').exists()
+  }
+
   @Test void discardRefusesAnOperandWrittenOtherThanAsTheLockNamesIt() {
     def kitchen = kitchen()
     publishCfg(kitchen)

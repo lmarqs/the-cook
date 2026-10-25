@@ -46,7 +46,10 @@ final class RecipeLoader {
    * with a version or a path with `.groovy`, so each recipe has one spelling.
    */
   static String lockName(Path kitchen, String operand) {
-    def name = name(kitchen, operand)
+    // A path recipe's lock name keeps a colon of its file name, as `a:notes`, so only valid coordinates read as such.
+    def name = Coordinates.written(operand) && !Coordinates.valid(operand) ?
+        relative(kitchen, operand) :
+        name(kitchen, operand)
 
     if (name != operand) {
       throw new IllegalArgumentException(
