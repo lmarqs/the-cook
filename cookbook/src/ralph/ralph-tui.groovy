@@ -145,7 +145,7 @@ file, or points an entry's `command` at a wrapper of its own |
 | The run worktree's teardown | The person, by `--worktree-teardown`; the team writes the file |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
 | Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry, \
-whose `model` wins over the session's for Codex |
+whose `model` wins over the session's |
 | The launcher's commands in the files agents and people read | The person, by `--instructions`; the section is \
 appended at the file's end, and stays where the team moves it |
 | The agents layout's Launching table | The team, from After cooking |
@@ -244,8 +244,9 @@ rewritten.
 - ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
   under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
-- ralph-tui 0.12 passes a run's `--model` before the plugin's arguments, which carry the entry's `model`, and Codex
-  runs the entry's, saying nowhere that the run's was dropped: set a model per run or per entry, not both.
+- ralph-tui 0.12 passes a run's `--model` before the plugin's arguments, which carry the entry's `model`, and Claude
+  Code and Codex both run the entry's, saying nowhere that the run's was dropped: set a model per run or per entry,
+  not both.
 - ralph-tui 0.12's beads trackers only check that the `beadsDir` directory exists, and stop as `no_tasks`, with no
   error, when it does not. A run worktree has no `.beads/` when nothing under it is committed, so the seeded
   `beadsDir` reaches the main checkout's from `<worktree root>/ralph/<name>`: a run name with `/`, a

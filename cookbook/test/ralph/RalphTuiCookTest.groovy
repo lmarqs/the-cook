@@ -736,7 +736,7 @@ roles:
       'leaves `beads.hbs` unread',
       '`bv` orders serial runs only',
       'a run name with `/`',
-      'Codex runs the entry\'s',
+      'Claude Code and Codex both run the entry\'s',
     ].each { assert flat.contains(it): "the help lacks '${it}'" }
   }
 

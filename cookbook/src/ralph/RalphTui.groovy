@@ -14,10 +14,11 @@ package io.github.lmarqs.cookbook.ralph
  *
  * Model, effort and further entries are the team's, in the seeded configuration. A model goes per run
  * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`), not both: ralph-tui 0.12 passes the run's
- * before the plugin's arguments, which carry the entry's, and Codex runs the entry's. ralph-tui 0.12's Claude plugin
- * accepts only `sonnet`, `opus` and `haiku`. Claude's effort goes per run through `CLAUDE_CODE_EFFORT_LEVEL`, which the
- * launcher and ralph-tui pass to every worker; Codex's goes per entry, as `"-c", "model_reasoning_effort=high"` in
- * `defaultFlags`. Entries a team may add, launched with `.ralph-tui/bin/run <run> --agent <name>`:
+ * before the plugin's arguments, which carry the entry's, and Claude Code and Codex both run the entry's. ralph-tui
+ * 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku`. Claude's effort goes per run through
+ * `CLAUDE_CODE_EFFORT_LEVEL`, which the launcher and ralph-tui pass to every worker; Codex's goes per entry, as
+ * `"-c", "model_reasoning_effort=high"` in `defaultFlags`. Entries a team may add, launched with
+ * `.ralph-tui/bin/run <run> --agent <name>`:
  *
  * ```toml
  * # A Claude worker bound to a role's denies, beside the seeded entries.
