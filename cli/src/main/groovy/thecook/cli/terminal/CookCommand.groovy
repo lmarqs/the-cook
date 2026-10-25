@@ -142,7 +142,7 @@ final class CookCommand {
       case HelpArgs:
         return help(kitchen, ((HelpArgs) command).recipes)
       case CheckArgs:
-        return check(kitchen, ((CheckArgs) command).recipes)
+        return check(kitchen, kitchens ? kitchens.first() : null, ((CheckArgs) command).recipes)
       case DiscardArgs:
         return discard(kitchen, (DiscardArgs) command)
       case ReplicateArgs:
@@ -217,7 +217,8 @@ final class CookCommand {
   }
 
   // Checking cooks the recipes again as replicate does, and keeps the proposal as the report.
-  private Closure<Boolean> check(File kitchen, List<String> names) {
+  // `given` is the kitchen as the person wrote it, so the suggested fix runs where they ran check.
+  private Closure<Boolean> check(File kitchen, String given, List<String> names) {
     lockNames(names)
     return {
       ->
@@ -232,9 +233,10 @@ final class CookCommand {
       review(proposal, proposal.changes, false)
       actions.each { path, action -> stdout.println('Would ' + action + ' ' + path) }
       def files = actions.size() == 1 ? '1 file differs' : "${actions.size()} files differ"
+      def fix = (['./cook replicate'] + (given == null ? [] : ['-C', given]) + names).join(' ')
       diagnose(Diagnostic.text("${files} from what cook.lock records; nothing was written",
           'check cooks each recipe again from the source and arguments cook.lock records',
-          "run ./cook replicate${names ? ' ' + names.join(' ') : ''}, review the diff and commit it"))
+          "run ${fix}, review the diff and commit it"))
       false
     }
   }
@@ -439,7 +441,7 @@ final class CookCommand {
       def context = release ? ' under the same version' : ''
       stdout.println("Changed source ${it.address}")
       stdout.println("  cook.lock recorded sha256 ${it.recorded}; the ${source} now has sha256 ${it.current}")
-      stdout.println("  its sources changed${context}; review the diff before approving")
+      stdout.println("  its sources changed${context}; review the diff${confirm ? ' before approving' : ''}")
       stdout.println()
     }
     proposal.recipes.findAll { confirm && it.confirm != null }.each {

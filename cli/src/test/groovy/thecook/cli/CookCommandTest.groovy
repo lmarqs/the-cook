@@ -79,13 +79,13 @@ class CookCommandTest {
       assert stderr.toString('UTF-8') ==
       'cook: check: 1 file differs from what cook.lock records; nothing was written\n' +
       '  check cooks each recipe again from the source and arguments cook.lock records\n' +
-      '  run ./cook replicate, review the diff and commit it\n'
+      "  run ./cook replicate -C ${repo.path}, review the diff and commit it\n"
       assert notes.text.contains('\nedited\n')
 
       stderr.reset()
       assert cli.execute(['check', '-C', repo.path, 'acme:notes#notes'] as String[]) == 1
       assert stderr.toString('UTF-8')
-      .endsWith('\n  run ./cook replicate acme:notes#notes, review the diff and commit it\n')
+      .endsWith("\n  run ./cook replicate -C ${repo.path} acme:notes#notes, review the diff and commit it\n")
     }
   }
 
@@ -531,6 +531,10 @@ notes.add(line)
       def lock = new File(repo, 'cook.lock')
       def recorded = (lock.text =~ /sha256: "(\w+)"/)[0][1]
       recipe.text = recipe.text.replace('notes.add(line)', "notes.add(line + ' again')")
+
+      stdout.reset()
+      assert cli.execute(['check', '-C', repo.path, 'local'] as String[]) == 1
+      assert stdout.toString('UTF-8').contains('\n  its sources changed; review the diff\n\n')
 
       stdout.reset()
       assert command(stdout, stderr, 'yes\n')

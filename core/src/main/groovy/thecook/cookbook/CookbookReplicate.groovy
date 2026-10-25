@@ -32,13 +32,13 @@ final class CookbookReplicate {
 
       if (!replicated.add(name)) {
         throw new IllegalArgumentException(
-        Diagnostic.text("${name} is replicated twice", null, 'replicate it once per invocation'))
+        Diagnostic.text("${name} is named twice", null, 'name it once per invocation'))
       }
 
       if (!(name in lock.names)) {
         throw new IllegalArgumentException(Diagnostic.text(
         "${CookLock.PATH} lists no recipe ${name}; nothing was written",
-        "replicate cooks only what ${CookLock.PATH} records for a recipe",
+        "only a recipe ${CookLock.PATH} records is cooked again from it",
         "check the recipe's name; ${CookLock.PATH} lists ${lock.names ? lock.names.join(', ') : 'none'}"))
       }
 

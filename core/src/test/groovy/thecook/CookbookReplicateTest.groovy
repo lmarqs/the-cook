@@ -113,7 +113,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
 
     def error = assertThrows(IllegalArgumentException) { replicate([NAME, NAME]) }
 
-    assert error.message == "${NAME} is replicated twice\n  replicate it once per invocation"
+    assert error.message == "${NAME} is named twice\n  name it once per invocation"
     assert loaded.empty
     assert new File(kitchen, 'cook.lock').text == lock
   }
@@ -125,7 +125,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     def error = assertThrows(IllegalArgumentException) { replicate([NAME, 'acme:text#missing']) }
 
     assert error.message == 'cook.lock lists no recipe acme:text#missing; nothing was written\n' +
-    '  replicate cooks only what cook.lock records for a recipe\n' +
+    '  only a recipe cook.lock records is cooked again from it\n' +
     "  check the recipe's name; cook.lock lists ${NAME}"
     assert loaded.empty
   }
@@ -134,7 +134,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     def error = assertThrows(IllegalArgumentException) { replicate([NAME]) }
 
     assert error.message == "cook.lock lists no recipe ${NAME}; nothing was written\n" +
-    '  replicate cooks only what cook.lock records for a recipe\n' +
+    '  only a recipe cook.lock records is cooked again from it\n' +
     "  check the recipe's name; cook.lock lists none"
   }
 
@@ -169,7 +169,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     def error = assertThrows(IllegalArgumentException) {
       replicate(['recipes/first', 'recipes/first'])
     }
-    assert error.message == 'recipes/first is replicated twice\n  replicate it once per invocation'
+    assert error.message == 'recipes/first is named twice\n  name it once per invocation'
   }
 
   @Test void reportsChangedCoordinatesAndCooksTheirCurrentSource() {

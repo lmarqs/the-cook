@@ -242,7 +242,7 @@ or cooked with other arguments.
 
 When nothing would change, check prints `Already cooked.` and exits 0. Otherwise it prints each `Changed source`
 notice, the diff and a `Would create`, `Would update`, `Would delete` or `Would replace` line per path, and exits 1 with
-this diagnostic on stderr, naming the recipes it was given:
+this diagnostic on stderr, naming the `-C` directory and the recipes it was given:
 
 ```text
 cook: check: 2 files differ from what cook.lock records; nothing was written
