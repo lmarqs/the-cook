@@ -63,7 +63,7 @@ Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
 - Decisions and domain rules: [docs/adrs/](docs/adrs/README.md); feature behavior in `docs/features/`, interface
   standards in `docs/ux/`.
 - A procedure an agent repeats: a skill in `.agents/skills/`.
-- A trap in one area: `.agents/memory/`, listed under Deep dive.
+- A trap a correction reveals in one area: `.agents/memory/<area>.md`, listed under Deep dive.
 
 ## Rules
 
