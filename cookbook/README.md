@@ -385,7 +385,7 @@ for people, sessions and other recipes:
 
 | Target | Part | When | Kind |
 | --- | --- | --- | --- |
-| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` or `"beads-bv"` with that tracker, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, or with `--worker-check` `strategy = "retry"`, `maxRetries = 2` and `continueOnNonZeroExit = false`, `[parallel] directMerge = true`, and one `[[agents]]` entry per harness, with `--worker-check` running `.ralph-tui/bin/worker` with the harness as its first argument | Always, when absent | seed |
+| `.ralph-tui/config.toml` | Config version 2.1, `tracker = "beads"` or `"beads-bv"` with that tracker, `maxIterations = 10`, `autoCommit = true`, `[errorHandling] strategy = "skip"`, or with `--worker-check` `strategy = "retry"`, `maxRetries = 2` and `continueOnNonZeroExit = false`, `[parallel] directMerge = true`, with a beads tracker `[trackerOptions] beadsDir` reaching the main checkout's `.beads` from `<worktree root>/ralph/<name>`, and one `[[agents]]` entry per harness, with `--worker-check` running `.ralph-tui/bin/worker` with the harness as its first argument | Always, when absent | seed |
 | `.ralph-tui/templates/beads.hbs`, `beads-bv.hbs`, `json.hbs` | The prompts of the chosen trackers: stay in this worktree, leave committing to ralph-tui, never push, print `<promise>COMPLETE</promise>` only after the checks pass and `BLOCKED:` otherwise; never close or update the bead, or never edit the PRD file | Always, when absent | seed |
 | `.ralph-tui/bin/run`, `.ralph-tui/bin/clean` | The launcher scripts, executable | Always | owned |
 | `.ralph-tui/bin/worker` | The worker wrapper, executable | Always | owned |
@@ -418,7 +418,7 @@ tracker's state, and the rest of each `--instructions` file.
 | The run worktree's setup | The person, by `--worktree-setup`; the team writes the file |
 | The run worktree's teardown | The person, by `--worktree-teardown`; the team writes the file |
 | The branch a run starts from | The session, by `--base`, `HEAD` by default |
-| Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry |
+| Model and effort | The session, by `ralph-tui run --model` and `CLAUDE_CODE_EFFORT_LEVEL`; the team, per entry, whose `model` wins over the session's for Codex |
 | The launcher's commands in the files agents and people read | The person, by `--instructions`; the section is appended at the file's end, and stays where the team moves it |
 | The agents layout's Launching table | The team, from After cooking |
 | Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
@@ -516,6 +516,13 @@ rewritten.
 - ralph-tui 0.12's Claude plugin adds `--dangerously-skip-permissions` unless the entry has `skipPermissions = false`
   under `[agents.options]`; at the top of the entry, as `ralph-tui setup` would place it, the key is dropped silently.
 - ralph-tui 0.12's Claude plugin accepts only `sonnet`, `opus` and `haiku` as `--model`.
+- ralph-tui 0.12 passes a run's `--model` before the plugin's arguments, which carry the entry's `model`, and Codex
+  runs the entry's, saying nowhere that the run's was dropped: set a model per run or per entry, not both.
+- ralph-tui 0.12's beads trackers only check that the `beadsDir` directory exists, and stop as `no_tasks`, with no
+  error, when it does not. A run worktree has no `.beads/` when nothing under it is committed, so the seeded
+  `beadsDir` reaches the main checkout's from `<worktree root>/ralph/<name>`: a run name with `/`, a
+  `--worktree-root` changed after seeding, or a configuration seeded before it needs the line edited by hand, with
+  one `../` per segment of the run worktree's path. ralph-tui joins it onto the run worktree, so it stays relative.
 - ralph-tui 0.12's parallel mode starts children that are still blocked, and refuses fewer than three tasks.
 - ralph-tui 0.12 reads the prompt `.ralph-tui/templates/<tracker>.hbs`: a configuration whose `tracker` is changed to
   `beads-bv` by hand leaves `beads.hbs` unread and takes ralph-tui's own prompt, which has the agent close the bead
