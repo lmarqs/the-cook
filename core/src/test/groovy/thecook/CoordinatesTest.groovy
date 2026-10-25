@@ -4,6 +4,30 @@ import org.junit.Test
 import thecook.cookbook.Coordinates
 
 class CoordinatesTest {
+  @Test void comparesReleaseComponentsNumerically() {
+    [
+      ['9.10.0', '9.9.0'],
+      ['10.0.0', '9.99.99'],
+      ['9.1.10', '9.1.9'],
+      ['999999999999999999999.0.0', '999999999999999999998.0.0'],
+    ].each { versions ->
+      assert Coordinates.compareVersions(versions[0], versions[1]) > 0
+      assert Coordinates.compareVersions(versions[1], versions[0]) < 0
+    }
+    assert Coordinates.compareVersions('9.10.0', '9.10.0') == 0
+    assert Coordinates.compareVersions('09.010.0', '9.10.0') == 0
+  }
+
+  @Test void changesOnlyTheVersionOfCoordinates() {
+    ['acme:notes:1.2.3', 'acme:notes:1.2.3#notes'].each { text ->
+      def recorded = Coordinates.parse(text)
+      def target = recorded.at('2.0.0')
+      assert target == Coordinates.parse(text.replace('1.2.3', '2.0.0'))
+      assert recorded.toString() == text
+      assert shouldFail(IllegalArgumentException) { recorded.at('2.0.0-SNAPSHOT') }
+    }
+  }
+
   @Test void parsesCoordinatesWithAnExactReleaseVersion() {
     def coordinates = Coordinates.parse('io.github.lmarqs.cookbook:agents:0.1.0#instructions')
     assert [coordinates.group, coordinates.artifact, coordinates.version, coordinates.recipe] ==

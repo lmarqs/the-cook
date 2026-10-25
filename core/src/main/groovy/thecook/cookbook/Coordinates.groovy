@@ -51,6 +51,27 @@ final class Coordinates {
     new Coordinates(match.group(1), match.group(2), match.group(3), match.group(4))
   }
 
+  /** Compares exact release versions numerically, from major through patch. */
+  static int compareVersions(String left, String right) {
+    def leftParts = left.tokenize('.')*.toBigInteger()
+    def rightParts = right.tokenize('.')*.toBigInteger()
+
+    for (int index = 0; index < 3; index++) {
+      int comparison = leftParts[index] <=> rightParts[index]
+
+      if (comparison != 0) {
+        return comparison
+      }
+    }
+
+    0
+  }
+
+  /** The same artifact and recipe at another exact release version. */
+  Coordinates at(String version) {
+    parse("${group}:${artifact}:${version}" + (recipe ? "#${recipe}" : ''))
+  }
+
   /** The artifact's address, without the recipe. */
   String getArtifactAddress() {
     "${group}:${artifact}:${version}"
