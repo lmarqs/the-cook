@@ -12,18 +12,23 @@ final class CookbookReplicate {
     this.repositories = repositories
   }
 
-  /** Replays lock names, coordinates or paths; only `Proposal.commit` writes the proposed changes. */
+  /**
+   * Replays recipes by their lock names, or every recipe the lock lists, in its order, when `operands` is empty; only
+   * `Proposal.commit` writes the proposed changes.
+   */
   Proposal propose(List<String> operands) {
-    if (!operands) {
-      throw new IllegalArgumentException(
-      Diagnostic.text('replicate needs a recipe', null, 'name a recipe from cook.lock'))
+    def kitchen = destination.toPath().toRealPath()
+    def text = new Draft(destination).read(CookLock.PATH)
+
+    if (!operands && text == null) {
+      throw new IllegalArgumentException(Diagnostic.text("there is no ${CookLock.PATH}",
+      "${CookLock.PATH} records the recipes to cook again", 'run in the kitchen that holds it'))
     }
 
-    def kitchen = destination.toPath().toRealPath()
-    def lock = CookLock.parse(new Draft(destination).read(CookLock.PATH))
+    def lock = CookLock.parse(text)
     Set<String> replicated = []
-    List<RecipeRequest> requests = operands.collect { operand ->
-      def name = RecipeLoader.name(kitchen, operand)
+    List<RecipeRequest> requests = (operands ?: lock.names as List).collect { operand ->
+      def name = RecipeLoader.lockName(kitchen, operand)
 
       if (!replicated.add(name)) {
         throw new IllegalArgumentException(

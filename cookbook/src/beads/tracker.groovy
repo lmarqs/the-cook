@@ -88,8 +88,8 @@ Repeat the arguments on the opening line of the `beads` section in `.gitignore`,
 `# io.github.lmarqs.cookbook:beads#tracker --share=clone --session-start=.agents/hooks/session-start.d/beads.sh`. A
 newer version rewrites the section and the script; `.beads/PRIME.md` keeps the team's edits, so delete it and cook
 again to take a newer one. Cooking with another `--session-start` moves the script, and cooking without it removes the
-script; cooking without a file's `--instructions` removes its section. Under `--check`, the script changes only with
-the arguments, never with other files in the draft.
+script; cooking without a file's `--instructions` removes its section. Under `./cook check`, the script changes only
+with the arguments, never with other files in the draft.
 
 ## Traps
 

@@ -252,7 +252,7 @@ notes.set(features: [hooks: true])
     def settings = new File(kitchen, 'conf/settings.json')
     settings.text = '// ours\n' + settings.text
     def discarded = shouldFail(IllegalArgumentException) {
-      new CookbookDiscard(kitchen).propose(['acme:cfg:1.0.0#both'])
+      new CookbookDiscard(kitchen).propose(['acme:cfg#both'])
     }
     assert discarded.message.readLines()[0] == 'conf/settings.json key permissions'
   }
@@ -757,7 +757,7 @@ config.migrated = migrated
     def ignore = new File(kitchen, '.gitignore')
     ignore.text = 'mine\n' + ignore.text
 
-    def discard = new CookbookDiscard(kitchen).propose(['acme:cfg:9.9.9#all'])
+    def discard = new CookbookDiscard(kitchen).propose(['acme:cfg#all'])
 
     assert discard.actions['.gitignore'] == 'update'
     assert discard.actions['cook.lock'] == 'delete'
@@ -798,7 +798,7 @@ notes.set(test: 'new', other: 'mine')
     cook(kitchen, 'local.groovy', [:]).commit()
     new File(kitchen, 'local.groovy').delete()
 
-    new CookbookDiscard(kitchen).propose(['local.groovy']).commit()
+    new CookbookDiscard(kitchen).propose(['local']).commit()
 
     assert new groovy.json.JsonSlurper().parse(settings) == [kept: true]
     assert new File(kitchen, 'cook.lock').text.contains('name: "acme:notes#notes"')
@@ -915,33 +915,24 @@ notes.set('kept')
     assert lock.owned('recipes/a').every { it instanceof SectionTarget }
     assert lock.owned('recipes/b').any { it instanceof KeyTarget }
 
-    new CookbookDiscard(kitchen).propose(['recipes/a.groovy']).commit()
+    new CookbookDiscard(kitchen).propose(['recipes/a']).commit()
 
     assert notes.text == '<!-- cook:begin recipes/b/notes -->\nkept\n<!-- cook:end recipes/b/notes -->\n'
     assert new groovy.json.JsonSlurper().parse(new File(kitchen, 'settings.json')) == [test: 'kept']
     assert CookLock.parse(new File(kitchen, 'cook.lock').text).names == ['recipes/b'] as Set
   }
 
-  @Test void discardByLockNameRemovesTheSameTargetsAsVersionedCoordinates() {
+  @Test void discardRefusesAnOperandWrittenOtherThanAsTheLockNamesIt() {
     def kitchen = kitchen()
     publishCfg(kitchen)
     cook(kitchen, 'acme:cfg:1.0.0#all', [:]).commit()
-    def ignore = new File(kitchen, '.gitignore')
-    ignore.text = 'mine\n' + ignore.text
-    def discard = new CookbookDiscard(kitchen).propose(['acme:cfg#all'])
+    def lock = new File(kitchen, 'cook.lock').text
 
-    ['0.0.0', '9.9.9'].each { version ->
-      def versioned = new CookbookDiscard(kitchen).propose(["acme:cfg:${version}#all"])
-      assert discard.actions == versioned.actions
-      discard.changes.each { path -> assert discard.after(path) == versioned.after(path) }
+    [['acme:cfg:1.0.0#all', 'acme:cfg#all'], ['./acme', 'acme'], ['notes.groovy', 'notes'],].each { operand, name ->
+      assert shouldFail(IllegalArgumentException) { new CookbookDiscard(kitchen).propose([operand]) }.message ==
+      "${operand} is not a name cook.lock writes\n  write ${name}"
     }
-    discard.commit()
-
-    assert ignore.text == 'mine\n'
-    assert new File(kitchen, 'SEED.md').text == 'seeded\n'
-    assert !new File(kitchen, 'conf/settings.json').exists()
-    assert !Files.exists(new File(kitchen, '.tool/config.toml').toPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS)
-    assert !new File(kitchen, 'cook.lock').exists()
+    assert new File(kitchen, 'cook.lock').text == lock
   }
 
   @Test void discardRefusesARecipeTheLockDoesNotListOrThatIsGivenTwice() {
@@ -950,17 +941,13 @@ notes.set('kept')
     cook(kitchen, 'acme:cfg:1.0.0#ignore', [:]).commit()
     [
       [
-        ['acme:cfg:1.0.0#all'],
+        ['acme:cfg#all'],
         'cook.lock lists no recipe acme:cfg#all; nothing was written\n' +
         '  discard removes only what cook.lock records for a recipe\n' +
         '  check the recipe\'s name; cook.lock lists acme:cfg#ignore'
       ],
       [
-        ['acme:cfg:1.0.0#ignore', 'acme:cfg:0.2.0#ignore'],
-        'acme:cfg#ignore is discarded twice\n  discard it once per invocation'
-      ],
-      [
-        ['acme:cfg#ignore', 'acme:cfg:1.0.0#ignore'],
+        ['acme:cfg#ignore', 'acme:cfg#ignore'],
         'acme:cfg#ignore is discarded twice\n  discard it once per invocation'
       ],
       [['../outside.groovy'], 'the recipe is outside the kitchen\n  move it into the kitchen'],
@@ -972,7 +959,7 @@ notes.set('kept')
       assert shouldFail(IllegalArgumentException) { new CookbookDiscard(kitchen).propose(operands) }.message == message
     }
     new File(kitchen, 'cook.lock').delete()
-    assert shouldFail(IllegalArgumentException) { new CookbookDiscard(kitchen).propose(['notes.groovy']) }.message ==
+    assert shouldFail(IllegalArgumentException) { new CookbookDiscard(kitchen).propose(['notes']) }.message ==
     'cook.lock lists no recipe notes; nothing was written\n' +
     '  discard removes only what cook.lock records for a recipe\n' +
     '  check the recipe\'s name; cook.lock lists none'

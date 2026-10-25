@@ -193,9 +193,9 @@ Repeat the arguments on the opening line of the `harnesses` section in `.gitigno
 --worktree-setup=.worktrees/setup`. Cook again after editing the policy, and after deleting `.claude/` or `.codex/` to
 recreate the links. A newer version rewrites the keys, links, files and sections it owns; the team's keys, the scripts
 in `session-start.d/` and the seeded files stay as they are. A cook that changes the `hooks.SessionStart` entry in
-Codex's `hooks.json` leaves it untrusted for every person until each accepts it again, as Traps says. Under `--check`, a
-role file or `cook.rules` shows as a change once the policy gains roles or command rules, until the recipe is cooked
-again.
+Codex's `hooks.json` leaves it untrusted for every person until each accepts it again, as Traps says. Under
+`./cook check`, a role file or `cook.rules` shows as a change once the policy gains roles or command rules, until the
+recipe is cooked again.
 
 ## Traps
 

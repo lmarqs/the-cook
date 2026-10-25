@@ -183,7 +183,7 @@ recipes:
     assert new KeyTarget('.agents/adapters/codex/config.toml', ['sandbox_workspace_write', 'network_access']) in
     lock.owned('io.github.lmarqs.cookbook:agents#connect')
 
-    def discarded = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect'])
+    def discarded = new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents#connect'])
     discarded.commit()
     assert config.text == '[sandbox_workspace_write]\nwritable_roots = ["/tmp"]\n'
   }
@@ -197,7 +197,7 @@ recipes:
     assert config.text == 'approval_policy = "on-request"\nsandbox_mode = "workspace-write"\n\n' +
     '[sandbox_workspace_write]\nnetwork_access = false\n'
 
-    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect']).commit()
+    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents#connect']).commit()
     assert !config.exists()
   }
 
@@ -278,7 +278,7 @@ recipes:
     assert connect().changes == []
     assert [claudeSettings.text, codexHooks.text] == team
 
-    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents:0.1.0#connect']).commit()
+    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:agents#connect']).commit()
     assert !dispatcher.exists()
     assert slurp(claudeSettings) == [hooks: [PreToolUse: preToolUse]]
     assert slurp(codexHooks) == [hooks: [PreToolUse: preToolUse]]

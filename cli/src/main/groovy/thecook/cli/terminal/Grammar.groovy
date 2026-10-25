@@ -35,7 +35,7 @@ abstract class KitchenScoped {
 
 @Command(
 name = 'cook',
-subcommands = [HelpArgs, DiscardArgs, ReplicateArgs],
+subcommands = [HelpArgs, CheckArgs, ReplicateArgs, DiscardArgs],
 description = ["Cooks recipes: Cook's options come first, then the recipe, then the recipe's own arguments."],
 footer = [
   '',
@@ -53,11 +53,6 @@ class RootArgs extends KitchenScoped {
   @Option(names = ['--batch-approve'],
   description = ["Show the recipes' confirm texts and the diff, then write without asking."])
   boolean batchApprove
-
-  @Option(names = ['--check'], description = [
-    'Report the proposed changes without writing, and exit 1 when there are any.'
-  ])
-  boolean check
 
   @Option(names = ['--version'], description = ["Print Cook's version; takes no other arguments."])
   boolean version
@@ -90,7 +85,7 @@ class DiscardArgs extends KitchenScoped {
   @Option(names = ['--batch-approve'], description = ['Show the diff, then write without asking.'])
   boolean batchApprove
 
-  @Parameters(paramLabel = 'RECIPE', description = ['A recipe: its cook.lock name, coordinates or a .groovy path.'])
+  @Parameters(paramLabel = 'NAME', description = ['A recipe by the name cook.lock writes.'])
   List<String> recipes = []
 }
 
@@ -103,6 +98,14 @@ class ReplicateArgs extends KitchenScoped {
   description = ["Show the recipes' confirm texts and the diff, then write without asking."])
   boolean batchApprove
 
-  @Parameters(paramLabel = 'RECIPE', description = ['A recipe: its cook.lock name, coordinates or a .groovy path.'])
+  @Parameters(paramLabel = 'NAME', description = ['A recipe by the name cook.lock writes; none is every one.'])
+  List<String> recipes = []
+}
+
+@Command(name = 'check', description = [
+  'Compare the kitchen with what cook.lock records, without writing; exit 1 when they differ.'
+])
+class CheckArgs extends KitchenScoped {
+  @Parameters(paramLabel = 'NAME', description = ['A recipe by the name cook.lock writes; none is every one.'])
   List<String> recipes = []
 }

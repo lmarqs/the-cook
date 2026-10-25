@@ -78,35 +78,42 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     assert replicate([NAME]).changes.empty
   }
 
-  @Test void loadsTheRecordedVersionEvenWhenTheOperandNamesAnotherVersion() {
+  @Test void refusesAnOperandWrittenOtherThanAsTheLockNamesIt() {
     cook(SOURCE, [Argument.inline('value', 'original')])
-    publish(RECIPE.replace("default = ['default']", "default = ['different']"), '2.0.0')
     loaded.clear()
 
-    def proposal = replicate(['acme:text:2.0.0#write'])
+    def error = assertThrows(IllegalArgumentException) { replicate(['acme:text:2.0.0#write']) }
 
-    assert loaded == ['acme:text:1.0.0']
-    assert proposal.recipes*.address == [SOURCE]
-    assert proposal.changes.empty
-    assert proposal.changedSources.empty
+    assert error.message == "acme:text:2.0.0#write is not a name cook.lock writes\n  write ${NAME}"
+    assert loaded.empty
   }
 
-  @Test void refusesAnEmptyOperandList() {
+  @Test void replaysEveryEntryInTheOrderTheLockListsWhenNoneIsNamed() {
+    write('recipes/Text.groovy', MODEL)
+    write('recipes/local.groovy', RECIPE.replace('text.text = ', "text.text = 'local:' + "))
+    cook('recipes/local.groovy', [Argument.inline('value', 'local')])
+    cook(SOURCE, [Argument.inline('value', 'original')])
+
+    def proposal = replicate([])
+
+    assert proposal.recipes*.address == [SOURCE, 'recipes/local.groovy']
+  }
+
+  @Test void refusesToReplayEveryEntryWhenThereIsNoLock() {
     def error = assertThrows(IllegalArgumentException) { replicate([]) }
 
-    assert error.message == 'replicate needs a recipe\n  name a recipe from cook.lock'
-    assert !new File(kitchen, 'cook.lock').exists()
+    assert error.message == 'there is no cook.lock\n  cook.lock records the recipes to cook again\n' +
+    '  run in the kitchen that holds it'
   }
 
-  @Test void refusesDuplicateNamesAcrossOperandFormsBeforeLoadingAnyRecipe() {
+  @Test void refusesDuplicateNamesBeforeLoadingAnyRecipe() {
     cook(SOURCE, [Argument.inline('value', 'original')])
     loaded.clear()
     def lock = new File(kitchen, 'cook.lock').text
 
-    [[NAME, NAME], [NAME, 'acme:text:9.9.9#write']].each { operands ->
-      def error = assertThrows(IllegalArgumentException) { replicate(operands) }
-      assert error.message == "${NAME} is replicated twice\n  replicate it once per invocation"
-    }
+    def error = assertThrows(IllegalArgumentException) { replicate([NAME, NAME]) }
+
+    assert error.message == "${NAME} is replicated twice\n  replicate it once per invocation"
     assert loaded.empty
     assert new File(kitchen, 'cook.lock').text == lock
   }
@@ -142,7 +149,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     assert loaded.empty
   }
 
-  @Test void replaysPathRecipesByTheirLockNamesAndPathsInOneBatch() {
+  @Test void replaysPathRecipesByTheirLockNamesInOneBatch() {
     write('recipes/Text.groovy', MODEL)
     write('recipes/first.groovy', RECIPE)
     write('recipes/second.groovy', RECIPE.replace('text.text = ', "text.text = 'second:' + "))
@@ -152,7 +159,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     def lock = new File(kitchen, 'cook.lock').text
     assert new File(kitchen, 'OUT.md').delete()
 
-    def proposal = replicate(['recipes/first', './recipes/second.groovy'])
+    def proposal = replicate(['recipes/first', 'recipes/second'])
 
     assert proposal.recipes*.address == ['recipes/first.groovy', 'recipes/second.groovy']
     assert proposal.after('OUT.md') == original
@@ -160,7 +167,7 @@ text.text = value.join('\\n') + ':' + enabled + ':' + suffix
     assert new File(kitchen, 'cook.lock').text == lock
     assert replicate(['recipes/first', 'recipes/second']).changes.empty
     def error = assertThrows(IllegalArgumentException) {
-      replicate(['recipes/first', './recipes/first.groovy'])
+      replicate(['recipes/first', 'recipes/first'])
     }
     assert error.message == 'recipes/first is replicated twice\n  replicate it once per invocation'
   }

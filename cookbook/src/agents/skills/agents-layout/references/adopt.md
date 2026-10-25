@@ -93,8 +93,11 @@ launcher:
 
 ```yaml
 - name: The agents layout matches its policy
-  run: ./cook --check io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
+  run: ./cook check io.github.lmarqs.cookbook:agents#connect
 ```
+
+`check` cooks `#connect` again with the version and arguments `cook.lock` records, so the step stays as it is when
+the recipe is upgraded or cooked for another harness.
 
 ## An existing setup
 
@@ -270,7 +273,7 @@ holds the same ideas, so the move is mechanical. This belongs to step 6.
    `.agents/adapters/codex/hooks.json`, with the scripts in `.agents/hooks/`. A session-start hook that prints context
    becomes a script in `.agents/hooks/session-start.d/`, since `#connect` owns `hooks.SessionStart`.
 5. Before step 7, delete the renderer, its tests and its outputs, and rewire what step 3 found that still reads
-   them: a CI drift check becomes [the `--check` step](#a-drift-check-in-ci), and a script that names an output names
+   them: a CI drift check becomes [the `check` step](#a-drift-check-in-ci), and a script that names an output names
    the adapter or link that replaces it. `-f` replaces the starter policy the seed wrote:
 
    ```sh

@@ -165,7 +165,7 @@ class BeadsTrackerCookTest {
     assert files(kitchen) == ['.beads/PRIME.md', '.gitignore', 'cook.lock']
 
     cook(kitchen, TRACKER, [share: ['team'], 'session-start': [HOOK]]).commit()
-    new CookbookDiscard(kitchen).propose([TRACKER]).commit()
+    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:beads#tracker']).commit()
     assert files(kitchen) == ['.beads/PRIME.md']
   }
 
@@ -279,7 +279,7 @@ class BeadsTrackerCookTest {
       '--session-start=.agents/hooks/session-start.d/beads.sh',
       'The prime text at session start | The person, by `--session-start`',
       '5.5 KB',
-      '--check',
+      '`./cook check`',
     ].each { assert texts.help.contains(it) }
     assert !texts.help.contains('Cook, automatically')
     [

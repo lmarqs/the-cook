@@ -14,14 +14,14 @@ final class CookbookDiscard {
     this.destination = destination
   }
 
-  /** The changes that discard recipes by lock name, coordinates or path; only `Proposal.commit` writes them. */
+  /** The changes that discard recipes by their lock names; only `Proposal.commit` writes them. */
   Proposal propose(List<String> operands) {
     def kitchen = destination.toPath().toRealPath()
     def draft = new Draft(destination)
     def ownership = new Ownership(draft)
     Set<String> discarded = []
     operands.each { operand ->
-      def name = RecipeLoader.name(kitchen, operand)
+      def name = RecipeLoader.lockName(kitchen, operand)
 
       if (!discarded.add(name)) {
         throw new IllegalArgumentException(

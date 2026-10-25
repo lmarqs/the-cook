@@ -23,11 +23,12 @@ import java.util.function.Function
 
 /**
  * Cook's command line. `stdin` answers the approval question; without it, writing needs `--batch-approve`. Coordinates
- * resolve from the repositories that `repositories` reads for a kitchen.
+ * resolve from the repositories that `repositories` reads for a kitchen. It exits 1 when it declines to write or a
+ * check finds a difference, and 2 on any error, so a caller can tell a difference from a failure.
  */
 final class CookCommand {
   private static final Set<String> BEFORE_RECIPE =
-  ['-C', '--kitchen', '--dry-run', '--check', '--batch-approve', '--force', '--skip'] as Set
+  ['-C', '--kitchen', '--dry-run', '--batch-approve', '--force', '--skip'] as Set
   private static final Map<String, String> STATUS =
   [create: 'Created', update: 'Updated', delete: 'Deleted', replace: 'Replaced', keep: 'Kept']
   private static final String VERSION = CookCommand.getResourceAsStream('version.txt').text.trim()
@@ -58,7 +59,7 @@ final class CookCommand {
       return 2
     } catch (IllegalArgumentException error) {
       diagnose(error.message)
-      return 1
+      return 2
     }
 
     try {
@@ -70,7 +71,7 @@ final class CookCommand {
       return 0
     } catch (Exception error) {
       diagnose(error.message ?: error.class.simpleName)
-      return 1
+      return 2
     }
   }
 
@@ -115,17 +116,12 @@ final class CookCommand {
     def command = chosen?.commandSpec()?.userObject()
     commandName = chosen?.commandSpec()?.name()
 
-    if (command != null && (root.dryRun || root.check || root.batchApprove || root.force || root.skip)) {
-      throw new UsageError(
-      '--dry-run, --check, --batch-approve, --force and --skip go before a recipe, not before a command')
+    if (command != null && (root.dryRun || root.batchApprove || root.force || root.skip)) {
+      throw new UsageError('--dry-run, --batch-approve, --force and --skip go before a recipe, not before a command')
     }
 
     if (root.force && root.skip) {
       throw new UsageError('--force and --skip exclude each other')
-    }
-
-    if (root.check && root.batchApprove) {
-      throw new UsageError('--check and --batch-approve exclude each other')
     }
 
     def commandKitchen = command instanceof KitchenScoped ? command.kitchen.kitchen : null
@@ -144,6 +140,8 @@ final class CookCommand {
         return recipes(kitchen, root)
       case HelpArgs:
         return help(kitchen, ((HelpArgs) command).recipes)
+      case CheckArgs:
+        return check(kitchen, ((CheckArgs) command).recipes)
       case DiscardArgs:
         return discard(kitchen, (DiscardArgs) command)
       case ReplicateArgs:
@@ -195,7 +193,7 @@ final class CookCommand {
     return {
       ->
       def proposal = new CookbookCook(kitchen, repositories.apply(kitchen), existing).propose(requests)
-      write(proposal, root.dryRun || root.check, root.batchApprove, root.check)
+      write(proposal, root.dryRun, root.batchApprove)
     }
   }
 
@@ -204,42 +202,49 @@ final class CookCommand {
       throw new UsageError('A recipe is required')
     }
 
-    args.recipes.each { operand ->
-      if (operand.startsWith('-')) {
-        def name = operand.split('=', 2)[0]
-        throw new UsageError(name in BEFORE_RECIPE ?
-        "${name} goes before the first recipe" :
-        "discard takes no recipe arguments: ${operand}")
-      }
-
-      if (!isOperand(operand)) {
-        throw new UsageError("Not a recipe: ${operand}", 'a recipe is coordinates or a .groovy path')
-      }
-    }
+    lockNames(args.recipes)
     return { -> write(new CookbookDiscard(kitchen).propose(args.recipes), args.dryRun, args.batchApprove) }
   }
 
   private Closure<Boolean> replicate(File kitchen, ReplicateArgs args) {
-    if (!args.recipes) {
-      throw new UsageError('A recipe is required')
-    }
-
-    args.recipes.each { operand ->
-      if (operand.startsWith('-')) {
-        def name = operand.split('=', 2)[0]
-        throw new UsageError(name in BEFORE_RECIPE ?
-        "${name} goes before the first recipe" :
-        "replicate takes no recipe arguments: ${operand}")
-      }
-
-      if (!isOperand(operand)) {
-        throw new UsageError("Not a recipe: ${operand}", 'a recipe is coordinates or a .groovy path')
-      }
-    }
+    lockNames(args.recipes)
     return {
       ->
       def proposal = new CookbookReplicate(kitchen, repositories.apply(kitchen)).propose(args.recipes)
       write(proposal, args.dryRun, args.batchApprove)
+    }
+  }
+
+  // Checking cooks the recipes again as replicate does, and keeps the proposal as the report.
+  private Closure<Boolean> check(File kitchen, List<String> names) {
+    lockNames(names)
+    return {
+      ->
+      def proposal = new CookbookReplicate(kitchen, repositories.apply(kitchen)).propose(names)
+      def actions = proposal.actions
+
+      if (actions.isEmpty()) {
+        stdout.println('Already cooked.')
+        return true
+      }
+
+      review(proposal, proposal.changes, false)
+      actions.each { path, action -> stdout.println('Would ' + action + ' ' + path) }
+      def files = actions.size() == 1 ? '1 file differs' : "${actions.size()} files differ"
+      diagnose(Diagnostic.text("${files} from what cook.lock records; nothing was written",
+          'check cooks each recipe again from the source and arguments cook.lock records',
+          "run ./cook replicate${names ? ' ' + names.join(' ') : ''}, review the diff and commit it"))
+      false
+    }
+  }
+
+  // The commands that read cook.lock take recipe names only: no recipe arguments, and Cook's options go first.
+  private void lockNames(List<String> names) {
+    names.findAll { it.startsWith('-') }.each { operand ->
+      def name = operand.split('=', 2)[0]
+      throw new UsageError(name in BEFORE_RECIPE ?
+      "${name} goes before the first recipe" :
+      "${commandName} takes no recipe arguments: ${operand}")
     }
   }
 
@@ -392,9 +397,8 @@ final class CookCommand {
     ].findAll { it != null }.join('\n\n')
   }
 
-  // Reviews the proposal, asks unless approved in advance, writes it and reports each path; false when declined, or
-  // when a check finds anything to write.
-  private boolean write(Proposal proposal, boolean dryRun, boolean batchApprove, boolean check = false) {
+  // Reviews the proposal, asks unless approved in advance, writes it and reports each path; false when declined.
+  private boolean write(Proposal proposal, boolean dryRun, boolean batchApprove) {
     def actions = proposal.actions
 
     if (actions.isEmpty()) {
@@ -405,7 +409,6 @@ final class CookCommand {
     review(proposal, proposal.changes)
 
     if (!dryRun && !batchApprove && !approved()) {
-      diagnose(Diagnostic.text('nothing was written', 'the answer was not y or yes'))
       return false
     }
 
@@ -414,14 +417,6 @@ final class CookCommand {
     }
 
     actions.each { path, action -> stdout.println((dryRun ? 'Would ' + action : STATUS[action]) + ' ' + path) }
-
-    if (check) {
-      def files = actions.size() == 1 ? '1 file' : "${actions.size()} files"
-      diagnose(Diagnostic.text("the recipes would change ${files}; nothing was written",
-          '--check reports what a cook would change',
-          'cook the same recipes without --check, review the diff and commit it'))
-      return false
-    }
 
     if (!dryRun) {
       proposal.recipes.findAll { it.yieldText != null }.each {
@@ -434,9 +429,9 @@ final class CookCommand {
     true
   }
 
-  // Each changed source, each recipe's consequence the diff cannot show, then
+  // Each changed source, each recipe's consequence the diff cannot show when there is an approval to give, then
   // the diff itself: what one approval covers.
-  private void review(Proposal proposal, Collection<String> paths) {
+  private void review(Proposal proposal, Collection<String> paths, boolean confirm = true) {
     proposal.changedSources.each {
       def release = Coordinates.written(it.address)
       def source = release ? 'release' : 'source'
@@ -446,7 +441,7 @@ final class CookCommand {
       stdout.println("  its sources changed${context}; review the diff before approving")
       stdout.println()
     }
-    proposal.recipes.findAll { it.confirm != null }.each {
+    proposal.recipes.findAll { confirm && it.confirm != null }.each {
       stdout.println("Confirm ${it.address}")
       stdout.println(indent(it.confirm))
       stdout.println()
@@ -460,18 +455,26 @@ final class CookCommand {
     stdout.flush()
   }
 
+  // Whether the person approved the writes; a missing terminal or another answer declines them.
   private boolean approved() {
     if (stdin == null) {
-      throw new IllegalArgumentException(Diagnostic.text('approval required; nothing was written',
-      'there is no terminal to ask in, and --batch-approve was not given',
-      'run interactively to review the diff, or run again with --batch-approve before the first recipe'))
+      diagnose(Diagnostic.text('approval required; nothing was written',
+          'there is no terminal to ask in, and --batch-approve was not given',
+          'run interactively to review the diff, or run again with --batch-approve before the first recipe'))
+      return false
     }
 
     stdout.print('Write these changes? [y/N] ')
     stdout.flush()
-    stdin.readLine()
+    def yes = stdin.readLine()
         ?.trim()
         ?.toLowerCase() in ['y', 'yes']
+
+    if (!yes) {
+      diagnose(Diagnostic.text('nothing was written', 'the answer was not y or yes'))
+    }
+
+    yes
   }
 
   private static String indent(String text) {

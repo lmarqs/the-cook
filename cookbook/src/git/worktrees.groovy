@@ -63,8 +63,8 @@ file's end, and stays where the team moves it |
 Repeat the arguments on the opening line of the `worktrees` section in `.gitignore`, such as
 `# io.github.lmarqs.cookbook:git#worktrees --instructions=AGENTS.md`. An upgrade updates the `worktrees` sections; the
 README and the scripts are never rewritten, so delete one and cook again to take a newer one. Cooking without a file's
-`--instructions` removes its section. What it writes follows from its arguments alone, so `--check` reports drift only
-when a section was edited by hand or a seed deleted.
+`--instructions` removes its section. What it writes follows from its arguments alone, so `./cook check` reports drift
+only when a section was edited by hand or a seed deleted.
 
 ## Traps
 

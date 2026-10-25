@@ -41,6 +41,21 @@ final class RecipeLoader {
         relative(kitchen, operand).replaceAll(/\.groovy$/, '')
   }
 
+  /**
+   * `operand` as the lock name it is written as; refuses one that names the recipe another way, such as coordinates
+   * with a version or a path with `.groovy`, so each recipe has one spelling.
+   */
+  static String lockName(Path kitchen, String operand) {
+    def name = name(kitchen, operand)
+
+    if (name != operand) {
+      throw new IllegalArgumentException(
+      Diagnostic.text("${operand} is not a name ${CookLock.PATH} writes", null, "write ${name}"))
+    }
+
+    name
+  }
+
   private LoadedRecipe fromCoordinates(Coordinates coordinates) {
     def artifact = artifact(coordinates)
     def recipe = coordinates.recipe
