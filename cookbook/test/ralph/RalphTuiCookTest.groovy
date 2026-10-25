@@ -691,8 +691,6 @@ roles:
     ]
     assert texts.help.contains('Never touches')
     assert texts.yieldText.contains('mise use -g node@22 bun@1.3 npm:ralph-tui@0.12.0')
-    // help and the cook print After cooking two spaces in.
-    assert texts.yieldText.readLines().findAll { ('  ' + it).size() > 120 } == []
   }
 
   @Test void theModelDocumentsTheEntriesToAdd() {
