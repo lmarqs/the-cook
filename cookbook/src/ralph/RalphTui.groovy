@@ -13,8 +13,9 @@ package io.github.lmarqs.cookbook.ralph
  * keys it does not know at the top of an entry. The launcher scripts are POSIX `sh`.
  *
  * Model, effort and further entries are the team's, in the seeded configuration. A model goes per run
- * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`); ralph-tui 0.12's Claude plugin accepts
- * only `sonnet`, `opus` and `haiku`. Claude's effort goes per run through `CLAUDE_CODE_EFFORT_LEVEL`, which the
+ * (`ralph-tui run --model`) or per entry (`model` under `[agents.options]`), not both: ralph-tui 0.12 passes the run's
+ * before the plugin's arguments, which carry the entry's, and Codex runs the entry's. ralph-tui 0.12's Claude plugin
+ * accepts only `sonnet`, `opus` and `haiku`. Claude's effort goes per run through `CLAUDE_CODE_EFFORT_LEVEL`, which the
  * launcher and ralph-tui pass to every worker; Codex's goes per entry, as `"-c", "model_reasoning_effort=high"` in
  * `defaultFlags`. Entries a team may add, launched with `.ralph-tui/bin/run <run> --agent <name>`:
  *
@@ -271,7 +272,8 @@ class RalphTui {
   /**
    * `.ralph-tui/config.toml`, seeded when absent and never owned: config version 2.1, the epic tracker, if any, ten
    * iterations, `autoCommit`, skipping a failed task, or with `workerCheck` retrying it twice first, direct merges in
-   * parallel mode, and one `[[agents]]` entry per harness, when installed.
+   * parallel mode, with an epic tracker a `beadsDir` that reaches the main checkout's `.beads` from
+   * `<worktreeRoot>/ralph/<name>`, and one `[[agents]]` entry per harness, when installed.
    */
   @Seed(path = CONFIG_PATH)
   String config() {
@@ -285,7 +287,7 @@ class RalphTui {
       'autoCommit = true',
       '',
       '[errorHandling]',
-    ] + errorHandling() + ['', '[parallel]', 'directMerge = true',]
+    ] + errorHandling() + ['', '[parallel]', 'directMerge = true',] + trackerOptions()
     harnesses.each { harness -> lines += [''] + entry(harness) }
     lines.join('\n') + '\n'
   }
@@ -416,6 +418,21 @@ class RalphTui {
   // A failed check exits the worker non-zero, which ralph-tui retries only under the retry strategy.
   private List<String> errorHandling() {
     workerCheck ? ['strategy = "retry"', 'maxRetries = 2', 'continueOnNonZeroExit = false'] : ['strategy = "skip"']
+  }
+
+  private List<String> trackerOptions() {
+    if (!epicTracker()) {
+      return []
+    }
+
+    def depth = worktreeRoot.split('/').count { it && it != '.' } + 2
+    [
+      '',
+      "# ralph-tui's beads trackers find no tasks unless this directory exists; a run worktree lacks it",
+      "# when nothing under .beads/ is committed, and bd finds the main checkout's database itself.",
+      '[trackerOptions]',
+      "beadsDir = \"${'../' * depth}.beads\"".toString(),
+    ]
   }
 
   private String runFlags() {

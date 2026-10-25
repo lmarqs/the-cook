@@ -31,6 +31,11 @@ strategy = "skip"
 [parallel]
 directMerge = true
 
+# ralph-tui's beads trackers find no tasks unless this directory exists; a run worktree lacks it
+# when nothing under .beads/ is committed, and bd finds the main checkout's database itself.
+[trackerOptions]
+beadsDir = "../../../.beads"
+
 [[agents]]
 name = "claude"
 plugin = "claude"
@@ -597,6 +602,21 @@ roles:
     assert run.output.readLines().last() == 'effort high'
   }
 
+  @Test void anEpicTrackerSeedsTheBeadsDirectoryAsTheRunWorktreeReachesTheMainCheckout() {
+    def beadsDir = { Map arguments ->
+      def kitchen = folder.newFolder()
+      publishDirectory(kitchen, 'ralph')
+      cook(kitchen, RALPH, [harness: ['claude']] + arguments).commit()
+      def lines = new File(kitchen, '.ralph-tui/config.toml').readLines()
+      lines.contains('[trackerOptions]') ? lines.find { it.startsWith('beadsDir = ') } : null
+    }
+
+    assert beadsDir(tracker: ['beads']) == 'beadsDir = "../../../.beads"'
+    assert beadsDir(tracker: ['beads-bv', 'json']) == 'beadsDir = "../../../.beads"'
+    assert beadsDir(tracker: ['beads'], 'worktree-root': ['./a//b/']) == 'beadsDir = "../../../../.beads"'
+    assert beadsDir(tracker: ['json']) == null
+  }
+
   @Test void aWorktreeRootMovesTheRunWorktreesTheirParallelWorkersAndTheIgnoreLine() {
     def kitchen = repository()
     write(kitchen, 'AGENTS.md', '# Agents\n')
@@ -715,6 +735,8 @@ roles:
       'prefix rules',
       'leaves `beads.hbs` unread',
       '`bv` orders serial runs only',
+      'a run name with `/`',
+      'Codex runs the entry\'s',
     ].each { assert flat.contains(it): "the help lacks '${it}'" }
   }
 
