@@ -1,7 +1,7 @@
 # Cookbook
 
-This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `git`, `beads` and
-`ralph` artifacts; the other directories are a design sketch in Groovy that has not been compiled.
+This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `git`, `beads`,
+`ralph` and `hello` artifacts; the other directories are a design sketch in Groovy that has not been compiled.
 
 ## Units
 
