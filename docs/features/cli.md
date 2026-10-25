@@ -12,6 +12,7 @@ see the root README's [current implementation](../../README.md#current-implement
 ./cook [-C <dir>] [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
 ./cook check [-C <dir>] [<name>]...
 ./cook replicate [-C <dir>] [batch-options] [<name>]...
+./cook update [-C <dir>] [batch-options] [--major] [<name>]...
 ./cook discard [-C <dir>] [batch-options] <name>...
 ./cook help [-C <dir>] [<recipe>]...
 ./cook --help
@@ -30,11 +31,12 @@ version the build wrote into the engine, and takes no other arguments either.
 | Cook, without a command word | One or more recipes, with arguments for each | Declared additions and updates against current content, and removal of what each recipe's previous version owned and no longer declares | Choose or change a recipe's version or arguments |
 | Check | Lock names, without arguments; none is every recipe `cook.lock` lists | None: it reports what replicate would change and exits 1 when anything would | Find a kitchen that differs from its lock, in CI or before a commit |
 | Replicate | Lock names, without arguments; none is every recipe `cook.lock` lists | Cook again from the sources and arguments recorded in `cook.lock` | Fix what check reports, or recreate output a clone does not commit |
+| Update | Coordinate lock names, without arguments; none is every coordinate recipe `cook.lock` lists | Cook newer compatible releases with recorded arguments; `--major` allows any newer release | Move recipes to newer releases on request ([update](update.md)) |
 | Discard | One or more lock names, without arguments | Removal of what `cook.lock` lists for each recipe; no recipe runs | Remove what a recipe owns |
 | Help | One or more recipes, without arguments | Show each recipe's help in order; read only, and no recipe runs | Read a recipe |
 
 The [architecture](../architecture.md#cooking-and-discard) defines these operations; [cooking](cook.md),
-[check](#check), [replicate](replicate.md) and [discard](discard.md) explain them with examples.
+[check](#check), [replicate](replicate.md), [update](update.md) and [discard](discard.md) explain them with examples.
 
 ```sh
 # Cook a recipe
@@ -76,19 +78,23 @@ from its source without running it or resolving its imports. It is the one way t
 
 ## Lock names
 
-Check, replicate and discard read `cook.lock`, so they take a recipe only by its lock name, the short name `cook.lock`
-writes: `group:artifact#recipe`, without a version, or a path's place in the kitchen without `.groovy`, such as
+Check, replicate, update and discard read `cook.lock`, so they take a recipe only by its lock name, the short name
+`cook.lock` writes: `group:artifact#recipe`, without a version, or a path's place in the kitchen without `.groovy`, such as
 `recipes/setup`. A versioned operand or a `.groovy` path is refused with the lock name to write instead, such as
 `acme:notes:1.2.3#notes is not a name cook.lock writes` above `write acme:notes#notes`, because the lock, not the
-operand, selects the version. A lock name that is not in `cook.lock` is refused with the names it lists. These
-commands take no recipe arguments. Discard resolves no coordinates, so a path's lock name matches after its file is
-gone. Check and replicate load the recorded source and arguments, so that source must be available.
+operand, supplies the recorded version. Update selects a newer release from that version. A lock name that is not
+in `cook.lock` is refused with the names it lists. These commands take no recipe arguments. Discard resolves no
+coordinates, so a path's lock name matches after its file is gone. Check and replicate load the recorded source and
+arguments, so that source must be available.
 
 Without names, check and replicate take every recipe `cook.lock` lists, in the order it lists them, and refuse a
-kitchen without `cook.lock`. Discard always takes names, because it removes output.
+kitchen without `cook.lock`. Update also requires the lock: without names it considers every coordinate recipe in
+lock order and skips path recipes; with names it considers only those recipes, in operand order. An explicitly named
+path recipe is refused because it has no version to update. See [update scope](update.md#scope) for unknown releases.
+Discard always takes names, because it removes output.
 
-A first operand equal to `check`, `discard`, `replicate` or `help` selects that command. To cook a recipe file named
-`check`, `discard`, `replicate` or `help`, make its path explicit:
+A first operand equal to `check`, `discard`, `replicate`, `update` or `help` selects that command. To cook a recipe file
+named `check`, `discard`, `replicate`, `update` or `help`, make its path explicit:
 
 ```sh
 ./cook ./discard
@@ -198,8 +204,8 @@ cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
 
 | Option | Used with | Position | Effect |
 | --- | --- | --- | --- |
-| `--batch-approve` | Cooking, `discard` and `replicate` | Before the first recipe operand | Displays the final diff and proceeds without prompting; approval covers the whole batch |
-| `--dry-run` | Cooking, `discard` and `replicate` | Before the first recipe operand | Displays the final diff and writes nothing |
+| `--batch-approve` | Cooking, `discard`, `replicate` and `update` | Before the first recipe operand | Displays the final diff and proceeds without prompting; approval covers the whole batch |
+| `--dry-run` | Cooking, `discard`, `replicate` and `update` | Before the first recipe operand | Displays the final diff and writes nothing |
 
 `--batch-approve` is the batch option and the only preapproval spelling. Without it, Cook asks before changing target
 files. Noninteractive execution without this flag does not silently authorize writes.
@@ -259,10 +265,12 @@ there; a CI step names the recipes whose output is committed.
 | Status | Meaning |
 | --- | --- |
 | 0 | The command did what it was asked: it wrote the changes, found nothing to change or printed what was asked |
-| 1 | Nothing was written because the approval was declined or missing, or check found a difference |
+| 1 | Nothing was written because approval was declined or missing, check found a difference, or `update --dry-run` found a newer release in scope |
 | 2 | An error: a misused command line, a refused operand, a recipe that failed to load or evaluate, or a failed write |
 
 A CI step therefore tells a kitchen that differs from its lock, status 1, from a check that could not run, status 2.
+`update --dry-run` exits 1 when a recipe would move, 0 when none would, and 2 on an error. An unknown recipe skipped
+in an unnamed update is a warning, not an error; see [unknown recipes](update.md#unknown-recipes).
 
 ## Kitchen
 

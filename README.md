@@ -108,6 +108,9 @@ Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in 
 - `./cook replicate [--dry-run] [--batch-approve] [<name>...]`, which cooks the named recipes, or every recipe in
   `cook.lock`, again from the sources and arguments it records, including ignored output missing from a fresh clone
   ([replicate](docs/features/replicate.md)).
+- `./cook update [--dry-run] [--batch-approve] [--major] [<name>...]`, which moves coordinate recipes in `cook.lock`
+  to newer compatible releases with their recorded arguments; `--major` allows releases beyond that range
+  ([update](docs/features/update.md)).
 - `help` on an artifact, a recipe or a recipe path, read without running it.
 
 Coordinates resolve from the first repository of the kitchen's `cook.toml` `repositories` list that holds them, and

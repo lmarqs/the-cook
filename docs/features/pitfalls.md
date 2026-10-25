@@ -290,7 +290,21 @@ commands in its task runner. These are project choices, and the programs that co
 
 ## Versions and the wrapper
 
-These entries concern the [wrapper design](wrapper.md). The current repository launcher uses a local build.
+These entries cover recipe release discovery and the [wrapper design](wrapper.md). The current repository launcher
+uses a local build.
+
+### A cookbook source directory makes its recipes unknown to update
+
+- **Symptom.** An unnamed update warns that a recipe's releases are unknown and skips it; naming it explicitly fails.
+- **Why.** A cookbook source directory in `cook.toml` serves its artifacts at any version from the current files. It
+  cannot list releases. Its recipes stay unknown even when another configured repository lists releases for the same
+  artifact.
+- **Cook's responsibility.** Skip unknown recipes with a warning in the whole scope, continue updating known ones, and
+  refuse an explicitly named unknown recipe before writing anything.
+- **What you do.** Replace the source-directory entry with a Maven repository that lists releases when you want release
+  updates. To keep working from sources, cook the recipe by its coordinates; changing the version still reads the
+  directory's current files. See [release discovery](update.md#where-releases-come-from) and
+  [unknown recipes](update.md#unknown-recipes).
 
 ### The first run needs access to the pinned package
 

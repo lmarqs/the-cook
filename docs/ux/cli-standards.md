@@ -36,9 +36,9 @@ recipe and template references resolve.
 ## Command grammar
 
 The [CLI reference](../features/cli.md) defines the commands: cooking, with no command word, as the default; `check`,
-`replicate` and `discard`, which read `cook.lock`; and `help` with recipes. The commands that read `cook.lock` take
+`replicate`, `update` and `discard`, which read `cook.lock`; and `help` with recipes. Commands that read the lock take
 recipes only by the lock name, without recipe arguments, and refuse versioned coordinates or a `.groovy` path with the
-lock name to write, because a second spelling for one entry would let an operand name a version the lock overrides.
+lock name to write, because the lock supplies the recorded version. Update chooses a newer release from that version.
 It also defines recipe operands, per-recipe argument scope and the placement of batch options before the first
 operand. Help, messages and examples follow that grammar,
 because callers predict what a command does from its operands and argument scope.
@@ -87,9 +87,9 @@ change to current content. The CLI accepts the whole batch; choosing individual 
 decision.
 
 Without preapproval, ask before changing target files; declining approval leaves batch targets unchanged.
-[`--batch-approve`](../features/cli.md#batch-options-and-approval) preapproves the entire operation: cooking, discard or
-replicate. Display the diff and proceed without prompting. Existing and edited content follows this same review flow;
-ownership never blocks a change.
+[`--batch-approve`](../features/cli.md#batch-options-and-approval) preapproves the entire operation: cooking, discard,
+replicate or update. Display the diff and proceed without prompting. Existing and edited content follows this same
+review flow; ownership never blocks a change.
 
 ### Failure recovery
 
@@ -162,8 +162,8 @@ a misplaced `--batch-approve` message directs the caller to put it before the fi
 
 Keep routine diagnostics focused on information the caller can act on, rather than internal identifiers or stack traces.
 Exit 0 when the command did what it was asked, 1 when nothing was written because approval was declined or missing or
-`check` found a difference, and 2 on any error, so a script tells a difference from a failure; the
-[CLI reference](../features/cli.md#exit-status) lists them.
+`check` found a difference or `update --dry-run` found a move, and 2 on any error, so a script tells a difference from
+a failure; the [CLI reference](../features/cli.md#exit-status) lists them.
 
 ## Non-interactive operation
 
@@ -186,9 +186,9 @@ Help advertises only the commands in the [command grammar](#command-grammar), be
 
 ## Command set
 
-The command set is cooking, which takes no command word, `check`, `replicate`, `discard` and `help`. Reserving
-`check`, `replicate`, `discard` and `help` means a recipe file with one of those names is given as a path, such as
-`./replicate`.
+The command set is cooking, which takes no command word, `check`, `replicate`, `update`, `discard` and `help`.
+Reserving `check`, `replicate`, `update`, `discard` and `help` as the first operand means a recipe file with one of
+those names is given as a path, such as `./replicate`.
 [What counts as breaking](compatibility-standards.md#what-counts-as-breaking) covers removing or renaming a command.
 
 ## Prior art

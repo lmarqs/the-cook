@@ -32,18 +32,20 @@ sketches how recipes and ingredients are written and distributed.
 4. [Cooking](cook.md): what cooking recipes proposes and records.
 5. [Discard](discard.md): how a recipe's output is removed.
 6. [Replicate](replicate.md): recreating output from recorded sources and arguments.
-7. [Wrapper](wrapper.md): how a repository pins and obtains the engine.
-8. [Pitfalls](pitfalls.md): traps in permissions, recipe trust, paths, ordered changes and recovery.
+7. [Update](update.md): moving recipes to newer releases with recorded arguments.
+8. [Wrapper](wrapper.md): how a repository pins and obtains the engine.
+9. [Pitfalls](pitfalls.md): traps in permissions, recipe trust, paths, ordered changes and recovery.
 
 ## Pages
 
 | Page | Subject |
 | --- | --- |
 | [Glossary](glossary.md) | The single list of Cook's terms |
-| [CLI reference](cli.md) | Cooking, discard, replicate and help grammar, recipe operands, recipe arguments and batch approval |
+| [CLI reference](cli.md) | Cooking, check, discard, replicate, update and help grammar, recipe operands, recipe arguments and batch approval |
 | [Cooking](cook.md) | Ordered file, key and marker contributions, ownership, review and source paths |
 | [Discard](discard.md) | Removing what a recipe owns, without evaluating it |
 | [Replicate](replicate.md) | Cooking named recipes again from `cook.lock`, including in a fresh clone |
+| [Update](update.md) | Choosing newer compatible releases, major updates, release discovery and approval |
 | [Wrapper](wrapper.md) | Version and checksum pinning, first-use download and cache, explicit upgrades and the current launcher |
 | [Pitfalls, gaps and traps](pitfalls.md) | Symptoms, causes, Cook's responsibility and what to review |
 
