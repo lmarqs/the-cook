@@ -49,7 +49,7 @@ Spotless and CodeNarc (`gradle/build-conventions/`), semantic-release (`.github/
 
 **Stop and ask** when a check fails again after a fix, a command is refused, or a decision is left open.
 
-Enforced by `.agents/permission/policy.yaml`. A refusal is the rule working.
+Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal is the rule working.
 
 ## Where things go
 
