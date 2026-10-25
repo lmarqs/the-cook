@@ -4,6 +4,13 @@ import org.junit.Test
 import java.nio.file.Files
 
 class CookCommandTest {
+  @Test void noArgumentsShowTheUsage() {
+    def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
+    assert command(stdout, stderr).execute([] as String[]) == 0
+    assert stdout.toString('UTF-8').startsWith('Usage:')
+    assert stderr.size() == 0
+  }
+
   @Test void missingUnknownAndRemovedOptionsAreUsageErrors() {
     def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
     def cli = command(stdout, stderr)

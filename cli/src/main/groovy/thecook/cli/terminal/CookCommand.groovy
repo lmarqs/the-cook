@@ -85,7 +85,7 @@ final class CookCommand {
 
   // The command the invocation names, as an action that returns false when it declines to write.
   private Closure<Boolean> parse(String[] invocation) {
-    if (invocation.toList() == ['--help']) {
+    if (invocation.length == 0 || invocation.toList() == ['--help']) {
       return usage()
     }
 
