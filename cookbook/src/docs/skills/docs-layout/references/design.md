@@ -23,6 +23,7 @@ Each rule, its reason and its source. The design and its full decision register 
 | The root README states the Objective: problem, goal, non-goals | Every reader opens the root README first, and every other page depends on the goal | This repository's README; Malte Ubl, "Design Docs at Google", goals and non-goals |
 | A team declares a kind of its own in the map, after five tests | A kind that overlaps another gives a fact two owners; tests apply to any candidate, where a list of exclusions never ends | The map's own rules applied to a kind; the repository owner's decision |
 | Link text names the fact; the value stays on its owner | The sentence reads without the hop, and a restated value is what goes stale | One owner per fact; Tan et al. 2024 |
+| A feature page holds its known limits, each with its workaround | A limit is a fact about the behavior it qualifies, read with it and removed in the change that lifts it | One owner per fact; the repository owner's decision |
 | An interface page links its contract file | The definition file is the contract, and the reference is built from it | OpenAPI Initiative; Google AIP-192 |
 | One runbook per trigger, steps with expected output | The responder verifies each step under pressure | Google SRE workbook; AWS OPS07-BP03 |
 | A glossary with rejected synonyms | One word per concept makes search and review find every use | Pocock; Good Docs terminology system; ASD-STE100 |
