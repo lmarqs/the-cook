@@ -4,6 +4,7 @@ import static thecook.Cookbook.COOKBOOK
 import static thecook.Cookbook.publishDirectory
 import static thecook.Kitchens.cook
 
+import org.junit.Assume
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -85,6 +86,56 @@ See [a](#before-you-begin), [b](#steps-1), [c](#if-it-fails), [d](README.md#runb
 
     assert exit == 0
     assert findings(lines) == []
+  }
+
+  @Test void resolvesRootLinksFootnotesAndEveryHeadingForm() {
+    def kitchen = cooked()
+    new File(kitchen, 'docs/README.md').append('''
+See [the repository](..), [its root](/) and a note.[^1]
+
+[^1]: A note on the past.
+
+Setext Heading
+--------------
+
+##\tTabbed
+
+## See [the map](README.md)
+
+   ## Indented
+
+````md
+```
+[x](nope.md)
+```
+````
+
+[legacy]: README.md
+
+[a](#setext-heading), [b](#tabbed), [c](#see-the-map), [d](#indented)
+''')
+
+    def (exit, lines) = check(kitchen)
+
+    assert exit == 0
+    assert findings(lines) == []
+  }
+
+  @Test void readsPagesWithWindowsLineEndings() {
+    def kitchen = cooked([skills: ['.agents/skills'], kinds: ['adr']])
+    def crlf = { String text -> text.replace('\n', '\r\n') }
+    def map = new File(kitchen, 'docs/README.md')
+    map.text = crlf(map.text)
+    page(kitchen, 'docs/adr/README.md', crlf(guide('adr') + '\n- [Use X](0001-use-x.md): a decision.\n'))
+    page(kitchen, 'docs/adr/0001-use-x.md',
+        crlf('# Use X\n\n## Context\n\nc\n\n## Options\n\no\n\n## Decision\n\nd\n\n## Consequences\n\nq\n'))
+    page(kitchen, 'docs/ux/README.md', crlf(guide('ux')))
+
+    def (exit, lines) = check(kitchen)
+
+    assert exit == 1
+    def outside = 'sits outside the map, the glossary and the kind directories the map offers'
+    assert findings(lines) == ["FAIL docs/ux/README.md ${outside}".toString()]
   }
 
   @Test void failsOnAKindDirectoryWithoutAGuideAndAPageMissingFromItsGuide() {
@@ -224,19 +275,32 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     assert snapshot(kitchen) == state
   }
 
-  @Test void runsFromAnyDirectoryBelowTheMapAndFailsWhereNoneHoldsIt() {
+  @Test void readsTheTreeOfTheDirectoryItRunsIn() {
     def kitchen = cooked()
     def script = new File(kitchen, '.agents/skills/docs-layout/scripts/check.sh').path
+    def nested = new File(kitchen, '.worktrees/feature')
+    nested.mkdirs()
 
-    def (exit, output) = run(new File(kitchen, 'docs'), ['sh', script])
+    [new File(kitchen, 'docs'), nested, folder.newFolder('elsewhere')].each { directory ->
+      def (exit, output) = run(directory, ['sh', script])
 
-    assert exit == 0
-    assert findings(output.readLines()) == []
+      assert exit == 1
+      assert findings(output.readLines()) == ['FAIL docs/README.md, the map, is missing']
+    }
+  }
 
-    def (outsideExit, outside) = run(folder.newFolder('elsewhere'), ['sh', script])
+  @Test void failsOnAPageItCannotRead() {
+    def kitchen = cooked()
+    page(kitchen, 'docs/features/README.md', guide('features') + '\n- [A](a.md): a page.\n')
+    page(kitchen, 'docs/features/a.md', '# A\n\n[x](nope.md)\n')
+    def unreadable = new File(kitchen, 'docs/features/a.md')
+    unreadable.setReadable(false, false)
+    Assume.assumeFalse('this user reads every file', unreadable.canRead())
 
-    assert outsideExit == 1
-    assert findings(outside.readLines()) == ['FAIL docs/README.md, the map, is missing']
+    def (exit, lines) = check(kitchen)
+
+    assert exit == 1
+    assert findings(lines).findAll { it ==~ /(FAIL|WARN) .*/ } == ['FAIL docs/ holds a page the check could not read']
   }
 
   private File cooked(Map<String, List<String>> arguments = [skills: ['.agents/skills']]) {

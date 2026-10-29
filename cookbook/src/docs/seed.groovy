@@ -30,8 +30,9 @@ exits 1 on a failure |
 
 ## Consumes
 
-Only the files `--instructions` names, which must exist. The check runs with POSIX `sh`, `awk`, `grep`, `sed` and
-`find`. The skill is written for Claude Code 2.1.312 and Codex 0.160.1.
+Only the files `--instructions` names, which must exist. The check runs with a POSIX `sh`, `awk`, `dirname`, `find`,
+`grep`, `head`, `sed`, `sort`, `tr`, and `xargs` with `-0`. The skill is written for Claude Code 2.1.312 and Codex
+0.160.1.
 
 ## Produces
 
@@ -59,6 +60,11 @@ Never touches: the pages under `docs/`, the rest of `docs/README.md` and of each
 file's end, and stays where the team moves it |
 | The check in CI or a Done check | The team, by running the check command the map names |
 | The pages themselves | People and agents, with the `docs-layout` skill |
+
+## Run-time effects
+
+`scripts/check.sh` checks the `docs/` tree of the directory it runs in, the repository root, and writes nothing. It
+prints one line per check, `ok`, `WARN` or `FAIL`, each finding with the step that fixes it, and exits 1 on a `FAIL`.
 
 ## Re-cooking
 

@@ -1,6 +1,5 @@
 # Checks the repository's docs/ tree against the map's criteria and reports each finding with the step that fixes it.
-# Run inside the repository: sh <skills>/docs-layout/scripts/check.sh
-# The root is the nearest directory, from the current one up, that holds docs/README.md.
+# Run from the repository root, the directory that holds docs/README.md: sh <skills>/docs-layout/scripts/check.sh
 # Writes nothing. Prints "ok <what>" for each check that passes, and one line per finding:
 # "FAIL <path>[:<line>] <what> -- <next>" or "WARN <path>[:<line>] <what> -- <next>".
 # A FAIL is a broken link or a page outside its kind's shape; a WARN is wording to review. Exits 1 on any FAIL.
@@ -9,18 +8,15 @@
 
 templates=$(cd "$(dirname "$0")/../templates" 2>/dev/null && pwd)
 
-while [ ! -f docs/README.md ] && [ "$(pwd)" != / ]; do
-  cd .. || exit 1
-done
-
 if [ ! -f docs/README.md ]; then
-  printf 'FAIL %s -- %s\n' 'docs/README.md, the map, is missing' 'cook io.github.lmarqs.cookbook:docs#seed'
+  printf 'FAIL %s -- %s\n' 'docs/README.md, the map, is missing' \
+    'run from the repository root, or cook io.github.lmarqs.cookbook:docs#seed'
   exit 1
 fi
 
 # The kinds the map offers: the --kinds on the argument line the recipe wrote, or all five.
-kinds=$(sed -n 's/^<!-- io\.github\.lmarqs\.cookbook:docs#seed \(.*\) -->$/\1/p' docs/README.md | head -n 1 |
-  tr ' ' '\n' | sed -n 's/^--kinds=//p' | tr '\n' ' ')
+kinds=$(tr -d '\r' <docs/README.md | sed -n 's/^<!-- io\.github\.lmarqs\.cookbook:docs#seed \(.*\) -->$/\1/p' |
+  head -n 1 | tr ' ' '\n' | sed -n 's/^--kinds=//p' | tr '\n' ' ')
 [ -n "$kinds" ] || kinds='adr api features runbooks ux'
 
 files=$(find docs -type f -name '*.md' | LC_ALL=C sort)
@@ -45,43 +41,74 @@ scan() {
       if (t ~ /^</) { sub(/^</, "", t); sub(/>.*$/, "", t) } else sub(/[ \t].*$/, "", t)
       return t
     }
-    FNR == 1 { fence = ""; comment = 0 }
+    function unlinked(text,   out, link) {
+      out = ""
+      while (match(text, /!?\[[^]]*\]\([^)]*\)/)) {
+        link = substr(text, RSTART, RLENGTH)
+        sub(/^!?\[/, "", link)
+        sub(/\]\(.*$/, "", link)
+        out = out substr(text, 1, RSTART - 1) link
+        text = substr(text, RSTART + RLENGTH)
+      }
+      return out text
+    }
+    function heading(text, level, at,   s) {
+      sub(/^[ \t]+/, "", text)
+      sub(/[ \t]+$/, "", text)
+      text = unlinked(text)
+      gsub(/`/, "", text)
+      s = slug(text)
+      count[FILENAME, s]++
+      if (count[FILENAME, s] > 1) s = s "-" (count[FILENAME, s] - 1)
+      printf "S\t%s\t%s\n", FILENAME, s
+      printf "H\t%s\t%d\t%d\t%s\n", FILENAME, at, level, text
+    }
+    { sub(/\r$/, "") }
+    FNR == 1 { fence = ""; comment = 0; para = ""; front = ($0 == "---"); if (front) next }
+    front { if ($0 == "---" || $0 == "...") front = 0; next }
     {
       line = $0
       if (fence != "") {
-        if (line ~ ("^ ? ? ?" fence)) fence = ""
+        if (line ~ ("^ ? ? ?" fence "[" substr(fence, 1, 1) "]*[ \t]*$")) fence = ""
         next
       }
-      if (line ~ /^ ? ? ?```/) { fence = "```"; next }
-      if (line ~ /^ ? ? ?~~~/) { fence = "~~~"; next }
-      if (comment) { if (line ~ /-->/) comment = 0; next }
-      if (line ~ /^[ \t]*<!--/) { if (line !~ /-->/) comment = 1; next }
-
-      if (line ~ /^##?#?#?#?#?[ \t]/) {
-        level = index(line, " ") - 1
-        if (index(line, "\t") && index(line, "\t") - 1 < level) level = index(line, "\t") - 1
-        text = substr(line, level + 2)
-        sub(/[ \t]+#+[ \t]*$/, "", text)
-        sub(/^[ \t]+/, "", text)
-        sub(/[ \t]+$/, "", text)
-        gsub(/`/, "", text)
-        s = slug(text)
-        count[FILENAME, s]++
-        if (count[FILENAME, s] > 1) s = s "-" (count[FILENAME, s] - 1)
-        printf "S\t%s\t%s\n", FILENAME, s
-        printf "H\t%s\t%d\t%d\t%s\n", FILENAME, FNR, level, text
+      if (line ~ /^ ? ? ?(```|~~~)/) {
+        fence = line
+        sub(/^ */, "", fence)
+        match(fence, substr(fence, 1, 1) == "`" ? "^`+" : "^~+")
+        fence = substr(fence, 1, RLENGTH)
+        para = ""
+        next
       }
+      if (comment) { if (line ~ /-->/) comment = 0; next }
+      if (line ~ /^[ \t]*<!--/) { if (line !~ /-->/) comment = 1; para = ""; next }
+
+      if (para != "" && line ~ /^ ? ? ?(=+|-+)[ \t]*$/) {
+        heading(para, line ~ /=/ ? 1 : 2, FNR - 1)
+        para = ""
+        next
+      }
+      para = ""
+      if (line ~ /^ ? ? ?##?#?#?#?#?[ \t]/) {
+        text = line
+        sub(/^ */, "", text)
+        match(text, /^#+/)
+        level = RLENGTH
+        text = substr(text, level + 1)
+        sub(/[ \t]+#+[ \t]*$/, "", text)
+        heading(text, level, FNR)
+      } else if (line ~ /^[^ \t]/ && line !~ /^([-*+] |[0-9]+[.)] |>|\||<)/) para = line
 
       gsub(/`[^`]*`/, "", line)
+      if (line ~ /^ ? ? ?\[[^]^][^]]*\]:[ \t]/) {
+        sub(/^ ? ? ?\[[^]]+\]:/, "", line)
+        printf "L\t%s\t%d\t%s\n", FILENAME, FNR, target(line)
+        next
+      }
       rest = line
       while (match(rest, /\]\([^)]*\)/)) {
         printf "L\t%s\t%d\t%s\n", FILENAME, FNR, target(substr(rest, RSTART + 2, RLENGTH - 3))
         rest = substr(rest, RSTART + RLENGTH)
-      }
-      if (line ~ /^ ? ? ?\[[^]]+\]:[ \t]/) {
-        t = line
-        sub(/^ ? ? ?\[[^]]+\]:/, "", t)
-        printf "L\t%s\t%d\t%s\n", FILENAME, FNR, target(t)
       }
       prose = line
       gsub(/\]\([^)]*\)/, "]", prose)
@@ -90,7 +117,7 @@ scan() {
   '
 }
 
-scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
+{ scan || printf 'E\n'; } | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
   function fail(where, what, next_) { printf "FAIL %s %s -- %s\n", where, what, next_; failed = 1; found = 1 }
   function warn(where, what, next_) { printf "WARN %s %s -- %s\n", where, what, next_; found = 1 }
   function ok(what) { if (!found) printf "ok %s\n", what; found = 0 }
@@ -109,17 +136,16 @@ scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
   }
   function quoted(p) { gsub(/\047/, "\047\\\047\047", p); return "\047" p "\047" }
   function exists(p) {
+    if (p in scanned) return 1
     if (!(p in present)) present[p] = (system("test -e " quoted(p)) == 0)
     return present[p]
   }
-  function word(text, w, fold,   t, pos, at, before, after) {
-    t = fold ? tolower(text) : text
-    w = fold ? tolower(w) : w
+  function word(text, w,   pos, at, before, after) {
     pos = 0
-    while ((at = index(substr(t, pos + 1), w)) > 0) {
+    while ((at = index(substr(text, pos + 1), w)) > 0) {
       pos += at
-      before = pos > 1 ? substr(t, pos - 1, 1) : " "
-      after = substr(t, pos + length(w), 1)
+      before = pos > 1 ? substr(text, pos - 1, 1) : " "
+      after = substr(text, pos + length(w), 1)
       if (before !~ /[A-Za-z0-9_]/ && after !~ /[A-Za-z0-9_]/) return 1
     }
     return 0
@@ -151,7 +177,9 @@ scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
   $1 == "H" { if ($4 == 2) heading[$2, ++nh[$2]] = $5 }
   $1 == "L" { lfile[++nl] = $2; lline[nl] = $3; ltarget[nl] = $4 }
   $1 == "P" { pfile[++np] = $2; pline[np] = $3; ptext[np] = $4 }
+  $1 == "E" { unread = 1 }
   END {
+    if (unread) fail("docs/", "holds a page the check could not read", "make each page readable, then run the check again")
     for (i = 1; i <= nl; i++) {
       t = ltarget[i]
       if (t == "" || t ~ /^[A-Za-z][A-Za-z0-9+.-]*:/) continue
@@ -160,6 +188,7 @@ scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
       if (t == "") p = lfile[i]
       else if (t ~ /^\//) p = normal(substr(t, 2))
       else p = normal(dir(lfile[i]) "/" t)
+      if (p == "") p = "."
       where = lfile[i] ":" lline[i]
       if (t != "" && !exists(p)) { fail(where, "link " ltarget[i] " points at a missing file", "point it at an existing file, or write the page it names"); continue }
       linked[lfile[i], p] = 1
@@ -216,19 +245,20 @@ scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
         for (j = 1; j <= n; j++) {
           term = terms[j]
           gsub(/^[ \t]+|[ \t.]+$/, "", term)
-          if (term != "" && !(term in avoided)) { avoided[term] = preferred; avoid[++na] = term }
+          if (term != "" && !(term in avoided)) { avoided[term] = preferred; avoid[++na] = term; folded[na] = tolower(term) }
         }
       }
     }
     for (i = 1; i <= np; i++) {
       where = pfile[i] ":" pline[i]
       t = ptext[i]
-      if (word(t, "currently", 1)) warn(where, "says \"currently\"", "state what is true now, plainly")
-      if (word(t, "legacy", 1)) warn(where, "says \"legacy\"", "name the thing precisely")
-      if (word(t, "TODO", 0)) warn(where, "says \"TODO\"", "write it now, or track it in an issue")
-      if (word(t, "TBD", 0)) warn(where, "says \"TBD\"", "write it now, or track it in an issue")
+      lower = tolower(t)
+      if (word(lower, "currently")) warn(where, "says \"currently\"", "state what is true now, plainly")
+      if (word(lower, "legacy")) warn(where, "says \"legacy\"", "name the thing precisely")
+      if (word(t, "TODO")) warn(where, "says \"TODO\"", "write it now, or track it in an issue")
+      if (word(t, "TBD")) warn(where, "says \"TBD\"", "write it now, or track it in an issue")
       if (pfile[i] == "docs/glossary.md") continue
-      for (j = 1; j <= na; j++) if (word(t, term = avoid[j], 1)) warn(where, "uses \"" term "\", a synonym the glossary rejects", "write \"" avoided[term] "\"")
+      for (j = 1; j <= na; j++) if (word(lower, folded[j])) warn(where, "uses \"" avoid[j] "\", a synonym the glossary rejects", "write \"" avoided[avoid[j]] "\"")
     }
     ok("the prose under docs/ uses the glossary terms and states what is true now")
 
@@ -241,10 +271,10 @@ scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
       template = templates "/guide-" k ".template.md"
       if (!(guide in scanned)) continue
       expected = ""
-      while ((getline line < template) > 0) expected = expected line "\n"
+      while ((getline line < template) > 0) { sub(/\r$/, "", line); expected = expected line "\n" }
       close(template)
       actual = ""
-      while ((getline line < guide) > 0) { if (line ~ /^[-*+] /) break; actual = actual line "\n" }
+      while ((getline line < guide) > 0) { sub(/\r$/, "", line); if (line ~ /^[-*+] /) break; actual = actual line "\n" }
       close(guide)
       sub(/\n+$/, "", expected)
       sub(/\n+$/, "", actual)

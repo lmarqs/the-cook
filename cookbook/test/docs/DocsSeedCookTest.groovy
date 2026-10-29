@@ -131,7 +131,15 @@ class DocsSeedCookTest {
     assert texts.params*.names == [['instructions'], ['kinds'], ['skills']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.docs.Docs']
     assert texts.help.readLines().findAll { it.startsWith('## ') } ==
-    ['## API', '## Consumes', '## Produces', '## Connections', '## Re-cooking', '## Traps']
+    [
+      '## API',
+      '## Consumes',
+      '## Produces',
+      '## Connections',
+      '## Run-time effects',
+      '## Re-cooking',
+      '## Traps'
+    ]
     assert texts.help.contains('Never touches')
     assert texts.yieldText
   }

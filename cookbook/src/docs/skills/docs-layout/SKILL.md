@@ -45,7 +45,7 @@ prompt as typed.
 
    | Kind | Template | File name |
    | --- | --- | --- |
-   | `adr` | `adr.template.md` | `NNNN-<slug>.md`, the highest number in `docs/adr/` plus one, four digits |
+   | `adr` | `adr.template.md` | `NNNN-<slug>.md`, the highest number used in `docs/adr/`, deleted records included, plus one, four digits |
    | `features` | `feature.template.md` | `<slug>.md` |
    | `api` | `api.template.md` | `<slug>.md`, after the interface |
    | `ux` | `standard.template.md` | `<slug>.md`, after the subject |
