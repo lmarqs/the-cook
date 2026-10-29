@@ -4,5 +4,5 @@ Holds what the system does, one page per unit of behavior. Diátaxis type: refer
 
 - The lead paragraph says what the unit is and what it is for.
 - Sections follow the unit's own structure, and examples are welcome.
-- The page describes. The reasons behind the behavior live in `adr/` and the steps to operate it in `runbooks/`; the
+- The page describes. The reasons behind the behavior live in `adrs/` and the steps to operate it in `runbooks/`; the
   page links the records and runbooks that shaped it.

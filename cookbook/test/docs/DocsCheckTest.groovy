@@ -12,9 +12,9 @@ import org.junit.rules.TemporaryFolder
 class DocsCheckTest {
   private static final String SEED = 'io.github.lmarqs.cookbook:docs:0.1.0#seed'
   private static final File TEMPLATES = new File(COOKBOOK, 'docs/skills/docs-layout/templates')
-  private static final List<String> KINDS = ['adr', 'api', 'features', 'runbooks', 'ux']
+  private static final List<String> KINDS = ['adrs', 'api', 'features', 'runbooks', 'ux']
   private static final Map<String, String> PAGE_TEMPLATES = [
-    adr: 'adr', api: 'api', features: 'feature', runbooks: 'runbook', ux: 'standard',
+    adrs: 'adr', api: 'api', features: 'feature', runbooks: 'runbook', ux: 'standard',
   ]
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
@@ -122,12 +122,12 @@ Setext Heading
   }
 
   @Test void readsPagesWithWindowsLineEndings() {
-    def kitchen = cooked([skills: ['.agents/skills'], kinds: ['adr']])
+    def kitchen = cooked([skills: ['.agents/skills'], kinds: ['adrs']])
     def crlf = { String text -> text.replace('\n', '\r\n') }
     def map = new File(kitchen, 'docs/README.md')
     map.text = crlf(map.text)
-    page(kitchen, 'docs/adr/README.md', crlf(guide('adr') + '\n- [Use X](0001-use-x.md): a decision.\n'))
-    page(kitchen, 'docs/adr/0001-use-x.md',
+    page(kitchen, 'docs/adrs/README.md', crlf(guide('adrs') + '\n- [Use X](0001-use-x.md): a decision.\n'))
+    page(kitchen, 'docs/adrs/0001-use-x.md',
         crlf('# Use X\n\n## Context\n\nc\n\n## Options\n\no\n\n## Decision\n\nd\n\n## Consequences\n\nq\n'))
     page(kitchen, 'docs/ux/README.md', crlf(guide('ux')))
 
@@ -154,7 +154,7 @@ Setext Heading
   }
 
   @Test void failsOnMarkdownOutsideTheKindsTheMapOffers() {
-    def kitchen = cooked([skills: ['.agents/skills'], kinds: ['adr']])
+    def kitchen = cooked([skills: ['.agents/skills'], kinds: ['adrs']])
     page(kitchen, 'docs/notes.md', '# Notes\n')
     page(kitchen, 'docs/ux/README.md', guide('ux'))
 
@@ -170,20 +170,20 @@ Setext Heading
   @Test void failsOnADecisionNameADuplicateNumberAndMisorderedSections() {
     def kitchen = cooked()
     def record = '# Use X\n\n## Context\n\nc\n\n## Options\n\no\n\n## Decision\n\nd\n\n## Consequences\n\nq\n'
-    page(kitchen, 'docs/adr/12-x.md', record)
-    page(kitchen, 'docs/adr/0001-a.md', record)
-    page(kitchen, 'docs/adr/0001-b.md', record)
-    page(kitchen, 'docs/adr/0002-c.md', '# Use Y\n\n## Context\n\n## Decision\n\n## Options\n')
-    page(kitchen, 'docs/adr/README.md', guide('adr') + '\n' +
+    page(kitchen, 'docs/adrs/12-x.md', record)
+    page(kitchen, 'docs/adrs/0001-a.md', record)
+    page(kitchen, 'docs/adrs/0001-b.md', record)
+    page(kitchen, 'docs/adrs/0002-c.md', '# Use Y\n\n## Context\n\n## Decision\n\n## Options\n')
+    page(kitchen, 'docs/adrs/README.md', guide('adrs') + '\n' +
         ['12-x', '0001-a', '0001-b', '0002-c'].collect { "- [${it}](${it}.md): a decision.\n" }.join(''))
 
     def (exit, lines) = check(kitchen)
 
     assert exit == 1
     assert findings(lines) == [
-      'FAIL docs/adr/0001-b.md reuses the number 0001 of docs/adr/0001-a.md',
-      'FAIL docs/adr/0002-c.md decision record sections are [Context, Decision, Options]',
-      'FAIL docs/adr/12-x.md is named outside the pattern NNNN-<slug>.md',
+      'FAIL docs/adrs/0001-b.md reuses the number 0001 of docs/adrs/0001-a.md',
+      'FAIL docs/adrs/0002-c.md decision record sections are [Context, Decision, Options]',
+      'FAIL docs/adrs/12-x.md is named outside the pattern NNNN-<slug>.md',
     ]
   }
 
@@ -251,7 +251,7 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     new File(kitchen, 'README.md').text = '# Project\n\n[Docs](docs/README.md)\n'
     page(kitchen, 'docs/glossary.md', filled(new File(TEMPLATES, 'glossary.template.md').text))
     KINDS.each { kind ->
-      def name = kind == 'adr' ? '0001-first.md' : 'first.md'
+      def name = kind == 'adrs' ? '0001-first.md' : 'first.md'
       page(kitchen, "docs/${kind}/README.md", guide(kind) + "\n- [First](${name}): the first page.\n")
       page(kitchen, "docs/${kind}/${name}", filled(new File(TEMPLATES, "${PAGE_TEMPLATES[kind]}.template.md").text))
     }

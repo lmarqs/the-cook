@@ -8,7 +8,7 @@ skill that writes pages, reviews them and runs the check.
 ```sh
 ./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=.agents/skills
 # Offering two kinds only
-./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=.agents/skills --kinds=adr --kinds=runbooks
+./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=.agents/skills --kinds=adrs --kinds=runbooks
 # Also stating the rule where agents and people read
 ./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=.agents/skills --instructions=AGENTS.md
 ```
@@ -21,9 +21,9 @@ What it publishes for people and other recipes:
 | Name | What it is |
 | --- | --- |
 | `docs/README.md` | The map: each kind offered, what it holds, its criteria, and where a fact goes |
-| `docs/<kind>/` | The pages of one kind, `adr`, `api`, `features`, `runbooks` or `ux`, \
+| `docs/<kind>/` | The pages of one kind, `adrs`, `api`, `features`, `runbooks` or `ux`, \
 with a guide `README.md` listing them; created with the kind's first page |
-| `docs/adr/NNNN-<slug>.md` | One decision record per file, numbered in sequence |
+| `docs/adrs/NNNN-<slug>.md` | One decision record per file, numbered in sequence |
 | `docs/glossary.md` | The terms, with the synonyms the team rejected; created with the first term |
 | `sh <skills>/docs-layout/scripts/check.sh` | The check: links, anchors, guides and each kind's sections; \
 exits 1 on a failure |
@@ -79,7 +79,7 @@ introduction is never rewritten. Cooking without a file's `--instructions` remov
   heading with non-ASCII letters passes unverified, so open such a link once where the pages render to confirm it.
 ''')
 @yield('''
-Write the first page with the skill, such as `/docs-layout adr <title>` in Claude Code, and run
+Write the first page with the skill, such as `/docs-layout adrs <title>` in Claude Code, and run
 `sh <skills>/docs-layout/scripts/check.sh` before the change is done. Cooked without `--instructions`, cook again
 with it, such as `--instructions=AGENTS.md`, so agents read the rule.
 ''')
@@ -88,8 +88,8 @@ import io.github.lmarqs.cookbook.docs.Docs
 @param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = 'A Markdown file, from the repository root, where the recipe states the docs rule for agents and people')
     String[] instructions
-@param(value = ['kinds'], many = true, sorted = true, default = ['adr', 'api', 'features', 'runbooks', 'ux'],
-    choices = ['adr', 'api', 'features', 'runbooks', 'ux'],
+@param(value = ['kinds'], many = true, sorted = true, default = ['adrs', 'api', 'features', 'runbooks', 'ux'],
+    choices = ['adrs', 'api', 'features', 'runbooks', 'ux'],
     doc = 'A kind of page the map offers; all five by default')
     String[] kinds
 @param(value = ['skills'], path = true,

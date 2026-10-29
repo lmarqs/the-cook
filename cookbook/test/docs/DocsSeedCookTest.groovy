@@ -11,7 +11,7 @@ import thecook.cookbook.RecipeSource
 
 class DocsSeedCookTest {
   private static final String SEED = 'io.github.lmarqs.cookbook:docs:0.1.0#seed'
-  private static final List<String> KINDS = ['adr', 'api', 'features', 'runbooks', 'ux']
+  private static final List<String> KINDS = ['adrs', 'api', 'features', 'runbooks', 'ux']
   private static final File SKILL = new File(COOKBOOK, 'docs/skills/docs-layout')
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
@@ -28,7 +28,7 @@ class DocsSeedCookTest {
     KINDS.each { assert map.contains("`${it}/`") }
     assert map.contains('`sh .agents/skills/docs-layout/scripts/check.sh`')
     assert map.contains('in the standards under `ux/` are to be interpreted as described in BCP 14\n')
-    ['docs/adr', 'docs/api', 'docs/features', 'docs/runbooks', 'docs/ux', 'docs/glossary.md'].each {
+    ['docs/adrs', 'docs/api', 'docs/features', 'docs/runbooks', 'docs/ux', 'docs/glossary.md'].each {
       assert !new File(kitchen, it).exists()
     }
     assert cook(kitchen, SEED, [skills: ['.agents/skills']]).actions == [:]
@@ -36,11 +36,11 @@ class DocsSeedCookTest {
 
   @Test void kindsNamesTheKindsTheMapOffersAndKeepsTheTeamsIntroduction() {
     def kitchen = kitchen()
-    cook(kitchen, SEED, [skills: ['.agents/skills'], kinds: ['runbooks', 'adr']]).commit()
+    cook(kitchen, SEED, [skills: ['.agents/skills'], kinds: ['runbooks', 'adrs']]).commit()
     def map = new File(kitchen, 'docs/README.md')
-    assert map.text.contains('<!-- io.github.lmarqs.cookbook:docs#seed --kinds=adr --kinds=runbooks ' +
+    assert map.text.contains('<!-- io.github.lmarqs.cookbook:docs#seed --kinds=adrs --kinds=runbooks ' +
     '--skills=.agents/skills -->')
-    assert map.text.contains('`adr/`') && map.text.contains('`runbooks/`') && !map.text.contains('`ux/`')
+    assert map.text.contains('`adrs/`') && map.text.contains('`runbooks/`') && !map.text.contains('`ux/`')
     assert !map.text.contains('BCP 14')
 
     map.text = '# Our docs\n\nStart here.\n' + map.text.substring(map.text.indexOf('<!-- cook:begin'))
@@ -56,7 +56,7 @@ class DocsSeedCookTest {
     "${SEED}: Missing --skills: The directory, from the repository root, the docs-layout skill is written under, " +
     'such as .agents/skills'
     assert shouldFail(IllegalArgumentException) { cook(kitchen, SEED, [skills: ['s'], kinds: ['howto']]) }.message ==
-    "${SEED}: --kinds=howto is not one of: adr, api, features, runbooks, ux"
+    "${SEED}: --kinds=howto is not one of: adrs, api, features, runbooks, ux"
   }
 
   @Test void ownsTheSkillUnderTheNamedDirectory() {

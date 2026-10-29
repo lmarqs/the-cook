@@ -15,7 +15,7 @@ fi
 # The kinds the map offers: the --kinds on the argument line the recipe wrote, or all five.
 kinds=$(tr -d '\r' <docs/README.md | sed -n 's/^<!-- io\.github\.lmarqs\.cookbook:docs#seed \(.*\) -->$/\1/p' |
   head -n 1 | tr ' ' '\n' | sed -n 's/^--kinds=//p' | tr '\n' ' ')
-[ -n "$kinds" ] || kinds='adr api features runbooks ux'
+[ -n "$kinds" ] || kinds='adrs api features runbooks ux'
 
 files=$(find docs -type f -name '*.md' | LC_ALL=C sort)
 
@@ -216,8 +216,8 @@ scan() {
 
     for (i = 1; i <= nf; i++) {
       p = file[i]
-      if (kind(p) != "adr" || p == "docs/adr/README.md" || p !~ /^docs\/adr\/[^\/]+$/) continue
-      name = substr(p, 10)
+      if (kind(p) != "adrs" || p == "docs/adrs/README.md" || p !~ /^docs\/adrs\/[^\/]+$/) continue
+      name = substr(p, 11)
       if (name !~ /^[0-9][0-9][0-9][0-9]-[a-z0-9]+(-[a-z0-9]+)*\.md$/) { fail(p, "is named outside the pattern NNNN-<slug>.md", "rename it with the next number and a lowercase slug"); continue }
       number = substr(name, 1, 4)
       if (number in numbered) fail(p, "reuses the number " number " of " numbered[number], "give it the next number")

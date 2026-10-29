@@ -15,7 +15,7 @@ Each rule, its reason and its source. The design and its full decision register 
 | Front matter holds keys a program reads | Hand-kept fields go stale and mislead | MADR ADR-0013: front matter "pretends to be more accurate than it can be"; Good Docs Project: adopt only metadata "automatically maintained" |
 | Reasoning is content: options, reasons, rules with reasons | The reasons let a reader judge whether a decision still holds | arc42 tips 9-3 and 9-6; MADR; PEP "Rejected Ideas"; Tang et al. 2005; Falessi et al. 2006 |
 | A changed decision is edited in place; a reversed one is deleted | Every page present is in force, and `Options` keeps the previous choice | The repository owner's decision; Google Cloud ADR guidance |
-| Decision records are `NNNN-<slug>.md` under `adr/` | Numbers give each record a stable name; `doc/adr` is the most used directory | Nygard; adr-tools |
+| Decision records are `NNNN-<slug>.md` under `adrs/` | Numbers give each record a stable name | Nygard for the numbering; the repository owner's decision for `adrs/` |
 | Standards use BCP 14 keywords, each rule with its reason | Readers apply the intent to cases the words leave open | RFC 2119, RFC 8174; W3C "Why care?"; Google style guides |
 | An interface page links its contract file | The definition file is the contract, and the reference is built from it | OpenAPI Initiative; Google AIP-192 |
 | One runbook per trigger, steps with expected output | The responder verifies each step under pressure | Google SRE workbook; AWS OPS07-BP03 |

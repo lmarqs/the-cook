@@ -10,7 +10,7 @@ much knowledge as the choice.
 
 ## Example, in the made-up project `acme`
 
-`docs/adr/0007-store-sessions-in-redis.md`:
+`docs/adrs/0007-store-sessions-in-redis.md`:
 
 ```markdown
 # Store sessions in Redis

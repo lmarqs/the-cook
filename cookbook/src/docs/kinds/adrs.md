@@ -1,4 +1,4 @@
-## Decisions, `adr/`
+## Decisions, `adrs/`
 
 Holds why the system is built as it is: each decision, the options weighed and why the choice won. Diátaxis type:
 explanation.

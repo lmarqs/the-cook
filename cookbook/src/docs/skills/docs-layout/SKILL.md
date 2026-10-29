@@ -16,7 +16,7 @@ start of every task here: this skill says how to work, the map says what goes wh
 
 | Arguments | Do |
 | --- | --- |
-| `<kind> <title>` | [Write a page](#write-a-page) of that kind, such as `adr`, `features` or `runbooks` |
+| `<kind> <title>` | [Write a page](#write-a-page) of that kind, such as `adrs`, `features` or `runbooks` |
 | `term <term>` | [Add a term](#add-a-term) to the glossary |
 | `review` | [Review](#review) the tree and report; files stay as they are |
 | `review --fix` | Review, then [fix what it finds](#review---fix) |
@@ -37,14 +37,14 @@ start of every task here: this skill says how to work, the map says what goes wh
 
    | Kind | Template | File name |
    | --- | --- | --- |
-   | `adr` | `adr.template.md` | `NNNN-<slug>.md`, the highest number used in `docs/adr/`, deleted records included, plus one, four digits |
+   | `adrs` | `adr.template.md` | `NNNN-<slug>.md`, the highest number used in `docs/adrs/`, deleted records included, plus one, four digits |
    | `features` | `feature.template.md` | `<slug>.md` |
    | `api` | `api.template.md` | `<slug>.md`, after the interface |
    | `ux` | `standard.template.md` | `<slug>.md`, after the subject |
    | `runbooks` | `runbook.template.md` | `<slug>.md`, after the trigger |
 
    The slug is the title in lowercase ASCII words joined by `-`. Each kind's reference holds its finer points and a
-   worked example: [adr](references/adr.md), [features](references/features.md), [api](references/api.md),
+   worked example: [adrs](references/adrs.md), [features](references/features.md), [api](references/api.md),
    [ux](references/ux.md), [runbooks](references/runbooks.md).
 7. Add the page to its guide's list: `- [Title](file.md): one sentence on it.`
 8. Connect it: where another page states this page's fact, replace the statement with a link. A feature, interface
@@ -69,7 +69,7 @@ point its links at the page that now owns the subject. Its number stays taken.
 ## Record what you learn
 
 During any task, a fact learned about the system goes to its owner in the same change: a behavior to `features/`, a
-reason to `adr/`, a fix for something that fires to `runbooks/`. Agent memory files hold traps in how agents work in
+reason to `adrs/`, a fix for something that fires to `runbooks/`. Agent memory files hold traps in how agents work in
 this repository; facts about the system live in `docs/`, where people read them too.
 
 ## Review
