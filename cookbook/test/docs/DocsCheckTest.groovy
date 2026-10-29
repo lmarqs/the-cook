@@ -12,10 +12,13 @@ import org.junit.rules.TemporaryFolder
 class DocsCheckTest {
   private static final String SEED = 'io.github.lmarqs.cookbook:docs:0.1.0#seed'
   private static final File TEMPLATES = new File(COOKBOOK, 'docs/skills/docs-layout/templates')
-  private static final List<String> KINDS = ['adrs', 'api', 'features', 'runbooks', 'ux']
+  private static final List<String> KINDS = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
   private static final Map<String, String> PAGE_TEMPLATES = [
-    adrs: 'adr', api: 'api', features: 'feature', runbooks: 'runbook', ux: 'standard',
+    adrs: 'adr', api: 'api', architecture: 'architecture', features: 'feature', philosophy: 'philosophy',
+    runbooks: 'runbook', ux: 'standard',
   ]
+  private static final List<String> SINGLE_PAGE_KINDS = ['architecture', 'philosophy']
+  private static final String README = '# Project\n\n[Docs](docs/README.md)\n\n## Objective\n\nShip it.\n'
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
@@ -66,7 +69,7 @@ See [a](#before-you-begin), [b](#steps-1), [c](#if-it-fails), [d](README.md#runb
 
   @Test void resolvesRepositoryAbsoluteReferenceStyleAndImageLinks() {
     def kitchen = cooked()
-    new File(kitchen, 'README.md').text = '# Project\n\n[Docs](docs/README.md)\n'
+    new File(kitchen, 'README.md').text = README
     new File(kitchen, 'docs/img.png').bytes = [1] as byte[]
     new File(kitchen, 'docs/README.md').append('\n[a](/README.md), [b][r], ![c](img.png), ' +
         '[d](https://example.com/x)\n\n[r]: ../README.md\n')
@@ -134,7 +137,7 @@ Setext Heading
     def (exit, lines) = check(kitchen)
 
     assert exit == 1
-    def outside = 'sits outside the map, the glossary and the kind directories the map offers'
+    def outside = 'sits outside the map, the glossary and the kinds the map declares'
     assert findings(lines) == ["FAIL docs/ux/README.md ${outside}".toString()]
   }
 
@@ -162,8 +165,8 @@ Setext Heading
 
     assert exit == 1
     assert findings(lines) == [
-      'FAIL docs/notes.md sits outside the map, the glossary and the kind directories the map offers',
-      'FAIL docs/ux/README.md sits outside the map, the glossary and the kind directories the map offers',
+      'FAIL docs/notes.md sits outside the map, the glossary and the kinds the map declares',
+      'FAIL docs/ux/README.md sits outside the map, the glossary and the kinds the map declares',
     ]
   }
 
@@ -203,6 +206,53 @@ Setext Heading
     ]
   }
 
+  @Test void failsOnAnArchitectureOrPhilosophyPageMissingItsSection() {
+    def kitchen = cooked()
+    page(kitchen, 'docs/architecture.md', '# Architecture\n\nA shop.\n\n## How they connect\n\nOver HTTP.\n')
+    page(kitchen, 'docs/philosophy.md', '# Philosophy\n\nOur tenets.\n')
+
+    def (exit, lines) = check(kitchen)
+
+    assert exit == 1
+    assert findings(lines) == [
+      'FAIL docs/architecture.md architecture page sections are []',
+      'FAIL docs/philosophy.md philosophy page sections are []',
+    ]
+  }
+
+  @Test void acceptsTheKindsTheTeamDeclaresInTheMap() {
+    def kitchen = cooked([skills: ['.agents/skills'], kinds: ['adrs']])
+    new File(kitchen, 'docs/README.md').append('''
+## Threat models, `threats/`
+
+One page per asset an attacker wants.
+
+## Data model, `data-model.md`
+
+The entities and how they relate.
+
+```md
+## Notes, `notes/`
+```
+''')
+    page(kitchen, 'docs/threats/README.md', '# Threat models\n\n- [Login](login.md): the login form.\n')
+    page(kitchen, 'docs/threats/login.md', '# Login\n\nStolen passwords.\n')
+    page(kitchen, 'docs/threats/signup.md', '# Signup\n\nFake accounts.\n')
+    page(kitchen, 'docs/data-model.md', '# Data model\n\nOrders have lines.\n')
+    page(kitchen, 'docs/notes/a.md', '# A\n')
+    page(kitchen, 'docs/architecture.md', '# Architecture\n')
+
+    def (exit, lines) = check(kitchen)
+
+    assert exit == 1
+    def outside = 'sits outside the map, the glossary and the kinds the map declares'
+    assert findings(lines) == [
+      "FAIL docs/architecture.md ${outside}".toString(),
+      "FAIL docs/notes/a.md ${outside}".toString(),
+      'FAIL docs/threats/signup.md is missing from docs/threats/README.md',
+    ]
+  }
+
   @Test void warnsOnFlaggedWordsAvoidedTermsAndUnfilledBlanks() {
     def kitchen = cooked()
     page(kitchen, 'docs/glossary.md', '# Glossary\n\n**Container**:\nA box that holds items.\n_Avoid_: bucket, bin\n')
@@ -228,7 +278,7 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     ]
   }
 
-  @Test void acceptsTheTeamsOwnGuideTextAndWarnsWhenTheRootReadmeLacksTheMap() {
+  @Test void acceptsTheTeamsOwnGuideTextAndWarnsWhenTheRootReadmeLacksTheMapAndTheObjective() {
     def kitchen = cooked()
     new File(kitchen, 'README.md').text = '# Project\n'
     page(kitchen, 'docs/ux/README.md', '# Standards\n\nOur rules.\n\n- [Naming](naming.md): names.\n')
@@ -237,7 +287,10 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     def (exit, lines) = check(kitchen)
 
     assert exit == 0
-    assert findings(lines) == ['WARN README.md lacks a link to docs/README.md']
+    assert findings(lines) == [
+      'WARN README.md lacks a link to docs/README.md',
+      'WARN README.md lacks an Objective section',
+    ]
   }
 
   @Test void everyTemplateFilledInPasses() {
@@ -248,9 +301,13 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
         "filled${++blank}"
       }
     }
-    new File(kitchen, 'README.md').text = '# Project\n\n[Docs](docs/README.md)\n'
+    new File(kitchen, 'README.md').text = '# Project\n\n[Docs](docs/README.md)\n\n' +
+        filled(new File(TEMPLATES, 'objective.template.md').text)
     page(kitchen, 'docs/glossary.md', filled(new File(TEMPLATES, 'glossary.template.md').text))
-    KINDS.each { kind ->
+    SINGLE_PAGE_KINDS.each { kind ->
+      page(kitchen, "docs/${kind}.md", filled(new File(TEMPLATES, "${kind}.template.md").text))
+    }
+    (KINDS - SINGLE_PAGE_KINDS).each { kind ->
       def name = kind == 'adrs' ? '0001-first.md' : 'first.md'
       page(kitchen, "docs/${kind}/README.md", guide(kind) + "\n- [First](${name}): the first page.\n")
       page(kitchen, "docs/${kind}/${name}", filled(new File(TEMPLATES, "${PAGE_TEMPLATES[kind]}.template.md").text))

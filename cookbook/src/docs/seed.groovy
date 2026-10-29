@@ -20,18 +20,22 @@ What it publishes for people and other recipes:
 
 | Name | What it is |
 | --- | --- |
-| `docs/README.md` | The map: each kind offered, what it holds, its criteria, and where a fact goes |
+| `docs/README.md` | The map: each kind offered, what it holds, its criteria, where a fact goes, and how a team \
+declares a kind of its own |
 | `docs/<kind>/` | The pages of one kind, `adrs`, `api`, `features`, `runbooks` or `ux`, \
 with a guide `README.md` listing them; created with the kind's first page |
+| `docs/architecture.md`, `docs/philosophy.md` | The kinds of one page: how the parts fit together, and the tenets \
+that guide decisions; created with their content |
 | `docs/adrs/NNNN-<slug>.md` | One decision record per file, numbered in sequence |
 | `docs/glossary.md` | The terms, with the synonyms the team rejected; created with the first term |
-| `sh <skills>/docs-layout/scripts/check.sh` | The check: links, anchors, guides and each kind's sections; \
-exits 1 on a failure |
+| `README.md`, `## Objective` | The repository's problem, goal and non-goals; written by the skill with the person |
+| `sh <skills>/docs-layout/scripts/check.sh` | The check: links, anchors, guides, each kind's sections and the \
+kinds the map declares; exits 1 on a failure |
 
 ## Consumes
 
-Only the files `--instructions` names, which must exist. The check runs with a POSIX `sh`, `awk`, `dirname`, `find`,
-`grep`, `head`, `sed`, `sort`, `tr`, and `xargs` with `-0`. The skill is written for Claude Code 2.1.312 and Codex
+Only the files `--instructions` names, which must exist. The check runs with a POSIX `sh`, `awk` as gawk or mawk,
+`dirname`, `find`, `grep`, `sed`, `sort`, `tr`, and `xargs` with `-0`. The skill is written for Claude Code 2.1.312 and Codex
 0.160.1.
 
 ## Produces
@@ -46,10 +50,11 @@ criteria, where a fact goes, what a page holds, terms, guides and the check comm
 saying `docs/` is the source of truth, where a learned fact goes, and the check and skill to use | \
 `--instructions` | owned |
 
-The kind directories, their guides and the glossary appear with their first page, written by the skill from its
-templates, so the tree holds only what has content.
+The kind directories, their guides, the one-page kinds, the glossary and the Objective appear with their first
+content, written by the skill from its templates, so the tree holds only what has content.
 
-Never touches: the pages under `docs/`, the rest of `docs/README.md` and of each `--instructions` file.
+Never touches: the pages under `docs/`, the rest of `docs/README.md` and of each `--instructions` file, and the
+root `README.md`.
 
 ## Connections
 
@@ -60,6 +65,7 @@ Never touches: the pages under `docs/`, the rest of `docs/README.md` and of each
 file's end, and stays where the team moves it |
 | The check in CI or a Done check | The team, by running the check command the map names |
 | The pages themselves | People and agents, with the `docs-layout` skill |
+| A kind of the team's own | The team, by a heading in `docs/README.md` outside the `kinds` section |
 
 ## Run-time effects
 
@@ -75,6 +81,8 @@ introduction is never rewritten. Cooking without a file's `--instructions` remov
 
 ## Traps
 
+- The check's tests run under gawk and mawk. macOS ships BSD awk, which has not run them; where the check fails
+  there, run it with gawk.
 - The check resolves heading anchors for ASCII text: lowercase, punctuation removed, spaces as hyphens. A link to a
   heading with non-ASCII letters passes unverified, so open such a link once where the pages render to confirm it.
 ''')
@@ -88,9 +96,10 @@ import io.github.lmarqs.cookbook.docs.Docs
 @param(value = ['instructions'], many = true, sorted = true, default = [], path = true,
     doc = 'A Markdown file, from the repository root, where the recipe states the docs rule for agents and people')
     String[] instructions
-@param(value = ['kinds'], many = true, sorted = true, default = ['adrs', 'api', 'features', 'runbooks', 'ux'],
-    choices = ['adrs', 'api', 'features', 'runbooks', 'ux'],
-    doc = 'A kind of page the map offers; all five by default')
+@param(value = ['kinds'], many = true, sorted = true,
+    default = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
+    choices = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
+    doc = 'A kind of page the map offers; all seven by default')
     String[] kinds
 @param(value = ['skills'], path = true,
     doc = 'The directory, from the repository root, the docs-layout skill is written under, such as .agents/skills')

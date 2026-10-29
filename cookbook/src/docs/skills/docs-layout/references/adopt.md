@@ -9,8 +9,8 @@ owns it. The person reviews the result as one change.
    such as `ARCHITECTURE.md`, `doc/adr/` or a wiki export. Show the list to the person and agree which files are in
    scope.
 3. Sort each file by the map's criteria into one kind, or split it when its sections meet different kinds. Ask the
-   person where a file meets no kind's criteria; it may belong in the root README, in `AGENTS.md`, in an issue, or
-   nowhere.
+   person where a file meets no kind's criteria; it may belong in the root README, in `AGENTS.md`, in an issue, in a
+   kind the team declares by the map's tests, or nowhere.
 4. Move each page into its kind with the version control's move command, so history follows it, and rename it by
    the kind's file name rule.
    Existing decision records keep their numbers.
@@ -20,5 +20,7 @@ owns it. The person reviews the result as one change.
    status, author, date and version fields; version history records who changed a page and when.
 7. Write each kind's guide: the kind's name in the map as its title, then a list of its pages.
 8. Fix the links: the check lists every link that points at a moved file.
-9. Run the check until it reports no `FAIL`, and report the moves, the splits, the removed statements and the open
-   questions.
+9. Write the Objective with the person, by the skill's `objective` procedure, when the root README lacks one; a
+   statement of the problem or the goal elsewhere becomes a link to it.
+10. Run the check until it reports no `FAIL`, and report the moves, the splits, the removed statements and the open
+    questions.

@@ -11,7 +11,7 @@ import thecook.cookbook.RecipeSource
 
 class DocsSeedCookTest {
   private static final String SEED = 'io.github.lmarqs.cookbook:docs:0.1.0#seed'
-  private static final List<String> KINDS = ['adrs', 'api', 'features', 'runbooks', 'ux']
+  private static final List<String> KINDS = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
   private static final File SKILL = new File(COOKBOOK, 'docs/skills/docs-layout')
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
@@ -25,10 +25,11 @@ class DocsSeedCookTest {
     assert map.startsWith(new File(SKILL, 'templates/map.template.md').text)
     assert map.contains('<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/kinds -->\n' +
     '<!-- io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills -->\n')
-    KINDS.each { assert map.contains("`${it}/`") }
+    KINDS.each { assert map.contains("`${it}/`") || map.contains("`${it}.md`") }
     assert map.contains('`sh .agents/skills/docs-layout/scripts/check.sh`')
     assert map.contains('in the standards under `ux/` are to be interpreted as described in BCP 14\n')
-    ['docs/adrs', 'docs/api', 'docs/features', 'docs/runbooks', 'docs/ux', 'docs/glossary.md'].each {
+    ['docs/adrs', 'docs/api', 'docs/architecture.md', 'docs/features', 'docs/philosophy.md', 'docs/runbooks',
+      'docs/ux', 'docs/glossary.md'].each {
       assert !new File(kitchen, it).exists()
     }
     assert cook(kitchen, SEED, [skills: ['.agents/skills']]).actions == [:]
@@ -56,7 +57,7 @@ class DocsSeedCookTest {
     "${SEED}: Missing --skills: The directory, from the repository root, the docs-layout skill is written under, " +
     'such as .agents/skills'
     assert shouldFail(IllegalArgumentException) { cook(kitchen, SEED, [skills: ['s'], kinds: ['howto']]) }.message ==
-    "${SEED}: --kinds=howto is not one of: adrs, api, features, runbooks, ux"
+    "${SEED}: --kinds=howto is not one of: adrs, api, architecture, features, philosophy, runbooks, ux"
   }
 
   @Test void ownsTheSkillUnderTheNamedDirectory() {
@@ -171,7 +172,7 @@ class DocsSeedCookTest {
     def frontLines = front.readLines()
     def description = frontLines.find { it.startsWith('description: ') }.substring(13)
 
-    ['`<kind> <title>`', '`term <term>`', '`review`', '`review --fix`', '`adopt`'].each {
+    ['`<kind> [title]`', '`term <term>`', '`kind <name>`', '`objective`', '`review`', '`review --fix`', '`adopt`'].each {
       assert text.contains("| ${it} |")
     }
     assert front.readLines().contains('name: docs-layout')

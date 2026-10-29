@@ -34,8 +34,11 @@ package io.github.lmarqs.cookbook.docs
  */
 @Ingredient
 class Docs {
-  /** The kinds of page the map can offer, each a directory under `docs/`. */
-  static final List<String> KINDS = ['adrs', 'api', 'features', 'runbooks', 'ux']
+  /**
+   * The kinds of page the map can offer: each a directory under `docs/`, except `architecture` and `philosophy`, one
+   * page each.
+   */
+  static final List<String> KINDS = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
 
   /** The name of the skill, the directory it is written to under the skills directory. */
   static final String SKILL = 'docs-layout'

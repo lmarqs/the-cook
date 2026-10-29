@@ -2,7 +2,7 @@
 # Run from the repository root, the directory that holds docs/README.md: sh <skills>/docs-layout/scripts/check.sh
 # Writes nothing. Prints "ok <what>" for each check that passes, and one line per finding:
 # "FAIL <path>[:<line>] <what> -- <next>" or "WARN <path>[:<line>] <what> -- <next>".
-# A FAIL is a broken link or a page outside its kind's shape; a WARN is wording to review. Exits 1 on any FAIL.
+# A FAIL is a broken link or a page outside its kind's shape; a WARN is text for a person to judge. Exits 1 on any FAIL.
 # Prose means lines outside fenced code and HTML comments, with inline code and link targets removed.
 # An anchor with non-ASCII letters passes unverified: awk lowercases them only in some versions and locales.
 
@@ -12,10 +12,12 @@ if [ ! -f docs/README.md ]; then
   exit 1
 fi
 
-# The kinds the map offers: the --kinds on the argument line the recipe wrote, or all five.
-kinds=$(tr -d '\r' <docs/README.md | sed -n 's/^<!-- io\.github\.lmarqs\.cookbook:docs#seed \(.*\) -->$/\1/p' |
-  head -n 1 | tr ' ' '\n' | sed -n 's/^--kinds=//p' | tr '\n' ' ')
-[ -n "$kinds" ] || kinds='adrs api features runbooks ux'
+# The kinds the map declares, the recipe's and the team's alike: each "## <Name>, `<directory>/`" or
+# "## <Name>, `<page>.md`" heading outside fenced code, as "<directory>/" or "<page>.md".
+kinds=$(tr -d '\r' <docs/README.md | awk '
+  /^ ? ? ?(```|~~~)/ { fence = !fence; next }
+  !fence && /^## .*, `[^`\/]+(\/|\.md)`[ \t]*$/ { s = $0; sub(/^.*, `/, "", s); sub(/`[ \t]*$/, "", s); print s }
+' | tr '\n' ' ')
 
 files=$(find docs -type f -name '*.md' | LC_ALL=C sort)
 
@@ -149,6 +151,7 @@ scan() {
     return 0
   }
   function kind(p,   k) {
+    if (p in single) return single[p]
     if (p !~ /^docs\/[^\/]+\//) return ""
     k = p
     sub(/^docs\//, "", k)
@@ -169,7 +172,14 @@ scan() {
     for (i = 1; i <= n; i++) have = have (i > 1 ? ", " : "") want[i]
     if (list != have) fail(file, label " sections are [" list "]", "write the sections " have ", in that order")
   }
-  BEGIN { nk = split(kinds, kindlist, " "); for (i = 1; i <= nk; i++) offered[kindlist[i]] = 1 }
+  BEGIN {
+    nk = split(kinds, kindlist, " ")
+    for (i = 1; i <= nk; i++) {
+      k = kindlist[i]
+      if (k ~ /\/$/) offered[substr(k, 1, length(k) - 1)] = 1
+      else single["docs/" k] = substr(k, 1, length(k) - 3)
+    }
+  }
   $1 == "F" { file[++nf] = $2; scanned[$2] = 1 }
   $1 == "S" { slugs[$2, $3] = 1 }
   $1 == "H" { if ($4 == 2) heading[$2, ++nh[$2]] = $5 }
@@ -200,14 +210,14 @@ scan() {
     for (i = 1; i <= nf; i++) {
       p = file[i]
       if (p == "docs/README.md" || p == "docs/glossary.md" || kind(p) != "") continue
-      fail(p, "sits outside the map, the glossary and the kind directories the map offers", "move it into the kind whose criteria it meets, or offer that kind with --kinds")
+      fail(p, "sits outside the map, the glossary and the kinds the map declares", "move it into the kind whose criteria it meets, or declare its kind in docs/README.md")
     }
-    ok("every Markdown file under docs/ sits in the map, the glossary or a kind the map offers")
+    ok("every Markdown file under docs/ sits in the map, the glossary or a kind the map declares")
 
     for (i = 1; i <= nf; i++) {
       p = file[i]
       k = kind(p)
-      if (k == "" || p == "docs/" k "/README.md") continue
+      if (k == "" || (p in single) || p == "docs/" k "/README.md") continue
       guide = "docs/" k "/README.md"
       if (!(guide in scanned)) { if (!(k in guideless)) fail("docs/" k, "has pages and lacks its guide README.md", "write the guide with the docs-layout skill"); guideless[k] = 1; continue }
       if (!((guide, p) in linked)) fail(p, "is missing from " guide, "add a list item linking it, with one sentence on it")
@@ -230,8 +240,10 @@ scan() {
       p = file[i]
       if (kind(p) == "runbooks" && p != "docs/runbooks/README.md") sections(p, "Before you begin|Steps|If it fails", "runbook")
       if (kind(p) == "api" && p != "docs/api/README.md") sections(p, "Contract", "interface page")
+      if (p == "docs/architecture.md" && kind(p) == "architecture") sections(p, "Parts", "architecture page")
+      if (p == "docs/philosophy.md" && kind(p) == "philosophy") sections(p, "Tenets", "philosophy page")
     }
-    ok("every runbook and interface page has its sections")
+    ok("every runbook, interface, architecture and philosophy page has its sections")
 
     for (i = 1; i <= np; i++) {
       if (pfile[i] != "docs/glossary.md") continue
@@ -273,6 +285,11 @@ if [ -f README.md ]; then
     printf 'ok %s\n' 'the root README links docs/README.md'
   else
     printf 'WARN %s -- %s\n' 'README.md lacks a link to docs/README.md' 'link the map from the root README'
+  fi
+  if tr -d '\r' <README.md | grep -q '^##[[:space:]][[:space:]]*Objective[[:space:]]*$'; then
+    printf 'ok %s\n' 'the root README states the Objective'
+  else
+    printf 'WARN %s -- %s\n' 'README.md lacks an Objective section' 'write it with the docs-layout skill: objective'
   fi
 fi
 
