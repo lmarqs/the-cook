@@ -25,7 +25,9 @@ start of every task here: this skill says how to work, the map says what goes wh
 
 ## Write a page
 
-1. Match the subject to the map's criteria. When another kind fits better, say so and write that kind.
+1. Match the subject to the map's criteria. When another kind fits better, say so and write that kind. Test a
+   decision against the map's bar for a record first; when it fails a test, say which, and write the fact on the page
+   that owns it instead.
 2. Search `docs/` for the subject, by its glossary term and its synonyms. When the subject already has an owner, edit
    that page.
 3. Gather the facts from their sources: the code, the contract file, the version history, the issue, the person. The
@@ -37,7 +39,7 @@ start of every task here: this skill says how to work, the map says what goes wh
 
    | Kind | Template | File name |
    | --- | --- | --- |
-   | `adrs` | `adr.template.md` | `NNNN-<slug>.md`, the highest number used in `docs/adrs/`, deleted records included, plus one, four digits |
+   | `adrs` | `adr.template.md` | `NNNN-<slug>.md`, the highest number in `docs/adrs/` plus one, four digits |
    | `features` | `feature.template.md` | `<slug>.md` |
    | `api` | `api.template.md` | `<slug>.md`, after the interface |
    | `ux` | `standard.template.md` | `<slug>.md`, after the subject |
@@ -57,8 +59,8 @@ start of every task here: this skill says how to work, the map says what goes wh
 A changed decision is edited in place, keeping its number: `Options` gains the previous choice and why it changed,
 and `Decision` states the new choice and why it won.
 
-A decision reversed outright, with nothing it decided remaining, is deleted: remove the file and its guide line, and
-point its links at the page that now owns the subject. Its number stays taken.
+A record whose decision is reversed outright, or that fails the map's bar, is deleted: move its facts that still hold
+to the page that owns them, remove the file and its guide line, and point its links at that page.
 
 ## Add a term
 
@@ -79,6 +81,7 @@ Run the check the map names. Then apply every rule below to every page under `do
 - Each fact is stated on its owner; other pages link it.
 - Each page states what is true now: spot-check its claims against the code and the contract.
 - A feature page describes; its reasons are in linked decision records.
+- Each decision record passes the map's bar; one that fails it is a candidate for deletion.
 - Each decision record gives every option with why it lost, and why the choice won.
 - Each rule in a standard carries its reason or links the record that holds it.
 - Each runbook step shows the output that tells the operator it worked.
@@ -90,7 +93,7 @@ Report each finding as the check does: what, where, and the step that fixes it.
 
 1. Run the review and list every finding before changing a file.
 2. Map each finding to a fix, or to a question for the person when it needs their decision, such as which page owns
-   a fact or whether a decision was reversed outright.
+   a fact, whether a decision was reversed outright, or whether a record that fails the bar is deleted.
 3. Make the fixes, and run the check until it reports no `FAIL`.
 4. Report what changed, and each finding that remains with its reason.
 
