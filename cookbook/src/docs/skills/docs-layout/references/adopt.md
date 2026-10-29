@@ -18,7 +18,7 @@ owns it. The person reviews the result as one change.
    from the code and the person, and fill blanks with what they say; leave the person a list of what is still open.
 6. Remove what other pages already state: keep the statement on the owning page and link it from the rest. Remove
    status, author, date and version fields; version history records who changed a page and when.
-7. Write each kind's guide from its template, listing its pages.
+7. Write each kind's guide: the kind's name in the map as its title, then a list of its pages.
 8. Fix the links: the check lists every link that points at a moved file.
 9. Run the check until it reports no `FAIL`, and report the moves, the splits, the removed statements and the open
    questions.

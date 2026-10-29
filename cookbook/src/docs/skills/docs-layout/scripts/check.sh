@@ -6,8 +6,6 @@
 # Prose means lines outside fenced code and HTML comments, with inline code and link targets removed.
 # An anchor with non-ASCII letters passes unverified: awk lowercases them only in some versions and locales.
 
-templates=$(cd "$(dirname "$0")/../templates" 2>/dev/null && pwd)
-
 if [ ! -f docs/README.md ]; then
   printf 'FAIL %s -- %s\n' 'docs/README.md, the map, is missing' \
     'run from the repository root, or cook io.github.lmarqs.cookbook:docs#seed'
@@ -117,7 +115,7 @@ scan() {
   '
 }
 
-{ scan || printf 'E\n'; } | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
+{ scan || printf 'E\n'; } | awk -F '\t' -v kinds="$kinds" '
   function fail(where, what, next_) { printf "FAIL %s %s -- %s\n", where, what, next_; failed = 1; found = 1 }
   function warn(where, what, next_) { printf "WARN %s %s -- %s\n", where, what, next_; found = 1 }
   function ok(what) { if (!found) printf "ok %s\n", what; found = 0 }
@@ -264,23 +262,6 @@ scan() {
 
     for (i = 1; i <= np; i++) if (index(ptext[i], "[[fill:")) warn(pfile[i] ":" pline[i], "has an unfilled blank [[fill:", "write the text the blank asks for")
     ok("every template blank is filled")
-
-    for (i = 1; i <= nk; i++) {
-      k = kindlist[i]
-      guide = "docs/" k "/README.md"
-      template = templates "/guide-" k ".template.md"
-      if (!(guide in scanned)) continue
-      expected = ""
-      while ((getline line < template) > 0) { sub(/\r$/, "", line); expected = expected line "\n" }
-      close(template)
-      actual = ""
-      while ((getline line < guide) > 0) { sub(/\r$/, "", line); if (line ~ /^[-*+] /) break; actual = actual line "\n" }
-      close(guide)
-      sub(/\n+$/, "", expected)
-      sub(/\n+$/, "", actual)
-      if (actual != expected) warn(guide, "text above the list differs from the release template", "compare it with " template " and take its wording")
-    }
-    ok("every guide opens with the release template text")
 
     exit failed
   }

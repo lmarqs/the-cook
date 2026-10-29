@@ -27,6 +27,7 @@ class DocsSeedCookTest {
     '<!-- io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills -->\n')
     KINDS.each { assert map.contains("`${it}/`") }
     assert map.contains('`sh .agents/skills/docs-layout/scripts/check.sh`')
+    assert map.contains('in the standards under `ux/` are to be interpreted as described in BCP 14\n')
     ['docs/adr', 'docs/api', 'docs/features', 'docs/runbooks', 'docs/ux', 'docs/glossary.md'].each {
       assert !new File(kitchen, it).exists()
     }
@@ -40,6 +41,7 @@ class DocsSeedCookTest {
     assert map.text.contains('<!-- io.github.lmarqs.cookbook:docs#seed --kinds=adr --kinds=runbooks ' +
     '--skills=.agents/skills -->')
     assert map.text.contains('`adr/`') && map.text.contains('`runbooks/`') && !map.text.contains('`ux/`')
+    assert !map.text.contains('BCP 14')
 
     map.text = '# Our docs\n\nStart here.\n' + map.text.substring(map.text.indexOf('<!-- cook:begin'))
     cook(kitchen, SEED, [skills: ['.agents/skills']]).commit()
@@ -175,9 +177,7 @@ class DocsSeedCookTest {
     assert front.readLines().contains('name: docs-layout')
     assert description.length() <= 1024
     assert text.readLines().size() < 500
-    def pageTemplates = new File(SKILL, 'templates').listFiles()*.name.findAll {
-      !it.startsWith('guide-') && it != 'map.template.md'
-    }
+    def pageTemplates = new File(SKILL, 'templates').listFiles()*.name.findAll { it != 'map.template.md' }
     pageTemplates.each { assert text.contains(it) }
   }
 

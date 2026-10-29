@@ -228,7 +228,7 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     ]
   }
 
-  @Test void warnsWhenAGuidesTextDiffersFromTheTemplateAndTheRootReadmeLacksTheMap() {
+  @Test void acceptsTheTeamsOwnGuideTextAndWarnsWhenTheRootReadmeLacksTheMap() {
     def kitchen = cooked()
     new File(kitchen, 'README.md').text = '# Project\n'
     page(kitchen, 'docs/ux/README.md', '# Standards\n\nOur rules.\n\n- [Naming](naming.md): names.\n')
@@ -237,10 +237,7 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     def (exit, lines) = check(kitchen)
 
     assert exit == 0
-    assert findings(lines) == [
-      'WARN docs/ux/README.md text above the list differs from the release template',
-      'WARN README.md lacks a link to docs/README.md',
-    ]
+    assert findings(lines) == ['WARN README.md lacks a link to docs/README.md']
   }
 
   @Test void everyTemplateFilledInPasses() {
@@ -311,7 +308,7 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
   }
 
   private static String guide(String kind) {
-    new File(TEMPLATES, "guide-${kind}.template.md").text
+    "# ${kind}\n"
   }
 
   private static String standard(String title) {

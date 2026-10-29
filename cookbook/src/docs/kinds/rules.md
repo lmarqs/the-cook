@@ -21,8 +21,8 @@ term per concept.
 
 ## Guides
 
-A kind's directory appears with its first page, together with its guide, `README.md`: one sentence on what the kind
-holds, then a list linking each page with one sentence on it.
+A kind's directory appears with its first page, together with its guide, `README.md`: the kind's name as its title,
+such as `# Decisions`, then a list linking each page with one sentence on it.
 
 ## Check
 

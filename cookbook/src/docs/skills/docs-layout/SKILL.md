@@ -31,7 +31,8 @@ start of every task here: this skill says how to work, the map says what goes wh
 3. Gather the facts from their sources: the code, the contract file, the version history, the issue, the person. The
    page states what is true now and what the repository shows nowhere else, and links the source for the rest.
 4. Ask the person for what only they know, such as the options weighed for a decision or the owner of a runbook.
-5. When `docs/<kind>/README.md` is absent, copy `templates/guide-<kind>.template.md` to it as it is.
+5. When `docs/<kind>/README.md` is absent, create it with the kind's name in the map as its title, such as
+   `# Decisions`.
 6. Write the page from the kind's template, filling every `[[fill: ...]]` blank:
 
    | Kind | Template | File name |
