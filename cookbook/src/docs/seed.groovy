@@ -69,8 +69,8 @@ introduction is never rewritten. Cooking without a file's `--instructions` remov
 
 ## Traps
 
-- The check resolves heading anchors by GitHub's rules for ASCII text; a heading with non-ASCII letters keeps them as
-  written, and GitHub lowercases them, so link such headings by their lowercase form.
+- The check resolves heading anchors by GitHub's rules for ASCII text. A link to a heading with non-ASCII letters
+  passes unverified, so open such a link once on GitHub to confirm it.
 ''')
 @yield('''
 Write the first page with the skill, such as `/docs-layout adr <title>` in Claude Code, and run
