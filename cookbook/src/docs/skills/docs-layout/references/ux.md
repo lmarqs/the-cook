@@ -1,6 +1,6 @@
-# Standards
+# UX standards
 
-A standard holds rules every interface in its scope follows, such as command names, messages or output formats. Each
+A UX standard holds rules every interface in its scope follows, such as command names, messages or output formats. Each
 rule carries its reason, so a reader can apply its intent to a case the rule's words leave open.
 
 Group the rules under headings by subject, as the example does; each rule is one bullet followed by its reason.

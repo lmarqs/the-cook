@@ -1,6 +1,6 @@
 ---
 name: docs-layout
-description: Writes and reviews the pages of docs/, the source of truth people and agents share, by the criteria in its map, docs/README.md. Use it to record a decision; describe a feature, an interface, a standard or a runbook; add a glossary term; put a fact learned while working on the page that owns it; review or fix docs/; or adopt the layout in an existing repository. Code comments and READMEs outside docs/ follow the repository's own guidance.
+description: Writes and reviews the pages of docs/, the source of truth people and agents share, by the criteria in its map, docs/README.md. Use it to record a decision; describe a feature, an interface, a UX standard or a runbook; add a glossary term; put a fact learned while working on the page that owns it; review or fix docs/; or adopt the layout in an existing repository. Code comments and READMEs outside docs/ follow the repository's own guidance.
 argument-hint: "[adopt | review [--fix] | <kind> <title> | term <term>]"
 ---
 
@@ -50,7 +50,7 @@ start of every task here: this skill says how to work, the map says what goes wh
    [ux](references/ux.md), [runbooks](references/runbooks.md).
 7. Add the page to its guide's list: `- [Title](file.md): one sentence on it.`
 8. Connect it: where another page states this page's fact, replace the statement with a link. A feature, interface
-   or standard links the decision records that shaped it. Use the glossary's terms.
+   or UX standard links the decision records that shaped it. Use the glossary's terms.
 9. Run the check the map names, from the repository root, until it reports no `FAIL`; weigh each `WARN`.
 10. Report the files written and each blank the person still has to supply.
 
@@ -83,7 +83,7 @@ Run the check the map names. Then apply every rule below to every page under `do
 - A feature page describes; its reasons are in linked decision records.
 - Each decision record passes the map's bar; one that fails it is a candidate for deletion.
 - Each decision record gives every option with why it lost, and why the choice won.
-- Each rule in a standard carries its reason or links the record that holds it.
+- Each rule in a UX standard carries its reason or links the record that holds it.
 - Each runbook step shows the output that tells the operator it worked.
 - Front matter holds only keys a program reads.
 

@@ -1,4 +1,4 @@
-## Standards, `ux/`
+## UX, `ux/`
 
 Holds the rules every interface follows, such as naming, messages and output. Diátaxis type: reference, normative.
 

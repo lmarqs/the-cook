@@ -17,7 +17,7 @@ Each rule, its reason and its source. The design and its full decision register 
 | A decision record holds a foundation decision: reversing it changes more than one feature or module | Every record present reads as binding, so a record of an implementation choice freezes a detail that should stay easy to change | The repository owner's decision, stricter than Nygard's list, which also admits construction techniques |
 | A changed decision is edited in place; a record reversed outright or below the bar is deleted | Every page present is in force, and `Options` keeps the previous choice | The repository owner's decision; Google Cloud ADR guidance |
 | Decision records are `NNNN-<slug>.md` under `adrs/` | Numbers give each record a stable name | Nygard for the numbering; the repository owner's decision for `adrs/` |
-| Standards use BCP 14 keywords, each rule with its reason | Readers apply the intent to cases the words leave open | RFC 2119, RFC 8174; W3C "Why care?"; Google style guides |
+| UX standards use BCP 14 keywords, each rule with its reason | Readers apply the intent to cases the words leave open | RFC 2119, RFC 8174; W3C "Why care?"; Google style guides |
 | An interface page links its contract file | The definition file is the contract, and the reference is built from it | OpenAPI Initiative; Google AIP-192 |
 | One runbook per trigger, steps with expected output | The responder verifies each step under pressure | Google SRE workbook; AWS OPS07-BP03 |
 | A glossary with rejected synonyms | One word per concept makes search and review find every use | Pocock; Good Docs terminology system; ASD-STE100 |
