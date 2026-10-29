@@ -4,14 +4,9 @@ A record answers "why is it built this way?" for one decision, so that a reader 
 reasons still hold before changing it. The reasoning is the content: the options weighed and why each lost carry as
 much knowledge as the choice.
 
-- Write one when the decision shapes structure, qualities, dependencies, interfaces or construction, is hard to
-  reverse, would surprise a reader new to its context, and came from a real trade-off. Smaller choices live in the
-  code and its review.
-- `Context` states the forces: the problem, the constraints, the goals. `Options` lists each alternative with why it
-  lost, and the chosen one with why it won. `Decision` states the choice in a sentence or two. `Consequences` states
-  what becomes easier, what becomes harder, and the costs.
+- A choice below the map's bar lives in the code and its review.
 - The title is the decision taken, as a sentence: "Store sessions in Redis".
-- A record fits on about one page; detail lives in the pages it links.
+- `Decision` states the choice in a sentence or two; detail lives in the pages the record links.
 
 ## Example, in the made-up project `acme`
 

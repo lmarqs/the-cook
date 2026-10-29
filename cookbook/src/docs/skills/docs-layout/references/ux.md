@@ -3,11 +3,7 @@
 A standard holds rules every interface in its scope follows, such as command names, messages or output formats. Each
 rule carries its reason, so a reader can apply its intent to a case the rule's words leave open.
 
-- The line after the title states the scope.
-- Rules use MUST, SHOULD and MAY in capitals, as BCP 14 defines them, and sparingly; the guide states the BCP 14
-  sentence once for every standard.
-- Each rule carries its reason in one sentence, or links the decision record that holds it.
-- A standard is edited in place as its rules change.
+Group the rules under headings by subject, as the example does; each rule is one bullet followed by its reason.
 
 ## Example, in the made-up project `acme`
 

@@ -4,10 +4,7 @@ An interface's contract lives in its definition file: an OpenAPI document, a pro
 reference is built. The interface page holds what that file leaves out, and links the file for everything else, so
 the two stay in agreement.
 
-- The lead says what the interface is for and who calls it.
-- `Contract` names the definition file with a link, and how the reference is built from it.
-- Further sections hold authentication, versioning, deprecation policy and limits, as the interface has them.
-- Design reasons are in decision records, which the page links.
+Sections after `Contract` hold what the interface has of authentication, versioning, deprecation policy and limits.
 
 ## Example, in the made-up project `acme`
 

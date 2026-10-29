@@ -3,13 +3,7 @@
 A runbook says what to do when one trigger fires: an alert, a request or a symptom. It is written for someone under
 pressure, so each step is one action with the output that shows it worked.
 
-- One runbook per trigger, named after it.
-- The lead states the outcome, one line on the impact, and the owner.
-- `Before you begin` lists the tools and permissions. `Steps` numbers the actions, each with its expected output.
-  `If it fails` says what to try next and whom to call.
-- A runbook links the pages that explain; its steps act. A fixed list of commands becomes a script, and the runbook
-  names it.
-- A runbook is updated each time its trigger fires, with what the responder learned.
+Each time the trigger fires, the responder adds what they learned: a step that was missing, an output that differed.
 
 ## Example, in the made-up project `acme`
 
