@@ -79,7 +79,7 @@ Repeat the arguments on the opening line of the `kinds` section in `docs/README.
 section; the pages stay. An upgrade updates the section, the skill and each instructions section; the map's
 introduction is never rewritten. Cooking without a file's `--instructions` removes its section.
 
-## Traps
+## Known limits
 
 - The check's tests run under gawk and mawk. macOS ships BSD awk, which has not run them; where the check fails
   there, run it with gawk.

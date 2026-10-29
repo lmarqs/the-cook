@@ -149,7 +149,7 @@ class DocsSeedCookTest {
       '## Connections',
       '## Run-time effects',
       '## Re-cooking',
-      '## Traps'
+      '## Known limits'
     ]
     assert texts.help.contains('Never touches')
     assert texts.yieldText
