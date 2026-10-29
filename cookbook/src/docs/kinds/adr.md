@@ -11,4 +11,4 @@ explanation.
   choice and why it won; `Consequences`, what becomes easier and what it costs.
 - A record fits on about one page.
 - A decision that changes is edited in place, and `Options` keeps the previous choice and why it changed. A decision
-  reversed outright is deleted; git keeps its history and its number stays taken.
+  reversed outright is deleted; version history keeps it and its number stays taken.

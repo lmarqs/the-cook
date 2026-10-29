@@ -39,7 +39,7 @@ class DocsCheckTest {
     assert findings(lines) == ["FAIL docs/README.md:${line} link nope.md points at a missing file".toString()]
   }
 
-  @Test void failsOnAMissingAnchorAndResolvesGithubSlugs() {
+  @Test void failsOnAMissingAnchorAndResolvesHeadingSlugs() {
     def kitchen = cooked()
     page(kitchen, 'docs/runbooks/README.md', guide('runbooks') + '\n- [Disk full](disk-full.md): frees space.\n')
     page(kitchen, 'docs/runbooks/disk-full.md', '''# Disk full
@@ -217,17 +217,31 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
   @Test void writesNothing() {
     def kitchen = cooked()
     page(kitchen, 'docs/notes.md', '[x](nope.md)\n')
-    def state = run(kitchen, ['git', 'status', '--porcelain', '--ignored'])[1]
+    def state = snapshot(kitchen)
 
     check(kitchen)
 
-    assert run(kitchen, ['git', 'status', '--porcelain', '--ignored'])[1] == state
+    assert snapshot(kitchen) == state
+  }
+
+  @Test void runsFromAnyDirectoryBelowTheMapAndFailsWhereNoneHoldsIt() {
+    def kitchen = cooked()
+    def script = new File(kitchen, '.agents/skills/docs-layout/scripts/check.sh').path
+
+    def (exit, output) = run(new File(kitchen, 'docs'), ['sh', script])
+
+    assert exit == 0
+    assert findings(output.readLines()) == []
+
+    def (outsideExit, outside) = run(folder.newFolder('elsewhere'), ['sh', script])
+
+    assert outsideExit == 1
+    assert findings(outside.readLines()) == ['FAIL docs/README.md, the map, is missing']
   }
 
   private File cooked(Map<String, List<String>> arguments = [skills: ['.agents/skills']]) {
     def kitchen = folder.newFolder('kitchen')
     publishDirectory(kitchen, 'docs')
-    assert run(kitchen, ['git', 'init', '-q'])[0] == 0
     cook(kitchen, SEED, arguments).commit()
     kitchen
   }
@@ -256,9 +270,13 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     lines.findAll { !it.startsWith('ok ') }.collect { it.contains(' -- ') ? it.substring(0, it.indexOf(' -- ')) : it }
   }
 
+  // Each file under the kitchen with its content, to compare before and after a run.
+  private static Map<String, String> snapshot(File kitchen) {
+    Kitchens.files(kitchen).collectEntries { [(it): new File(kitchen, it).text] }
+  }
+
   private static List run(File kitchen, List<String> command) {
     def builder = new ProcessBuilder(command).directory(kitchen).redirectErrorStream(true)
-    builder.environment().putAll(GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1')
     def process = builder.start()
     def output = process.inputStream.text
     [process.waitFor(), output]

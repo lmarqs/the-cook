@@ -7,7 +7,7 @@ package io.github.lmarqs.cookbook.docs
  *
  * ## Writes for
  *
- * GitHub-flavored Markdown in `docs/README.md` and in each instructions file named, such as `AGENTS.md`; an Agent
+ * Markdown in `docs/README.md` and in each instructions file named, such as `AGENTS.md`; an Agent
  * Skill, `SKILL.md` with its references, templates and a POSIX `sh` check script, for Claude Code 2.1.312 and Codex
  * 0.160.1, under the skills directory named.
  *

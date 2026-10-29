@@ -8,9 +8,9 @@ argument-hint: "[adopt | review [--fix] | <kind> <title> | term <term>]"
 
 Written for Claude Code 2.1.312 and Codex 0.160.1.
 
-`docs/` is where this repository keeps what its code, contract files and git history leave unsaid: why it is built as
-it is, what it does, the rules its interfaces follow, and what to do when something fires. People and agents read the
-same pages, so a fact written once, on the page that owns it, reaches everyone.
+`docs/` is where this repository keeps what its code, contract files and version history leave unsaid: why it is
+built as it is, what it does, the rules its interfaces follow, and what to do when something fires. People and agents
+read the same pages, so a fact written once, on the page that owns it, reaches everyone.
 
 `docs/README.md`, the map, holds the criteria: the kinds the repository offers, what each holds, and where a fact goes.
 Read it at the start of every task here; this skill says how to work, and the map says what goes where.
@@ -36,8 +36,8 @@ prompt as typed.
    kind's criteria better, say so and write that kind instead.
 2. Search `docs/` for the subject, by its glossary term and its synonyms. When a page already owns the fact, edit that
    page: one owner per fact keeps every reader on the same version.
-3. Gather the facts from their sources: the code, the contract file, `git log`, the issue, the person. A page states
-   what is true now and what the repository shows nowhere else; for the rest it links the source.
+3. Gather the facts from their sources: the code, the contract file, the version history, the issue, the person. A
+   page states what is true now and what the repository shows nowhere else; for the rest it links the source.
 4. Ask the person for what only they know, such as the options weighed for a decision or the owner of a runbook.
 5. When `docs/<kind>/` is absent, create it with its guide: copy `templates/guide-<kind>.template.md` to
    `docs/<kind>/README.md` as it is.
@@ -66,7 +66,8 @@ A decision that changes is edited in place: `Options` keeps the previous choice 
 states the new choice and why it won. The record keeps its number, and pages that link it stay valid.
 
 A decision reversed outright, so that nothing it decided remains, is deleted: remove the file and its line in the
-guide, and point the links at the page that now holds the subject. Git keeps the record, and its number stays taken.
+guide, and point the links at the page that now holds the subject. Version history keeps the record, and its number
+stays taken.
 
 ## Add a term
 

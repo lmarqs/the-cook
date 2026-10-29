@@ -30,8 +30,8 @@ exits 1 on a failure |
 
 ## Consumes
 
-Only the files `--instructions` names, which must exist. The check runs with POSIX `sh`, `awk`, `grep`, `sed`,
-`find` and `git`. The skill is written for Claude Code 2.1.312 and Codex 0.160.1.
+Only the files `--instructions` names, which must exist. The check runs with POSIX `sh`, `awk`, `grep`, `sed` and
+`find`. The skill is written for Claude Code 2.1.312 and Codex 0.160.1.
 
 ## Produces
 
@@ -69,13 +69,13 @@ introduction is never rewritten. Cooking without a file's `--instructions` remov
 
 ## Traps
 
-- The check resolves heading anchors by GitHub's rules for ASCII text. A link to a heading with non-ASCII letters
-  passes unverified, so open such a link once on GitHub to confirm it.
+- The check resolves heading anchors for ASCII text: lowercase, punctuation removed, spaces as hyphens. A link to a
+  heading with non-ASCII letters passes unverified, so open such a link once where the pages render to confirm it.
 ''')
 @yield('''
 Write the first page with the skill, such as `/docs-layout adr <title>` in Claude Code, and run
-`sh <skills>/docs-layout/scripts/check.sh` before committing. Cooked without `--instructions`, cook again with it,
-such as `--instructions=AGENTS.md`, so agents read the rule.
+`sh <skills>/docs-layout/scripts/check.sh` before the change is done. Cooked without `--instructions`, cook again
+with it, such as `--instructions=AGENTS.md`, so agents read the rule.
 ''')
 import io.github.lmarqs.cookbook.docs.Docs
 

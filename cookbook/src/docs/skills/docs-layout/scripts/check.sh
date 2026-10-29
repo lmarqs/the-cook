@@ -1,5 +1,6 @@
 # Checks the repository's docs/ tree against the map's criteria and reports each finding with the step that fixes it.
-# Run from the repository root: sh <skills>/docs-layout/scripts/check.sh
+# Run inside the repository: sh <skills>/docs-layout/scripts/check.sh
+# The root is the nearest directory, from the current one up, that holds docs/README.md.
 # Writes nothing. Prints "ok <what>" for each check that passes, and one line per finding:
 # "FAIL <path>[:<line>] <what> -- <next>" or "WARN <path>[:<line>] <what> -- <next>".
 # A FAIL is a broken link or a page outside its kind's shape; a WARN is wording to review. Exits 1 on any FAIL.
@@ -8,11 +9,9 @@
 
 templates=$(cd "$(dirname "$0")/../templates" 2>/dev/null && pwd)
 
-root=$(git rev-parse --show-toplevel 2>/dev/null) || {
-  printf 'FAIL %s -- %s\n' 'the check runs inside a git repository' 'run it from the repository root'
-  exit 1
-}
-cd "$root" || exit 1
+while [ ! -f docs/README.md ] && [ "$(pwd)" != / ]; do
+  cd .. || exit 1
+done
 
 if [ ! -f docs/README.md ]; then
   printf 'FAIL %s -- %s\n' 'docs/README.md, the map, is missing' 'cook io.github.lmarqs.cookbook:docs#seed'
@@ -167,7 +166,7 @@ scan | awk -F '\t' -v kinds="$kinds" -v templates="$templates" '
       ascii = anchor
       gsub(/[ -~]/, "", ascii)
       if (anchor != "" && ascii == "" && (p in scanned) && !((p, anchor) in slugs))
-        fail(where, "link " ltarget[i] " points at a missing heading", "use the heading slug GitHub shows for the target page")
+        fail(where, "link " ltarget[i] " points at a missing heading", "use the heading slug: lowercase, punctuation removed, spaces as hyphens")
     }
     ok("every link and anchor under docs/ resolves")
 
