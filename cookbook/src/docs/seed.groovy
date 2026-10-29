@@ -35,8 +35,8 @@ kinds the map declares; exits 1 on a failure |
 ## Consumes
 
 Only the files `--instructions` names, which must exist. The check runs with a POSIX `sh`, `awk` as gawk or mawk,
-`dirname`, `find`, `grep`, `sed`, `sort`, `tr`, and `xargs` with `-0`. The skill is written for Claude Code 2.1.312 and Codex
-0.160.1.
+`dirname`, `find`, `grep`, `sed`, `sort`, `tr`, and `xargs` with `-0`. The skill is written for Claude Code 2.1.312
+and Codex 0.160.1.
 
 ## Produces
 

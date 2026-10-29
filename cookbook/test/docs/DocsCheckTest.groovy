@@ -287,10 +287,8 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
     def (exit, lines) = check(kitchen)
 
     assert exit == 0
-    assert findings(lines) == [
-      'WARN README.md lacks a link to docs/README.md',
-      'WARN README.md lacks an Objective section',
-    ]
+    def lacks = 'WARN README.md lacks'
+    assert findings(lines) == ["${lacks} a link to docs/README.md", "${lacks} an Objective section"]*.toString()
   }
 
   @Test void everyTemplateFilledInPasses() {

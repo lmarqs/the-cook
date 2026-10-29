@@ -28,8 +28,16 @@ class DocsSeedCookTest {
     KINDS.each { assert map.contains("`${it}/`") || map.contains("`${it}.md`") }
     assert map.contains('`sh .agents/skills/docs-layout/scripts/check.sh`')
     assert map.contains('in the standards under `ux/` are to be interpreted as described in BCP 14\n')
-    ['docs/adrs', 'docs/api', 'docs/architecture.md', 'docs/features', 'docs/philosophy.md', 'docs/runbooks',
-      'docs/ux', 'docs/glossary.md'].each {
+    [
+      'docs/adrs',
+      'docs/api',
+      'docs/architecture.md',
+      'docs/features',
+      'docs/philosophy.md',
+      'docs/runbooks',
+      'docs/ux',
+      'docs/glossary.md'
+    ].each {
       assert !new File(kitchen, it).exists()
     }
     assert cook(kitchen, SEED, [skills: ['.agents/skills']]).actions == [:]
@@ -172,7 +180,8 @@ class DocsSeedCookTest {
     def frontLines = front.readLines()
     def description = frontLines.find { it.startsWith('description: ') }.substring(13)
 
-    ['`<kind> [title]`', '`term <term>`', '`kind <name>`', '`objective`', '`review`', '`review --fix`', '`adopt`'].each {
+    ['`<kind> [title]`', '`term <term>`', '`kind <name>`', '`objective`', '`review`', '`review --fix`', '`adopt`']
+    .each {
       assert text.contains("| ${it} |")
     }
     assert front.readLines().contains('name: docs-layout')
