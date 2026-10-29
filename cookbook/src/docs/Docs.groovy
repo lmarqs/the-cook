@@ -65,6 +65,7 @@ class Docs {
     }
 
     def unknown = kinds - KINDS
+
     if (unknown) {
       throw new IllegalArgumentException("${unknown.join(', ')} is not a kind of page: ${KINDS.join(', ')}")
     }
@@ -128,9 +129,9 @@ class Docs {
     def lines = [
       "<!-- ${cookedWith} -->",
       '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact. Read the owning page ' +
-          'before',
+      'before',
       '  changing an area. A behavior change ships with its page, and a fact learned about the system goes to the ' +
-          'page that',
+      'page that',
       "  owns it. `sh ${skills}/${SKILL}/scripts/check.sh` must pass; write a page with the `${SKILL}` skill.",
     ]*.toString()
     instructions.collectEntries { [(it): lines] }

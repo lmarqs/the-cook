@@ -67,8 +67,8 @@ See [a](#before-you-begin), [b](#steps-1), [c](#if-it-fails), [d](README.md#runb
     def kitchen = cooked()
     new File(kitchen, 'README.md').text = '# Project\n\n[Docs](docs/README.md)\n'
     new File(kitchen, 'docs/img.png').bytes = [1] as byte[]
-    new File(kitchen, 'docs/README.md').append('\n[a](/README.md), [b][r], ![c](img.png), [d](https://example.com/x)\n\n' +
-        '[r]: ../README.md\n')
+    new File(kitchen, 'docs/README.md').append('\n[a](/README.md), [b][r], ![c](img.png), ' +
+        '[d](https://example.com/x)\n\n[r]: ../README.md\n')
 
     def (exit, lines) = check(kitchen)
 
@@ -78,7 +78,8 @@ See [a](#before-you-begin), [b](#steps-1), [c](#if-it-fails), [d](README.md#runb
 
   @Test void ignoresLinksInFencedCodeInlineCodeAndComments() {
     def kitchen = cooked()
-    new File(kitchen, 'docs/README.md').append('\n```md\n[x](nope.md)\n```\n\n`[y](nope.md)`\n\n<!-- [z](nope.md) -->\n')
+    new File(kitchen, 'docs/README.md').append('\n```md\n[x](nope.md)\n```\n\n`[y](nope.md)`\n\n' +
+        '<!-- [z](nope.md) -->\n')
 
     def (exit, lines) = check(kitchen)
 
@@ -194,7 +195,11 @@ The store currently keeps items in a Bucket. TODO: legacy paths.
   @Test void everyTemplateFilledInPasses() {
     def kitchen = cooked()
     int blank = 0
-    def filled = { String text -> text.replaceAll(/\[\[fill: [^\]]*\]\]/) { "filled${++blank}" } }
+    def filled = { String text ->
+      text.replaceAll(/\[\[fill: [^\]]*\]\]/) {
+        "filled${++blank}"
+      }
+    }
     new File(kitchen, 'README.md').text = '# Project\n\n[Docs](docs/README.md)\n'
     page(kitchen, 'docs/glossary.md', filled(new File(TEMPLATES, 'glossary.template.md').text))
     KINDS.each { kind ->

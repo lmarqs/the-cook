@@ -24,7 +24,7 @@ class DocsSeedCookTest {
     def map = new File(kitchen, 'docs/README.md').text
     assert map.startsWith(new File(SKILL, 'templates/map.template.md').text)
     assert map.contains('<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/kinds -->\n' +
-        '<!-- io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills -->\n')
+    '<!-- io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills -->\n')
     KINDS.each { assert map.contains("`${it}/`") }
     assert map.contains('`sh .agents/skills/docs-layout/scripts/check.sh`')
     ['docs/adr', 'docs/api', 'docs/features', 'docs/runbooks', 'docs/ux', 'docs/glossary.md'].each {
@@ -38,7 +38,7 @@ class DocsSeedCookTest {
     cook(kitchen, SEED, [skills: ['.agents/skills'], kinds: ['runbooks', 'adr']]).commit()
     def map = new File(kitchen, 'docs/README.md')
     assert map.text.contains('<!-- io.github.lmarqs.cookbook:docs#seed --kinds=adr --kinds=runbooks ' +
-        '--skills=.agents/skills -->')
+    '--skills=.agents/skills -->')
     assert map.text.contains('`adr/`') && map.text.contains('`runbooks/`') && !map.text.contains('`ux/`')
 
     map.text = '# Our docs\n\nStart here.\n' + map.text.substring(map.text.indexOf('<!-- cook:begin'))
@@ -95,7 +95,8 @@ class DocsSeedCookTest {
 
     assert agents.text == '# Agents\n' + section(line)
     assert readme.text == '# Project\n' + section(line)
-    assert section(line).readLines().every { it.length() <= 120 }
+    def lines = section(line).readLines()
+    assert lines.every { it.length() <= 120 }
     assert cook(kitchen, SEED, both).actions == [:]
 
     cook(kitchen, SEED, [skills: ['.agents/skills'], instructions: ['AGENTS.md']]).commit()
@@ -133,6 +134,43 @@ class DocsSeedCookTest {
     ['## API', '## Consumes', '## Produces', '## Connections', '## Re-cooking', '## Traps']
     assert texts.help.contains('Never touches')
     assert texts.yieldText
+  }
+
+  @Test void theSkillLinksOnlyFilesItShips() {
+    def pages = [new File(SKILL, 'SKILL.md')] + new File(SKILL, 'references').listFiles().toList()
+    pages.each { page ->
+      boolean fenced = false
+      page.readLines().each { line ->
+        if (line.trim().startsWith('```')) {
+          fenced = !fenced
+        }
+
+        if (!fenced) {
+          (line.replaceAll(/`[^`]*`/, '') =~ /\]\(([^)#]+)(#[^)]*)?\)/).each { all, target, anchor ->
+            assert new File(page.parentFile, target).canonicalPath.startsWith(SKILL.canonicalPath + '/')
+            assert new File(page.parentFile, target).exists(): "${page.name} links ${target}"
+          }
+        }
+      }
+    }
+  }
+
+  @Test void theSkillNamesEveryArgumentAndMeetsTheSkillSpec() {
+    def text = new File(SKILL, 'SKILL.md').text
+    def front = text.split('---\n')[1]
+    def frontLines = front.readLines()
+    def description = frontLines.find { it.startsWith('description: ') }.substring(13)
+
+    ['`<kind> <title>`', '`term <term>`', '`review`', '`review --fix`', '`adopt`'].each {
+      assert text.contains("| ${it} |")
+    }
+    assert front.readLines().contains('name: docs-layout')
+    assert description.length() <= 1024
+    assert text.readLines().size() < 500
+    def pageTemplates = new File(SKILL, 'templates').listFiles()*.name.findAll {
+      !it.startsWith('guide-') && it != 'map.template.md'
+    }
+    pageTemplates.each { assert text.contains(it) }
   }
 
   private File kitchen() {
