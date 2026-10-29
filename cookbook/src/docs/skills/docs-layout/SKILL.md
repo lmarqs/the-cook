@@ -96,9 +96,8 @@ to the page that owns them, remove the file and its guide line, and point its li
 
 ## Record what you learn
 
-During any task, a fact learned about the system goes to its owner in the same change: a behavior to `features/`, a
-reason to `adrs/`, a fix for something that fires to `runbooks/`. Agent memory files hold traps in how agents work in
-this repository; facts about the system live in `docs/`, where people read them too.
+During any task, a fact learned about the system goes to its owner in the same change, where people and every agent
+read it: a behavior to `features/`, a reason to `adrs/`, a fix for something that fires to `runbooks/`.
 
 ## Review
 
