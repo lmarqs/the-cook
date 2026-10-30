@@ -31,7 +31,6 @@ exclude:
   - infra/src
   - cookbook/test
   - cookbook/src/agents/skills/agents-layout/templates
-  - cookbook/src/beads/templates
   - cookbook/src/git/templates
   - site/preview
   - site/prepare

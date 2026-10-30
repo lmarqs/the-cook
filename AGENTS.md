@@ -1,6 +1,6 @@
 # the-cook
 
-This repository builds the-cook, a recipe driven configuration tool, and the `agents`, `git`, `beads` and `ralph`
+This repository builds the-cook, a recipe driven configuration tool, and the `agents`, `git`, `docs` and `ralph`
 cookbook artifacts it cooks. The [README](README.md#objective) says who it is for, and
 [Quick start](README.md#quick-start) how to try it.
 

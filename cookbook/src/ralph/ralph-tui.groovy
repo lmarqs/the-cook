@@ -152,9 +152,8 @@ appended at the file's end, and stays where the team moves it |
 | Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
 
 `io.github.lmarqs.cookbook:git#worktrees` ignores and documents `.worktrees/`; cook the two in either order.
-`io.github.lmarqs.cookbook:beads#tracker` gives the Beads side; cook the two in either order. With
-`--worker-role=<harness>:<role>`, cook `io.github.lmarqs.cookbook:agents#connect --harness=<harness>` first, or before
-this recipe in the same invocation, with the role defined in the policy.
+With `--worker-role=<harness>:<role>`, cook `io.github.lmarqs.cookbook:agents#connect --harness=<harness>` first,
+or before this recipe in the same invocation, with the role defined in the policy.
 
 ## Run-time effects
 

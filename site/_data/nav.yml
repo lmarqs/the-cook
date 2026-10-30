@@ -35,8 +35,6 @@
       match: cookbook/src/agents/
     - title: git
       path: cookbook/src/git/README.md
-    - title: beads
-      path: cookbook/src/beads/README.md
     - title: ralph
       path: cookbook/src/ralph/README.md
 - section: Inside Cook

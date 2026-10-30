@@ -1,7 +1,7 @@
 # Cookbook
 
-This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `git`, `beads`, `docs`,
-`ralph` and `hello` artifacts; the other directories are a design sketch in Groovy that has not been compiled.
+This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `git`, `docs`,
+`ralph` and `hello` artifacts.
 
 ## Units
 
@@ -12,7 +12,7 @@ Models may depend on other models for their types and on ordinary libraries. Rec
 A cookbook releases as jars in a Maven-layout repository, one jar with a POM per directory under `src/`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
 everything a reader needs without the source checkout. This cookbook's `build.gradle` writes them with plain Gradle. Each release of this repository publishes the `agents`,
-`git`, `beads` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
+`git` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
 with no `cook.toml`; the other directories are not published.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
@@ -51,12 +51,12 @@ in its own classloader. A recipe never composes another recipe.
 
 ## Names
 
-A model's package is its cookbook's group plus its directory name: `cookbook/src/docker/Compose.groovy` declares
-`io.github.lmarqs.cookbook.docker.Compose` in the artifact `io.github.lmarqs.cookbook:docker`. A recipe imports every type it injects, so
-its imports are its visible dependency list and `@ingredient(Compose)` resolves through them.
+A model's package is its cookbook's group plus its directory name: `cookbook/src/ralph/RalphTui.groovy` declares
+`io.github.lmarqs.cookbook.ralph.RalphTui` in the artifact `io.github.lmarqs.cookbook:ralph`. A recipe imports every type it injects, so
+its imports are its visible dependency list and `@ingredient(RalphTui)` resolves through them.
 
 Recipe names are noun phrases naming the state the destination gets, without repeating the directory's topic:
-`node/project.groovy`, `docker/base-image.groovy` and `agents/connect.groovy`. A recipe that configures one of
+`git/worktrees.groovy` and `agents/connect.groovy`. A recipe that configures one of
 several programs in its directory names the program first: `ralph/ralph-tui.groovy`.
 
 Params are kebab-case and name the value's role in what the recipe sets up, as the recipe sees it: `--worktree-setup`,
@@ -423,9 +423,8 @@ tracker's state, and the rest of each `--instructions` file.
 | Delivering the run branch | The session: the launcher never pushes, merges or opens a pull request |
 
 `io.github.lmarqs.cookbook:git#worktrees` ignores and documents `.worktrees/`; cook the two in either order.
-`io.github.lmarqs.cookbook:beads#tracker` gives the Beads side; cook the two in either order. With
-`--worker-role=<harness>:<role>`, cook `io.github.lmarqs.cookbook:agents#connect --harness=<harness>` first, or before
-this recipe in the same invocation, with the role defined in the policy.
+With `--worker-role=<harness>:<role>`, cook `io.github.lmarqs.cookbook:agents#connect --harness=<harness>` first,
+or before this recipe in the same invocation, with the role defined in the policy.
 
 ## Run-time effects
 
