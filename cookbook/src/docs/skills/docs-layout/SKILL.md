@@ -40,7 +40,7 @@ start of every task here: this skill says how to work, the map says what goes wh
 
    | Kind | Template | File name |
    | --- | --- | --- |
-   | `adrs` | `adr.template.md` | `NNNN-<slug>.md`, the highest number in `docs/adrs/` plus one, four digits |
+   | `adrs` | `adr.template.md` | `NNNN-<slug>.md`, one past the highest number ever used, four digits |
    | `features` | `feature.template.md` | `<slug>.md` |
    | `api` | `api.template.md` | `<slug>.md`, after the interface |
    | `ux` | `standard.template.md` | `<slug>.md`, after the subject |
