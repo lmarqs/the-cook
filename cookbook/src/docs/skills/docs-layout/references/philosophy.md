@@ -22,5 +22,5 @@ in a row argued the same trade-off from the start.
 ### Fewer features, each finished
 
 Rules out shipping a feature without its page, its runbook and its tests. Applied in
-[a shared session store](adrs/0007-keep-sessions-in-a-shared-store.md).
+[a shared session store](adr/0007-keep-sessions-in-a-shared-store.md).
 ```

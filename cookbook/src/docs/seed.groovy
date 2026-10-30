@@ -8,7 +8,7 @@ skill that writes and reviews pages.
 ```sh
 ./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills
 # Offering two kinds only
-./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills --kinds=adrs --kinds=runbooks
+./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills --kinds=adr --kinds=runbooks
 # For Claude Code and Codex without a shared skills directory
 ./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills --skills-root=.claude/skills
 ```
@@ -21,11 +21,11 @@ other recipes:
 | --- | --- |
 | `docs/README.md` | The map: each kind offered, what it holds, its criteria, where a fact goes, and how a team \
 declares a kind of its own |
-| `docs/<kind>/` | The pages of one kind, `adrs`, `api`, `features`, `runbooks` or `ux`, \
+| `docs/<kind>/` | The pages of one kind, `adr`, `api`, `features`, `runbooks` or `ux`, \
 with a guide `README.md` listing them; created with the kind's first page |
 | `docs/architecture.md`, `docs/philosophy.md` | The kinds of one page: how the parts fit together, and the tenets \
 that guide decisions; created with their content |
-| `docs/adrs/NNNN-<slug>.md` | One decision record per file, numbered in sequence |
+| `docs/adr/NNNN-<slug>.md` | One decision record per file, numbered in sequence |
 | `docs/glossary.md` | The terms, with the synonyms the team rejected; created with the first term |
 
 ## Produces
@@ -60,13 +60,13 @@ section; the pages stay. An upgrade updates the section and the skill; the map's
 introduction is never rewritten.
 ''')
 @yield('''
-Write the first page with the skill, such as `/docs-layout adrs <title>` in Claude Code.
+Write the first page with the skill, such as `/docs-layout adr <title>` in Claude Code.
 ''')
 import io.github.lmarqs.cookbook.docs.Docs
 
 @param(value = ['kinds'], many = true, sorted = true,
-    default = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
-    choices = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
+    default = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
+    choices = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
     doc = 'A kind of page the map offers; all seven by default')
     String[] kinds
 @param(value = ['skills-root'], many = true, sorted = true, path = true,

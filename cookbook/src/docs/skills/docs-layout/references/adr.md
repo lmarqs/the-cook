@@ -16,7 +16,7 @@ much knowledge as the choice.
 
 ## Example, in the made-up project `acme`
 
-`docs/adrs/0007-keep-sessions-in-a-shared-store.md`:
+`docs/adr/0007-keep-sessions-in-a-shared-store.md`:
 
 ```markdown
 # Keep sessions in a shared store

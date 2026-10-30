@@ -14,7 +14,7 @@ start of every task here: this skill says how to work, the map says what goes wh
 
 | Arguments | Do |
 | --- | --- |
-| `<kind> [title]` | [Write a page](#write-a-page) of that kind, such as `adrs`, `features` or `architecture` |
+| `<kind> [title]` | [Write a page](#write-a-page) of that kind, such as `adr`, `features` or `architecture` |
 | `term <term>` | [Add a term](#add-a-term) to the glossary |
 | `kind <name>` | [Declare a kind](#declare-a-kind) the map does not offer |
 | `review` | [Review](#review) the tree and report; files stay as they are |
@@ -40,7 +40,7 @@ start of every task here: this skill says how to work, the map says what goes wh
 
    | Kind | Template | File name |
    | --- | --- | --- |
-   | `adrs` | `adr.template.md` | `NNNN-<slug>.md`, one past the highest number ever used, four digits |
+   | `adr` | `adr.template.md` | `NNNN-<slug>.md`, one past the highest number ever used, four digits |
    | `features` | `feature.template.md` | `<slug>.md` |
    | `api` | `api.template.md` | `<slug>.md`, after the interface |
    | `ux` | `standard.template.md` | `<slug>.md`, after the subject |
@@ -50,7 +50,7 @@ start of every task here: this skill says how to work, the map says what goes wh
    | A kind of the team's own | None | As its declaration in the map says |
 
    Write the lead last, from the body: it says what the body says. The slug is the title in lowercase ASCII words
-   joined by `-`. Each kind's reference holds its finer points and a worked example: [adrs](references/adrs.md),
+   joined by `-`. Each kind's reference holds its finer points and a worked example: [adr](references/adr.md),
    [features](references/features.md), [api](references/api.md), [ux](references/ux.md),
    [runbooks](references/runbooks.md), [architecture](references/architecture.md),
    [philosophy](references/philosophy.md).

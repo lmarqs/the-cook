@@ -2,7 +2,7 @@
 
 The page shows the shape no single file shows: which parts the system has, what each is responsible for, and how they
 depend on each other. It takes arc42's building block and runtime views; arc42's decisions and glossary already live
-in `adrs/` and `glossary.md`.
+in `adr/` and `glossary.md`.
 
 - A part is named as the repository names it, with the directory it lives in, so a reader goes from the page to the
   code.
@@ -29,6 +29,6 @@ week finding where an order is settled.
 ## How they connect
 
 The web calls the API over HTTP and keeps sessions in Redis, which every web replica reads
-([a shared session store](adrs/0007-keep-sessions-in-a-shared-store.md)). The API writes orders to Postgres and puts
+([a shared session store](adr/0007-keep-sessions-in-a-shared-store.md)). The API writes orders to Postgres and puts
 jobs on a Redis queue, which the worker reads.
 ```

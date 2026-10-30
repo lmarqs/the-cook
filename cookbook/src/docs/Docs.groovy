@@ -35,7 +35,7 @@ class Docs {
    * The kinds of page the map can offer: each a directory under `docs/`, except `architecture` and `philosophy`, one
    * page each.
    */
-  static final List<String> KINDS = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
+  static final List<String> KINDS = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
 
   /** The name of the skill, the directory it is written to under each skills root. */
   static final String SKILL = 'docs-layout'
