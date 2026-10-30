@@ -14,6 +14,9 @@ the way the team would take it.
 ```markdown
 # Philosophy
 
+For whoever weighs two good options that no record settles. It holds what the team favors. Written after two reviews
+in a row argued the same trade-off from the start.
+
 ## Tenets
 
 ### Fewer features, each finished

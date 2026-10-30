@@ -1,6 +1,7 @@
 # Architecture
 
-[[fill: what the system is, and where its boundary is]]
+[[fill: the lead: who reads this page and when; what the system is, and where its boundary is; what moved the
+team to write it]]
 
 ## Parts
 

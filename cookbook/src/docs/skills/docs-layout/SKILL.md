@@ -29,9 +29,11 @@ start of every task here: this skill says how to work, the map says what goes wh
    that owns it instead.
 2. Search `docs/` for the subject, by its glossary term and its synonyms. When the subject already has an owner, edit
    that page.
-3. Gather the facts from their sources: the code, the contract file, the version history, the issue, the person. The
-   page states what is true now and what the repository shows nowhere else, and links the source for the rest.
-4. Ask the person for what only they know, such as the options weighed for a decision or the owner of a runbook.
+3. Gather the facts from their sources: the code, the contract file, the version history, the issue and its review,
+   the person. The page states what is true now and what the repository shows nowhere else, and links the source for
+   the rest. What happened, as an issue thread or a review tells it, goes on the page: a tracker can move or close.
+4. Ask the person for what only they know: first what was going wrong or could not be done, what it cost and what was
+   tried; then what the kind needs, such as the options weighed for a decision or the owner of a runbook.
 5. For a kind of many pages, when `docs/<kind>/README.md` is absent, create it with the kind's name in the map as its
    title, such as `# Decisions`.
 6. Write the page from the kind's template, filling every `[[fill: ...]]` blank:
@@ -47,9 +49,10 @@ start of every task here: this skill says how to work, the map says what goes wh
    | `philosophy` | `philosophy.template.md` | `docs/philosophy.md`, the kind's one page |
    | A kind of the team's own | None | As its declaration in the map says |
 
-   The slug is the title in lowercase ASCII words joined by `-`. Each kind's reference holds its finer points and a
-   worked example: [adrs](references/adrs.md), [features](references/features.md), [api](references/api.md),
-   [ux](references/ux.md), [runbooks](references/runbooks.md), [architecture](references/architecture.md),
+   Write the lead last, from the body: it says what the body says. The slug is the title in lowercase ASCII words
+   joined by `-`. Each kind's reference holds its finer points and a worked example: [adrs](references/adrs.md),
+   [features](references/features.md), [api](references/api.md), [ux](references/ux.md),
+   [runbooks](references/runbooks.md), [architecture](references/architecture.md),
    [philosophy](references/philosophy.md).
 7. For a kind of many pages, add the page to its guide's list: `- [Title](file.md): one sentence on it.`
 8. Connect it: where another page states this page's fact, replace the statement with a link. A feature, interface
@@ -90,12 +93,17 @@ Apply every rule below to every page under `docs/`:
 - Each page has its kind's sections, in order; each decision record is named `NNNN-<slug>.md`, its number used once.
 - No page uses a synonym the glossary rejects.
 - Each fact is stated on its owner; other pages link it.
+- Each page opens with its lead: who reads it and when, what it says, why it exists. A lead that restates the title
+  is a finding.
+- Each body says what its lead says, no more and no less.
+- Each reason tells what happened before its conclusion; a `Context` or a lead made of conclusions alone is a finding.
 - Each page states what is true now: spot-check its claims against the code and the contract.
-- A feature page describes; its reasons are in linked decision records.
+- A feature page describes; its lead says why the unit exists, and it links the decision records behind it.
 - Each decision record passes the map's bar; one that fails it is a candidate for deletion.
-- `architecture.md` states no reasons and links the record behind each structural choice; each tenet in
+- `architecture.md` links the record behind each structural choice and states no reasons for them; each tenet in
   `philosophy.md` rules something out.
-- Each decision record gives every option with why it lost, and why the choice won.
+- Each decision record gives every option with why it lost, and why the choice won; a product named in it carries
+  why that one.
 - Each rule in a UX standard carries its reason or links the record that holds it.
 - Each runbook step shows the output that tells the operator it worked.
 - Front matter holds only keys a program reads.
@@ -106,7 +114,8 @@ Report each finding: what, where, and the step that fixes it.
 
 1. Run the review and list every finding before changing a file.
 2. Map each finding to a fix, or to a question for the person when it needs their decision, such as which page owns
-   a fact, whether a decision was reversed outright, or whether a record that fails the bar is deleted.
+   a fact, what happened when no source tells it, whether a decision was reversed outright, or whether a record that
+   fails the bar is deleted.
 3. Make the fixes.
 4. Report what changed, and each finding that remains with its reason.
 

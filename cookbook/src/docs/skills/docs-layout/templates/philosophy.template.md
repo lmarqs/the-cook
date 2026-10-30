@@ -1,5 +1,7 @@
 # Philosophy
 
+[[fill: the lead: who reads this page and when; what it holds; what moved the team to write its tenets down]]
+
 ## Tenets
 
 ### [[fill: the tenet, in one sentence]]

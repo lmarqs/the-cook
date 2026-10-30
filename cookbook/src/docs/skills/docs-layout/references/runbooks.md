@@ -12,7 +12,8 @@ Each time the trigger fires, the responder adds what they learned: a step that w
 ```markdown
 # Redis down
 
-Brings the session store back. While it is down, every user is logged out. Owner: platform team.
+For the on-call engineer when the Redis alert fires. Brings the session store back; while it is down, every user is
+logged out. Written after the March outage, when finding the restart took 40 minutes. Owner: platform team.
 
 ## Before you begin
 

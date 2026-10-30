@@ -16,8 +16,9 @@ in `adrs/` and `glossary.md`.
 ```markdown
 # Architecture
 
-`acme` is a web shop: a browser app, an API and a worker, over one Postgres database. Payment and mail are external
-services.
+For whoever joins the team or changes how the parts connect. `acme` is a web shop: a browser app, an API and a
+worker, over one Postgres database. Payment and mail are external services. Written when newcomers spent their first
+week finding where an order is settled.
 
 ## Parts
 
