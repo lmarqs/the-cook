@@ -1,7 +1,7 @@
 ---
 type: regex
 target: diff
-pattern: "^--- /dev/null\\n\\+\\+\\+ b/docs/adrs/(?!0001-)\\d{4}-"
+pattern: "^--- /dev/null\\n\\+\\+\\+ b/docs/adr/(?!0001-)\\d{4}-"
 flags: m
 expect: no_match
 ---

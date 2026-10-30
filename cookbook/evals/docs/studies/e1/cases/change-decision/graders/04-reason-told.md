@@ -1,6 +1,6 @@
 ---
 type: judge
-show: ["docs/adrs/0001-*.md"]
+show: ["docs/adr/0001-*.md"]
 reference: >-
   The record tells what happened before it concludes: the sessions table kept every login since 2023 because nothing
   deleted an expired session, it reached 2.1 million rows, and on a Saturday in August the database disk filled up

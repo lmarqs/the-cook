@@ -21,4 +21,4 @@ the counts were computed.
 
 ## Shaped by
 
-- [Cache the dashboard counts in memory](../adrs/0003-cache-the-dashboard-counts-in-memory.md)
+- [Cache the dashboard counts in memory](../adr/0003-cache-the-dashboard-counts-in-memory.md)

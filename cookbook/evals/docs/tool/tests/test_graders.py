@@ -48,11 +48,11 @@ def make_run(repo: Path, changed: list[str], steps=None, last_message="", case="
 
 
 def write_adr(repo: Path, name: str, text: str, listed: bool = True) -> str:
-    (repo / "docs" / "adrs" / name).write_text(text)
+    (repo / "docs" / "adr" / name).write_text(text)
     if listed:
-        guide = repo / "docs" / "adrs" / "README.md"
+        guide = repo / "docs" / "adr" / "README.md"
         guide.write_text(guide.read_text() + f"- [Run background jobs on Postgres]({name}): jobs live in Postgres.\n")
-    return f"docs/adrs/{name}"
+    return f"docs/adr/{name}"
 
 
 def structure(repo: Path, page: str) -> tuple[bool, str]:
@@ -125,7 +125,7 @@ def test_a_page_outside_the_declared_kinds_is_found(repo):
 def test_lead_present_catches_each_missing_or_empty_lead(repo, text, finding):
     page = write_adr(repo, "0002-run-jobs.md", text)
 
-    passed, evidence = graders.lead_present(make_run(repo, [page]), {"glob": "docs/adrs/*.md"})
+    passed, evidence = graders.lead_present(make_run(repo, [page]), {"glob": "docs/adr/*.md"})
 
     assert passed == (finding is None)
     if finding:
@@ -144,12 +144,12 @@ def test_read_before_edit_needs_the_read_first(repo):
 
 def test_regex_and_file_exists_look_only_at_changed_files(repo):
     page = write_adr(repo, "0002-run-jobs.md", CLEAN_ADR)
-    options = {"target": "docs/adrs/[0-9]*.md", "pattern": "## Decision\\s.*procrastinate", "flags": "si"}
+    options = {"target": "docs/adr/[0-9]*.md", "pattern": "## Decision\\s.*procrastinate", "flags": "si"}
 
     assert graders.regex(make_run(repo, [page]), options)[0]
     assert not graders.regex(make_run(repo, []), options)[0]
-    assert graders.file_exists(make_run(repo, [page]), {"glob": "docs/adrs/[0-9]*.md"})[0]
-    assert not graders.file_exists(make_run(repo, []), {"glob": "docs/adrs/[0-9]*.md"})[0]
+    assert graders.file_exists(make_run(repo, [page]), {"glob": "docs/adr/[0-9]*.md"})[0]
+    assert not graders.file_exists(make_run(repo, []), {"glob": "docs/adr/[0-9]*.md"})[0]
 
 
 def test_tests_pass_fails_the_fixture_and_passes_a_correct_retry(repo):

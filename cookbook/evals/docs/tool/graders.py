@@ -12,10 +12,10 @@ from tool import sandbox, traces
 from tool.arms import COOKED
 from tool.cases import Case, Grader
 
-DIR_KINDS = ["adrs", "api", "features", "runbooks", "ux"]
+DIR_KINDS = ["adr", "api", "features", "runbooks", "ux"]
 PAGE_KINDS = ["architecture.md", "philosophy.md", "glossary.md", "README.md"]
 SECTIONS = {
-    "adrs": ["Context", "Options", "Decision", "Consequences"],
+    "adr": ["Context", "Options", "Decision", "Consequences"],
     "runbooks": ["Before you begin", "Steps", "If it fails"],
 }
 ADR_NAME = re.compile(r"^\d{4}-[a-z0-9]+(-[a-z0-9]+)*\.md$")
@@ -162,10 +162,10 @@ def structure_findings(repo: Path, page: str) -> list[str]:
         found = [h for h in headings(text, 2) if h in SECTIONS[kind]]
         if found != SECTIONS[kind]:
             findings.append(f"{page}: sections {found}, expected {SECTIONS[kind]}")
-    if kind == "adrs" and relative.name != "README.md":
+    if kind == "adr" and relative.name != "README.md":
         if not ADR_NAME.match(relative.name):
             findings.append(f"{page}: not named NNNN-<slug>.md")
-        numbers = [p.name[:4] for p in (repo / "docs" / "adrs").glob("[0-9][0-9][0-9][0-9]-*.md")]
+        numbers = [p.name[:4] for p in (repo / "docs" / "adr").glob("[0-9][0-9][0-9][0-9]-*.md")]
         if numbers.count(relative.name[:4]) > 1:
             findings.append(f"{page}: number {relative.name[:4]} is used twice")
     if relative.name != "glossary.md":

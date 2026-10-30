@@ -1,7 +1,7 @@
 ---
 type: regex
 target: diff
-pattern: "^\\+\\+\\+ b/docs/adrs/"
+pattern: "^\\+\\+\\+ b/docs/adr/"
 flags: m
 expect: no_match
 ---

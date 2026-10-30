@@ -12,6 +12,6 @@ where a payment is captured.
 
 ## How they connect
 
-The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
 and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
 `larder/capture.py`.

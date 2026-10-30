@@ -24,4 +24,4 @@ when she reviews the week's new items.
 
 ## Shaped by
 
-- [Keep item photos on the web servers' disk](../adrs/0005-keep-item-photos-on-the-web-servers-disk.md)
+- [Keep item photos on the web servers' disk](../adr/0005-keep-item-photos-on-the-web-servers-disk.md)

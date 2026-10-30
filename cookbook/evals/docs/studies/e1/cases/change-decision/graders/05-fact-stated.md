@@ -1,6 +1,6 @@
 ---
 type: regex
-target: docs/adrs/0001-*.md
+target: docs/adr/0001-*.md
 pattern: "## Options\\s.*Postgres.*## Decision\\s.*cookie"
 flags: si
 ---

@@ -43,7 +43,7 @@ def test_e1_arms_differ_only_by_the_skill_or_the_criteria(built):
     removed = changed(skill, built[("e1", "no-skill")])
     assert removed and all(p.split("/")[2] == "docs-layout" for p in removed)
     assert changed(skill, built[("e1", "no-criteria")]) == {"docs/README.md"}
-    assert "## Decisions, `adrs/`" not in built[("e1", "no-criteria")]["docs/README.md"]
+    assert "## Decisions, `adr/`" not in built[("e1", "no-criteria")]["docs/README.md"]
     assert changed(skill, built[("e1", "bare")]) == removed | {"docs/README.md"}
     assert built[("e1", "bare")]["docs/README.md"] == built[("e1", "no-criteria")]["docs/README.md"]
 
@@ -101,7 +101,7 @@ def test_the_haystack_adds_its_pages_and_lists_them_beside_the_cases_own(stacked
     assert (repo / "docs" / "features" / "volunteer-rota.md").exists()
     assert "](reminders.md)" in guide and "](volunteer-rota.md)" in guide
     assert guide.count("](volunteer-rota.md)") == 1
-    for kind in ("features", "runbooks", "adrs"):
+    for kind in ("features", "runbooks", "adr"):
         listed = (repo / "docs" / kind / "README.md").read_text()
         for page in (repo / "docs" / kind).glob("*.md"):
             assert page.name == "README.md" or f"]({page.name})" in listed, f"{kind}/{page.name} is listed"

@@ -7,7 +7,7 @@ because the steps lived in Tom's head. Owner: Tom (ops).
 
 ## Before you begin
 
-- Access to the second host, where [the nightly backup](../adrs/0006-back-up-nightly-to-a-second-host.md) is kept
+- Access to the second host, where [the nightly backup](../adr/0006-back-up-nightly-to-a-second-host.md) is kept
   in `/srv/backups/larder/`.
 - Ssh access to the database server, and Tom or Ana at hand: only they hold the database superuser password.
 

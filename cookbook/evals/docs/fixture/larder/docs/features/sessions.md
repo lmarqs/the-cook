@@ -13,8 +13,8 @@ minutes, the shortest that ended those tickets.
 
 ## Storage
 
-Sessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).
+Sessions live in Postgres ([keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)).
 
 ## Shaped by
 
-- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)
+- [Keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)
