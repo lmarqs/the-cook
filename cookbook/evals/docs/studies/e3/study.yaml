@@ -1,0 +1,8 @@
+# E3, the lead: does a page's lead make agents pick the right page and apply its reason?
+arms: [leads, no-leads, false-leads]
+harnesses:
+  claude: {model: claude-opus-5-5}
+  codex: {model: gpt-6.1-sol, effort: medium}
+runs: 1
+margins: {success: 0.10, tokens: 0.15}
+outcome: [01-raises-the-incident]

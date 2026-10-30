@@ -1,0 +1,6 @@
+results/**/repo/
+results/**/eval/
+results/**/events.jsonl
+results/**/stderr.txt
+__pycache__/
+.pytest_cache/

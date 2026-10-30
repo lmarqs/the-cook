@@ -1,0 +1,6 @@
+owning_page: docs/features/sessions.md
+false_leads:
+  docs/features/sessions.md: >-
+    For whoever changes login or the session expiry. A session keeps a member logged in until 30 minutes pass without
+    a request. The 30 minutes are a placeholder: the 2024 security review asked for 10, and nothing depends on the
+    current value.

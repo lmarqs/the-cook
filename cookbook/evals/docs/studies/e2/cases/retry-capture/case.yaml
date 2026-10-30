@@ -1,0 +1,8 @@
+owning_page: docs/features/payments.md
+facts:
+  - id: capture-key
+    copies: [docs/architecture.md, docs/features/checkout.md, docs/runbooks/gateway-timeouts.md]
+    stale_at: docs/runbooks/gateway-timeouts.md
+    stale: >-
+      Each attempt to capture a pantry order draws a fresh idempotency key: the gateway rejects a key it has seen
+      before with a duplicate error, so a retry must not reuse the first attempt's key.

@@ -1,0 +1,134 @@
+"""Runs a study's jobs: one fixture copy and one headless agent per (case, arm, harness, run)."""
+
+import json
+import random
+import subprocess
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+
+from tool import fixtures, sandbox, traces
+from tool.cases import RESULTS, Case, Study
+
+
+@dataclass(frozen=True)
+class Job:
+    case: str
+    arm: str
+    harness: str
+    run: int
+
+    @property
+    def id(self) -> str:
+        return f"{self.case}--{self.arm}--{self.harness}--r{self.run}"
+
+
+def agent_command(harness: str, config: dict, case: Case) -> list[str]:
+    found = sandbox.binaries()
+    if harness == "claude":
+        return [
+            str(found["claude"]), "-p", "--output-format", "stream-json", "--verbose",
+            "--permission-mode", "acceptEdits", "--allowedTools", "Bash", "--permission-prompts", "none",
+            "--strict-mcp-config", "--mcp-config", f"{sandbox.EVAL_DIR}/mcp.json", "--no-session-persistence",
+            "--model", config["model"], "--max-turns", str(case.max_turns),
+        ]
+    if harness == "codex":
+        command = [
+            str(found["codex"]), "exec", "--json", "--skip-git-repo-check", "-s", "workspace-write",
+            "-c", "approval_policy=never", "--ephemeral", "-C", "/work", "-m", config["model"],
+        ]
+        if config.get("effort"):
+            command += ["-c", f"model_reasoning_effort={config['effort']}"]
+        return command + ["-"]
+    raise ValueError(harness)
+
+
+def versions() -> dict:
+    found = sandbox.binaries()
+    out = {}
+    for name in ("claude", "codex"):
+        result = subprocess.run([str(found[name]), "--version"], capture_output=True, text=True)
+        out[name] = result.stdout.strip()
+    return out
+
+
+def jobs(study: Study, cases: list[str] | None, arms: list[str] | None, harnesses: list[str] | None,
+         runs: int, seed: int) -> list[Job]:
+    selected = [
+        Job(case.id, arm, harness, n)
+        for case in study.cases if not cases or case.id in cases
+        for arm in study.arms if not arms or arm in arms
+        for harness in study.harnesses if not harnesses or harness in harnesses
+        for n in range(1, runs + 1)
+    ]
+    random.Random(seed).shuffle(selected)
+    return selected
+
+
+def run_job(study: Study, job: Job, batch_dir: Path) -> dict:
+    case = study.case(job.case)
+    directory = batch_dir / "runs" / job.id
+    directory.mkdir(parents=True, exist_ok=True)
+    repo = fixtures.build(case, job.arm, directory / "repo")
+    argv = sandbox.command(repo, agent_command(job.harness, study.harnesses[job.harness], case),
+                           eval_dir=batch_dir / "eval")
+    started = datetime.now(timezone.utc)
+    clock = time.monotonic()
+    timed_out = False
+    with open(directory / "events.jsonl", "w") as events, open(directory / "stderr.txt", "w") as errors:
+        process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=events, stderr=errors, text=True)
+        try:
+            process.communicate(case.prompt, timeout=case.timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+            timed_out = True
+    duration = time.monotonic() - clock
+    lines = [line for line in (directory / "events.jsonl").read_text().splitlines() if line.startswith("{")]
+    record = getattr(traces, job.harness)(lines)
+    fixtures.git(repo, "add", "-A")
+    changed = [line for line in fixtures.git(repo, "diff", "--cached", "--name-only").splitlines() if line]
+    (directory / "changes.patch").write_text(fixtures.git(repo, "diff", "--cached"))
+    result = {
+        "study": study.id, **asdict(job), "id": job.id,
+        "model": study.harnesses[job.harness]["model"],
+        "started": started.isoformat(), "duration_s": round(duration, 1),
+        "exit_code": process.returncode, "timed_out": timed_out,
+        "files_changed": changed, **record,
+    }
+    (directory / "run.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result
+
+
+def run(study: Study, batch: str, selected: list[Job], parallel: int, max_cost_usd: float | None, seed: int) -> Path:
+    batch_dir = RESULTS / study.id / batch
+    (batch_dir / "eval").mkdir(parents=True, exist_ok=True)
+    (batch_dir / "eval" / "mcp.json").write_text('{"mcpServers": {}}\n')
+    (batch_dir / "batch.json").write_text(json.dumps({
+        "study": study.id, "batch": batch, "seed": seed, "started": datetime.now(timezone.utc).isoformat(),
+        "versions": versions(), "harnesses": study.harnesses, "jobs": [j.id for j in selected],
+    }, indent=2) + "\n")
+    spent = {"usd": 0.0}
+    lock = threading.Lock()
+
+    def one(job: Job) -> None:
+        with lock:
+            if max_cost_usd is not None and job.harness == "claude" and spent["usd"] >= max_cost_usd:
+                print(f"skip {job.id}: the batch reached ${max_cost_usd}", flush=True)
+                return
+        try:
+            result = run_job(study, job, batch_dir)
+        except Exception as error:  # a failed job is reported and the batch goes on
+            print(f"fail {job.id}: {error}", flush=True)
+            return
+        with lock:
+            spent["usd"] += result.get("cost_usd") or 0.0
+            print(f"done {job.id}: {result['duration_s']}s, ${result.get('cost_usd') or 0:.3f}, "
+                  f"{len(result['files_changed'])} files, error={result['error']}", flush=True)
+
+    with ThreadPoolExecutor(max_workers=parallel) as pool:
+        list(pool.map(one, selected))
+    return batch_dir

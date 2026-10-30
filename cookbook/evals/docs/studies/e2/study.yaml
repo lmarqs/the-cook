@@ -1,0 +1,8 @@
+# E2, one owner per fact: does one owning page make agents apply the deciding fact?
+arms: [owned, scattered]
+harnesses:
+  claude: {model: claude-opus-5-5}
+  codex: {model: gpt-6.1-sol, effort: medium}
+runs: 1
+margins: {success: 0.10, tokens: 0.15}
+outcome: [01-tests]
