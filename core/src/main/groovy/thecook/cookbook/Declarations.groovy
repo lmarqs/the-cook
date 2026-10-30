@@ -129,13 +129,15 @@ final class Declarations {
       case Files:
         String mode = mode(member, ((Files) annotation).mode())
         entries(member, value).each { name, content ->
-          declared.owned << new Declaration(member, new FileTarget("${base}/${name}", mode), content.toString())
+          def target = new FileTarget(join(base, name.toString()), mode)
+          declared.owned << new Declaration(member, target, content.toString())
         }
         break
       case Links:
         String instead = ((Links) annotation).instead() ?: null
         entries(member, value).each { name, target ->
-          declared.owned << new Declaration(member, new LinkTarget("${base}/${name}", instead), target.toString())
+          def link = new LinkTarget(join(base, name.toString()), instead)
+          declared.owned << new Declaration(member, link, target.toString())
         }
         break
       default:

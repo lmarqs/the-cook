@@ -319,6 +319,33 @@ pages.published = true
     assert new File(kitchen, 'docs/sub/b.md').text == 'second\n'
   }
 
+  @Test void filesAndLinksUnderTheRootPathAreNamedFromTheRepositoryRoot() {
+    def kitchen = kitchen()
+    recipe(kitchen, 'recipes/RootModel.groovy', """package acme.root
+
+@Ingredient
+class Root {
+  boolean written
+  @Files(path = '.')
+  Map<String, String> files() { written ? ['one/a.md': 'first\\n', 'two/a.md': 'second\\n'] : null }
+
+  @Links(path = '.')
+  Map<String, String> links() { written ? ['three': 'one'] : null }
+}
+""")
+    recipe(kitchen, 'recipes/root.groovy', """@help('Writes under the root.')
+import acme.root.Root
+@ingredient(Root) def root
+root.written = true
+""")
+
+    cook(kitchen, 'recipes/root.groovy', [:]).commit()
+
+    assert new File(kitchen, 'one/a.md').text == 'first\n'
+    assert new File(kitchen, 'two/a.md').text == 'second\n'
+    assert java.nio.file.Files.readSymbolicLink(new File(kitchen, 'three').toPath()).toString() == 'one'
+  }
+
   @Test void reportsAChangedSourceUnderARecordedVersionButNotAnEditedPath() {
     def kitchen = kitchen()
     Map<String, Object> published = ['Text.groovy': TEXT_MODEL, 'packaged.groovy': """@help('Writes a file.')
