@@ -44,9 +44,11 @@ def median_mean(values: list[float]) -> str:
 
 
 def paired(rows_: list[dict], reference: str, arm: str, harness: str) -> list[tuple[dict, dict]]:
+    """Runs of the two arms on the same batch, case and run, leaving out a pair with a run the provider refused."""
     index = {(r["batch"], r["case"], r["run"]): r for r in rows_ if r["arm"] == reference and r["harness"] == harness}
-    return [(index[(r["batch"], r["case"], r["run"])], r) for r in rows_
-            if r["arm"] == arm and r["harness"] == harness and (r["batch"], r["case"], r["run"]) in index]
+    pairs = [(index[(r["batch"], r["case"], r["run"])], r) for r in rows_
+             if r["arm"] == arm and r["harness"] == harness and (r["batch"], r["case"], r["run"]) in index]
+    return [(a, b) for a, b in pairs if not refused(a) and not refused(b)]
 
 
 def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> Path:
@@ -129,7 +131,8 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
         flags.append(f"Runs that loaded MCP servers or non-builtin plugins, so saw more than the fixture: {leaky}.")
     turned_away = [r["id"] for r in data if refused(r)]
     if turned_away:
-        flags.append(f"Runs the provider refused on every attempt, counted as failed: {turned_away}.")
+        flags.append(f"Runs the provider refused on every attempt, left out of the contrasts with their pair: "
+                     f"{turned_away}.")
     missing = sum(e["verdict_missing"] for r in data for e in r["grading"]["expectations"])
     if missing:
         flags.append(f"{missing} judge calls returned no verdict and count as failed.")

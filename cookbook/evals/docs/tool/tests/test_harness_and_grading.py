@@ -175,4 +175,13 @@ def test_a_run_refused_on_every_attempt_is_flagged(tmp_path):
 
     text = report.write(effort_study(), [batch]).read_text()
 
-    assert "refused on every attempt, counted as failed: ['c1--ctl--claude--r1']" in text
+    assert "refused on every attempt, left out of the contrasts with their pair: ['c1--ctl--claude--r1']" in text
+    assert "| claude: ctl vs ref | 7 |" in text
+
+
+def test_a_pair_with_a_run_the_provider_refused_is_not_compared():
+    rows = [{"batch": "b1", "case": "c1", "run": 1, "arm": arm, "harness": "claude", "id": arm,
+             "files_changed": [], "error": "429 Too Many Requests" if arm == "ctl" else None}
+            for arm in ("ref", "ctl")]
+
+    assert report.paired(rows, "ref", "ctl", "claude") == []

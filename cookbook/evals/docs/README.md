@@ -107,7 +107,8 @@ from the reference (Holm-corrected p ≥ 0.05 on the study's primary outcome: Mc
 the steps before the owning page is read, counting every step of a run that never reads it), a case's reference
 passes outside 10–90% of its runs or, for effort, reads the owning page first in every run, a
 grader passes or fails every run, the judge is unvalidated or below kappa 0.61, a run saw MCP servers or plugins,
-the provider refused a run on every attempt.
+the provider refused a run on every attempt. Such a run, and the run it pairs with, are left out of the contrasts;
+the arms table still counts it as failed.
 Then each arm's pass rate with its Wilson interval, pass^k, tokens, cost, duration and steps before the owning page
 was read; each contrast's McNemar, Wilcoxon on tokens and TOST against `study.yaml`'s margins, ending as better,
 worse, equivalent or inconclusive; and a mixed-effects logistic model with a random intercept per case.
