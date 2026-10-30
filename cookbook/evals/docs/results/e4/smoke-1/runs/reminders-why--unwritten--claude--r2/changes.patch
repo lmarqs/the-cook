@@ -1,0 +1,52 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..b0b1663 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Reminders](reminders.md): how a member is reminded of a pickup slot, and why by email.
+diff --git a/docs/features/reminders.md b/docs/features/reminders.md
+new file mode 100644
+index 0000000..7792f86
+--- /dev/null
++++ b/docs/features/reminders.md
+@@ -0,0 +1,10 @@
++# Reminders
++
++For whoever changes how a member hears about a pickup. The day before a pickup slot, larder reminds the member by
++email. Reminders went out by SMS until SMS cost the pantry 40 euros a month; email reaches the same members at no
++per-message cost.
++
++## Channel
++
++`CHANNEL` in `larder/reminders.py` picks the channel: `"email"` sends to the member's email address, `"sms"` to their
++phone. The message is the same on both: "Your pantry order is ready for pickup" and the slot.
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..b88ffb1 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,4 +1,4 @@
+-CHANNEL = "sms"
++CHANNEL = "email"
+ 
+ 
+ def remind(member_phone: str, member_email: str, pickup: str, send_sms, send_email) -> None:
+diff --git a/tests/test_reminders.py b/tests/test_reminders.py
+new file mode 100644
+index 0000000..c300ee4
+--- /dev/null
++++ b/tests/test_reminders.py
+@@ -0,0 +1,11 @@
++from larder.reminders import remind
++
++
++def test_remind_sends_an_email_not_an_sms():
++    sms, emails = [], []
++
++    remind("+351900000000", "ana@example.org", "tomorrow at 10:00",
++           lambda *args: sms.append(args), lambda *args: emails.append(args))
++
++    assert sms == []
++    assert emails == [("ana@example.org", "Your pantry order is ready for pickup tomorrow at 10:00.")]

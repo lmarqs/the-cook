@@ -1,0 +1,173 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "reminders-why--unwritten--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T16:13:14.461312+00:00",
+  "duration_s": 25.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/reminders.md",
+    "larder/reminders.py",
+    "tests/test_reminders.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat larder/reminders.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE remind|sms|email|channel docs README.md larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/reminders.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_reminders.py",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/reminders.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -3 && git diff larder"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -3 && git diff larder"
+    }
+  ],
+  "tokens": {
+    "input": 147991,
+    "cached": 138011,
+    "output": 2107,
+    "reasoning": 230
+  },
+  "cost_usd": 0.1495342,
+  "turns": 9,
+  "last_message": "Pickup reminders now go by email instead of SMS, and the tests pass (3 passed).\n\n- **Code:** in `larder/reminders.py:1` I changed `CHANNEL` from `\"sms\"` to `\"email\"`. Nothing else in the code needed to change, since `remind` already had an email path.\n- **Test:** I added `tests/test_reminders.py`, which checks that a reminder goes to the member's email address and that no SMS is sent.\n- **Docs:** nothing in `docs/` covered reminders, so I added `docs/features/reminders.md` and listed it in `docs/features/README.md`. The page records that reminders were SMS until October 2026 and were switched because SMS cost 40 euros a month. That reason wasn't written down anywhere in the repo, so without the page someone could switch back to SMS without knowing why it was dropped.\n\nThe test passes stand-in send functions to `remind`, so it doesn't show whether an email actually gets sent. A member whose email address is missing or out of date will no longer get a reminder.\n\nI haven't committed anything.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "attempts": 1
+}

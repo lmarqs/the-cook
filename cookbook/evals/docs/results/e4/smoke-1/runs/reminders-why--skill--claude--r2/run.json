@@ -1,0 +1,128 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "source": "e1/pilot-2/runs/reminders-why--skill--claude--r2",
+  "id": "reminders-why--skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T16:10:45.703078+00:00",
+  "duration_s": 19.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat larder/reminders.py docs/README.md && grep -rn -i \"sms\\|email\\|remind\" --include=* . | grep -v \"^./.git\" | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i sms\\|email\\|remind --include=* ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|phone docs larder tests README.md"
+    }
+  ],
+  "tokens": {
+    "input": 69098,
+    "cached": 54316,
+    "output": 892,
+    "reasoning": 222
+  },
+  "cost_usd": 0.1469352,
+  "turns": 3,
+  "last_message": "I haven't made the change. The repository records that this exact switch was already tried and undone, and the reason it was undone is worth more than 40 euros a month.\n\n`docs/features/pickup-reminders.md` explains why reminders go by SMS:\n\n- **Reminders went by email from April to June 2025.** The email provider reported that 34% of reminder emails were never opened.\n- **Missed pickups more than doubled,** from 6% of pantry orders to 13%. Each missed pickup is a packed bag of fresh food that gets thrown away at closing time.\n- **The cause:** many members share one family phone and never check email, but they do see a text.\n- **SMS came back on July 1, 2025,** and missed pickups were down to 6% again by August.\n- **This keeps coming up.** Issue 52 was the third request to switch to email in one year.\n\nThe code change itself is one line, and the email branch is still there from the trial. In `larder/reminders.py:1`:\n\n```python\nCHANNEL = \"email\"\n```\n\nIf you still want to switch after reading this, say so and I'll make that edit. I'll also update `docs/features/pickup-reminders.md`, which describes SMS as the current channel. If the main concern is the 40 euros, other options may work better: a cheaper SMS provider, email for members who confirm they read it, or email plus an SMS only when the email goes unopened.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "attempts": 1
+}

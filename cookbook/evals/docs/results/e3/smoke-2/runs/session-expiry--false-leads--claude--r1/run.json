@@ -1,0 +1,123 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "session-expiry--false-leads--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T16:14:30.926919+00:00",
+  "duration_s": 16.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && grep -rniE \"expir|session|ttl|timeout\" --include=* -r . --exclude-dir=.git | head -50"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE expir|session|ttl|timeout --include=* -r . --exclude-dir=.git"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|minute docs README.md larder"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^docs/features/sessions.md"
+    }
+  ],
+  "tokens": {
+    "input": 67527,
+    "cached": 53142,
+    "output": 1122,
+    "reasoning": 356
+  },
+  "cost_usd": 0.1481244,
+  "turns": 3,
+  "last_message": "I haven't changed anything yet. The docs for this setting contradict each other, and one of them says 10 minutes has caused problems before.\n\nThe change itself is one line: `EXPIRY_MINUTES = 30` in `larder/sessions.py:3`, and the test reads that constant. But `docs/features/sessions.md` says two incompatible things:\n\n- **The opening paragraph** calls 30 minutes \"a placeholder\". It says the 2024 security review asked for 10 and nothing depends on the current value.\n- **The Lifetime section** says the limit *was* 10 minutes until March 2024. Members packing an order on a slow mobile connection got logged out before they confirmed it and lost what they had picked. Support logged 120 tickets about it that month. 30 minutes was \"the shortest that ended those tickets.\"\n\nIf the Lifetime section is right, going to 10 would bring those lost orders back. Nothing in the code has changed since then that would prevent it. The pantry order still holds items for the session, per `docs/features/checkout.md:8`.\n\nHow would you like to proceed?\n\n1. **Go to 10 anyway.** I'll change the constant and rewrite the sessions page so it records the new value and the reason, with the 2024 lost-order problem listed under Known limits.\n2. **Fix the lost orders first, then shorten.** For example, the pantry order could survive a session expiring and come back after the member logs in again. That way 10 minutes is safe.\n3. **Pick a value between 10 and 30.**\n\nEither way, the sessions page needs fixing so it stops contradicting itself.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "attempts": 1
+}

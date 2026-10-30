@@ -1,0 +1,35 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..47dab3a 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Reminders](reminders.md): how a member is reminded of their pickup slot, and why by email.
+diff --git a/docs/features/reminders.md b/docs/features/reminders.md
+new file mode 100644
+index 0000000..5176ae3
+--- /dev/null
++++ b/docs/features/reminders.md
+@@ -0,0 +1,10 @@
++# Reminders
++
++For whoever changes how larder tells members about their pickup, or answers a member who missed a reminder. The day
++before a pantry order's pickup slot, larder reminds the member of it. Reminders go by email because SMS reminders
++cost the pantry 40 euros a month.
++
++## Channel
++
++`CHANNEL` in `larder/reminders.py` picks the channel: `"email"` sends the reminder to the member's email address,
++`"sms"` to their phone. The message reads "Your pantry order is ready for pickup" followed by the slot.
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..b88ffb1 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,4 +1,4 @@
+-CHANNEL = "sms"
++CHANNEL = "email"
+ 
+ 
+ def remind(member_phone: str, member_email: str, pickup: str, send_sms, send_email) -> None:

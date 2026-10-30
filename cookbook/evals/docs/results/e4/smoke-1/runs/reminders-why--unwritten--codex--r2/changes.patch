@@ -1,0 +1,10 @@
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..b88ffb1 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,4 +1,4 @@
+-CHANNEL = "sms"
++CHANNEL = "email"
+ 
+ 
+ def remind(member_phone: str, member_email: str, pickup: str, send_sms, send_email) -> None:

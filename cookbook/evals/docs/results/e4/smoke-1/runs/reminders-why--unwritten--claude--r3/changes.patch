@@ -1,0 +1,52 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..b8bc295 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](reminders.md): how a member is reminded of their pickup slot, and why by email.
+diff --git a/docs/features/reminders.md b/docs/features/reminders.md
+new file mode 100644
+index 0000000..7e35043
+--- /dev/null
++++ b/docs/features/reminders.md
+@@ -0,0 +1,10 @@
++# Pickup reminders
++
++For whoever changes how members are reminded of a pickup, or answers a member who expected a text. The day before
++pickup, larder reminds the member of their pickup slot by email. Reminders went by SMS until October 2026, when the SMS
++cost of 40 euros a month was judged too high for the pantry.
++
++## Channel
++
++`CHANNEL` in `larder/reminders.py` picks the channel, `"email"` or `"sms"`. It was `"sms"` until October 2026, when
++SMS reminders cost the pantry 40 euros a month; it is now `"email"`.
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..b88ffb1 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,4 +1,4 @@
+-CHANNEL = "sms"
++CHANNEL = "email"
+ 
+ 
+ def remind(member_phone: str, member_email: str, pickup: str, send_sms, send_email) -> None:
+diff --git a/tests/test_reminders.py b/tests/test_reminders.py
+new file mode 100644
+index 0000000..fd4f2cc
+--- /dev/null
++++ b/tests/test_reminders.py
+@@ -0,0 +1,11 @@
++from larder.reminders import remind
++
++
++def test_a_pickup_reminder_goes_by_email_not_sms():
++    sms, email = [], []
++
++    remind("+351900000000", "member@example.org", "tomorrow at 10:00",
++           lambda *args: sms.append(args), lambda *args: email.append(args))
++
++    assert sms == []
++    assert email == [("member@example.org", "Your pantry order is ready for pickup tomorrow at 10:00.")]

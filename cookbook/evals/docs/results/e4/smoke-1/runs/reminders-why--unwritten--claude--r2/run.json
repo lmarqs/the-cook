@@ -1,0 +1,143 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "reminders-why--unwritten--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T16:11:14.636420+00:00",
+  "duration_s": 26.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/reminders.md",
+    "larder/reminders.py",
+    "tests/test_reminders.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md larder/reminders.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE remind|sms|email|pickup --include=*.md --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v skills/"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE remind|sms|e-?mail|pickup|phone docs larder tests README.md conftest.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls tests"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "shell",
+      "command": "sed -i 's/^CHANNEL = \"sms\"/CHANNEL = \"email\"/' larder/reminders.py && cat > tests/test_reminders.py <<'EOF'\nfrom larder.reminders import remind\n\n\ndef test_remind_sends_an_email_not_an_sms():\n    sms, emails = [], []\n\n    remind(\"+351900000000\", \"ana@example.org\", \"tomorrow at 10:00\",\n           lambda *args: sms.append(args), lambda *args: emails.append(args))\n\n    assert sms == []\n    assert emails == [(\"ana@example.org\", \"Your pantry order is ready for pickup tomorrow at 10:00.\")]\nEOF\ncat > docs/features/reminders.md <<'EOF'\n# Reminders\n\nFor whoever changes how a member hears about a pickup. The day before a pickup slot, larder reminds the member by\nemail. Reminders went out by SMS until SMS cost the pantry 40 euros a month; email reaches the same members at no\nper-message cost.\n\n## Channel\n\n`CHANNEL` in `larder/reminders.py` picks the channel: `\"email\"` sends to the member's email address, `\"sms\"` to their\nphone. The message is the same on both: \"Your pantry order is ready for pickup\" and the slot.\nEOF\necho '- [Reminders](reminders.md): how a member is reminded of a pickup slot, and why by email.' >> docs/features/README.md\npython3 -m pytest -q 2>&1 | tail -3"
+    }
+  ],
+  "tokens": {
+    "input": 145319,
+    "cached": 143144,
+    "output": 1423,
+    "reasoning": 203
+  },
+  "cost_usd": 0.0744408,
+  "turns": 6,
+  "last_message": "Pickup reminders now go out by email instead of SMS. The tests pass (3 passed).\n\n- **The switch:** `larder/reminders.py:1` now says `CHANNEL = \"email\"` instead of `\"sms\"`. The email branch was already in the code, so nothing else needed to change. The message text is the same as before.\n- **New test:** `tests/test_reminders.py` checks that a reminder sends one email to the member's address with the expected message, and no SMS.\n- **New doc page:** `docs/features/reminders.md` says that reminders go by email, that the 40 euros a month SMS cost is why, and how to change the channel. I also added it to the list in `docs/features/README.md`. Without this, the code wouldn't say why email was chosen, and `docs/` is meant to be the source of truth.\n\nThe SMS branch is still there, so switching back is a one-line change. I haven't committed anything.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "attempts": 1
+}
