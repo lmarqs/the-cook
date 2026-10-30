@@ -42,4 +42,4 @@ Facts that fail test 1 or 2 go to the kind above that owns them; facts that fail
 
 ## Skill
 
-The `docs-layout` skill, in `{{skills}}/docs-layout/`, writes pages of each kind, adds terms and reviews the tree.
+The `docs-layout` skill writes pages of each kind, adds terms and reviews the tree.

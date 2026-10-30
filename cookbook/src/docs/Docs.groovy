@@ -21,7 +21,7 @@ package io.github.lmarqs.cookbook.docs
  *
  * @ingredient(Docs) def docs
  *
- * docs.layout('io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills', '.agents/skills', Docs.KINDS)
+ * docs.layout('io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills', ['.agents/skills'], Docs.KINDS)
  * ```
  *
  * ## With other models
@@ -37,25 +37,26 @@ class Docs {
    */
   static final List<String> KINDS = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
 
-  /** The name of the skill, the directory it is written to under the skills directory. */
+  /** The name of the skill, the directory it is written to under each skills root. */
   static final String SKILL = 'docs-layout'
 
   private String cookedWith
-  private String skills
+  private List<String> skillsRoots = []
   private List<String> kinds = []
 
   /**
-   * Requests the layout: the map at `docs/README.md` offering `kinds`, and the `docs-layout` skill under `skills`, a
-   * directory by its path from the repository root. `cookedWith` names the recipe and its arguments, which the map's
-   * section opens with. Rejects a blank `cookedWith` or `skills`, an empty `kinds` and a kind outside `KINDS`.
+   * Requests the layout: the map at `docs/README.md` offering `kinds`, and the `docs-layout` skill under each of
+   * `skillsRoots`, directories by their paths from the repository root. `cookedWith` names the recipe and its
+   * arguments, which the map's section opens with. Rejects a blank `cookedWith`, no skills root or a blank one, an
+   * empty `kinds` and a kind outside `KINDS`.
    */
-  void layout(String cookedWith, String skills, List<String> kinds) {
+  void layout(String cookedWith, List<String> skillsRoots, List<String> kinds) {
     if (!cookedWith?.trim()) {
       throw new IllegalArgumentException('layout needs the recipe it is cooked with')
     }
 
-    if (!skills?.trim()) {
-      throw new IllegalArgumentException('layout needs the directory the skill is written under')
+    if (!skillsRoots || skillsRoots.any { !it?.trim() }) {
+      throw new IllegalArgumentException('layout needs the directories the skill is written under')
     }
 
     if (!kinds) {
@@ -69,7 +70,7 @@ class Docs {
     }
 
     this.cookedWith = cookedWith
-    this.skills = skills
+    this.skillsRoots = skillsRoots.unique(false)
     this.kinds = KINDS.findAll { it in kinds }
   }
 
@@ -91,16 +92,21 @@ class Docs {
     }
 
     def text = (kinds.collect { resource("kinds/${it}.md") } + resource('kinds/rules.md')).join('\n')
-    ["<!-- ${cookedWith} -->".toString()] + text.replace('{{skills}}', skills).readLines()
+    ["<!-- ${cookedWith} -->".toString()] + text.readLines()
   }
 
-  /** Whole files under the skills directory, `docs-layout/` and everything in it, when the layout is requested. */
-  @Files(path = '${skills}')
+  /** Whole files under each skills root, `docs-layout/` and everything in it, when the layout is requested. */
+  @Files(path = '.')
   Map<String, String> skillFiles() {
     if (!cookedWith) {
       return null
     }
 
-    resources("skills/${SKILL}").collectEntries { path, body -> ["${SKILL}/${path}".toString(), body] }
+    def files = resources("skills/${SKILL}")
+    skillsRoots.collectEntries { root ->
+      files.collectEntries { path, body ->
+        ["${root}/${SKILL}/${path}".toString(), body]
+      }
+    }
   }
 }

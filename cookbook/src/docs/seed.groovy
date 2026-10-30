@@ -6,13 +6,16 @@ skill that writes and reviews pages.
 ## API
 
 ```sh
-./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=.agents/skills
+./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills
 # Offering two kinds only
-./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=.agents/skills --kinds=adrs --kinds=runbooks
+./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills --kinds=adrs --kinds=runbooks
+# For Claude Code and Codex without a shared skills directory
+./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=.agents/skills --skills-root=.claude/skills
 ```
 
-`--skills` names the directory the skill is written under; the harnesses read a skill at
-`<skills>/docs-layout/SKILL.md`. What it publishes for people and other recipes:
+`--skills-root` names a directory the skill is written under, and repeats for each directory a harness reads
+skills from; a harness reads the skill at `<skills-root>/docs-layout/SKILL.md`. What it publishes for people and
+other recipes:
 
 | Name | What it is |
 | --- | --- |
@@ -32,7 +35,7 @@ that guide decisions; created with their content |
 | `docs/README.md` | The title and an introduction the team edits | Always | seed |
 | `docs/README.md` | The section `kinds`: the argument line as an HTML comment, each kind offered with its \
 criteria, where a fact goes, what a page holds, terms, guides and the skill | Always | owned |
-| `<skills>/docs-layout/` | `SKILL.md`, `references/` and `templates/` | Always | owned |
+| `<skills-root>/docs-layout/`, for each `--skills-root` | `SKILL.md`, `references/` and `templates/` | Always | owned |
 
 The kind directories, their guides, the one-page kinds and the glossary appear with their first
 content, written by the skill from its templates, so the tree holds only what has content.
@@ -44,14 +47,15 @@ such as `README.md` or `AGENTS.md`.
 
 | Contact | Made by |
 | --- | --- |
-| Where the harnesses read skills | The person, by `--skills`, such as `.agents/skills` from the `agents` artifact |
+| Where the harnesses read skills | The person, by `--skills-root`, such as `.agents/skills` from the `agents` \
+artifact |
 | The pages themselves | People and agents, with the `docs-layout` skill |
 | A kind of the team's own | The team, by a heading in `docs/README.md` outside the `kinds` section |
 
 ## Re-cooking
 
 Repeat the arguments on the opening line of the `kinds` section in `docs/README.md`, such as
-`<!-- io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills -->`. Cooking with other `--kinds` rewrites the
+`<!-- io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills -->`. Cooking with other `--kinds` rewrites the
 section; the pages stay. An upgrade updates the section and the skill; the map's
 introduction is never rewritten.
 ''')
@@ -65,11 +69,11 @@ import io.github.lmarqs.cookbook.docs.Docs
     choices = ['adrs', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
     doc = 'A kind of page the map offers; all seven by default')
     String[] kinds
-@param(value = ['skills'], path = true,
-    doc = 'The directory, from the repository root, the docs-layout skill is written under, such as .agents/skills')
-    String skills
+@param(value = ['skills-root'], many = true, sorted = true, path = true,
+    doc = 'A directory, from the repository root, the docs-layout skill is written under, such as .agents/skills')
+    String[] skillsRoots
 
 @recipe(arguments = true) String cookedWith
 @ingredient(Docs) def docs
 
-docs.layout(cookedWith, skills, kinds as List<String>)
+docs.layout(cookedWith, skillsRoots as List<String>, kinds as List<String>)

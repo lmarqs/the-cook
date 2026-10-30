@@ -4,7 +4,7 @@ Moves a repository's existing documentation into the layout, page by page, so th
 owns it. The person reviews the result as one change.
 
 1. Cook the layout if `docs/README.md` lacks its `kinds` section:
-   `./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills=<skills directory>`.
+   `./cook io.github.lmarqs.cookbook:docs:<version>#seed --skills-root=<skills directory>`.
 2. List the documentation: every Markdown file under `docs/`, and the files elsewhere that hold the same kinds of fact,
    such as `ARCHITECTURE.md`, `doc/adr/` or a wiki export. Show the list to the person and agree which files are in
    scope.
