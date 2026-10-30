@@ -20,10 +20,17 @@ def load_run(study: Study, directory: Path) -> Run:
     return Run(directory / "repo", record, study.case(record["case"]), (directory / "changes.patch").read_text())
 
 
-def grade_run(study: Study, directory: Path) -> dict:
+def grade_run(study: Study, directory: Path, only: set[str] | None = None) -> dict:
+    """Grades a run; with `only`, regrades the named graders and keeps every other verdict already recorded."""
     run = load_run(study, directory)
+    kept = {}
+    if only is not None:
+        kept = {e["name"]: e for e in json.loads((directory / "grading.json").read_text())["expectations"]}
     expectations = []
     for grader in run.case.graders:
+        if only is not None and grader.name not in only and grader.name in kept:
+            expectations.append(kept[grader.name])
+            continue
         judged_by = None
         if run.record.get("error") and not run.record.get("files_changed"):
             passed, evidence = False, f"the run failed: {run.record['error']}"
@@ -34,6 +41,7 @@ def grade_run(study: Study, directory: Path) -> dict:
         expectations.append({
             "name": grader.name, "type": grader.type, "text": grader.text,
             "passed": bool(passed), "verdict_missing": passed is None, "evidence": evidence, "judged_by": judged_by,
+            "grader_sha": grader.sha,
         })
     passed_count = sum(e["passed"] for e in expectations)
     outcome = [e for e in expectations if e["name"] in study.outcome]
@@ -48,13 +56,17 @@ def grade_run(study: Study, directory: Path) -> dict:
     return grading
 
 
-def grade_batch(study: Study, batch_dir: Path, parallel: int, regrade: bool) -> None:
+def grade_batch(study: Study, batch_dir: Path, parallel: int, regrade: bool, only: set[str] | None = None) -> None:
+    """Grades the runs not yet graded; `regrade` grades every run again, `only` regrades the named graders of graded
+    runs."""
     directories = [d for d in sorted((batch_dir / "runs").iterdir()) if (d / "run.json").exists()]
-    if not regrade:
+    if only is not None:
+        directories = [d for d in directories if (d / "grading.json").exists()]
+    elif not regrade:
         directories = [d for d in directories if not (d / "grading.json").exists()]
 
     def one(directory: Path) -> None:
-        grading = grade_run(study, directory)
+        grading = grade_run(study, directory, only)
         print(f"graded {directory.name}: outcome {'pass' if grading['outcome']['pass'] else 'fail'}, "
               f"{grading['summary']['passed']}/{grading['summary']['total']}", flush=True)
 

@@ -26,9 +26,13 @@ def rows(batch_dirs: list[Path]) -> list[dict]:
     return found
 
 
-def owning_page_steps(row: dict, case_data: dict) -> int | None:
+def effort(row: dict, case_data: dict) -> tuple[int | None, bool]:
+    """Steps before the owning page is first read, and whether it never was: such a run counts all its steps."""
     page = case_data.get("owning_page")
-    return first_index(row["steps"], "read", page) if page else None
+    if not page:
+        return None, False
+    index = first_index(row["steps"], "read", page)
+    return (len(row["steps"]), True) if index is None else (index, False)
 
 
 def median_mean(values: list[float]) -> str:
@@ -46,11 +50,15 @@ def paired(rows_: list[dict], reference: str, arm: str, harness: str) -> list[tu
 
 def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> Path:
     data = rows(batch_dirs)
+    for r in data:
+        r["effort"], r["censored"] = effort(r, study.case(r["case"]).data)
     reference, margins = study.reference, study.margins
     harnesses = sorted({r["harness"] for r in data})
     lines = [f"# Study {study.id}: report", "",
              f"Batches: {', '.join(d.name for d in batch_dirs)}. Runs graded: {len(data)}. "
-             f"Reference arm: `{reference}`. Outcome: all of {study.outcome} pass.", ""]
+             f"Reference arm: `{reference}`. Outcome: all of {study.outcome} pass. Primary: "
+             + ("the outcome." if study.primary == "pass" else "effort, the steps before the owning page is read."),
+             ""]
 
     flags = []
     contrasts, pvalues = [], {}
@@ -61,12 +69,16 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
             other_pass = [b["passed"] for _, b in pairs]
             test = stats.mcnemar(ref_pass, other_pass)
             name = f"{harness}: {arm} vs {reference}"
-            pvalues[name] = test["p"]
             difference = (sum(other_pass) - sum(ref_pass)) / len(pairs) if pairs else 0.0
             tokens_ref = [a["tokens"]["input"] + a["tokens"]["output"] for a, _ in pairs]
             tokens_other = [b["tokens"]["input"] + b["tokens"]["output"] for _, b in pairs]
+            efforts = [(a["effort"], b["effort"]) for a, b in pairs if a["effort"] is not None and b["effort"] is not None]
+            effort_p = stats.wilcoxon([a for a, _ in efforts], [b for _, b in efforts])
+            effort_difference = statistics.median(b - a for a, b in efforts) if efforts else None
+            pvalues[name] = test["p"] if study.primary == "pass" else effort_p
             contrasts.append({
                 "name": name, "arm": arm, "harness": harness, "n": len(pairs), "difference": difference,
+                "effort_difference": effort_difference, "wilcoxon_effort": effort_p,
                 "mcnemar": test, "wilcoxon_tokens": stats.wilcoxon(tokens_ref, tokens_other),
                 "tost_success": stats.tost_success(ref_pass, other_pass, margins["success"]),
                 "tost_tokens": stats.tost_tokens(tokens_ref, tokens_other, margins["tokens"]),
@@ -74,21 +86,32 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
     adjusted = stats.holm(pvalues)
     for contrast in contrasts:
         contrast["p_holm"] = adjusted.get(contrast["name"])
-        contrast["verdict"] = stats.verdict(contrast["p_holm"], contrast["tost_success"], contrast["difference"])
+        if study.primary == "pass":
+            contrast["verdict"] = stats.verdict(contrast["p_holm"], contrast["tost_success"], contrast["difference"])
+            worse = contrast["difference"] < 0
+        else:
+            # Fewer steps is better, so the sign is flipped; effort has no equivalence margin.
+            fewer = -(contrast["effort_difference"] or 0)
+            contrast["verdict"] = stats.verdict(contrast["p_holm"], None, fewer)
+            worse = fewer < 0
         if contrast["arm"] == study.arms[-1] and not (contrast["p_holm"] is not None and contrast["p_holm"] < 0.05
-                                                       and contrast["difference"] < 0):
+                                                       and worse):
             flags.append(f"The control `{contrast['arm']}` does not separate from `{reference}` on "
                          f"{contrast['harness']} (Holm p = {contrast['p_holm']}): no comparison in this study counts.")
 
     by_case = defaultdict(list)
     for r in data:
         if r["arm"] == reference:
-            by_case[(r["case"], r["harness"])].append(r["passed"])
-    for (case, harness), outcomes in sorted(by_case.items()):
-        rate = sum(outcomes) / len(outcomes)
-        if not HEADROOM[0] <= rate <= HEADROOM[1]:
-            flags.append(f"Case `{case}` on {harness}: the reference passes {rate:.0%} of {len(outcomes)} runs, "
-                         f"outside {HEADROOM[0]:.0%}–{HEADROOM[1]:.0%}.")
+            by_case[(r["case"], r["harness"])].append(r)
+    for (case, harness), runs in sorted(by_case.items()):
+        if study.primary == "pass":
+            rate = sum(r["passed"] for r in runs) / len(runs)
+            if not HEADROOM[0] <= rate <= HEADROOM[1]:
+                flags.append(f"Case `{case}` on {harness}: the reference passes {rate:.0%} of {len(runs)} runs, "
+                             f"outside {HEADROOM[0]:.0%}–{HEADROOM[1]:.0%}.")
+        elif all(r["effort"] == 0 for r in runs):
+            flags.append(f"Case `{case}` on {harness}: the reference reads the owning page first in every run, "
+                         "so no arm can reach it sooner.")
 
     by_grader = defaultdict(list)
     for r in data:
@@ -117,8 +140,9 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
     lines += ["## Validity", ""] + ([f"- {f}" for f in flags] or ["- No flags."]) + [""]
 
     lines += ["## Arms", "", "| Harness | Arm | Runs | Pass | 95% Wilson | Share | pass^k | Tokens in, median / mean "
-              "| Tokens out, median / mean | Cost USD, mean | Seconds, median | Steps before owning page, median |",
-              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+              "| Tokens out, median / mean | Cost USD, mean | Seconds, median | Steps before owning page, median "
+              "| Never read the owning page |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for harness in harnesses:
         for arm in study.arms:
             subset = [r for r in data if r["harness"] == harness and r["arm"] == arm]
@@ -131,8 +155,8 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
                 per_case[r["case"]].append(r["passed"])
             pass_k = sum(all(v) for v in per_case.values()) / len(per_case)
             costs = [r["cost_usd"] for r in subset if r.get("cost_usd") is not None]
-            before = [owning_page_steps(r, study.case(r["case"]).data) for r in subset]
-            before = [b for b in before if b is not None]
+            before = [r["effort"] for r in subset if r["effort"] is not None]
+            never = sum(r["censored"] for r in subset)
             cost = f"{statistics.mean(costs):.3f}" if costs else "–"
             lines.append(
                 f"| {harness} | `{arm}` | {len(subset)} | {passes / len(subset):.0%} | {low:.0%}–{high:.0%} "
@@ -140,20 +164,24 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
                 f"| {median_mean([r['tokens']['input'] for r in subset])} "
                 f"| {median_mean([r['tokens']['output'] for r in subset])} | {cost} "
                 f"| {statistics.median(r['duration_s'] for r in subset):.0f} "
-                f"| {statistics.median(before) if before else '–'} |"
+                f"| {statistics.median(before) if before else '–'} | {never if before else '–'} |"
             )
     lines.append("")
 
     lines += ["## Contrasts", "",
-              f"Each arm against `{reference}`, paired by case and run. Superiority: exact McNemar, Holm-corrected "
-              f"across the study. Equivalence: TOST within ±{margins['success']:.0%} of success and "
-              f"±{margins['tokens']:.0%} of tokens.", "",
-              "| Contrast | Pairs | Difference in pass | b / c | McNemar p | Holm p | TOST success p | Wilcoxon tokens p "
-              "| TOST tokens p | Verdict |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+              f"Each arm against `{reference}`, paired by case and run. Superiority: exact McNemar on the outcome and "
+              f"Wilcoxon on the steps before the owning page; Holm corrects the primary one, "
+              f"{'McNemar' if study.primary == 'pass' else 'Wilcoxon on steps'}, across the study. Equivalence: TOST "
+              f"within ±{margins['success']:.0%} of success and ±{margins['tokens']:.0%} of tokens.", "",
+              "| Contrast | Pairs | Difference in pass | b / c | McNemar p | Difference in steps, median "
+              "| Wilcoxon steps p | Holm p | TOST success p | Wilcoxon tokens p | TOST tokens p | Verdict |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for c in contrasts:
+        steps = "–" if c["effort_difference"] is None else f"{c['effort_difference']:+g}"
         lines.append(f"| {c['name']} | {c['n']} | {c['difference']:+.0%} | {c['mcnemar']['b']} / {c['mcnemar']['c']} "
-                     f"| {fmt(c['mcnemar']['p'])} | {fmt(c['p_holm'])} | {fmt(c['tost_success'])} "
-                     f"| {fmt(c['wilcoxon_tokens'])} | {fmt(c['tost_tokens'])} | {c['verdict']} |")
+                     f"| {fmt(c['mcnemar']['p'])} | {steps} | {fmt(c['wilcoxon_effort'])} | {fmt(c['p_holm'])} "
+                     f"| {fmt(c['tost_success'])} | {fmt(c['wilcoxon_tokens'])} | {fmt(c['tost_tokens'])} "
+                     f"| {c['verdict']} |")
     lines.append("")
 
     lines += ["## Mixed-effects logistic model", "",

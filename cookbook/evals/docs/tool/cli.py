@@ -40,7 +40,8 @@ def main(argv: list[str] | None = None) -> int:
     grade.add_argument("study", choices=studies())
     grade.add_argument("batch")
     grade.add_argument("-j", "--parallel", type=int, default=2)
-    grade.add_argument("--regrade", action="store_true")
+    grade.add_argument("--regrade", action="store_true", help="grade every run again")
+    grade.add_argument("--grader", action="append", help="regrade only this grader of the graded runs")
 
     labels = commands.add_parser("label", help="write labels.csv for the owner to label judged expectations")
     labels.add_argument("study", choices=studies())
@@ -69,7 +70,8 @@ def main(argv: list[str] | None = None) -> int:
         print(harness.run(study, batch, selected, args.parallel, args.max_cost_usd, seed))
     elif args.command == "grade":
         study = load_study(args.study)
-        grading.grade_batch(study, RESULTS / args.study / args.batch, args.parallel, args.regrade)
+        only = set(args.grader) if args.grader else None
+        grading.grade_batch(study, RESULTS / args.study / args.batch, args.parallel, args.regrade, only)
     elif args.command == "label":
         print(label.write(RESULTS / args.study / args.batch))
     elif args.command == "kappa":

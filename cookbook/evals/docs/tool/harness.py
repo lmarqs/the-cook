@@ -2,16 +2,21 @@
 
 import json
 import random
+import re
 import subprocess
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 from tool import fixtures, sandbox, traces
 from tool.cases import RESULTS, Case, Study
+
+TRIES = 3
+PROVIDER_REFUSAL = re.compile(r"capacity|rate.?limit|overloaded|too many requests|\b(429|500|502|503|529)\b", re.I)
 
 
 @dataclass(frozen=True)
@@ -68,37 +73,57 @@ def jobs(study: Study, cases: list[str] | None, arms: list[str] | None, harnesse
     return selected
 
 
+def refused(result: dict) -> bool:
+    """The provider turned the run away before it changed a file: its capacity, not the arm, decided the outcome."""
+    return bool(result.get("error")) and not result["files_changed"] \
+        and bool(PROVIDER_REFUSAL.search(str(result["error"])))
+
+
+def with_retries(run_once: Callable[[], dict], tries: int = TRIES) -> dict:
+    """Runs again while the provider refuses, up to `tries` in all; the result records how many it took."""
+    for attempt in range(1, tries + 1):
+        result = run_once()
+        result["attempts"] = attempt
+        if not refused(result):
+            break
+    return result
+
+
 def run_job(study: Study, job: Job, batch_dir: Path) -> dict:
     case = study.case(job.case)
     directory = batch_dir / "runs" / job.id
     directory.mkdir(parents=True, exist_ok=True)
-    repo = fixtures.build(case, job.arm, directory / "repo")
-    argv = sandbox.command(repo, agent_command(job.harness, study.harnesses[job.harness], case),
-                           eval_dir=batch_dir / "eval")
-    started = datetime.now(timezone.utc)
-    clock = time.monotonic()
-    timed_out = False
-    with open(directory / "events.jsonl", "w") as events, open(directory / "stderr.txt", "w") as errors:
-        process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=events, stderr=errors, text=True)
-        try:
-            process.communicate(case.prompt, timeout=case.timeout)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.communicate()
-            timed_out = True
-    duration = time.monotonic() - clock
-    lines = [line for line in (directory / "events.jsonl").read_text().splitlines() if line.startswith("{")]
-    record = getattr(traces, job.harness)(lines)
-    fixtures.git(repo, "add", "-A")
-    changed = [line for line in fixtures.git(repo, "diff", "--cached", "--name-only").splitlines() if line]
-    (directory / "changes.patch").write_text(fixtures.git(repo, "diff", "--cached"))
-    result = {
-        "study": study.id, **asdict(job), "id": job.id,
-        "model": study.harnesses[job.harness]["model"],
-        "started": started.isoformat(), "duration_s": round(duration, 1),
-        "exit_code": process.returncode, "timed_out": timed_out,
-        "files_changed": changed, **record,
-    }
+
+    def run_once() -> dict:
+        repo = fixtures.build(case, job.arm, directory / "repo")
+        argv = sandbox.command(repo, agent_command(job.harness, study.harnesses[job.harness], case),
+                               eval_dir=batch_dir / "eval")
+        started = datetime.now(timezone.utc)
+        clock = time.monotonic()
+        timed_out = False
+        with open(directory / "events.jsonl", "w") as events, open(directory / "stderr.txt", "w") as errors:
+            process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=events, stderr=errors, text=True)
+            try:
+                process.communicate(case.prompt, timeout=case.timeout)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.communicate()
+                timed_out = True
+        duration = time.monotonic() - clock
+        lines = [line for line in (directory / "events.jsonl").read_text().splitlines() if line.startswith("{")]
+        record = getattr(traces, job.harness)(lines)
+        fixtures.git(repo, "add", "-A")
+        changed = [line for line in fixtures.git(repo, "diff", "--cached", "--name-only").splitlines() if line]
+        (directory / "changes.patch").write_text(fixtures.git(repo, "diff", "--cached"))
+        return {
+            "study": study.id, **asdict(job), "id": job.id,
+            "model": study.harnesses[job.harness]["model"],
+            "started": started.isoformat(), "duration_s": round(duration, 1),
+            "exit_code": process.returncode, "timed_out": timed_out,
+            "files_changed": changed, **record,
+        }
+
+    result = with_retries(run_once)
     (directory / "run.json").write_text(json.dumps(result, indent=2) + "\n")
     return result
 

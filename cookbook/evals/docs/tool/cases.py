@@ -1,5 +1,6 @@
 """Studies and their cases, read from `studies/<study>/`."""
 
+import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -10,6 +11,7 @@ REPO = EVALS.parents[2]
 STUDIES = EVALS / "studies"
 FIXTURE = EVALS / "fixture" / "larder"
 RESULTS = EVALS / "results"
+PRIMARY = ("pass", "effort")
 
 
 def front_matter(text: str) -> tuple[dict, str]:
@@ -26,6 +28,7 @@ class Grader:
     type: str
     text: str
     options: dict
+    sha: str = ""
 
 
 @dataclass
@@ -56,6 +59,7 @@ class Study:
     outcome: list[str]
     margins: dict
     cases: list[Case]
+    primary: str = "pass"
 
     @property
     def reference(self) -> str:
@@ -71,7 +75,8 @@ def load_case(study: str, directory: Path) -> Case:
     graders = []
     for path in sorted((directory / "graders").glob("*.md")):
         options, text = front_matter(path.read_text())
-        graders.append(Grader(path.stem, options.pop("type"), text, options))
+        sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        graders.append(Grader(path.stem, options.pop("type"), text, options, sha))
     return Case(study, directory.name, directory, prompt, settings, data, graders)
 
 
@@ -79,6 +84,9 @@ def load_study(study: str, root: Path = STUDIES) -> Study:
     """The study and its cases; a case missing a grader the outcome counts is refused: its outcome could never pass."""
     directory = root / study
     config = yaml.safe_load((directory / "study.yaml").read_text())
+    primary = config.get("primary", "pass")
+    if primary not in PRIMARY:
+        raise ValueError(f"{study}: primary is {primary!r}, one of {PRIMARY}")
     cases = [load_case(study, d) for d in sorted((directory / "cases").iterdir()) if d.is_dir()]
     for case in cases:
         names = {g.name for g in case.graders}
@@ -93,6 +101,7 @@ def load_study(study: str, root: Path = STUDIES) -> Study:
         config["outcome"],
         config.get("margins", {"success": 0.10, "tokens": 0.15}),
         cases,
+        primary,
     )
 
 
