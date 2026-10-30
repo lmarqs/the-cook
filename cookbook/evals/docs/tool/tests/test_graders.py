@@ -87,6 +87,22 @@ def test_each_structural_defect_is_found(repo, defect, plant, finding):
     assert finding in evidence
 
 
+def test_the_maps_cooked_section_is_the_recipes_text_not_the_agents(repo):
+    cooked = ("<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/kinds -->\n"
+              "Wait out [the rate limit](api/orders.md#limits), as customers do.\n"
+              "<!-- cook:end io.github.lmarqs.cookbook:docs#seed/kinds -->\n")
+    (repo / "docs" / "README.md").write_text(f"# Docs\n\nSee [the glossary](glossary.md).\n{cooked}")
+
+    assert structure(repo, "docs/README.md") == (True, "no findings in ['docs/README.md']")
+
+    (repo / "docs" / "README.md").write_text(f"# Docs\n\nSee [orders](api/orders.md), for customers.\n{cooked}")
+    passed, evidence = structure(repo, "docs/README.md")
+
+    assert not passed
+    assert evidence == ("docs/README.md: link api/orders.md does not resolve; "
+                        "docs/README.md: uses the rejected synonym 'customer'")
+
+
 def test_a_page_outside_the_declared_kinds_is_found(repo):
     (repo / "docs" / "notes").mkdir()
     (repo / "docs" / "notes" / "jobs.md").write_text(CLEAN_ADR)

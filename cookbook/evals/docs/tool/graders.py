@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from tool import sandbox, traces
+from tool.arms import COOKED
 from tool.cases import Case, Grader
 
 DIR_KINDS = ["adrs", "api", "features", "runbooks", "ux"]
@@ -131,6 +132,7 @@ def structure_findings(repo: Path, page: str) -> list[str]:
     path = repo / page
     relative = Path(page).relative_to("docs")
     text = path.read_text()
+    own = COOKED.sub("", text)
     findings = []
     dirs, pages = declared(repo)
     kind = relative.parts[0] if len(relative.parts) > 1 else None
@@ -144,7 +146,7 @@ def structure_findings(repo: Path, page: str) -> list[str]:
             findings.append(f"{page}: docs/{kind}/README.md is missing")
         elif f"]({relative.name})" not in guide.read_text():
             findings.append(f"{page}: its guide does not list it")
-    for target in LINK.findall(text):
+    for target in LINK.findall(own):
         if re.match(r"^[a-z]+:", target):
             continue
         file, _, anchor = target.partition("#")
@@ -164,7 +166,7 @@ def structure_findings(repo: Path, page: str) -> list[str]:
         if numbers.count(relative.name[:4]) > 1:
             findings.append(f"{page}: number {relative.name[:4]} is used twice")
     if relative.name != "glossary.md":
-        body = prose(text)
+        body = prose(own)
         for word in rejected_synonyms(repo):
             if re.search(rf"\b{re.escape(word)}(s|es)?\b", body, re.I):
                 findings.append(f"{page}: uses the rejected synonym '{word}'")
