@@ -26,7 +26,7 @@ class DocsSeedCookTest {
     assert map.contains('<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/kinds -->\n' +
     '<!-- io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills -->\n')
     KINDS.each { assert map.contains("`${it}/`") || map.contains("`${it}.md`") }
-    assert map.contains('`sh .agents/skills/docs-layout/scripts/check.sh`')
+    assert map.contains('`.agents/skills/docs-layout/`')
     assert map.contains('in the standards under `ux/` are to be interpreted as described in BCP 14\n')
     [
       'docs/adrs',
@@ -78,7 +78,7 @@ class DocsSeedCookTest {
     shipped.each { assert new File(kitchen, ".claude/skills/docs-layout/${it}").bytes == new File(SKILL, it).bytes }
     def lock = new File(kitchen, 'cook.lock').text
     shipped.each { assert lock.contains("\".claude/skills/docs-layout/${it}\"") }
-    assert new File(kitchen, 'docs/README.md').text.contains('`sh .claude/skills/docs-layout/scripts/check.sh`')
+    assert new File(kitchen, 'docs/README.md').text.contains('`.claude/skills/docs-layout/`')
   }
 
   @Test void statesTheRuleInEachInstructionsFileAndRemovesItWhenNoLongerNamed() {
@@ -93,11 +93,8 @@ class DocsSeedCookTest {
     def section = { String opening ->
       '<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/docs -->\n' +
           "<!-- ${opening} -->\n" +
-          '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact. Read the owning ' +
-          'page before\n' +
-          '  changing an area. A behavior change ships with its page. ' +
-          '`sh .agents/skills/docs-layout/scripts/check.sh` must\n' +
-          '  pass; write a page with the `docs-layout` skill.\n' +
+          '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact, and the\n' +
+          '  `docs-layout` skill writes and reviews pages.\n' +
           '<!-- cook:end io.github.lmarqs.cookbook:docs#seed/docs -->\n'
     }
 
@@ -141,15 +138,7 @@ class DocsSeedCookTest {
     assert texts.params*.names == [['instructions'], ['kinds'], ['skills']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.docs.Docs']
     assert texts.help.readLines().findAll { it.startsWith('## ') } ==
-    [
-      '## API',
-      '## Consumes',
-      '## Produces',
-      '## Connections',
-      '## Run-time effects',
-      '## Re-cooking',
-      '## Traps'
-    ]
+    ['## API', '## Consumes', '## Produces', '## Connections', '## Re-cooking']
     assert texts.help.contains('Never touches')
     assert texts.yieldText
   }
@@ -179,7 +168,7 @@ class DocsSeedCookTest {
     def frontLines = front.readLines()
     def description = frontLines.find { it.startsWith('description: ') }.substring(13)
 
-    ['`<kind> [title]`', '`term <term>`', '`kind <name>`', '`objective`', '`review`', '`review --fix`', '`adopt`']
+    ['`<kind> [title]`', '`term <term>`', '`kind <name>`', '`review`', '`review --fix`', '`adopt`']
     .each {
       assert text.contains("| ${it} |")
     }

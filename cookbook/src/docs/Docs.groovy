@@ -2,14 +2,13 @@ package io.github.lmarqs.cookbook.docs
 
 /**
  * Models a repository's `docs/` tree as the single source of truth for people and coding agents: a map that says
- * which page owns each fact, the kinds of page and their criteria, and the `docs-layout` skill that writes, reviews
- * and checks the pages.
+ * which page owns each fact, the kinds of page and their criteria, and the `docs-layout` skill that writes and
+ * reviews the pages.
  *
  * ## Writes for
  *
  * Markdown in `docs/README.md` and in each instructions file named, such as `AGENTS.md`; an Agent
- * Skill, `SKILL.md` with its references, templates and a POSIX `sh` check script, for Claude Code 2.1.312 and Codex
- * 0.160.1, under the skills directory named.
+ * Skill, `SKILL.md` with its references and templates, under the skills directory named.
  *
  * ## Instances
  *
@@ -96,7 +95,7 @@ class Docs {
   /**
    * The `kinds` section of `docs/README.md`: the recipe and its arguments as an HTML comment, then each kind offered
    * with what it holds, its Diátaxis type and its criteria, then where a fact goes, what a page holds, terms, guides
-   * and the check command.
+   * and the skill.
    */
   @Section(path = 'docs/README.md', id = 'kinds', comment = '<!--')
   List<String> kindsSection() {
@@ -120,8 +119,8 @@ class Docs {
 
   /**
    * The `docs` section of each file `instructions` named, when the layout is requested: the recipe and its arguments
-   * as an HTML comment, then a list item saying `docs/` is the source of truth, where a fact goes, and the check and
-   * the skill to use.
+   * as an HTML comment, then a list item saying `docs/` is the source of truth, that the map says which page owns a
+   * fact, and the skill that writes pages.
    */
   @Sections(path = '.', id = 'docs', comment = '<!--', missing = 'fail')
   Map<String, List<String>> instructionsSections() {
@@ -131,10 +130,8 @@ class Docs {
 
     def lines = [
       "<!-- ${cookedWith} -->",
-      '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact. Read the owning page ' +
-      'before',
-      "  changing an area. A behavior change ships with its page. `sh ${skills}/${SKILL}/scripts/check.sh` must",
-      "  pass; write a page with the `${SKILL}` skill.",
+      '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact, and the',
+      "  `${SKILL}` skill writes and reviews pages.",
     ]*.toString()
     instructions.collectEntries { [(it): lines] }
   }

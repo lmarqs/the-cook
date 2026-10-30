@@ -1,7 +1,5 @@
 # Philosophy
 
-These tenets serve the [Objective](../README.md#objective).
-
 ## Tenets
 
 ### [[fill: the tenet, in one sentence]]

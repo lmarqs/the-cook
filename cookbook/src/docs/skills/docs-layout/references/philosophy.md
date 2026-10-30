@@ -1,7 +1,7 @@
 # Philosophy
 
 A tenet says what the team favors when two good options conflict, so a decision nobody has recorded yet still goes
-the way the team would take it. The Objective says why the project exists; the tenets say how it gets there.
+the way the team would take it.
 
 - A tenet rules something out. "Quality matters" rules out nothing; "Fewer features, each finished" rules out
   shipping half a feature.
@@ -13,8 +13,6 @@ the way the team would take it. The Objective says why the project exists; the t
 
 ```markdown
 # Philosophy
-
-These tenets serve the [Objective](../README.md#objective).
 
 ## Tenets
 

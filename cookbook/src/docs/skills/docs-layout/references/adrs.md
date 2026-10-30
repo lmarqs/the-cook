@@ -49,6 +49,6 @@ the [Redis down runbook](../runbooks/redis-down.md) covers its failure.
 
 When the carts move to the database and a session fits in a cookie, the team may choose signed cookies and accept
 that a blocked user stays logged in until a short expiry. The record keeps its number and becomes
-`0007-keep-sessions-in-signed-cookies.md`, titled after the new choice; the check lists the links to update.
+`0007-keep-sessions-in-signed-cookies.md`, titled after the new choice, and the links to it follow.
 `Options` gains "**A store every replica reads**: chosen first; left once sessions fit in a cookie", and `Decision`
 states signed cookies and why.

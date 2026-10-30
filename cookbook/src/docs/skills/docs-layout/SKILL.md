@@ -1,7 +1,7 @@
 ---
 name: docs-layout
-description: Writes and reviews the pages of docs/, the source of truth people and agents share, by the criteria in its map, docs/README.md. Use it to record a decision; describe a feature, an interface, a UX standard, a runbook, the architecture or the tenets; state the repository's Objective; add a glossary term; declare a kind of the team's own; review or fix docs/; or adopt the layout in an existing repository. Code comments and READMEs outside docs/, the root README's Objective aside, follow the repository's own guidance.
-argument-hint: "[adopt | review [--fix] | <kind> [title] | term <term> | kind <name> | objective]"
+description: Writes and reviews the pages of docs/, the source of truth people and agents share, by the criteria in its map, docs/README.md. Use it to record a decision; describe a feature, an interface, a UX standard, a runbook, the architecture or the tenets; add a glossary term; declare a kind of the team's own; review or fix docs/; or adopt the layout in an existing repository. Code comments and READMEs outside docs/ follow the repository's own guidance.
+argument-hint: "[adopt | review [--fix] | <kind> [title] | term <term> | kind <name>]"
 ---
 
 # docs-layout
@@ -17,7 +17,6 @@ start of every task here: this skill says how to work, the map says what goes wh
 | `<kind> [title]` | [Write a page](#write-a-page) of that kind, such as `adrs`, `features` or `architecture` |
 | `term <term>` | [Add a term](#add-a-term) to the glossary |
 | `kind <name>` | [Declare a kind](#declare-a-kind) the map does not offer |
-| `objective` | [Write the Objective](#write-the-objective) in the root `README.md` |
 | `review` | [Review](#review) the tree and report; files stay as they are |
 | `review --fix` | Review, then [fix what it finds](#review---fix) |
 | `adopt` | Follow [references/adopt.md](references/adopt.md) from its first step |
@@ -45,7 +44,7 @@ start of every task here: this skill says how to work, the map says what goes wh
    | `ux` | `standard.template.md` | `<slug>.md`, after the subject |
    | `runbooks` | `runbook.template.md` | `<slug>.md`, after the trigger |
    | `architecture` | `architecture.template.md` | `docs/architecture.md`, the kind's one page |
-   | `philosophy` | `philosophy.template.md` | `docs/philosophy.md`, the kind's one page, once the Objective exists |
+   | `philosophy` | `philosophy.template.md` | `docs/philosophy.md`, the kind's one page |
    | A kind of the team's own | None | As its declaration in the map says |
 
    The slug is the title in lowercase ASCII words joined by `-`. Each kind's reference holds its finer points and a
@@ -55,14 +54,13 @@ start of every task here: this skill says how to work, the map says what goes wh
 7. For a kind of many pages, add the page to its guide's list: `- [Title](file.md): one sentence on it.`
 8. Connect it: where another page states this page's fact, replace the statement with a link. A feature, interface
    or UX standard links the decision records that shaped it. Use the glossary's terms.
-9. Run the check the map names, from the repository root, until it reports no `FAIL`; weigh each `WARN`.
-10. Report the files written and each blank the person still has to supply.
+9. Report the files written and each blank the person still has to supply.
 
 ## Change a decision
 
 A changed decision is edited in place, keeping its number: the title and the file name's slug follow the new choice,
 `Options` gains the previous choice and why it changed, and `Decision` states the new choice and why it won. Update
-the links the check lists.
+the links that point at it.
 
 A record whose decision is reversed outright, or that fails the map's bar, is deleted: move its facts that still hold
 to the page that owns them, remove the file and its guide line, and point its links at that page.
@@ -71,7 +69,7 @@ to the page that owns them, remove the file and its guide line, and point its li
 
 1. When `docs/glossary.md` is absent, create it from `templates/glossary.template.md`.
 2. Add the entry in the map's format; [references/glossary.md](references/glossary.md) has an example.
-3. Replace the rejected synonyms in the pages with the term, until the check lists no use of them.
+3. Replace the rejected synonyms in the pages with the term.
 
 ## Declare a kind
 
@@ -81,28 +79,20 @@ to the page that owns them, remove the file and its guide line, and point its li
 3. Write its declaration in the map, outside the section the recipe writes: the heading in the map's shape, what the
    kind holds, its Diátaxis type and what each page must contain.
 4. Write its first page by those criteria, with its guide for a directory.
-5. Run the check, which now accepts the kind.
-
-## Write the Objective
-
-1. Ask the person for the problem, the goal and the non-goals; only they know them.
-2. Edit the `## Objective` section of the root `README.md`, or add it after the title from
-   `templates/objective.template.md`, filling each blank with what they said.
-3. Test each non-goal against the map's criteria. Name each one that fails to the person, with the test it fails, and
-   move it to the goal or drop it as they decide.
-4. Where another page states the problem or the goal, replace the statement with a link to `README.md#objective`.
-5. Run the check.
 
 ## Review
 
-Run the check the map names. Then apply every rule below to every page under `docs/`:
+Apply every rule below to every page under `docs/`:
 
+- Each page sits in a kind the map declares, or is the map or the glossary.
+- Each kind of many pages has its guide, listing every page of the kind.
+- Each link resolves, to a file and a heading that exist.
+- Each page has its kind's sections, in order; each decision record is named `NNNN-<slug>.md`, its number used once.
+- No page uses a synonym the glossary rejects.
 - Each fact is stated on its owner; other pages link it.
 - Each page states what is true now: spot-check its claims against the code and the contract.
 - A feature page describes; its reasons are in linked decision records.
 - Each decision record passes the map's bar; one that fails it is a candidate for deletion.
-- The root `README.md` states the Objective by the map's criteria, each non-goal passing them, and no page restates
-  its problem or goal.
 - `architecture.md` states no reasons and links the record behind each structural choice; each tenet in
   `philosophy.md` rules something out.
 - Each decision record gives every option with why it lost, and why the choice won.
@@ -110,14 +100,14 @@ Run the check the map names. Then apply every rule below to every page under `do
 - Each runbook step shows the output that tells the operator it worked.
 - Front matter holds only keys a program reads.
 
-Report each finding as the check does: what, where, and the step that fixes it.
+Report each finding: what, where, and the step that fixes it.
 
 ## Review --fix
 
 1. Run the review and list every finding before changing a file.
 2. Map each finding to a fix, or to a question for the person when it needs their decision, such as which page owns
    a fact, whether a decision was reversed outright, or whether a record that fails the bar is deleted.
-3. Make the fixes, and run the check until it reports no `FAIL`.
+3. Make the fixes.
 4. Report what changed, and each finding that remains with its reason.
 
 [references/design.md](references/design.md) gives the reason and the source behind each rule.

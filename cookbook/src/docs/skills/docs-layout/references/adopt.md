@@ -19,8 +19,5 @@ owns it. The person reviews the result as one change.
 6. Remove what other pages already state: keep the statement on the owning page and link it from the rest. Remove
    status, author, date and version fields; version history records who changed a page and when.
 7. Write each kind's guide: the kind's name in the map as its title, then a list of its pages.
-8. Fix the links: the check lists every link that points at a moved file.
-9. Write the Objective with the person, by the skill's `objective` procedure, when the root README lacks one; a
-   statement of the problem or the goal elsewhere becomes a link to it.
-10. Run the check until it reports no `FAIL`, and report the moves, the splits, the removed statements and the open
-    questions.
+8. Fix the links that point at a moved file.
+9. Report the moves, the splits, the removed statements and the open questions.
