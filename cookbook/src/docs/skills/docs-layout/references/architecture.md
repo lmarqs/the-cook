@@ -27,6 +27,7 @@ services.
 
 ## How they connect
 
-The web calls the API over HTTP. The API writes orders to Postgres and puts jobs on a Redis queue, which the worker
-reads ([sessions in Redis](adrs/0007-store-sessions-in-redis.md)).
+The web calls the API over HTTP and keeps sessions in Redis, which every web replica reads
+([a shared session store](adrs/0007-keep-sessions-in-a-shared-store.md)). The API writes orders to Postgres and puts
+jobs on a Redis queue, which the worker reads.
 ```

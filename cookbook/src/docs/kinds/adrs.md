@@ -13,6 +13,6 @@ explanation.
 - Sections, in order: `Context`, the forces at play; `Options`, each alternative and why it lost; `Decision`, the
   choice and why it won; `Consequences`, what becomes easier and what it costs.
 - A record fits on about one page.
-- A decision that changes is edited in place, and `Options` keeps the previous choice and why it changed. A record is
-  deleted when its decision is reversed outright, or when it fails the bar above, its facts moved to the page that
-  owns them; version history keeps it.
+- A decision that changes is edited in place: it keeps its number, its title and slug follow the new choice, and
+  `Options` keeps the previous choice and why it changed. A record is deleted when its decision is reversed outright,
+  or when it fails the bar above, its facts moved to the page that owns them; version history keeps it.

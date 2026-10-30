@@ -62,8 +62,9 @@ start of every task here: this skill says how to work, the map says what goes wh
 
 ## Change a decision
 
-A changed decision is edited in place, keeping its number: `Options` gains the previous choice and why it changed,
-and `Decision` states the new choice and why it won.
+A changed decision is edited in place, keeping its number: the title and the file name's slug follow the new choice,
+`Options` gains the previous choice and why it changed, and `Decision` states the new choice and why it won. Update
+the links the check lists.
 
 A record whose decision is reversed outright, or that fails the map's bar, is deleted: move its facts that still hold
 to the page that owns them, remove the file and its guide line, and point its links at that page.

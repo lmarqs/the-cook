@@ -21,5 +21,5 @@ These tenets serve the [Objective](../README.md#objective).
 ### Fewer features, each finished
 
 Rules out shipping a feature without its page, its runbook and its tests. Applied in
-[sessions in Redis](adrs/0007-store-sessions-in-redis.md).
+[a shared session store](adrs/0007-keep-sessions-in-a-shared-store.md).
 ```

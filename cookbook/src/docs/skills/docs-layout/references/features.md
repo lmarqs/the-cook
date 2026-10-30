@@ -25,5 +25,5 @@ Every web replica reads the same session store, so a user stays logged in whiche
 
 ## Shaped by
 
-- [Store sessions in Redis](../adrs/0007-store-sessions-in-redis.md)
+- [Keep sessions in a shared store](../adrs/0007-keep-sessions-in-a-shared-store.md)
 ```
