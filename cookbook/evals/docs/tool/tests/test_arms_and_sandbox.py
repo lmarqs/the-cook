@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from tool import fixtures, sandbox
-from tool.cases import load_study
+from tool.cases import HAYSTACK, load_study
 
 
 def tree(root: Path) -> dict[str, str]:
@@ -82,3 +82,42 @@ def test_the_sandbox_home_holds_only_the_login_files_and_the_tools(tmp_path):
     assert listing("$HOME/.local/share") == sorted({p.parts[len(sandbox.HOME.parts) + 2]
                                                     for p in sandbox.tool_mounts() if sandbox.HOME in p.parents})
     assert listing("/work") == ["marker"]
+
+
+@pytest.fixture(scope="module")
+def stacked(tmp_path_factory) -> dict[str, Path]:
+    study = load_study("e3")
+    repos = {}
+    for arm in ("leads", "no-leads"):
+        dest = tmp_path_factory.mktemp(f"stacked-{arm}") / "repo"
+        repos[arm] = fixtures.build(study.case("reminders-email"), arm, dest, haystack=True)
+    return repos
+
+
+def test_the_haystack_adds_its_pages_and_lists_them_beside_the_cases_own(stacked):
+    repo = stacked["leads"]
+    guide = (repo / "docs" / "features" / "README.md").read_text()
+
+    assert (repo / "docs" / "features" / "volunteer-rota.md").exists()
+    assert "](reminders.md)" in guide and "](volunteer-rota.md)" in guide
+    assert guide.count("](volunteer-rota.md)") == 1
+    for kind in ("features", "runbooks", "adrs"):
+        listed = (repo / "docs" / kind / "README.md").read_text()
+        for page in (repo / "docs" / kind).glob("*.md"):
+            assert page.name == "README.md" or f"]({page.name})" in listed, f"{kind}/{page.name} is listed"
+
+
+def test_no_leads_strips_the_haystacks_leads_too(stacked):
+    assert "For whoever" not in (stacked["no-leads"] / "docs" / "features" / "volunteer-rota.md").read_text()
+
+
+def test_every_haystack_page_meets_the_structure_and_has_a_lead(stacked):
+    from tool import graders
+
+    repo = stacked["leads"]
+    pages = [str(p.relative_to(HAYSTACK)) for p in (HAYSTACK / "docs").rglob("*.md") if p.name != "README.md"]
+
+    assert len(pages) >= 30
+    findings = [f for page in pages for f in graders.structure_findings(repo, page)]
+    findings += [f"{page}: {f}" for page in pages for f in graders.lead_findings((repo / page).read_text())]
+    assert findings == []

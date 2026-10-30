@@ -1,0 +1,6 @@
+- [SMS provider down](sms-provider-down.md): check the provider and the worker's log, then resend failed messages.
+- [Restore from backup](restore-from-backup.md): rebuild Postgres from the nightly dump on the second host.
+- [Desk tablet offline](desk-tablet-offline.md): serve pickups from the printed list; restart the tablet and router.
+- [Deploy rollback](deploy-rollback.md): return the web app to the previous release.
+- [Stock count mismatch](stock-count-mismatch.md): recount the shelf and correct the stock page.
+- [Duplicate charge](duplicate-charge.md): find both captures, refund the later one, tell the member.

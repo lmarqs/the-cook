@@ -65,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
         if study.source:
             print(fixtures.build_handoff(study, study.case(args.case), args.arm, args.source_run, args.dest.resolve()))
         else:
-            print(fixtures.build(study.case(args.case), args.arm, args.dest.resolve()))
+            print(fixtures.build(study.case(args.case), args.arm, args.dest.resolve(), haystack=study.haystack))
     elif args.command == "run":
         study = load_study(args.study)
         seed = args.seed if args.seed is not None else random.SystemRandom().randrange(2**31)

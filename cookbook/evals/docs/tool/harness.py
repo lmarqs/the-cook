@@ -121,7 +121,7 @@ def run_job(study: Study, job: Job, batch_dir: Path) -> dict:
             source = RESULTS / job.source if job.source else None
             repo = fixtures.build_handoff(study, case, job.arm, source, directory / "repo")
         else:
-            repo = fixtures.build(case, job.arm, directory / "repo")
+            repo = fixtures.build(case, job.arm, directory / "repo", haystack=study.haystack)
         argv = sandbox.command(repo, agent_command(job.harness, study.harnesses[job.harness], case),
                                eval_dir=batch_dir / "eval")
         started = datetime.now(timezone.utc)

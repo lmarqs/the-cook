@@ -1,0 +1,22 @@
+- [Volunteer login](volunteer-login.md): PIN login on the pickup-desk tablet, lasting one 8-hour shift.
+- [Home delivery](home-delivery.md): Wednesday deliveries for housebound members, changed until 18:00 the day before.
+- [Refunds](refunds.md): payments volunteers refund damaged or missing items from the gateway dashboard, one key each.
+- [Volunteer rota](volunteer-rota.md): shift rota, Sunday email digest for volunteers, and shift swaps.
+- [Data export](data-export.md): a member downloads their name, email, address and pantry orders from their profile.
+- [Households](households.md): grouping members by normalised address and splitting wrongly matched households.
+- [Price list](price-list.md): updating item prices, rounding, second-volunteer approval and the change log.
+- [Pickup slots](pickup-slots.md): 15-minute slots on Tuesday, Thursday, Saturday, 12 pantry orders each.
+- [Pantry items](pantry-items.md): the item catalog, stock counts and full-text item search.
+- [Stock intake](stock-intake.md): receiving the Monday delivery, counting, expiry dates and updating stock.
+- [Allergens](allergens.md): the 14 EU allergen tags and the member allergy filter.
+- [Referrals](referrals.md): referral codes from social services, valid 30 days, and how registration checks them.
+- [Donations](donations.md): one-off and monthly card donations from the public site; donors are not members.
+- [Languages](languages.md): the four languages of the app, and how volunteers translate them.
+- [Monthly report](monthly-report.md): the three counts sent to the food bank on the 1st, built by the worker.
+- [Receipts](receipts.md): the worker's receipt email after capture, and what it lists.
+- [Waitlist](waitlist.md): joining a full day's waitlist and how a freed slot is offered.
+- [Feedback](feedback.md): the after-pickup feedback form and the volunteers' weekly reading of it.
+- [Volunteer accounts](volunteer-accounts.md): who creates volunteer accounts, the four roles, and removal on leaving.
+- [Admin dashboard](admin-dashboard.md): today's pantry orders and stock, with counts cached 60 seconds per web server.
+- [Opening hours](opening-hours.md): opening days, holiday closures, and how a closure removes pickup slots.
+- [Item photos](item-photos.md): item photos stored under `media/` on the web server's disk, resized to 600 px.

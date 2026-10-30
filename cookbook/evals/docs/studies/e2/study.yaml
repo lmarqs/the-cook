@@ -6,3 +6,4 @@ harnesses:
 runs: 1
 margins: {success: 0.10, tokens: 0.15}
 outcome: [01-tests]
+haystack: true

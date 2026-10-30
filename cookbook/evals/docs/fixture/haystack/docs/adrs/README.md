@@ -1,0 +1,5 @@
+- [Send SMS through one provider](0002-send-sms-through-one-provider.md): one SMS provider, without a fallback.
+- [Cache the dashboard counts in memory](0003-cache-the-dashboard-counts-in-memory.md): counts cached 60 seconds.
+- [Search items with Postgres full-text](0004-search-items-with-postgres-full-text.md): item search in Postgres.
+- [Keep item photos on the web servers' disk](0005-keep-item-photos-on-the-web-servers-disk.md): photos on disk.
+- [Back up nightly to a second host](0006-back-up-nightly-to-a-second-host.md): a nightly pg_dump to a second host.

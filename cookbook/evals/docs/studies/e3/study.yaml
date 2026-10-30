@@ -5,4 +5,6 @@ harnesses:
   codex: {model: gpt-6.1-sol, effort: medium}
 runs: 1
 margins: {success: 0.10, tokens: 0.15}
-outcome: [01-raises-the-incident]
+outcome: [03-acts-on-the-incident]
+primary: effort
+haystack: true

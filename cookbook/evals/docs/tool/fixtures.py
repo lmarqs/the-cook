@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from tool import arms
-from tool.cases import FIXTURE, REPO, Case, Study, load_study
+from tool.cases import FIXTURE, HAYSTACK, REPO, Case, Study, load_study
 
 COOK = REPO / "cook"
 RECIPE = "io.github.lmarqs.cookbook:docs:0.0.0#seed"
@@ -46,14 +46,30 @@ def cook(repo: Path) -> None:
     (repo / "cook.lock").unlink()
 
 
-def build(case: Case, arm: str, dest: Path, commit: bool = True) -> Path:
-    """Writes the run's repository at `dest` and returns it, committed on `main` unless `commit` is false."""
+def add_haystack(repo: Path) -> None:
+    """Copies the haystack's pages in, and appends each of its guide lines that a guide of the repository lacks."""
+    for source in sorted((HAYSTACK / "docs").rglob("*.md")):
+        target = repo / source.relative_to(HAYSTACK)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if source.name != "README.md":
+            shutil.copy(source, target)
+            continue
+        guide = target.read_text().rstrip("\n") + "\n" if target.exists() else ""
+        missing = [line for line in source.read_text().splitlines() if line.startswith("- ") and line not in guide]
+        target.write_text(guide + "".join(line + "\n" for line in missing))
+
+
+def build(case: Case, arm: str, dest: Path, commit: bool = True, haystack: bool = False) -> Path:
+    """Writes the run's repository at `dest` and returns it, committed on `main` unless `commit` is false; with
+    `haystack`, the shared extra pages are added before the arm's transform."""
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(FIXTURE, dest, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
     files = case.dir / "files"
     if files.is_dir():
         shutil.copytree(files, dest, dirs_exist_ok=True)
+    if haystack:
+        add_haystack(dest)
     git(dest, "init", "-q")
     cook(dest)
     arms.apply(case.study, arm, dest, case)

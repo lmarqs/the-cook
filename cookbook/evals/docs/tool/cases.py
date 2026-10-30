@@ -10,6 +10,7 @@ EVALS = Path(__file__).resolve().parent.parent
 REPO = EVALS.parents[2]
 STUDIES = EVALS / "studies"
 FIXTURE = EVALS / "fixture" / "larder"
+HAYSTACK = EVALS / "fixture" / "haystack"
 RESULTS = EVALS / "results"
 PRIMARY = ("pass", "effort")
 
@@ -61,6 +62,7 @@ class Study:
     cases: list[Case]
     primary: str = "pass"
     source: str | None = None
+    haystack: bool = False
 
     @property
     def reference(self) -> str:
@@ -104,6 +106,7 @@ def load_study(study: str, root: Path = STUDIES) -> Study:
         cases,
         primary,
         config.get("source"),
+        bool(config.get("haystack", False)),
     )
 
 
