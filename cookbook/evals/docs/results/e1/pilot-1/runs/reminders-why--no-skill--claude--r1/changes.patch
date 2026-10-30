@@ -1,0 +1,40 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..e600b08 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): the day-before reminder, and why it goes by SMS rather than email.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..a2b4d12
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,25 @@
++# Pickup reminders
++
++For whoever changes how members are reminded of a pickup, or proposes moving the reminder from SMS to email. The day
++before a pickup slot, larder sends the member one message saying their pantry order is ready; it goes by SMS, not
++email. Written after [issue 52](../../notes/issue-52.md), the latest of several proposals to switch to email, each of
++which had to be answered from memory.
++
++## Why SMS
++
++SMS costs about 40 euros a month and email is free, so switching keeps being proposed. It was tried from April to
++June 2025:
++
++- The email provider reported that 34% of the reminder emails were never opened.
++- Missed pickups rose from 6% of pantry orders to 13%. Each missed pickup is a packed bag whose fresh food is thrown
++  away at closing time.
++- Many members share one phone within a family and rarely check email; an SMS on that phone is seen.
++
++Larder switched back to SMS on July 1, 2025, and missed pickups were back to 6% by August. The maintainers closed
++issue 52 keeping SMS. A new proposal to use email needs an answer to the unopened reminders and the food they cost,
++not only the saving.
++
++## How it works
++
++`remind` in `larder/reminders.py` builds the message and sends it to the member's phone. The channel is the `CHANNEL`
++constant in the same file; it is `"sms"`, and any other value sends the same message by email instead.

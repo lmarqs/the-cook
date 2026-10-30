@@ -1,0 +1,109 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..f9a615f 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,19 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Kinds
++
++Each fact has one owning page; other pages link to it. Every page opens with who reads it, when, what it says and
++why it exists. Directory guides list their pages.
++
++| Kind | Owns | Type and required content |
++| --- | --- | --- |
++| [Decisions](adrs/README.md) (`adrs/`) | Why a foundation was chosen. A record qualifies when reversing the decision changes more than one feature or module; a replaceable library choice alone does not qualify. | Explanation: Context (what happened and the forces), Options (each option and why it lost or won), Decision (choice and reason, including the implementing product), Consequences (benefits, costs and constraints). Files are `NNNN-<slug>.md`. |
++| [Features](features/README.md) (`features/`) | What one unit of behavior does, including rules and limits. Reasons below the decision-record bar live here. | Reference: sections follow the behavior; Shaped by links the decisions behind it. |
++| [Runbooks](runbooks/README.md) (`runbooks/`) | What an operator does for one trigger. | How-to: Before you begin, Steps with expected output for each, If it fails; name the owner. |
++| [Architecture](architecture.md) | The parts and connections no single source file shows. | Explanation: Parts and How they connect; link decisions for the reasons behind structural choices. |
++
++[Glossary](glossary.md) owns shared terms and rejected synonyms. Code and contracts own implementation details;
++documentation links to them. Issue discussions supply history, but the owning documentation page preserves the
++reasoning a maintainer needs.
+diff --git a/docs/adrs/0002-keep-background-jobs-in-postgres.md b/docs/adrs/0002-keep-background-jobs-in-postgres.md
+new file mode 100644
+index 0000000..22c5f92
+--- /dev/null
++++ b/docs/adrs/0002-keep-background-jobs-in-postgres.md
+@@ -0,0 +1,46 @@
++# Keep background jobs in Postgres
++
++For whoever changes background jobs, pantry order writes or the services larder runs. Jobs share Postgres with the
++pantry orders that queue them, using procrastinate, after Redis silently lost receipt jobs.
++
++## Context
++
++With Celery's queue in Redis, the Redis server ran out of memory on a Saturday night and evicted keys, including
++queued receipt jobs. No error was logged. By March 4, members had reported 300 missing receipts after paying.
++The email provider's dashboard showed nothing sent since Saturday at 23:10, ruling out the suspected bounce
++problem. Nadia resent receipts by hand from the orders table, taking most of her Tuesday.
++
++Redis served only the job queue, and Tom was the only volunteer who knew how to restore it. Postgres already had
++nightly backups, and every volunteer could query it. The choice needed to prevent silent queue loss, keep a pantry
++order and its queued job together, and reduce the services and specialist recovery knowledge volunteers maintain.
++
++## Options
++
++- **Keep Celery and Redis, add persistence and a memory alarm**: the least work that week. Redis would also need
++  sizing for the worst week; it would remain a separate service with only one volunteer able to restore it.
++- **Celery with its database backend**: an alternative raised in the discussion, but described there as experimental
++  in Celery's documentation at the time, so it was not chosen for replacing the failed queue.
++- **procrastinate with Postgres**: chosen because it uses the database volunteers already back up and query, and
++  supports putting the job in the same transaction as the pantry order that queues it.
++
++## Decision
++
++Keep background jobs in Postgres, and enqueue each job in the same transaction as the pantry order write that
++requires it. This makes the write and enqueue commit or roll back together, closing the gap in which a pantry order
++could be saved without its receipt job. procrastinate implements this choice because it is a Python Postgres task
++queue supporting that transaction boundary and removes the need to operate Redis for jobs.
++
++This is a decision about the boundary between pantry order writes and the worker, beyond the choice of queue
++library. The [architecture](../architecture.md) shows the parts and the limits of the implementation in this
++repository. The decision and incident were recorded in [issue 12](../../notes/issue-12.md), with the choice announced
++on March 9.
++
++## Consequences
++
++Queue storage shares Postgres's backups and the volunteers' existing database knowledge. Celery and Redis leave the
++background-job path; Redis was used for nothing else, so the migration removes that service to operate.
++
++Postgres now carries queue work as well as application data, so its availability and capacity affect both. Future
++changes to pantry order persistence or job enqueueing must preserve the shared transaction. Atomic enqueueing
++protects the handoff; it does not establish that an email was delivered or that a job executes exactly once. The
++repository supplies no worker recovery procedure or retry policy from which to document those guarantees.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..6d0ee12 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,4 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep background jobs in Postgres](0002-keep-background-jobs-in-postgres.md): why pantry order writes and job enqueueing share a transaction, and why procrastinate replaced Celery and Redis.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..8fdf80b 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,11 +7,16 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+-- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++- **Worker**, represented by [`larder/receipts.py`](../larder/receipts.py): runs background jobs, such as receipt emails.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and queues jobs there for the worker
++([keep background jobs in Postgres](adrs/0002-keep-background-jobs-in-postgres.md)). A confirmed pantry order is
++captured through the card gateway by `larder/capture.py`.
++
++This repository shows only a receipt-job stub: `send_receipt` identifies itself as a procrastinate job and raises
++`NotImplementedError`. Queue configuration, the transaction that enqueues a job, worker startup and email delivery
++are not implemented here. The structural decision describes the required handoff; this code cannot demonstrate it.

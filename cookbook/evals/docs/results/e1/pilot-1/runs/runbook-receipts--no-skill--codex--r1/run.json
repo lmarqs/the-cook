@@ -1,0 +1,171 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-skill",
+  "harness": "codex",
+  "run": 1,
+  "id": "runbook-receipts--no-skill--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T05:17:16.622857+00:00",
+  "duration_s": 59.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/**' -g '*receipt*' -g 'README*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/** -g *receipt* -g README*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat docs/architecture.md docs/glossary.md docs/features/README.md && rg --files --hidden .agents .claude 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden .agents .claude"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check && python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && git diff -- docs/runbooks/README.md && cat docs/runbooks/receipts-stopped.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && git diff -- docs/runbooks/README.md && cat docs/runbooks/receipts-stopped.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 109705,
+    "cached": 98688,
+    "output": 1893,
+    "reasoning": 240
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added the [receipts recovery runbook](/work/docs/runbooks/receipts-stopped.md) and linked it from the runbook index.\n\nIt covers commands, expected results, recovery checks, and escalation when restarting fails. It also distinguishes last incident\u2019s bounced emails from new failures.\n\nValidation: 2 tests passed; whitespace checks passed. The deployment issue remains unresolved\u2014the repository contains no deployment script to fix.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

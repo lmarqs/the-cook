@@ -1,0 +1,242 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 1,
+  "id": "reminders-why--no-criteria--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T04:58:13.123739+00:00",
+  "duration_s": 43.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record the decision on why pickup reminders go by SMS rather than email (context: notes/issue-52.md)"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "cat docs/README.md && find docs notes -type f | sort && cat notes/issue-52.md"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup|notif docs src *.py"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work && grep -rniE \"sms|remind|pickup\" larder tests README.md; git log --stat | head -40"
+    },
+    {
+      "kind": "read",
+      "path": "references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work && grep -rniE \"sms|remind|pickup\" larder tests README.md; git log --stat | head -40"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|pickup larder tests README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work && grep -rniE \"sms|remind|pickup\" larder tests README.md; git log --stat | head -40"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/design.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 250222,
+    "cached": 229286,
+    "output": 3706,
+    "reasoning": 1127
+  },
+  "cost_usd": 0.28739320000000007,
+  "turns": 11,
+  "last_message": "I wrote the reasoning into a new page, `docs/features/pickup-reminders.md`, and added it to the list in `docs/features/README.md`. Nothing is committed.\n\n**Why a feature page and not a decision record:** the docs' rules keep decision records for choices whose reversal would change more than one feature or module. Switching reminders to email is one constant in `larder/reminders.py`, and the email code is already there. So the reason goes in the feature page's opening paragraph and a \"Channel\" section.\n\n**What the page records**, all from `notes/issue-52.md` and the code:\n- **The trial:** reminders went by email from April to June 2025. The email provider reported that 34% of the emails were never opened.\n- **The cost of the trial:** missed pickups rose from 6% to 13% of pantry orders. Every missed pickup is a bag already packed, and its fresh food is thrown away by closing time.\n- **Why SMS works:** many members share one family phone and never check email, but they see an SMS.\n- **The switch back:** SMS returned on 1 July 2025, and missed pickups were back to 6% by August.\n- **Issue 52:** the switch was proposed again, the third time in a year, and the maintainers kept SMS.\n- **The trade-off:** SMS costs about 40 euros a month and email would cost nothing. The page states this so the next proposal starts from it.\n\n**Left out on purpose:**\n- **The year of issue 52.** The thread gives only \"Sep 2\u20138\", so the page doesn't name a year.\n- **A test for future proposals.** I considered adding one (for example, \"a new channel must keep missed pickups near 6%\"), but nobody in the thread set that bar, so it isn't there.\n\n**A gap in the docs:** `docs/README.md`, the page meant to say which page owns each kind of fact, has none of those rules. I placed the page using the docs skill's own reference files and the existing pages. The skill's setup step (adding that section with an external `cook` tool) can't be run here.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

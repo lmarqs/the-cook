@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A decision record is written under docs/adrs/, the kind the map gives a foundation decision such as the job queue.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adrs/[0-9][0-9][0-9][0-9]-*.md: ['docs/adrs/0002-keep-background-jobs-in-postgres.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/README.md', 'docs/adrs/0002-keep-background-jobs-in-postgres.md', 'docs/adrs/README.md', 'docs/architecture.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adrs/0002-keep-background-jobs-in-postgres.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the incident with Redis evicting queued jobs and what it cost, before it\nstates a conclusion such as \"we need a durable queue\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "Context opens with the incident: \"On a Saturday night Redis ran out of memory and evicted queued receipt jobs without logging an error. By March 4, payments volunteers counted 300 members who had paid but received no receipt... Nadia resent the receipts by hand from the orders table, taking most of Tuesday.\" It then notes \"Redis existed only for the job queue, and Tom was the only volunteer who knew how to restore it\" and names forces (\"protect queued work, avoid a gap between saving a pantry order and queuing its receipt, and keep operation and recovery within the volunteers' capacity\") before any conclusion; the Context states no conclusion like 'we need a durable queue' ahead of the account.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record's Decision names procrastinate, the product chosen.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /## Decision\\s.*procrastinate/ in ['docs/adrs/0002-keep-background-jobs-in-postgres.md']: {'docs/adrs/0002-keep-background-jobs-in-postgres.md': '## Decision\\n\\nKeep background jobs in Postgres and enqueue them in the same transaction as the pantry order that creates '}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

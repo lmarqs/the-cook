@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A decision record is written under docs/adrs/, the kind the map gives a foundation decision such as the job queue.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adrs/[0-9][0-9][0-9][0-9]-*.md: ['docs/adrs/0002-run-background-jobs-on-procrastinate.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adrs/0002-run-background-jobs-on-procrastinate.md', 'docs/adrs/README.md', 'docs/architecture.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adrs/0002-run-background-jobs-on-procrastinate.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the incident with Redis evicting queued jobs and what it cost, before it\nstates a conclusion such as \"we need a durable queue\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The Context describes Redis running out of memory in March and evicting queued receipt jobs, about 300 members receiving no receipt, and manual resending taking most of a day before naming the forces: \u201ca queued job must not be lost\u201d and keeping services few and repairable by any volunteer. It also states Redis served only the queue and only one volunteer knew how to restore it.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record's Decision names procrastinate, the product chosen.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /## Decision\\s.*procrastinate/ in ['docs/adrs/0002-run-background-jobs-on-procrastinate.md']: {'docs/adrs/0002-run-background-jobs-on-procrastinate.md': '## Decision\\n\\nBackground jobs are queued in Postgres through procrastinate, and the worker runs them from there. Postgres'}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

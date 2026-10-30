@@ -1,0 +1,70 @@
+diff --git a/docs/adrs/0002-run-background-jobs-on-procrastinate.md b/docs/adrs/0002-run-background-jobs-on-procrastinate.md
+new file mode 100644
+index 0000000..ed9653f
+--- /dev/null
++++ b/docs/adrs/0002-run-background-jobs-on-procrastinate.md
+@@ -0,0 +1,39 @@
++# Run background jobs on procrastinate
++
++For whoever changes background jobs, the worker, deploys or the database. Background jobs, such as receipt emails, are
++queued in Postgres by procrastinate rather than in Redis by Celery, because a Redis that ran out of memory silently
++dropped the receipts of about 300 members.
++
++## Context
++
++Larder's background jobs ran on Celery, with its queue in Redis, the only thing larder ran Redis for. One Saturday night
++in March the Redis server ran out of memory and evicted keys, queued receipt jobs among them. Nothing logged an error;
++the jobs were gone. In the following days about 300 members wrote in that they had paid and never got a receipt, and the
++email provider showed nothing sent since Saturday 23:10. A payments volunteer resent the receipts by hand from the
++orders table, which took most of a day. Keeping Redis safe meant sizing it for the worst week and turning on
++persistence, and only one volunteer knew how to restore it. The discussion is in [issue 12](../../notes/issue-12.md).
++
++Two forces judge the options: a queued job must not be lost, and the volunteers who run larder keep the number of
++services they operate down, each one something any of them can repair.
++
++## Options
++
++- **Keep Celery and Redis, add persistence and a memory alarm**: the least work that week; lost because larder would
++  still run Redis for jobs alone, with one volunteer able to restore it.
++- **Celery with its database backend**: keeps the Celery code and drops Redis; lost because Celery's documentation
++  marks that backend experimental.
++- **procrastinate, a Postgres task queue for Python**: chosen.
++
++## Decision
++
++Background jobs are queued in Postgres through procrastinate, and the worker runs them from there. Postgres is the one
++store larder already runs, as for [sessions](0001-keep-sessions-in-the-database.md): it is backed up every night and
++every volunteer can query it. procrastinate won over Celery's database backend because it is built for Postgres
++rather than marked experimental, and because a job is queued in the same transaction as the pantry order that queues
++it, so a receipt cannot be lost between the two.
++
++## Consequences
++
++A job commits or rolls back with the pantry order that queued it, the queue is in the nightly backup, and a volunteer
++can see what is waiting with a query. Larder no longer needs Redis. The queue's traffic now lands on the same database
++as pantry orders and sessions, and the move cost more work than adding persistence to Redis would have that week.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..69d9e40 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Run background jobs on procrastinate](0002-run-background-jobs-on-procrastinate.md): jobs are queued in Postgres,
++  not in Redis.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..c7467ea 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -12,6 +12,7 @@ where a payment is captured.
+ 
+ ## How they connect
+ 
+-The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md)) and
++queues jobs there for the worker ([run background jobs on
++procrastinate](adrs/0002-run-background-jobs-on-procrastinate.md)). A confirmed pantry order is captured through the
++card gateway by `larder/capture.py`.

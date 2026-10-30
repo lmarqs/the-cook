@@ -1,0 +1,182 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "update-attempts--skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:23:07.144021+00:00",
+  "duration_s": 36.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/issue-40.md larder/capture.py && grep -rn -i \"attempt\\|retr\\|capture\" docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i attempt\\|retr\\|capture docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/payments.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/features/checkout.md docs/architecture.md; cat .claude/skills/docs-layout/references/features.md | head -80; git log --stat | head -30"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn capture larder/"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/capture.py"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i 3 attempts\\|three attempts\\|back to back docs/ README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "grep -rn -i \"3 attempts\\|three attempts\\|back to back\" docs/ README.md; python3 -m pytest -q 2>&1 | tail -2"
+    }
+  ],
+  "tokens": {
+    "input": 178148,
+    "cached": 156824,
+    "output": 3417,
+    "reasoning": 920
+  },
+  "cost_usd": 0.2702488,
+  "turns": 9,
+  "last_message": "I updated `docs/features/payments.md`, the page that owns the retry rule. No other page stated the attempt count, so nothing else needed changing. Tests pass (2 passed).\n\n**What changed on the page:**\n- **Retries:** now says up to 5 attempts, with pauses of 2, 4, 6 and 8 seconds (20 seconds at most), and that the last timeout raises `GatewayTimeout`. I checked this against `ATTEMPTS = 5` and `BACKOFF_SECONDS * attempt` in `larder/capture.py`.\n- **Why it changed**, taken from issue 40:\n  - The gateway slows down on Fridays from 17:00 to 19:00.\n  - The old 3 attempts went out back to back, so all three hit the same slow minute.\n  - One Friday left 58 orders uncharged, and a volunteer captured them by hand.\n  - Switching gateways was ruled out because the contract runs to December 2026.\n  - Replaying that Friday against the gateway's test environment with the new spacing, 57 of the 58 would have gone through.\n  \n  I put this on the page because the issue tracker may not keep it.\n- **New \"Known limits\" section:**\n  - Members can wait up to 20 seconds longer on the confirmation page. The issue thread accepted this.\n  - A capture can still fail after 5 attempts. The fix is the gateway-timeout runbook plus a manual capture from the gateway's dashboard.\n- **Lead:** now mentions the Friday failures alongside the 2024 double charges.\n\nI didn't write a decision record. The retry count lives in one module and one commit can change it back, so it falls below the docs' bar for one.\n\n**Two things I left alone that you may want to check:**\n- **Possible mismatch in where captures run:** the thread says members wait on the confirmation page, which suggests the capture runs during the web request. But `docs/runbooks/gateway-timeouts.md` tells the volunteer to look for timeouts in the *worker's* log. If captures run in the web app, that runbook step points to the wrong log.\n- **Dates don't line up:** the issue thread is dated Nov 15\u201324 with no year, but you said the change was last week, and today is Oct 30. I didn't put any dates on the page because of this.\n\nI haven't committed anything.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

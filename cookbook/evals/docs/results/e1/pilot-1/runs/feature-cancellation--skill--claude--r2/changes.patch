@@ -1,0 +1,41 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..bb2ff97 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and what happens after.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..64a784e
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,26 @@
++# Cancellation
++
++For whoever changes how a member cancels a pantry order, or answers a member whose cancellation was refused. A member
++may cancel a pantry order until 2 hours before its pickup slot starts; after that the app refuses, and a member who
++cannot come calls the pantry, where the volunteers decide. Volunteers start packing bags 2 hours before each slot, and
++members were cancelling minutes before pickup, at 16:50 for a 17:00 slot: by 7 October 2026, 25 bags of fresh food
++had been thrown away that month, though a banner had asked members to cancel earlier since the summer.
++
++## The cutoff
++
++The cutoff is `CUTOFF` in [`larder/cancellation.py`](../../larder/cancellation.py): 2 hours, the length of the
++packing shift. A cancellation before the packing starts costs the pantry nothing; one after it costs a packed bag.
++
++`can_cancel(pickup_starts, now)` allows a cancellation only while `now` is strictly earlier than the cutoff. For a
++slot starting at 17:00:
++
++| Cancelled at | Result |
++| --- | --- |
++| 14:59 | Allowed |
++| 15:00 | Refused |
++| 16:50 | Refused |
++
++## After the cutoff
++
++The app refuses the cancellation. A member who cannot come calls the pantry, and the volunteers decide what to do
++with the pantry order. The pantry asked that the refusal message give its phone number.

@@ -1,0 +1,38 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..dff8c36 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..d1fb2b0
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,23 @@
++# Cancellation
++
++For whoever changes when a member may cancel a pantry order, or answers a member who could not cancel one. A member
++may cancel a pantry order until 2 hours before its pickup slot starts, when volunteers start packing the bag. The
++cutoff exists because members cancelled after their bags were packed, and the pantry threw away 25 bags of fresh food
++in the first week of October 2026.
++
++## Cutoff
++
++A member may cancel while the current time is earlier than 2 hours before the pickup slot starts: for a 17:00 slot,
++until 14:59:59. At exactly 15:00 the cancellation is refused. `can_cancel` in `larder/cancellation.py` decides it,
++with the 2 hours as `CUTOFF`.
++
++The 2 hours follow the packing shift, which starts 2 hours before each slot: a cancellation before then costs the
++pantry nothing, and one after costs a packed bag. Until October 2026 a member could cancel from the app at any time,
++and members cancelled at 16:50 for a 17:00 pickup. Bags of milk, bread and greens were left on the shelf three
++Saturdays in a row, 9 on the third. A banner in the app asking members to cancel earlier had run since that summer
++and had not stopped it.
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide whether to cancel. The pantry
++lead agreed to the cutoff on the condition that the refusal message gives the pantry's phone number.

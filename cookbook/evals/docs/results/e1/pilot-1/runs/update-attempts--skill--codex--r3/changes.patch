@@ -1,0 +1,37 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..14e73c6 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -1,19 +1,26 @@
+ # Payments
+ 
+ For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+-amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members
+-being charged twice.
++amount once a pantry order is confirmed. Its retry rules address timeouts that charged 41 members twice in 2024
++and Friday gateway slowdowns that left confirmed pantry orders uncharged.
+ 
+ ## Capture
+ 
+-A confirmed pantry order is captured for its authorized amount: `larder/capture.py` calls the card gateway and
+-returns its charge id.
++A confirmed pantry order is captured for its authorized amount:
++[the capture implementation](../../larder/capture.py) calls the card gateway and returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that times out is tried again with growing pauses between attempts. The
++[capture implementation](../../larder/capture.py) defines the attempt limit and pause schedule.
+ 
+-Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
++During the gateway's Friday peak, from 17:00 to 19:00, the previous back-to-back attempts all landed in the same
++slow period. One Friday, 58 confirmed pantry orders went uncharged, and a payments volunteer captured them by hand
++the next morning. A sandbox replay with spaced retries would have recovered 57 of those 58 captures. Switching
++gateways was deferred because the contract runs through December 2026. The team accepted the longer wait on the
++confirmation page to reduce manual captures; [issue 40](../../notes/issue-40.md) records the discussion.
++
++Every attempt within one capture call sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+ drew a fresh key for each attempt charged 41 members twice.
+ 

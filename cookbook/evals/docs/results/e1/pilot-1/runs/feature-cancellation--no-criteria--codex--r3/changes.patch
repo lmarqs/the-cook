@@ -1,0 +1,61 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..333fc5e 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,10 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Features
++
++[Feature pages](features/README.md) describe units of current behavior: their rules, boundaries and outputs.
++They also own the reasons for local behavior choices, such as a cutoff value.
++[Cancellation](features/cancellation.md) owns the cancellation cutoff, its rationale and the agreed late-cancellation
++fallback.
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..e21d388 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): when a member can cancel a pantry order and why the cutoff follows packing.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..9c1f838
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,31 @@
++# Cancellation
++
++For whoever changes cancellation or answers a member who missed the cutoff. A member can cancel a pantry order
++through the app only before packing starts. Late cancellations had left packed bags of fresh food unused; the
++cutoff protects that food and the volunteers' packing work.
++
++## Cutoff
++
++[`can_cancel(pickup_starts, now)`](../../larder/cancellation.py) returns whether cancellation is still allowed.
++`CUTOFF` is two hours, and the check is strictly `now < pickup_starts - CUTOFF`: cancellation is refused at the
++cutoff itself and afterward.
++
++For a pickup slot starting at 17:00, cancellation is allowed before 15:00. At 15:00, it is already refused.
++
++## Why packing sets the limit
++
++[Issue 31](../../notes/issue-31.md) records three Saturdays in a row with packed bags left on the shelf. On the
++latest Saturday, nine bags contained milk, bread and greens; members were cancelling at 16:50 for a 17:00 pickup.
++By October 7, the pantry had thrown away 25 bags of fresh food that month.
++
++A reminder banner had been in the app since summer and had not prevented these cancellations. The packing shift
++starts two hours before each pickup slot: the pantry reported that cancellations before packing cost nothing,
++while cancellations afterward waste a packed bag. The cutoff therefore follows the start of packing.
++
++## After the cutoff
++
++The agreement in issue 31 is that a member who cannot come after the cutoff calls the pantry, and the volunteers
++decide what to do. The pantry lead required the pantry phone number in the refusal message.
++
++The repository implements the eligibility check only; it contains neither a refusal message nor the pantry phone
++number. The phone fallback is the recorded agreement, and its presentation in the app cannot be verified here.

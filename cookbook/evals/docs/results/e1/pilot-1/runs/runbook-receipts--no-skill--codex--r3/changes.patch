@@ -1,0 +1,99 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..35dd281 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): restore the receipt worker and verify that the waiting queue drains.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..c5fe70c
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,84 @@
++# Receipts stopped
++
++For the volunteer on call when members report that receipts have stopped arriving. Restore receipt delivery and
++drain the waiting jobs; members are missing receipt emails for captured orders. In the September 14 incident,
++Tomás found the worker inactive after a deploy because the deploy script restarted only the web app. Volunteers
++had waited for him because the recovery steps were only in chat. Owner: the on-call volunteer; escalation: Tomás
++in the pantry's chat.
++
++## Before you begin
++
++- A shell on the host running `larder-worker`, with permission to inspect its systemd status and journal and to run
++  `sudo systemctl start larder-worker`.
++- Database access through `psql larder` to read `procrastinate_jobs`.
++- Access to the pantry's chat to check receipt delivery and report unresolved failures.
++
++The [worker and queue](../architecture.md#parts) deliver receipts in the background. These steps recover that
++worker; they do not require capturing a payment again.
++
++## Steps
++
++1. Inspect the worker on its host:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)` if it is up, or `inactive (dead)` as in the previous incident. Note the state and
++   when it stopped. An inactive service can make this command exit with a nonzero status; read the output.
++
++2. Count the queued jobs before changing anything:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: counts by status. The previous incident had 212 `todo`, 0 `doing` and 3 `failed`. A status with no jobs
++   may have no row. Record this baseline; these counts cover the queue, not just receipt jobs.
++
++3. If the worker is inactive, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Check `systemctl status larder-worker` again. Expected: `active (running)`; the start command may print nothing
++   on success. If the worker is already active, continue to observe the queue. If it is failed or starting it
++   fails, use **If it fails** below.
++
++4. Wait about a minute, then repeat the queue-count query from step 2. Repeat while the backlog drains.
++
++   Expected: `todo` decreases and eventually reaches zero (or its row disappears). Tomás observed about 40 jobs
++   per minute; this is a past observation, not a required rate. If `todo` stays flat or grows, or the worker stops,
++   use **If it fails** below.
++
++5. Confirm the worker is still `active (running)` and ask affected members in the pantry's chat to confirm that
++   receipts arrived.
++
++   Expected: the waiting backlog has drained and receipt delivery is confirmed. If nobody can confirm delivery,
++   record that verification is pending rather than declaring delivery restored from queue counts alone.
++
++## If it fails
++
++- If the worker stops again, fails to start, or is active but the queue does not drain, collect its status and recent
++  logs:
++
++  ```sh
++  systemctl status larder-worker
++  journalctl -u larder-worker -n 50
++  ```
++
++  Expected: service state and the latest 50 journal entries to accompany the queue counts. Send Tomás those
++  details in the pantry's chat, together with the time and result of the start attempt. If he is unavailable,
++  leave the evidence and current impact in chat for the next handoff; the repository documents no further
++  recovery procedure. Do not keep restarting a worker that immediately dies.
++- If the shell, database query or journal access fails, record the exact error and request the missing access in
++  the pantry's chat. Without queue counts, backlog recovery is unverified.
++- If `failed` jobs remain, investigate their errors before treating them as harmless. The three failed jobs in
++  September were confirmed bounced emails for members without valid addresses; a nonzero failed count alone does
++  not establish that today's failures have the same cause. For confirmed bounces, the affected members need valid
++  email addresses. Do not bulk retry or delete failed jobs as part of this recovery.
++- If the queue drains but members still report missing receipts, report that discrepancy with the status, counts
++  and logs to Tomás. Do not repeat payment capture to resend a receipt.
++
++Update this runbook after each recurrence with any changes to the recovery procedure.

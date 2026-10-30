@@ -1,0 +1,39 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..9fed28c 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -2,7 +2,7 @@
+ 
+ For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+ amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members
+-being charged twice.
++being charged twice, and because the gateway's Friday peak left confirmed pantry orders uncharged.
+ 
+ ## Capture
+ 
+@@ -11,12 +11,24 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that times out is tried again, up to 5 attempts in all, with a growing pause before each retry: 2, 4, 6,
++then 8 seconds, 20 seconds at most. The gateway answers slowly at its peak, every Friday from 17:00 to 19:00. Larder
++used to make 3 attempts back to back, all within a second, so all three landed in the same slow minute: one Friday 58
++confirmed pantry orders were never charged, and a payments volunteer captured them by hand from the gateway's
++dashboard the next morning. Replayed against the gateway's sandbox, that Friday's timeouts would have left 1 of the 58
++uncharged with 5 spaced attempts. See [issue 40](../../notes/issue-40.md).
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+ drew a fresh key for each attempt charged 41 members twice.
+ 
++## Known limits
++
++- The member waits on the confirmation page while the attempts run: up to 20 seconds of pauses when the gateway is
++  slow. This was accepted as better than volunteers capturing pantry orders by hand; there is no workaround.
++- A capture can still time out on all 5 attempts, and its pantry order stays uncharged. Find it with
++  [the gateway-timeouts runbook](../runbooks/gateway-timeouts.md).
++
+ ## Shaped by
+ 
+ - [Gateway timeouts](../runbooks/gateway-timeouts.md), the runbook for the alert.

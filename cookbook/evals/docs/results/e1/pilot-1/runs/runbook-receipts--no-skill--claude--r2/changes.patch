@@ -1,0 +1,107 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..b2cb742 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,7 +7,9 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+-- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres; it runs as
++  the systemd service `larder-worker`, and [when receipts stop](runbooks/receipts-stopped.md) it is the first thing
++  to check.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..401d9c7 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when receipt emails stop arriving.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..fe649d1
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,36 @@
++# Receipts stopped
++
++For the volunteer on call when members report that receipt emails stopped arriving. Gets the
++[worker](../architecture.md#parts) running again and sends every receipt that waited; until then members get no
++receipt for what they paid. Written after September 14, the second time the worker stayed down after a deploy: the
++first time nobody on call knew the steps and members waited until noon. Owner: Tomás.
++
++## Before you begin
++
++- A shell on the server, with `sudo` for `systemctl` and `journalctl`.
++- Access to the `larder` database with `psql`.
++
++## Steps
++
++1. Run `scripts/start-receipt-worker.sh` on the server. It shows the queued jobs by status, starts the worker
++   `larder-worker` if it is stopped, then prints the number of jobs waiting once a minute.
++
++   Expected: `todo` in the first table is above 0, then `The worker is stopped; starting it.`, then the waiting count
++   falls by about 40 a minute.
++
++2. Let it run until it prints `Done: every queued receipt has been sent.`
++
++   Expected: members report receipts arriving. Jobs with status `failed` stay; on September 14 they were emails that
++   bounced because the member has no valid address, which starting the worker does not change.
++
++3. Check whether a deploy ran just before the worker stopped: `systemctl status larder-worker` shows when it went
++   inactive. Say so in the pantry's chat.
++
++   Expected: the time matches a deploy. The deploy script restarts the web app but not the worker, which is how
++   receipts stopped both times.
++
++## If it fails
++
++- If the script says the worker is already running, or that the worker stopped again, it prints the worker's last 50
++  log lines: copy them to the pantry's chat and ping Tomás.
++- If the waiting count stops falling while the worker runs, send `journalctl -u larder-worker -n 50` to Tomás.
+diff --git a/scripts/start-receipt-worker.sh b/scripts/start-receipt-worker.sh
+new file mode 100755
+index 0000000..43c91af
+--- /dev/null
++++ b/scripts/start-receipt-worker.sh
+@@ -0,0 +1,35 @@
++#!/usr/bin/env bash
++# Starts the stopped worker and waits until the queued receipts are sent.
++# Run on the server; the steps it follows are in docs/runbooks/receipts-stopped.md.
++set -euo pipefail
++
++count_todo() {
++  psql larder -tAc "select count(*) from procrastinate_jobs where status = 'todo'"
++}
++
++echo "Jobs waiting, by status:"
++psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++
++if systemctl is-active --quiet larder-worker; then
++  echo "The worker is already running, so it is not what stopped receipts. Its last log lines:"
++  sudo journalctl -u larder-worker -n 50 --no-pager
++  exit 1
++fi
++
++echo "The worker is stopped; starting it."
++sudo systemctl start larder-worker
++
++while true; do
++  sleep 60
++  if ! systemctl is-active --quiet larder-worker; then
++    echo "The worker stopped again. Its last log lines:"
++    sudo journalctl -u larder-worker -n 50 --no-pager
++    exit 1
++  fi
++  todo=$(count_todo)
++  echo "$(date +%H:%M) jobs waiting: $todo"
++  if [ "$todo" -eq 0 ]; then
++    echo "Done: every queued receipt has been sent."
++    exit 0
++  fi
++done

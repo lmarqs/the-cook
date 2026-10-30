@@ -1,0 +1,222 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "no-skill",
+  "harness": "codex",
+  "run": 1,
+  "id": "write-adr--no-skill--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T05:11:08.041605+00:00",
+  "duration_s": 50.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-keep-background-jobs-in-postgres.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/**' -g '*procrast*' -g '*celery*' -g 'pyproject.toml' -g '*requirements*' -g '*compose*' -g 'Procfile*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/** -g *procrast* -g *celery* -g pyproject.toml -g *requirements* -g *compose* -g Procfile*"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; rg --files; cat AGENTS.md docs/README.md notes/issue-12.md"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-12.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden .agents .claude .codex"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la"
+    },
+    {
+      "kind": "read",
+      "path": "CLAUDE.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "ls -la; cat CLAUDE.md; git log -5 --oneline; cat tests/test_capture.py tests/test_sessions.py conftest.py"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden --no-ignore .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la .agents/skills .claude/skills"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-keep-background-jobs-in-postgres.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; cat docs/adrs/0002-keep-background-jobs-in-postgres.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; cat docs/adrs/0002-keep-background-jobs-in-postgres.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0002-keep-background-jobs-in-postgres.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 170983,
+    "cached": 151936,
+    "output": 1603,
+    "reasoning": 127
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [a decision record]( /work/docs/adrs/0002-keep-background-jobs-in-postgres.md) covering the lost receipts, alternatives considered, transactional enqueueing, and operational trade-offs. Linked it from the architecture page and decisions index.\n\nNo recovery commands were invented; the repository doesn\u2019t provide them.\n\nValidation: 2 tests passed; `git diff --check` passed.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

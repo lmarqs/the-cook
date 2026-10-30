@@ -1,0 +1,144 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..c7edf93 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,7 +7,8 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+-- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres. It runs
++  as its own service, `larder-worker`; when it stops, see [receipts stopped](runbooks/receipts-stopped.md).
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..7772aa2 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when members get no receipt emails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..b06776c
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,37 @@
++# Receipts stopped
++
++For the volunteer on call when members say their receipt emails have stopped arriving. Restarts the worker that
++sends them and clears the receipts waiting in its queue; while it is down, members get no receipt for orders they
++have paid. Written after it happened twice: the first time nobody on call knew what to do and members waited until
++noon, and on September 14 Tomás found the worker dead since the deploy of the night before. Owner: Tomás.
++
++## Before you begin
++
++- A shell on the server where larder runs, with a checkout of this repository.
++- Rights to run `sudo systemctl` and `psql larder` there.
++- Background: receipts are jobs in a queue in Postgres, sent by the worker, the `larder-worker` service
++  ([architecture](../architecture.md#parts)). The deploy script restarts only the web app, so a deploy can leave the
++  worker stopped.
++
++## Steps
++
++1. Run `scripts/restart-receipts-worker.sh`. It checks the worker, counts the waiting jobs, starts the worker, then
++   checks the queue every 30 seconds.
++
++   Expected: the status says `inactive (dead)`, the count shows jobs in `todo` (212 on September 14), and after the
++   start the `todo` count goes down, about 40 a minute, until the script ends with `Done: no jobs waiting.`
++2. Ask a member who was missing a receipt whether it has arrived.
++
++   Expected: it has.
++
++Jobs in `failed` are not retried. On September 14 the 3 failed jobs were bounced emails to members with no valid
++address, and were left as they were.
++
++## If it fails
++
++- The script says the worker is running: the worker is not the cause. Read its log with
++  `journalctl -u larder-worker -n 50` and call Tomás.
++- The worker stops again after the start, or the `todo` count stops going down: the script prints the last 50 lines
++  of the worker's log. Keep them and call Tomás.
++- The script stops with `Failed:`: the command it names did not work, often a missing permission. Fix that and run
++  the script again; it is safe to rerun.
+diff --git a/scripts/restart-receipts-worker.sh b/scripts/restart-receipts-worker.sh
+new file mode 100755
+index 0000000..fe3941f
+--- /dev/null
++++ b/scripts/restart-receipts-worker.sh
+@@ -0,0 +1,72 @@
++#!/usr/bin/env bash
++# Brings receipts back when the worker has stopped: the steps of docs/runbooks/receipts-stopped.md.
++# Run it on the server where larder runs, as a user who can run `sudo systemctl` and `psql larder`.
++set -euo pipefail
++trap 'echo "Failed: \`$BASH_COMMAND\` (line $LINENO). Follow '"'"'If it fails'"'"' in docs/runbooks/receipts-stopped.md." >&2' ERR
++
++unit=larder-worker
++interval=30       # seconds between checks of the queue
++stall_checks=6    # checks in a row without progress before giving up (3 minutes)
++
++count_todo() {
++    psql larder -tAc "select count(*) from procrastinate_jobs where status = 'todo'"
++}
++
++show_logs_and_fail() {
++    echo
++    echo "$1"
++    echo "Last 50 lines of the worker's log:"
++    journalctl -u "$unit" -n 50 --no-pager
++    echo
++    echo "Stop here and follow 'If it fails' in docs/runbooks/receipts-stopped.md."
++    exit 1
++}
++
++# 1. Is the worker running?
++echo "== Worker status"
++if systemctl is-active --quiet "$unit"; then
++    systemctl status "$unit" --no-pager || true
++    echo
++    echo "The worker is running, so it is not the cause; this script cannot help."
++    echo "Follow 'If it fails' in docs/runbooks/receipts-stopped.md."
++    exit 1
++fi
++systemctl status "$unit" --no-pager || true
++
++# 2. What is waiting?
++echo
++echo "== Jobs in the queue, by status"
++psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++
++# 3. Start the worker.
++echo
++echo "== Starting $unit"
++sudo systemctl start "$unit"
++
++# 4. Watch the waiting jobs go to 0.
++echo
++echo "== Waiting jobs, every ${interval}s (Ctrl-C stops watching; the worker keeps running)"
++best=$(count_todo)
++echo "$(date +%H:%M:%S)  todo: $best"
++stalled=0
++while [ "$best" -gt 0 ]; do
++    sleep "$interval"
++    if ! systemctl is-active --quiet "$unit"; then
++        show_logs_and_fail "The worker stopped again after it was started."
++    fi
++    todo=$(count_todo)
++    echo "$(date +%H:%M:%S)  todo: $todo"
++    if [ "$todo" -lt "$best" ]; then
++        best=$todo
++        stalled=0
++    else
++        stalled=$((stalled + 1))
++        if [ "$stalled" -ge "$stall_checks" ]; then
++            show_logs_and_fail "The worker is running but the waiting jobs have not gone down for 3 minutes."
++        fi
++    fi
++done
++
++echo
++echo "== Done: no jobs waiting. Final count by status:"
++psql larder -c "select status, count(*) from procrastinate_jobs group by status"

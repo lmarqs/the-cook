@@ -1,0 +1,200 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "write-adr--skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:25:05.179899+00:00",
+  "duration_s": 51.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-keep-background-jobs-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record the Celery -> procrastinate background jobs migration (see notes/ issue 12) for the next maintainer."
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.claude"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls notes"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-12.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "cat notes/issue-12.md; for f in docs/glossary.md docs/architecture.md docs/features/*.md docs/adrs/*.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat $f; done"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "cat notes/issue-12.md; for f in docs/glossary.md docs/architecture.md docs/features/*.md docs/adrs/*.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat $f; done"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "cat notes/issue-12.md; for f in docs/glossary.md docs/architecture.md docs/features/*.md docs/adrs/*.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat $f; done"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE celery|redis|procrastinate --exclude-dir=.git ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./notes"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat larder/receipts.py larder/orders.py larder/__init__.py; grep -rniE \"celery|redis|procrastinate\" --exclude-dir=.git . | grep -v \"^./notes\"; git log --stat | head -40; cat .agents/skills/docs-layout/templates/adr.template.md; diff -r .agents/skills/docs-layout .claude/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "cat larder/receipts.py larder/orders.py larder/__init__.py; grep -rniE \"celery|redis|procrastinate\" --exclude-dir=.git . | grep -v \"^./notes\"; git log --stat | head -40; cat .agents/skills/docs-layout/templates/adr.template.md; diff -r .agents/skills/docs-layout .claude/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat larder/receipts.py larder/orders.py larder/__init__.py; grep -rniE \"celery|redis|procrastinate\" --exclude-dir=.git . | grep -v \"^./notes\"; git log --stat | head -40; cat .agents/skills/docs-layout/templates/adr.template.md; diff -r .agents/skills/docs-layout .claude/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-keep-background-jobs-in-the-database.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 242445,
+    "cached": 217385,
+    "output": 4262,
+    "reasoning": 1380
+  },
+  "cost_usd": 0.32913300000000006,
+  "turns": 11,
+  "last_message": "I wrote a decision record for the Celery-to-procrastinate move. It covers why it happened, the options considered and why procrastinate won, all taken from issue 12.\n\n**Files changed**\n- **New:** `docs/adrs/0002-keep-background-jobs-in-the-database.md`\n  - **What happened:** one Saturday night in March the Redis server holding Celery's queue ran out of memory. It deleted queued receipt jobs without logging any error. About 300 members paid and got no receipt, and a volunteer spent most of a day resending them by hand.\n  - **What the options were judged on:** a queued job must not be lost; larder shouldn't run a service that only one volunteer can restore; and the queue shouldn't rely on an experimental feature.\n  - **Options and why each lost:**\n    - Keeping Celery and Redis with persistence and a memory alarm was the least work. It lost because it keeps Redis, which only Tom can restore.\n    - Celery's database backend lost because Celery's docs mark it experimental.\n  - **Decision:** procrastinate. It keeps jobs in Postgres, which is backed up nightly and which every volunteer can query. It also writes a job in the same database transaction as the pantry order that creates it, so a receipt can't be lost between the two.\n- `docs/adrs/README.md`: added the new record to the list.\n- `docs/architecture.md`: it already said the queue is in Postgres; it now links the new record.\n\nThe page is written to fit a later full review of `docs/`, but I didn't run that review. I didn't add a separate page describing how the worker behaves, because `larder/receipts.py` is still an unfinished stub and there's nothing real to describe yet. The tests pass (2), and nothing is committed.\n\n**Things the repository didn't settle, which a maintainer should check**\n- **Dates:** you said the move happened last month (September). The issue has the decision on March 9 and plans the move for \"this month\", with no year. So the record only says \"in March\", and has no date for when the move finished.\n- **Redis switched off:** the record says Redis is off. That's based on the issue's plan and on nothing in the code mentioning Redis or Celery any more. Nothing confirms it was actually shut down.\n- **Same transaction:** that claim comes from Ana's comment in the issue. The code doesn't show it yet, because the job is still a stub.\n- **Unrelated:** the issue also mentions that the pickup slot page shows Sunday twice. I left that out of the docs.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

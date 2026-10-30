@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A decision record is written under docs/adrs/, the kind the map gives a foundation decision such as the job queue.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adrs/[0-9][0-9][0-9][0-9]-*.md: ['docs/adrs/0002-keep-background-jobs-in-postgres.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adrs/0002-keep-background-jobs-in-postgres.md', 'docs/adrs/README.md', 'docs/architecture.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adrs/0002-keep-background-jobs-in-postgres.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the incident with Redis evicting queued jobs and what it cost, before it\nstates a conclusion such as \"we need a durable queue\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "Context opens with the incident before any conclusion: \"When the Redis host ran out of memory, it evicted keys, including queued receipt jobs, without logging an error. About 300 members who had paid received no receipt... resending receipts by hand from the orders table took most of a volunteer's Tuesday.\" It then notes \"Redis served only the job queue, and only one ops volunteer knew how to restore it\" and names the forces (\"protect queued work, avoid a gap between saving an order and queuing its receipt, and keep the services and specialist knowledge volunteers maintain down\") without concluding there. The month (March) is not given, but the expectation does not require it.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record's Decision names procrastinate, the product chosen.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /## Decision\\s.*procrastinate/ in ['docs/adrs/0002-keep-background-jobs-in-postgres.md']: {'docs/adrs/0002-keep-background-jobs-in-postgres.md': '## Decision\\n\\nUse procrastinate'}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

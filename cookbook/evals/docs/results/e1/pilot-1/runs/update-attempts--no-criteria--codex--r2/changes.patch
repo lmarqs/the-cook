@@ -1,0 +1,23 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..c7f8146 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -11,7 +11,17 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that raises `GatewayTimeout` is tried again, up to 5 attempts in all. The pauses before the remaining
++attempts are 2, 4, 6 and 8 seconds, as implemented in [capture.py](../../larder/capture.py). If the fifth attempt
++times out, the exception is raised to the caller. The pauses add up to 20 seconds of waiting on the confirmation
++page, in addition to the time spent calling the gateway.
++
++Previously, the three attempts went out back to back within a second, all during the same gateway slowdown. The
++gateway's Friday peak from 17:00 to 19:00 left 58 confirmed pantry orders uncharged one Friday; a payments volunteer
++captured them manually the next morning. Replaying those timeouts in the sandbox with the current pauses would
++have captured 57 of the 58 pantry orders. The maintainers accepted the extra wait to reduce that manual work;
++switching gateways was ruled out that year because the contract ran through December 2026. This discussion and
++the merged change are recorded in [issue 40](../../notes/issue-40.md).
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that

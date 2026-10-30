@@ -1,0 +1,50 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..dff8c36 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..8e33f47
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,35 @@
++# Cancellation
++
++For whoever changes when a member may cancel a pantry order, or answers a member whose cancellation was refused. A
++member may cancel a pantry order until 2 hours before its pickup slot starts; after that the app refuses, and the
++member calls the pantry instead. The cutoff shipped in October 2026, after late cancellations left packed bags on
++the shelf three Saturdays in a row and 25 bags of fresh food were thrown away in a week.
++
++## The cutoff
++
++`can_cancel` in `larder/cancellation.py` allows a cancellation while the current time is earlier than 2 hours before
++the pickup slot starts, `CUTOFF` in the same file. From exactly 2 hours before the slot onward it refuses.
++
++For a pickup slot starting at 17:00:
++
++| Member cancels at | Result  |
++|-------------------|---------|
++| 14:59             | allowed |
++| 15:00             | refused |
++| 16:50             | refused |
++
++## Why 2 hours
++
++Volunteers start packing a slot's bags 2 hours before it starts. A cancellation before that costs the pantry nothing;
++one after it leaves a packed bag on the shelf. In early October 2026 members were cancelling minutes before their
++slot, such as at 16:50 for a 17:00 pickup, after their bags were packed. One Saturday was the third in a row
++with bags left over, 9 that day, all with milk, bread and greens; by October 7, 25 bags of fresh food had been thrown
++away that month. An in-app banner asking members to cancel earlier had run since the summer without changing that.
++The cutoff therefore matches the start of the packing shift, and a member who cannot come after it calls the pantry,
++where the volunteers decide.
++
++## Known limits
++
++- **No refusal message in the repository.** `can_cancel` only answers yes or no. The pantry agreed to the cutoff on
++  the condition that the refusal shows the pantry's phone number, and neither that message nor the number is in this
++  repository. Until it is, check where the refusal is shown before telling a member they will see the number there.

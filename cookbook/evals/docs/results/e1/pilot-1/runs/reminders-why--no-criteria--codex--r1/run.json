@@ -1,0 +1,167 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-criteria",
+  "harness": "codex",
+  "run": 1,
+  "id": "reminders-why--no-criteria--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T05:13:54.534336+00:00",
+  "duration_s": 47.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/adrs/0002-send-pickup-reminders-by-sms.md",
+    "docs/adrs/README.md"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/**' -g '*52*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/** -g *52*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i remind|sms|pickup|pick.up|email . --glob !.git/**"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat .agents/skills/docs-layout/templates/adr.template.md .agents/skills/docs-layout/references/adrs.md; git status --short; git log -8 --oneline"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat .agents/skills/docs-layout/templates/adr.template.md .agents/skills/docs-layout/references/adrs.md; git status --short; git log -8 --oneline"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files .agents/skills/docs-layout"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-send-pickup-reminders-by-sms.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/README.md'), Path('docs/adrs/README.md'), Path('docs/adrs/0002-send-pickup-reminders-by-sms.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        assert (path.parent / target.split('#')[0]).exists(), (path, target)\nprint('All links in changed docs resolve.')\nPY\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 137253,
+    "cached": 127744,
+    "output": 1547,
+    "reasoning": 96
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [the SMS reminder decision record](docs/adrs/0002-send-pickup-reminders-by-sms.md), covering the email trial, missed-pickup rates, food waste, members\u2019 access habits, and \u20ac40 monthly tradeoff.\n\nLinked it from the docs and decisions indexes. All links resolve; whitespace checks pass.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

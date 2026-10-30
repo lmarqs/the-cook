@@ -1,0 +1,45 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..19b3fec 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why the cutoff is 2 hours.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..7051a47
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,30 @@
++# Cancellation
++
++For whoever changes when a member may cancel a pantry order, or answers a member whose cancellation was refused. A
++member may cancel a pantry order until 2 hours before its pickup slot starts; after that, the app refuses and the
++member calls the pantry. The cutoff exists because members cancelled minutes before pickup, after volunteers had
++packed their bags: by October 6, 2026, 25 bags of fresh food had been thrown away that month, despite an in-app banner
++asking members to cancel earlier.
++
++## Cutoff
++
++`can_cancel` in `larder/cancellation.py` allows a cancellation while the current time is strictly earlier than the
++pickup slot's start minus `CUTOFF`, 2 hours. For a slot starting at 17:00, a cancellation at 14:59 is accepted and one
++at 15:00 or later is refused.
++
++The 2 hours match the packing shift, which starts 2 hours before each slot: a pantry order cancelled before then costs
++the pantry nothing, and one cancelled after leaves a packed bag on the shelf. On three Saturdays in a row the pantry
++found such bags; on October 6 there were 9, all with milk, bread and greens, from members who cancelled at 16:50 for a
++17:00 pickup. A banner asking members to cancel earlier had been in the app since the summer and had not stopped it.
++The discussion is in `notes/issue-31.md`.
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide what to do with the pantry
++order. The pantry agreed to the cutoff on the condition that the refusal message gives the pantry's phone number.
++
++## Known limits
++
++- The repository holds no refusal message: `can_cancel` only answers whether the cancellation is allowed, and neither
++  the message nor the pantry's phone number appears in the code. Whoever builds or changes the refusal shows the
++  phone number in it, as the pantry required.

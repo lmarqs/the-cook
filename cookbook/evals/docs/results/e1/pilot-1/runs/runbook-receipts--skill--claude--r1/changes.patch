@@ -1,0 +1,91 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..fa97f64 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when members stop getting receipt emails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..34641b0
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,38 @@
++# Receipts stopped
++
++For the volunteer on call when members say their receipt emails have stopped arriving. Gets receipts sent again,
++including the ones that waited; until then, no member gets a receipt for a paid pantry order. Written after the
++second time it happened, on September 14: both times the [worker](../architecture.md#parts) had stopped after a
++deploy, which restarts only the web app, and the first time members waited until noon because only Tomás knew the
++fix. Owner: not yet named; until one is, Tomás.
++
++## Before you begin
++
++- A shell on the server that runs larder, with `sudo` for `systemctl`, and `psql` access to the `larder` database.
++- This repository checked out there, for `scripts/restart-receipts-worker.sh`.
++
++## Steps
++
++1. Check the worker: `systemctl status larder-worker`.
++
++   Expected: `Active: inactive (dead) since ...`, often just after the last deploy. If it says `active (running)`,
++   the worker is not the cause: go to [If it fails](#if-it-fails).
++2. Run `scripts/restart-receipts-worker.sh`. It counts the waiting jobs, starts the worker and prints the jobs
++   still waiting each minute.
++
++   Expected: a table of jobs by status, then `todo:` lines falling by about 40 a minute, then
++   `todo: 0. Receipts are flowing again.` 212 waiting jobs took about seven minutes on September 14.
++3. Look at the `failed` count in the table the script printed first.
++
++   Expected: a handful at most. Those are receipts that bounced because the member has no valid email address;
++   starting the worker does not resend them, and nothing more is needed.
++4. Ask in `#larder-ops` whether a member has received a receipt, and add to this page what differed this time.
++
++   Expected: a member confirms a receipt arrived.
++
++## If it fails
++
++- The script prints `larder-worker died again` and its last 50 log lines: copy them into `#larder-ops` and ping
++  Tomás.
++- The worker was already running, or `todo` does not fall: the cause is not the worker. Look at its log with
++  `journalctl -u larder-worker -n 50`, post it in `#larder-ops` and ping Tomás.
+diff --git a/scripts/restart-receipts-worker.sh b/scripts/restart-receipts-worker.sh
+new file mode 100755
+index 0000000..75bb6f4
+--- /dev/null
++++ b/scripts/restart-receipts-worker.sh
+@@ -0,0 +1,32 @@
++#!/bin/sh
++# Starts the receipts worker if it is down, then waits for its queue to drain.
++# The runbook docs/runbooks/receipts-stopped.md says when to run it and what to do if it fails.
++set -eu
++
++count_todo() {
++    psql larder -tAc "select count(*) from procrastinate_jobs where status = 'todo'"
++}
++
++echo "Jobs waiting, by status:"
++psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++
++if systemctl is-active --quiet larder-worker; then
++    echo "larder-worker is already running, so it is not the cause. Follow 'If it fails' in the runbook."
++    exit 1
++fi
++
++echo "larder-worker is down; starting it."
++sudo systemctl start larder-worker
++
++todo=$(count_todo)
++while [ "$todo" -gt 0 ]; do
++    echo "todo: $todo"
++    sleep 60
++    if ! systemctl is-active --quiet larder-worker; then
++        echo "larder-worker died again. Its last 50 log lines:"
++        journalctl -u larder-worker -n 50 --no-pager
++        exit 1
++    fi
++    todo=$(count_todo)
++done
++echo "todo: 0. Receipts are flowing again."

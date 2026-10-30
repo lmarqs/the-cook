@@ -1,0 +1,32 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..f5ab9e0 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -2,7 +2,8 @@
+ 
+ For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+ amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members
+-being charged twice.
++being charged twice, and they pause between attempts because the gateway's Friday peak left dozens of pantry orders
++uncharged.
+ 
+ ## Capture
+ 
+@@ -11,7 +12,16 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that times out is tried again, up to 5 attempts in all, with a pause that grows by 2 seconds before each
++retry: 2, 4, 6 and 8 seconds. When the fifth attempt times out too, the capture fails with `GatewayTimeout`. The
++member waits on the confirmation page through the pauses, up to 20 seconds longer than one attempt.
++
++The gateway answers slowly every Friday from 17:00 to 19:00, its peak. Captures were tried up to 3 times back to back,
++within one second, so all three landed in the same slow minute: one Friday left 58 pantry orders confirmed but never
++charged, and a payments volunteer captured them by hand from the gateway's dashboard the next morning. Replaying that
++Friday's timeouts against the gateway's sandbox with 5 attempts spaced 2, 4, 6 and 8 seconds apart, 57 of the 58
++went through. Switching gateways was ruled out while the contract runs, to December 2026. The longer wait on the
++confirmation page was accepted as cheaper than captures by hand.
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that

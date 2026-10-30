@@ -1,0 +1,45 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..940d8f3 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -1,8 +1,9 @@
+ # Payments
+ 
+ For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+-amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members
+-being charged twice.
++amount once a pantry order is confirmed, retrying when the gateway times out. Its retry rules exist because in 2024 a
++gateway timeout led to 41 members being charged twice, and because quick retries left 58 pantry orders uncharged on
++a busy Friday.
+ 
+ ## Capture
+ 
+@@ -11,12 +12,27 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that times out is tried again, up to 5 attempts in all, with a pause that grows by 2 seconds after each
++one: 2, 4, 6 and 8 seconds, `ATTEMPTS` and `BACKOFF_SECONDS` in `larder/capture.py`. When the fifth attempt times
++out, the capture fails with `GatewayTimeout`.
++
++Captures used to make 3 attempts, back to back, all within one second. The gateway answers slowly every Friday from
++17:00 to 19:00, its peak, so all three attempts landed in the same slow minute. One Friday, 58 confirmed pantry orders
++were never charged, and a payments volunteer captured them by hand from the gateway's dashboard the next morning.
++Switching gateways was ruled out because the contract runs to December 2026. Replaying that Friday's timeouts against
++the gateway's sandbox showed that 5 attempts with these pauses would have captured 57 of the 58.
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+ drew a fresh key for each attempt charged 41 members twice.
+ 
++## Known limits
++
++- The capture runs while the member waits on the confirmation page, so the pauses can keep them waiting up to 20
++  seconds longer. The maintainers decided this was better than volunteers capturing orders by hand.
++- A pantry order whose fifth attempt times out stays uncharged. Workaround: capture it by hand from the gateway's
++  dashboard, after [Gateway timeouts](../runbooks/gateway-timeouts.md) finds it in the worker's log.
++
+ ## Shaped by
+ 
+ - [Gateway timeouts](../runbooks/gateway-timeouts.md), the runbook for the alert.

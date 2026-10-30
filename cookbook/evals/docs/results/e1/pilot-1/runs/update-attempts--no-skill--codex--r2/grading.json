@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "The page that owns the retry rules, docs/features/payments.md, is changed.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/payments.md: ['docs/features/payments.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/features/payments.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The payments page still opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/features/payments.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The payments page says why a capture gets 5 attempts with growing pauses, told as it happened: back-to-back attempts\nall timed out at the gateway's Friday peak and left pantry orders uncharged, not only a conclusion such as \"for\nreliability\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The Retries section tells the story as it happened: \"During the gateway's Friday peak, back-to-back attempts all landed in the same slowdown, leaving 58 confirmed pantry orders uncharged and a volunteer to capture them by hand the next morning. Replaying those timeouts in the sandbox with more attempts and increasing pauses would have captured 57 of the 58 orders.\" This is the concrete reason, not only a conclusion like 'for reliability'. The page does not state the number 5 or the pause lengths; it points to capture.py for those.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The payments page states the new rule: up to 5 attempts.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "match /\\b(5|five)\\b[^.\\n]{0,40}attempts|attempts[^.\\n]{0,40}\\b(5|five)\\b/ in ['docs/features/payments.md']: no match",
+      "judged_by": null
+    },
+    {
+      "name": "06-no-new-page",
+      "type": "regex",
+      "text": "No page is added under docs/: the change belongs to the page that already owns the retry rules.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^diff --git a/docs/\\S+ b/docs/\\S+\\nnew file mode/ in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.8333333333333334
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": false,
+    "share": 0.8
+  }
+}

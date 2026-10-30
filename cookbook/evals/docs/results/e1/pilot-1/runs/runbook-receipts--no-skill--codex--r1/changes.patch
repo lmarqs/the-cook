@@ -1,0 +1,94 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..67b59d5 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): check the worker, drain queued receipts and escalate delivery failures.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..96804a2
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,79 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipts. Restore receipt delivery by checking the worker
++and draining its queued jobs; members wait for receipt emails while the worker is down. In the September incident,
++the worker stopped after a deploy that restarted only the web app, and recovery depended on Tomás being awake.
++Owner: the on-call volunteer; escalation: Tomás in the pantry's chat.
++
++## Before you begin
++
++- A shell on the host running `larder-worker`, with permission to inspect its systemd service and journal and to
++  run `sudo systemctl start larder-worker`.
++- `psql` access to the `larder` database on that host.
++- Access to the pantry's chat for escalation and confirmation that receipts are arriving.
++
++The [worker and database](../architecture.md#how-they-connect) carry background jobs. This procedure branches on
++the worker's state and queue progress; check each result before proceeding.
++
++## Steps
++
++1. Check the worker:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected for the previous incident's failure: `inactive (dead)`. The command can exit nonzero for an inactive
++   service; read its status. If it is `active (running)`, skip the start in step 3 and inspect progress in step 4.
++   For a failed or missing service, use **If it fails**.
++
++2. Record the queue counts before changing anything:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected when a stopped worker has a backlog: `todo` jobs waiting and no `doing` jobs. A status with no jobs
++   may be absent from the results. Last time there were 212 `todo`, 0 `doing` and 3 `failed`; those are historical
++   counts, not targets. If the query fails, use **If it fails** before continuing.
++
++3. If the worker is `inactive (dead)`, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Expected: the command succeeds. Check `systemctl status larder-worker` again; it should say `active (running)`.
++   If it fails to start or exits again, use **If it fails**.
++
++4. After about one minute, repeat the queue query from step 2. Continue checking about once a minute while
++   `todo` decreases.
++
++   Expected: `todo` falls to zero (or its row disappears) and `doing` clears as jobs finish. In the September
++   incident, the worker processed about 40 jobs per minute; this is an observation, not a required rate. If counts
++   do not progress, or `failed` increases, use **If it fails**.
++
++5. Confirm in the pantry's chat that receipts are arriving, and check that the worker is still `active (running)`.
++
++   Expected: delivery is confirmed and the backlog has cleared. Record the before/after counts and recovery time
++   in the chat. Update this runbook with anything learned from this occurrence.
++
++## If it fails
++
++- If the worker fails to start, dies again, or runs without draining the queue, collect its recent logs:
++
++  ```sh
++  journalctl -u larder-worker -n 50
++  ```
++
++  Send Tomás the service status, queue counts over time, recent logs and any command errors in the pantry's chat.
++  If host, database or sudo access is missing, report the exact access failure there. If Tomás is unavailable,
++  leave the evidence in the chat for follow-up; the repository names no alternate escalation contact.
++- If the queue is empty but receipts still do not arrive, or failed jobs increase, escalate with the same evidence.
++  In September, the three existing failures were confirmed bounced emails for invalid member addresses. Do not
++  assume new failures have that cause or retry failed jobs without diagnosis.
++- If confirmation is unavailable, report that the queue drained but delivery is unconfirmed. Keep the incident
++  open for follow-up.
++- The previous deploy restarted only the web app. Starting the worker restored delivery but did not fix that
++  deployment behavior. Include any association with a deploy in the escalation; this repository has no deployment
++  script to repair.

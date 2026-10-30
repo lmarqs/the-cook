@@ -1,0 +1,480 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "runbook-receipts--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:22:41.742198+00:00",
+  "duration_s": 79.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md",
+    "scripts/restart-receipts-worker.sh"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat notes/chat-receipts.md docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i worker\\|receipt\\|deploy\\|procrastinate --include=*.md --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "read",
+      "path": ".gitignore",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "find .agents .claude -type f | head -50; cat .gitignore; git check-ignore -v notes/chat-receipts.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls tests"
+    },
+    {
+      "kind": "other",
+      "tool": "which",
+      "command": "cat docs/adrs/README.md docs/features/sessions.md | head -30; ls tests; which shellcheck bash psql systemctl"
+    },
+    {
+      "kind": "edit",
+      "path": "scripts/restart-receipts-worker.sh",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "chmod",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "T=$(mktemp",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "mkdir",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "read",
+      "path": "$STATE/up",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "systemctl",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "[",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "[",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "edit",
+      "path": "sudo",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "psql",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "then",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "[",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "[",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "edit",
+      "path": "40",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "$STATE/todo",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "[",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "touch",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "else",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "fi",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "edit",
+      "path": "journalctl",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "sleep",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "S=$(mktemp",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "[",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "touch",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && T=$(mktemp -d) && mkdir $T/bin && cd $T/bin &&\ncat > systemctl <<'EOF'\n#!/bin/bash\ncase \"$1\" in\n is-active) [ -f $STATE/up ] && [ ! -f $STATE/die ] ;;\n status) echo \"larder-worker: $( [ -f $STATE/up ] && echo active || echo 'inactive (dead)')\"; [ -f $STATE/up ] ;;\n start) touch $STATE/up ;;\nesac\nEOF\ncat > sudo <<'EOF'\n#!/bin/bash\n\"$@\"\nEOF\ncat > psql <<'EOF'\n#!/bin/bash\nn=$(cat $STATE/todo 2>/dev/null || echo 90)\nif [ \"$2\" = \"-tAc\" ]; then echo $n; [ -f $STATE/up ] && [ -z \"$STALL\" ] && echo $(( n>40 ? n-40 : 0 )) > $STATE/todo; [ -n \"$DIE\" ] && touch $STATE/die; else echo \" todo | $n\"; fi\nEOF\ncat > journalctl <<'EOF'\n#!/bin/bash\necho \"fake log line\"\nEOF\ncat > sleep <<'EOF'\n#!/bin/bash\nEOF\nchmod +x *; cd /work\nfor mode in ok stall die running; do echo \"##### $mode\"; S=$(mktemp -d); [ $mode = running ] && touch $S/up\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) DIE=$([ $mode = die ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done"
+    },
+    {
+      "kind": "edit",
+      "path": "scripts/restart-receipts-worker.sh",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "T=$(ls",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "while",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "break",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "done)",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "edit",
+      "path": "$T/bin/psql",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "S=$(mktemp",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "S=$(mktemp",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "printf",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "edit",
+      "path": "$S/psql",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "chmod",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "T=$(ls -dt /tmp/tmp.* | while read d; do [ -d $d/bin ] && echo $d && break; done) && echo 'exit 0' >> $T/bin/psql &&\nfor mode in ok stall; do echo \"##### $mode\"; S=$(mktemp -d)\n env PATH=$T/bin:$PATH STATE=$S STALL=$([ $mode = stall ] && echo 1) scripts/restart-receipts-worker.sh; echo \"exit=$?\"; done\necho \"##### psql broken\"; S=$(mktemp -d); printf '#!/bin/bash\\necho \"psql: connection refused\" >&2; exit 2\\n' > $S/psql; chmod +x $S/psql\nenv PATH=$S:$T/bin:$PATH STATE=$S scripts/restart-receipts-worker.sh; echo \"exit=$?\""
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2 && git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -2 && git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 280276,
+    "cached": 264087,
+    "output": 7387,
+    "reasoning": 2564
+  },
+  "cost_usd": 0.3299894,
+  "turns": 13,
+  "last_message": "I turned Tom\u00e1s's fix into a script and a runbook, so the next volunteer on call can run it without asking anyone. I haven't committed anything.\n\n**What I added**\n- **`scripts/restart-receipts-worker.sh`** runs Tom\u00e1s's steps from the chat. It checks whether the worker is running, counts the receipt jobs waiting in the queue, starts the worker, then checks every 30 seconds until no jobs are waiting. It stops and prints the worker's last 50 log lines in three cases:\n  - the worker dies again after starting;\n  - the number of waiting jobs doesn't go down for 3 minutes;\n  - the worker was already running, which means the cause is something else.\n\n  If a command such as `psql` fails, it names the command instead of stopping silently. It is safe to run again.\n- **`docs/runbooks/receipts-stopped.md`** is the runbook for \"members say receipts stopped.\" It says what access the volunteer needs, what they should see at each step (using September 14 as the example), that failed jobs are left alone, and when to call Tom\u00e1s. It's listed in `docs/runbooks/README.md`.\n- **`docs/architecture.md`** now says the worker runs as its own service, `larder-worker`, and links to the runbook.\n\n**How it was tested:** I couldn't run the script against the real server, because neither the server nor `psql` is available here. I ran it with fake `systemctl`, `psql` and `journalctl` commands covering five cases: normal recovery, a stall, the worker dying again, the worker already running, and `psql` failing. Each behaved as intended. The existing tests still pass.\n\n**Things the repository couldn't answer:**\n- **The cause is still there.** According to the chat, the deploy script restarts only the web app and not the worker, so the next deploy can stop receipts again. The deploy script isn't in this repository, so I couldn't fix it.\n- **Last night's outage isn't in the runbook.** The docs ask for each runbook to be updated every time its problem happens. I only had the September 14 chat, so if anyone finds out what happened last night, add it to the runbook.\n- **Some details are my assumptions.** The runbook says the volunteer needs a checkout of this repository on the server, and it names Tom\u00e1s as the owner and the person to call. Please check both are right.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

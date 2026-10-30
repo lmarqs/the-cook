@@ -1,0 +1,38 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..dff8c36 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..286f77e
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,23 @@
++# Cancellation
++
++For whoever changes how a member cancels a pantry order, or answers a member whose cancellation was refused. A member
++may cancel a pantry order until 2 hours before its pickup slot starts; after that, larder refuses and the member calls
++the pantry. The cutoff exists because volunteers pack each pantry order in the 2 hours before its slot, and late
++cancellations left packed bags of fresh food to be thrown away: 25 in October 2026 before it shipped.
++
++## Cutoff
++
++A cancellation is accepted while the current time is strictly earlier than the pickup slot's start minus 2 hours,
++`CUTOFF` in `larder/cancellation.py`; `can_cancel` decides. For a slot starting at 17:00, a cancellation at 14:59 is
++accepted and one at 15:00 or later is refused.
++
++The 2 hours match the packing shift, which starts 2 hours before each slot: a pantry order cancelled before then
++costs the pantry nothing, and one cancelled after costs a packed bag. In October 2026 members cancelled from the app
++minutes before pickup, such as at 16:50 for a 17:00 slot, after their bags were packed; on one Saturday 9 bags of
++milk, bread and greens were left on the shelf. A banner asking members to cancel earlier had run since the summer
++without stopping it, so the app now refuses instead.
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide what happens to the pantry
++order.

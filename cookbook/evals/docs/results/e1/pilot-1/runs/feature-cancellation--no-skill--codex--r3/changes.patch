@@ -1,0 +1,41 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..3120a3a 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): when a member may cancel a pantry order and what happens after the cutoff.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..7edde82
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,26 @@
++# Cancellation
++
++For whoever changes pantry order cancellation or answers a member who cannot cancel in the app. Cancellation closes
++when packing starts, two hours before the pickup slot. Members had been cancelling after volunteers packed their
++bags, leaving fresh food to be thrown away; a banner asking them to cancel earlier had not stopped it.
++
++## Cutoff
++
++A member may cancel in the app only before the cutoff. At exactly two hours before the pickup slot, and after that,
++cancellation is refused. For a 17:00 pickup, cancellation is allowed before 15:00 and refused from 15:00 onward.
++The eligibility check is [`can_cancel`](../../larder/cancellation.py).
++
++The packing shift starts two hours before each slot: earlier cancellations cost no packed bag, while later ones
++do. By October 7, 25 bags of fresh food had been thrown away that month despite the banner. The
++[issue 31 discussion](../../notes/issue-31.md) records why the cutoff was introduced.
++
++## After the cutoff
++
++A member who cannot come calls the pantry, and volunteers decide what to do. The agreement in issue 31 requires the
++pantry's phone number in the refusal message.
++
++## Known limits
++
++The repository implements only the eligibility check; it contains neither a refusal message nor a pantry phone
++number, so the agreed message cannot be verified here. After the cutoff, use the phone fallback above; volunteer
++decisions are outside the eligibility check.

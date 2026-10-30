@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A feature page under docs/features/ is written or changed: the reminder channel is how one feature behaves, which\nthe map gives a feature page rather than a decision record.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/[!R]*.md: ['docs/features/reminders.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/features/README.md', 'docs/features/reminders.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "Each feature page written or changed opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/features/reminders.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The page says why reminders go by SMS, told as it happened: the 2025 email trial and what it cost, not only a\nconclusion such as \"SMS is more reliable\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\u201cFrom April to June 2025 reminders went by email.\u201d The page explains the trial sought to save about 40 euros a month, 34% of emails were never opened, missed pickups rose from 6% to 13%, fresh food was discarded, and many members shared a family phone and never checked email. \u201cReminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.\u201d",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The page carries the trial's measured result: 34% of email reminders unopened, or missed pickups at 13%.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /13 ?%|34 ?%/ in ['docs/features/reminders.md']: {'docs/features/reminders.md': '34%'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-not-a-record",
+      "type": "regex",
+      "text": "No decision record is written or changed: the reminder channel is a feature's behavior, not a foundation decision.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^\\+\\+\\+ b/docs/adrs// in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

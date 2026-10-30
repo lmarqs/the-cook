@@ -1,0 +1,49 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..449ca6e 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): the cutoff before pickup and manual handling of late requests.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..c411064
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,34 @@
++# Cancellation
++
++For whoever changes cancellation or answers a member who missed the cutoff. Members can cancel a pantry order
++before packing starts, two hours before their pickup slot. Late cancellations left packed bags of fresh food
++unused; a reminder banner had been in the app since summer, but 25 bags were thrown away in October before the
++cutoff was introduced.
++
++## Cutoff
++
++The packing shift starts two hours before each pickup slot. A cancellation before that point costs the pantry
++no packed bag; a later cancellation wastes one. The cutoff therefore follows the start of packing.
++
++Cancellation is allowed strictly before the cutoff and refused at or after it. For a pickup slot starting at
++17:00:
++
++| Cancellation time | Allowed? |
++| --- | --- |
++| Before 15:00 | Yes |
++| Exactly 15:00 | No |
++| After 15:00 | No |
++
++The eligibility check is [`can_cancel(pickup_starts, now)`](../../larder/cancellation.py).
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide how to handle the request.
++This manual fallback was agreed in [issue 31](../../notes/issue-31.md), together with a request to include the
++pantry's phone number in the refusal message.
++
++## Known limits
++
++The repository contains the eligibility check, but no refusal-message implementation or pantry phone number, so
++the requested phone guidance cannot be verified here. Late requests require manual contact with the pantry;
++obtain its number outside this repository.

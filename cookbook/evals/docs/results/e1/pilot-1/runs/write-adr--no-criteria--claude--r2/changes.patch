@@ -1,0 +1,68 @@
+diff --git a/docs/adrs/0002-keep-background-jobs-in-the-database.md b/docs/adrs/0002-keep-background-jobs-in-the-database.md
+new file mode 100644
+index 0000000..ca533f6
+--- /dev/null
++++ b/docs/adrs/0002-keep-background-jobs-in-the-database.md
+@@ -0,0 +1,39 @@
++# Keep background jobs in the database
++
++For whoever changes background jobs, the worker, deploys or the database. Background jobs, such as receipt emails, are
++queued in Postgres with procrastinate, because a Celery queue held in Redis silently lost 300 receipts when Redis ran
++out of memory.
++
++## Context
++
++Background jobs ran on Celery, whose queue lived in Redis. One Saturday night the Redis server ran out of memory and
++evicted keys, queued receipt jobs among them; nothing logged an error, the jobs were just gone. Within three days
++300 members had written in that they paid but never got a receipt. The email provider was suspected first,
++but its dashboard showed nothing sent since 23:10 that Saturday, so the jobs had never reached it. A payments volunteer
++resent the receipts by hand from the orders table, which took most of a day. Redis ran for the queue alone, and one
++ops volunteer was the only person who knew how to restore it; Postgres is backed up every night and every volunteer
++can query it. Three forces judge the options: a queued job must not be lost, not even between the pantry order that
++queues it and the queue; the volunteers keep the number of services they operate down; and more than one volunteer
++must be able to inspect and repair the queue.
++
++## Options
++
++- **Keep Celery on Redis, with persistence and a memory alarm**: the least work, and it closes the eviction that lost
++  the receipts; lost because Redis stays a service run for the queue alone, which one volunteer knows how to restore.
++- **Celery with its database backend**: keeps the Celery code and drops Redis; lost because Celery's documentation
++  marks that backend experimental, so a job could still be lost.
++- **A task queue in Postgres**: chosen.
++
++## Decision
++
++Background jobs are queued in Postgres, the one store larder already runs, backs up nightly and every volunteer can
++query, so no job depends on a service one person can restore. The queue is procrastinate, a Postgres task queue for
++Python, because it queues a job in the same transaction as the pantry order that queues it: a receipt cannot be lost
++between the two. The [architecture](../architecture.md#how-they-connect) shows where the queue sits.
++
++## Consequences
++
++A job is queued if and only if the pantry order that queues it is saved, and the nightly backup keeps it. Any
++volunteer can find a stuck or failed job with a query. Redis served only the queue, so larder no longer needs it. The
++worker's load now falls on Postgres, which also serves the web app's sessions
++([keep sessions in the database](0001-keep-sessions-in-the-database.md)).
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..ace3371 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep background jobs in the database](0002-keep-background-jobs-in-the-database.md): jobs are queued in Postgres
++  with procrastinate, not in Redis with Celery.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..95db111 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -13,5 +13,6 @@ where a payment is captured.
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and queues jobs there for the worker
++([keep background jobs in the database](adrs/0002-keep-background-jobs-in-the-database.md)). A confirmed pantry
++order is captured through the card gateway by `larder/capture.py`.

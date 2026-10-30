@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A runbook is written under docs/runbooks/, the kind the map gives what to do when a trigger fires.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/runbooks/[!R]*.md: ['docs/runbooks/receipts-stopped.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/runbooks/README.md', 'docs/runbooks/receipts-stopped.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The runbook opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/runbooks/receipts-stopped.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The runbook says why it exists, told as it happened: the worker stayed down after a deploy and receipts stopped\nuntil someone who knew the fix was found, not only a conclusion such as \"receipts can stop\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\u201cWritten after the September 14 incident, the second time it happened: the first time the one volunteer who knew the fix was asleep and members waited until noon.\u201d Step 1 connects the outage to deployment: \u201cinactive (dead), usually since just after the last deploy, because the deploy script restarts only the web app.\u201d",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The runbook gives the query that counts the waiting jobs in procrastinate_jobs.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /procrastinate_jobs/ in ['docs/runbooks/receipts-stopped.md']: {'docs/runbooks/receipts-stopped.md': 'procrastinate_jobs'}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

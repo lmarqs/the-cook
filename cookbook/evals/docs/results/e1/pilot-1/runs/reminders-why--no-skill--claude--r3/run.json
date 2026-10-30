@@ -1,0 +1,163 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "reminders-why--no-skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:04:20.842782+00:00",
+  "duration_s": 27.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-52.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i remind\\|sms\\|pickup --include=*.py --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/reminders.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 112580,
+    "cached": 100826,
+    "output": 2395,
+    "reasoning": 737
+  },
+  "cost_usd": 0.1620572,
+  "turns": 6,
+  "last_message": "I added a new page, `docs/features/reminders.md`, and listed it in `docs/features/README.md`. Anyone who proposes email reminders now has the reasons written down in the docs. I made no commit.\n\nThe page records what's in `notes/issue-52.md` and `larder/reminders.py`:\n- **The cost:** SMS reminders cost about 40 euros a month, and email would be free. That is why the switch keeps coming up.\n- **The trial:** reminders went by email from April to June 2025. The email provider reported that 34% of reminder emails were never opened. Missed pickups went from 6% of orders to 13%, and each one means a packed bag whose fresh food is thrown away at closing time.\n- **Why email misses people:** many members share one family phone and never check email, but they do see an SMS.\n- **The result:** reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August. Issue 52 was closed with SMS kept.\n\n**Where it went:** `docs/README.md` says decision records are only for choices that affect more than one feature or module. The reminder channel is a single setting (`CHANNEL` in `larder/reminders.py`), so the reasons went on a feature page instead of a decision record. The page follows the same pattern as `sessions.md`, which records why its 30-minute logout limit replaced the old 10-minute one.\n\n**What I left out:** I didn't add a rule for what a future proposal must show, such as keeping missed pickups near 6%. Nobody in the issue set one, so the page only records what happened.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

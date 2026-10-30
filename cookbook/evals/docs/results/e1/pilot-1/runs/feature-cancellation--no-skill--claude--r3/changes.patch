@@ -1,0 +1,50 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..dff8c36 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..9044fda
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,35 @@
++# Cancellation
++
++For whoever changes when a member may cancel a pantry order, or answers a member whose cancellation was refused. A
++member may cancel a pantry order until 2 hours before its pickup slot starts; after that the app refuses. The cutoff
++exists because members cancelled minutes before pickup, after volunteers had packed their bags: in the first weeks of
++October 2026, 25 bags of fresh food were thrown away.
++
++## The cutoff
++
++Volunteers start packing 2 hours before each pickup slot. A cancellation before then costs the pantry nothing; one
++after it leaves a packed bag of milk, bread and greens on the shelf. A banner asking members to cancel earlier had run
++since summer and did not stop it, so the app now refuses a cancellation once packing has started.
++
++`can_cancel` in `larder/cancellation.py` decides, from the start of the pickup slot and the current time:
++
++| Pickup slot starts | Cancel at | Allowed |
++| ------------------ | --------- | ------- |
++| 17:00              | 14:59     | yes     |
++| 17:00              | 15:00     | no      |
++| 17:00              | 16:50     | no      |
++
++The cutoff itself is refused: at exactly 2 hours before the slot, packing has started.
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide what happens to the pantry
++order.
++
++## Known limits
++
++- The refusal message must give the pantry's phone number, the condition the pantry agreed to the cutoff on, but the
++  repository holds neither the message nor the number: `can_cancel` only answers yes or no. Until the message is
++  written, a refused member is not told whom to call.
++- The cutoff is fixed at 2 hours, `CUTOFF` in `larder/cancellation.py`, and does not follow the packing shift: if
++  packing starts at another time, change `CUTOFF` with it.

@@ -1,0 +1,210 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 2,
+  "id": "update-attempts--no-criteria--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:03:45.350361+00:00",
+  "duration_s": 39.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/issue-40.md larder/capture.py && grep -rn -i \"attempt\\|retr\\|capture\" docs/ README* 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i attempt\\|retr\\|capture docs/ README*"
+    },
+    {
+      "kind": "other",
+      "tool": "wc",
+      "command": "wc -l docs/README.md; for f in docs/README.md docs/features/payments.md docs/adrs/README.md docs/adrs/0001-*.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/features/checkout.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "wc -l docs/README.md; for f in docs/README.md docs/features/payments.md docs/adrs/README.md docs/adrs/0001-*.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/features/checkout.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "wc -l docs/README.md; for f in docs/README.md docs/features/payments.md docs/adrs/README.md docs/adrs/0001-*.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/features/checkout.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "wc -l docs/README.md; for f in docs/README.md docs/features/payments.md docs/adrs/README.md docs/adrs/0001-*.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/features/checkout.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat templates/map.template.md references/adrs.md references/features.md templates/adr.template.md; diff -r . /work/.agents/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "read",
+      "path": "templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "cd /work/.claude/skills/docs-layout && cat templates/map.template.md references/adrs.md references/features.md templates/adr.template.md; diff -r . /work/.agents/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cd /work/.claude/skills/docs-layout && cat templates/map.template.md references/adrs.md references/features.md templates/adr.template.md; diff -r . /work/.agents/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work && cat docs/architecture.md docs/features/README.md docs/runbooks/README.md; grep -rn capture larder/*.py | grep -v \"^larder/capture.py\"; python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn capture larder/*.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/capture.py"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "cd /work && cat docs/architecture.md docs/features/README.md docs/runbooks/README.md; grep -rn capture larder/*.py | grep -v \"^larder/capture.py\"; python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 152312,
+    "cached": 140148,
+    "output": 3518,
+    "reasoning": 1242
+  },
+  "cost_usd": 0.1956536,
+  "turns": 9,
+  "last_message": "I've updated the payments docs to the new capture rule. The only page that stated the retry rule was `docs/features/payments.md`, and it still said \"up to 3 attempts in all, one after the other\". Its **Retries** section now says:\n\n- **The rule now:** up to 5 attempts in all, waiting 2, 4, 6 and 8 seconds before each retry. If the fifth attempt also times out, the capture fails with `GatewayTimeout`. The member can wait up to 20 seconds longer on the confirmation page. Every attempt still sends the same idempotency key.\n- **Why it changed**, from `notes/issue-40.md`: the gateway is slow every Friday from 17:00 to 19:00, and the three back-to-back attempts all landed in the same slow minute. One Friday left 58 orders uncharged, and a volunteer captured them by hand the next morning. Replaying those timeouts in the sandbox with the new spacing, 57 of the 58 went through. Switching gateways was ruled out while the contract runs, to December 2026, and the longer wait was accepted. The notes thread could move or close, so the story now lives on the page itself.\n\nI added one clause to the page's opening paragraph to give that reason. I checked the numbers against `larder/capture.py`. No other doc stated them, so nothing else needed changing.\n\nI wrote this as part of the payments page rather than a separate decision record. `docs/README.md` is meant to set the bar for when a decision gets its own record, but it currently has no rules at all, only its opening paragraph. A retry count also looks like a setting rather than a foundational choice. If you'd rather have a record, it can be added.\n\nThree things in the repository don't match:\n1. **Date:** you said the change was made last week, but the notes say it was merged on Nov 24. Ana's \"not this year\" against a contract running to December 2026 puts that in 2025. I left the date off the page.\n2. **The map:** `docs/README.md` doesn't say which page owns which fact, so every placement is a judgement call. Writing that out would fix it (the docs-layout skill's `adopt` procedure).\n3. **The runbook:** step 2 of `docs/runbooks/gateway-timeouts.md` says to look for timed-out captures in the worker's log. But the code doesn't call capture from the worker (`larder/receipts.py`), and the notes say the member waits through it on the confirmation page. That step may point at the wrong log. I didn't change it because nothing in the repository says where those lines are logged.\n\nTests pass (2 passed). Nothing is committed.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

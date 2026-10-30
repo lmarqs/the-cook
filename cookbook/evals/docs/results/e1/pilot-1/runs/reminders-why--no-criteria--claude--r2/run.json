@@ -1,0 +1,208 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 2,
+  "id": "reminders-why--no-criteria--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:12:31.541154+00:00",
+  "duration_s": 38.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-send-pickup-reminders-by-sms.md",
+    "docs/adrs/README.md",
+    "larder/reminders.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record a decision: why pickup reminders go by SMS rather than email (see notes/issue-52.md)"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work/docs && for f in adrs/README.md adrs/0001-*.md glossary.md features/README.md architecture.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"sms|remind|email|pickup\" /work --include=*.py --include=*.md -l | grep -v .claude"
+    },
+    {
+      "kind": "read",
+      "path": "references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work/docs && for f in adrs/README.md adrs/0001-*.md glossary.md features/README.md architecture.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"sms|remind|email|pickup\" /work --include=*.py --include=*.md -l | grep -v .claude"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work/docs && for f in adrs/README.md adrs/0001-*.md glossary.md features/README.md architecture.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"sms|remind|email|pickup\" /work --include=*.py --include=*.md -l | grep -v .claude"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work/docs && for f in adrs/README.md adrs/0001-*.md glossary.md features/README.md architecture.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"sms|remind|email|pickup\" /work --include=*.py --include=*.md -l | grep -v .claude"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adrs.md templates/adr.template.md templates/map.template.md; cd /work/docs && for f in adrs/README.md adrs/0001-*.md glossary.md features/README.md architecture.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"sms|remind|email|pickup\" /work --include=*.py --include=*.md -l | grep -v .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup /work --include=*.py --include=*.md -l"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v .claude"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup --include=*.py ."
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/checkout.md; grep -rniE \"sms|remind|email|pickup\" --include=*.py . | head -30; git log --oneline | head"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|pickup larder tests docs"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-send-pickup-reminders-by-sms.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/reminders.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2"
+    }
+  ],
+  "tokens": {
+    "input": 206258,
+    "cached": 194184,
+    "output": 3367,
+    "reasoning": 830
+  },
+  "cost_usd": 0.20270480000000002,
+  "turns": 12,
+  "last_message": "I wrote down why pickup reminders go by SMS as a new decision record, `docs/adrs/0002-send-pickup-reminders-by-sms.md`. It's based only on `notes/issue-52.md` and the code.\n\n**What the record says:**\n- **What happened:** from April to June 2025, reminders went by email to save the roughly 40 euros a month SMS costs. The email provider's report showed 34% of reminder emails were never opened. Missed pickups went from 6% of pantry orders to 13%, and each missed pickup means a packed bag of fresh food thrown out at closing. Many members share one family phone and never check email. Reminders went back to SMS on July 1, and missed pickups were back to 6% by August.\n- **Options:** email is free but lost because members didn't see the reminders. SMS was chosen.\n- **What follows:** the pantry keeps paying about 40 euros a month. Switching back is a one-line change to `CHANNEL` in `larder/reminders.py`, so anyone proposing email again should bring new evidence that members would open the emails, such as a trial that measures missed pickups.\n\n**Other changes:**\n- I added the record to the list in `docs/adrs/README.md`.\n- I put a one-line comment above `CHANNEL` in `larder/reminders.py` pointing to the record, since that's where the next person would make the switch. The tests pass.\n\n**Things to know:**\n- **No blanks left:** the issue thread covered everything the record needed. The record only lists the two options in the thread, email and SMS. Nobody discussed sending both, so I didn't add it.\n- **Issue 52's year:** the record says the issue came up \"in September\" with no year, because the thread doesn't give one.\n- **Empty map:** `docs/README.md` is supposed to list each kind of docs page and its rules, but it has only an intro. I followed the conventions of the existing pages instead. That page probably needs filling in at some point.\n\nNothing is committed yet.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

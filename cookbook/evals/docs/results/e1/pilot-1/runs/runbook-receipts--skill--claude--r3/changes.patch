@@ -1,0 +1,53 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..7772aa2 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when members get no receipt emails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..b93a0ad
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,38 @@
++# Receipts stopped
++
++For the volunteer on call when members report that no receipt emails arrive. Brings the worker back so the queued
++receipts go out; while it is down, members are charged but get no receipt, though none is lost: each waits in the
++queue. Written after receipts stopped three times: the first time the pantry waited till noon for Tomás; on
++September 14 he found the worker dead since the night's deploy, because the deploy script restarts only the web app,
++and worked out these steps in #larder-ops; on October 29 the volunteer on call had no steps to follow. Owner: Tomás.
++
++## Before you begin
++
++- A shell with `sudo` on the server that runs larder.
++- `psql` access to the `larder` database on that server.
++
++## Steps
++
++1. Check the [worker](../architecture.md#parts): `systemctl status larder-worker`.
++
++   Expected: `Active: inactive (dead)` since a time just after the last deploy. If it says `active (running)`, the
++   worker is not the cause: go to [If it fails](#if-it-fails).
++2. Count the jobs waiting:
++   `psql larder -c "select status, count(*) from procrastinate_jobs group by status"`.
++
++   Expected: a `todo` count, the receipts waiting to be sent, and `doing` at 0. On September 14 it was 212 `todo`,
++   0 `doing`, 3 `failed`. A few `failed` jobs are receipts that bounced because the member has no valid email address;
++   leave them.
++3. Start the worker: `sudo systemctl start larder-worker`, then `systemctl status larder-worker`.
++
++   Expected: `Active: active (running)`.
++4. A minute later, run the query from step 2 again, and repeat until `todo` is 0.
++
++   Expected: `todo` falls by about 40 a minute and reaches 0; 212 jobs took about seven minutes. Members then report
++   their receipts arriving.
++
++## If it fails
++
++If the worker stops again right after step 3, or `todo` does not fall, read its last log lines with
++`journalctl -u larder-worker -n 50` and post them to Tomás in #larder-ops. After each deploy, until the deploy script
++restarts the worker too, check step 1 so receipts do not stop overnight.

@@ -1,0 +1,175 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "update-attempts--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:02:16.508859+00:00",
+  "duration_s": 36.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/issue-40.md larder/capture.py && grep -rn -i \"attempt\\|retr\\|capture\" docs/ notes/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i attempt\\|retr\\|capture docs/ notes/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -n -i attempt\\|3\\|three\\|retr\\|second README.md docs/adrs/*.md tests/test_capture.py larder/*.py"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat tests/test_capture.py && git log --stat -3 | head -30"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "cat docs/features/payments.md && python3 -m pytest -q 2>&1 | tail -2"
+    }
+  ],
+  "tokens": {
+    "input": 135301,
+    "cached": 116322,
+    "output": 3259,
+    "reasoning": 988
+  },
+  "cost_usd": 0.24023639999999996,
+  "turns": 10,
+  "last_message": "I updated `docs/features/payments.md`, which is the only page that stated the attempt count. No other page in `docs/` needed to change.\n\n- **Retries:** the page now says a timed-out capture is tried up to 5 times, with pauses of 2, 4, 6 and 8 seconds between tries. That means a member can wait up to 20 seconds longer on the confirmation page. It also names `ATTEMPTS` and `BACKOFF_SECONDS` in `larder/capture.py` as the settings that control this.\n- **Why it changed, taken from `notes/issue-40.md`:**\n  - The old 3 attempts all went out within one second, so they all hit the gateway's slow period on Friday evenings (17:00\u201319:00).\n  - One Friday, 58 confirmed orders were never charged, and a volunteer had to charge them by hand.\n  - Switching gateways was ruled out while the contract runs.\n  - Replaying those 58 orders against the gateway's test environment showed the new spacing would have charged 57 of them.\n  - The longer wait for members was accepted as better than charging orders by hand.\n- **Lead:** the opening paragraph now gives this as a second reason the retry rules exist.\n- **New \"Known limits\" section:** a capture can still fail all 5 attempts at the Friday peak (1 in 58 in the replay). It links the gateway-timeouts runbook for finding those orders.\n\nI didn't write a decision record, because the docs reserve those for decisions that are hard to reverse, and a retry count is one constant. I also left out the issue's dates. The notes say November with no year, which doesn't fit \"last week\" when today is 30 October, so the page says \"one Friday\" instead.\n\n**One gap I left open:** the gateway-timeouts runbook ends at finding the timed-out orders in the log. It has no step for charging them by hand from the gateway's dashboard, which is what the volunteer did. The repository doesn't say what that step's success looks like, so I didn't make one up. A payments volunteer should add it the next time the alert fires.\n\nTests pass (2). Nothing is committed.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

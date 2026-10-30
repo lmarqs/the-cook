@@ -1,0 +1,51 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..19b3fec 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why the cutoff is 2 hours.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..300ed63
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,36 @@
++# Cancellation
++
++For whoever changes when a member may cancel a pantry order, or answers a member whose cancellation was refused. A
++member may cancel a pantry order until 2 hours before its pickup slot starts; after that, the app refuses and the
++member calls the pantry. The cutoff exists because in October 2026 members kept cancelling minutes before pickup,
++after volunteers had packed their bags, and the fresh food in those bags was thrown away.
++
++## Cutoff
++
++`can_cancel` in `larder/cancellation.py` allows a cancellation while the current time is earlier than the pickup
++slot's start minus `CUTOFF`, 2 hours. For a slot that starts at 17:00:
++
++| Member cancels at | Result  |
++|-------------------|---------|
++| 14:59             | allowed |
++| 15:00             | refused |
++| 16:50             | refused |
++
++The cutoff matches the packing shift, which starts 2 hours before each slot. A cancellation before the shift costs the
++pantry nothing; one after it leaves a packed bag on the shelf. In October 2026, members cancelled from the app at
++16:50 for a 17:00 pickup, and 9 bags of milk, bread and greens were left on one Saturday, the third such Saturday in a
++row; 25 bags were thrown away that month. A banner in the app asking members to cancel earlier had been up since
++the summer and had not stopped it.
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide. The pantry lead agreed to the
++cutoff on condition that the refusal message gives the pantry's phone number.
++
++## Known limits
++
++- The repository holds only the rule, `can_cancel`. The refusal message, and the pantry's phone number it must carry,
++  are not in it; whoever changes the cancellation flow checks that the message members see still gives the number.
++- `can_cancel` compares the two times it is given as they are, without converting time zones. Pass both in the same
++  zone, both naive or both aware: a naive time against an aware one raises `TypeError`, and two naive times in
++  different zones move the cutoff by the difference.

@@ -1,0 +1,184 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "write-adr--no-skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T04:59:07.090659+00:00",
+  "duration_s": 49.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-run-background-jobs-in-postgres.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && ls notes && cat notes/*12*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls notes"
+    },
+    {
+      "kind": "read",
+      "path": "notes/*12*",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; for f in larder/*.py; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; for f in larder/*.py; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; for f in larder/*.py; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; for f in larder/*.py; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; for f in larder/*.py; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; for f in larder/*.py; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "find .agents .claude -type f | head -50; git log --stat | head -60"
+    },
+    {
+      "kind": "read",
+      "path": "tests/*.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "cat tests/*.py && python3 -m pytest -q 2>&1 | tail -5"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-in-postgres.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/*.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 219869,
+    "cached": 201782,
+    "output": 4251,
+    "reasoning": 1366
+  },
+  "cost_usd": 0.2700084000000001,
+  "turns": 10,
+  "last_message": "I wrote the Celery-to-procrastinate decision up as a new decision record, `docs/adrs/0002-run-background-jobs-in-postgres.md`. I didn't commit anything.\n\n**What the record says:**\n- **What happened:** Celery kept its job queue in Redis. One Saturday night Redis ran out of memory and deleted queued receipt jobs without logging an error. About 300 members who had paid got no receipt, and a volunteer spent most of a day resending them by hand. Redis was used only for the queue, and only one volunteer knew how to restore it.\n- **The three options and why two lost:**\n  - Keep Celery and Redis and add safeguards: least work, but larder would still run Redis with one person able to fix it.\n  - Celery with its database backend: Celery's own docs mark it experimental.\n  - procrastinate: chosen.\n- **Why procrastinate won:** a job is saved in the same database transaction as the pantry order that queues it, so a receipt can't be lost between the two. The queue also lives in Postgres, which is already backed up nightly and which every volunteer can query.\n- **Costs:** the worker's load now falls on the database that also serves orders and sessions, and the move was more work than patching Redis.\n\nI also added the record to `docs/adrs/README.md` and linked it from the job queue sentence in `docs/architecture.md`, as `docs/README.md` asks. No other page needed the fact.\n\n**What the repository doesn't settle:**\n- **The year:** issue 12 has dates but no year, so the record says \"in March\". You said the move finished last month, which would be September; the issue planned it for March. I didn't state a completion date.\n- **Redis:** the issue says Redis \"is switched off after\" the move, and the record says the same. Nothing in the repository confirms it has actually been shut down.\n- **No runbook for \"paid but no receipt\":** I didn't write one because the repository doesn't show how to inspect or retry procrastinate jobs. It would be worth adding once someone has done it for real.\n\n**Unrelated bug found while reading:** `larder/capture.py:9` makes a new idempotency key on every call. `docs/features/payments.md` requires every retry for one order to reuse its first key, because that rule stopped members being charged twice in 2024. The existing test doesn't check keys, so the tests pass. I left the code unchanged since it's outside this task, but it's worth fixing soon.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

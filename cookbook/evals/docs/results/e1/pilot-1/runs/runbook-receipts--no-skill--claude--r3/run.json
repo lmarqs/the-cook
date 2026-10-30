@@ -1,0 +1,384 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "runbook-receipts--no-skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:00:59.256121+00:00",
+  "duration_s": 76.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md",
+    "scripts/restart-receipts-worker"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/chat-receipts.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/runbooks/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/payments.md docs/features/checkout.md larder/receipts.py larder/capture.py larder/orders.py .gitignore; do echo \"=== $f\"; cat \"$f\"; done; ls -a; ls scripts 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/runbooks/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/payments.md docs/features/checkout.md larder/receipts.py larder/capture.py larder/orders.py .gitignore; do echo \"=== $f\"; cat \"$f\"; done; ls -a; ls scripts 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/runbooks/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/payments.md docs/features/checkout.md larder/receipts.py larder/capture.py larder/orders.py .gitignore; do echo \"=== $f\"; cat \"$f\"; done; ls -a; ls scripts 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls scripts"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "find .agents .claude -type f | head -50; git check-ignore -v .agents .claude; git status --ignored --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "find .agents .claude -type f | head -50; git check-ignore -v .agents .claude; git status --ignored --short"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/adrs/README.md docs/features/sessions.md | head -30; cat conftest.py; git log --format='%an %ae' | head -3"
+    },
+    {
+      "kind": "edit",
+      "path": "scripts/restart-receipts-worker",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "chmod",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "T=$(mktemp",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "mkdir",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "read",
+      "path": "s=$STUB/state",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "$T/bin/systemctl",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "[[",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "edit",
+      "path": "$s",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "$T/bin/sudo",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "$T/bin/journalctl",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "$T/bin/psql",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "then",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "exit",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "fi",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "then",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "edit",
+      "path": "80",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "[[",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "n=$(cat",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "[[",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "$n",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "edit",
+      "path": "$STUB/state",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "edit",
+      "path": "$STUB/todo",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "fi",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "export",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "mkdir",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "edit",
+      "path": "$STUB/state",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "edit",
+      "path": "$STUB/todo",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "[[",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "touch",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "bin:$PATH",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "}",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "run",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "run",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "run",
+      "command": "chmod +x scripts/restart-receipts-worker && T=$(mktemp -d) && mkdir $T/bin && cat > $T/bin/systemctl <<'EOF'\n#!/usr/bin/env bash\ns=$STUB/state\ncase $1 in\n  is-active) st=$(cat $s); echo $st; [[ $st == active ]] ;;\n  start) echo active > $s ;;\nesac\nEOF\ncat > $T/bin/sudo <<'EOF'\n#!/usr/bin/env bash\n\"$@\"\nEOF\ncat > $T/bin/journalctl <<'EOF'\n#!/usr/bin/env bash\necho \"(log lines)\"\nEOF\ncat > $T/bin/psql <<'EOF'\n#!/usr/bin/env bash\nq=\"${@: -1}\"\nn=$(cat $STUB/todo)\nif [[ $q == *\"group by\"* ]]; then echo \"failed 3\"; echo \"todo $n\"; exit; fi\necho $n\nif [[ $(cat $STUB/state) == active ]]; then n=$(( n > 80 ? n - 80 : 0 )); [[ -f $STUB/stall ]] && n=$(cat $STUB/todo); [[ -f $STUB/die && $n -lt 150 ]] && echo inactive > $STUB/state; echo $n > $STUB/todo; fi\nEOF\nchmod +x $T/bin/*\nrun() { echo \"----- $1\"; export STUB=$T/$1; mkdir -p $STUB; echo $2 > $STUB/state; echo 212 > $STUB/todo; [[ -n $3 ]] && touch $STUB/$3; PATH=$T/bin:$PATH INTERVAL_SECONDS=0 scripts/restart-receipts-worker; echo \"exit $?\"; }\nrun ok inactive; run running active; run dies inactive die; run stall inactive stall"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -3; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -3; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 250033,
+    "cached": 230662,
+    "output": 6778,
+    "reasoning": 2356
+  },
+  "cost_usd": 0.3365884,
+  "turns": 11,
+  "last_message": "I turned Tom\u00e1s's chat into a runbook and a script, so the next volunteer on call can fix this without him.\n\n**What I added**\n- **`docs/runbooks/receipts-stopped.md`**: a runbook for when members say their receipts stopped arriving, written to match the existing gateway-timeouts runbook. It lists the access you need (a shell on the server, `sudo` to restart the service, database access), then two steps:\n  1. Run the script.\n  2. Ask a member whether their receipt arrived.\n\n  It describes what success looks like, including that a few `failed` jobs left over is normal. On September 14 those were emails to members without a valid address. It also says what to do when each kind of failure appears.\n- **`scripts/restart-receipts-worker`**: Tom\u00e1s's steps in order:\n  1. Check whether the worker is running.\n  2. Count the waiting jobs by status.\n  3. Start the worker.\n  4. Check every minute until no receipts are left waiting.\n\n  It stops and prints the last 50 log lines in three cases: the worker was already running (a different problem), it dies again, or the waiting count stops going down for 5 minutes.\n- **`docs/runbooks/README.md`**: now lists the new runbook.\n\nI tested the script with stand-ins for the server commands, covering a normal recovery, a worker that was already running, a worker that dies again, and a stuck queue. All four did the right thing. It hasn't been run on the real server. The existing tests still pass. Nothing is committed.\n\n**Decisions for you**\n- **Owner:** I named Tom\u00e1s as the runbook's owner and the person to ask when it fails, because his chat says \"ping me\". Change that if someone else should get the call.\n- **Last night:** the repository has no details on what happened, so I didn't say a deploy caused it. If you find out, add it to the runbook, as its \"If it fails\" section asks.\n\n**Still open**\n- **The cause isn't fixed.** On September 14 the deploy script restarted only the web app, which left the worker stopped. That script isn't in this repository, so I couldn't change it. Until someone makes it restart `larder-worker` as well, this will keep happening after deploys.\n- **A separate bug I noticed:** `larder/capture.py` creates a new idempotency key (the ID the card gateway uses to spot repeat charges) on every call. `docs/features/payments.md` says every attempt for an order must reuse the same key, because new keys on retries are what charged 41 members twice in 2024. If anything retries `capture()`, that can happen again. I didn't touch it because it's outside this task, but it's worth fixing soon.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

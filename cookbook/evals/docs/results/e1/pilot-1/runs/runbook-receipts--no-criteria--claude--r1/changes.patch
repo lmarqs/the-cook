@@ -1,0 +1,57 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..7772aa2 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when members get no receipt emails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..cd13a80
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,42 @@
++# Receipts stopped
++
++For the volunteer on call when members report that no receipt emails are arriving. Brings receipts back by
++restarting the worker, which sends them; while it is down, members get no receipt for their pantry orders, and the
++receipts wait in the queue, none lost. Written after the second stop, on September 14: the deploy script restarts
++only the web app, so the worker stayed dead after a deploy, and the first time members waited until noon because
++only Tomás knew what to do. Owner: Tomás.
++
++## Before you begin
++
++- A shell on the server that runs larder, with `sudo`.
++- Access to the `larder` Postgres database with `psql`.
++
++## Steps
++
++1. Check the worker: `systemctl status larder-worker`.
++
++   Expected: `inactive (dead)` since a time, often right after the last deploy. If it says `active (running)`, the
++   worker is not the cause; go to [If it fails](#if-it-fails).
++2. Count the jobs waiting, before restarting:
++   `psql larder -c "select status, count(*) from procrastinate_jobs group by status"`.
++
++   Expected: a `todo` count above 0, the receipts that piled up, and `doing` at 0. On September 14 it was 212 `todo`,
++   0 `doing`, 3 `failed`.
++3. Start the worker: `sudo systemctl start larder-worker`, then `systemctl status larder-worker`.
++
++   Expected: `active (running)`.
++4. Run the query of step 2 again each minute until `todo` reaches 0.
++
++   Expected: `todo` falls, about 40 a minute, to 0, and members start receiving receipts.
++5. Leave the `failed` jobs alone if they were there before the restart.
++
++   Expected: their count does not grow. On September 14 the 3 failed jobs were bounced emails, to members with no
++   valid address; restarting does not send them.
++
++## If it fails
++
++If the worker dies again right after starting, read its last lines, `journalctl -u larder-worker -n 50`, and send
++them to Tomás in #larder-ops. Do the same if the worker was running but receipts still are not arriving.
++
++The cause of the September stops, the deploy script not restarting the worker, is not fixed yet: after a deploy,
++check step 1 even when nobody has complained.

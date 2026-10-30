@@ -1,0 +1,172 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 3,
+  "id": "runbook-receipts--skill--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T04:56:16.273998+00:00",
+  "duration_s": 57.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'SKILL.md' -g '*receipt*' -g 'docs/**' -g 'README*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g SKILL.md -g *receipt* -g docs/** -g README*"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat /work/.agents/skills/docs-layout/templates/runbook.template.md /work/.agents/skills/docs-layout/references/runbooks.md; git status --short; rg --files"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nimport re\nfrom pathlib import Path\npaths = [Path('docs/runbooks/receipts-stopped.md'), Path('docs/runbooks/README.md'), Path('docs/features/payments.md')]\nfor path in paths:\n    body = path.read_text()\n    for target in re.findall(r'\\]\\(([^)]+)\\)', body):\n        assert (path.parent / target.split('#')[0]).exists(), (path, target)\n    assert '[[fill:' not in body\nprint('All links in changed pages resolve; no template blanks remain.')\nPY\n"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 120040,
+    "cached": 110080,
+    "output": 2143,
+    "reasoning": 192
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added the [Receipts stopped runbook](/work/docs/runbooks/receipts-stopped.md), linked from the runbook index and payments page.\n\nIt covers checking and starting the worker, watching the queue drain, confirming delivery, and collecting evidence if recovery fails. It also flags the deploy issue Tom\u00e1s reported and the lack of a documented backup contact.\n\nDocumentation links and whitespace checks pass. No production recovery was performed.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

@@ -1,0 +1,136 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..3ca01f1 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,10 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Runbooks
++
++[Runbooks](runbooks/README.md) own operational recovery procedures for a specific alert, request or symptom
++(Diátaxis: how-to). Each page contains a lead naming the responder, trigger, impact, incident context and owner;
++`Before you begin` for access and tools; `Steps` with expected results for every action; and `If it fails` for
++fallbacks and escalation. Incident observations belong in the relevant runbook; other pages link to it.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..1895edb 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -8,6 +8,7 @@ where a payment is captured.
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++  For missing receipt emails, follow [Receipts stopped](runbooks/receipts-stopped.md).
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..b39ccb1 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): check and start the receipt worker, watch the queue drain, and handle a failed recovery.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..a37c796
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,94 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipt emails. This procedure starts a stopped background
++worker and checks that queued jobs drain so receipts can be sent. In the September 14 incident, the worker had been
++inactive since the previous night's deploy: the deploy script restarted only the web app. Volunteers waited for
++Tomás because the recovery was not written down. Owner: volunteers on call; recovery contact: Tomás in
++`#larder-ops`.
++
++## Before you begin
++
++- A shell on the host running `larder-worker`, with permission to run `sudo systemctl start larder-worker` and read
++  its systemd journal. The repository does not record a host name or login procedure; use your existing operations
++  access.
++- `psql` access to the `larder` database and permission to read `procrastinate_jobs`.
++- Access to `#larder-ops` to record the outcome or leave a handoff if recovery fails.
++
++## Steps
++
++1. Check the worker:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `inactive (dead)` matches the previous incident. The command can exit nonzero for an inactive service;
++   read the status. If it is already `active (running)`, continue to count and watch the jobs without starting it.
++   If it is `failed`, follow **If it fails**.
++
++2. Record the queue counts before changing anything:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: a count for each status present. In the previous incident there were 212 `todo`, 0 `doing`, and 3
++   `failed` jobs. A status with no jobs may have no row; no `todo` row means zero pending jobs. These counts cover
++   the whole queue, not just receipts. If there are no `todo` jobs, a stalled backlog is not demonstrated; use
++   **If it fails** if receipts are still missing.
++
++3. If the worker is `inactive (dead)`, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Expected: the command completes without an error. Verify the running state in the next step.
++
++4. Check the worker again:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If it stops again or reports `failed`, follow **If it fails**.
++
++5. After about a minute, run the queue query from step 2 again. Repeat about once a minute while it drains.
++
++   Expected: `todo` decreases, eventually reaching zero (or disappearing from the results). Tomás observed about
++   40 jobs per minute and an empty `todo` queue by 08:45 after starting the worker at 08:38; this is an observation,
++   not a promised rate. If `todo` does not decrease or `failed` increases, follow **If it fails**.
++
++6. Confirm receipt delivery with an affected member or an incoming report in `#larder-ops`, and record the worker
++   status, before/after queue counts, and delivery confirmation there.
++
++   Expected: receipt arrival is confirmed, as Nadia confirmed in the previous incident. If nobody is available,
++   record that the worker is running and `todo` is zero but delivery remains unconfirmed. An empty queue alone
++   does not establish delivery. Add any new recovery findings to this runbook.
++
++## If it fails
++
++If the worker dies again immediately, collect its recent logs:
++
++```sh
++journalctl -u larder-worker -n 50
++```
++
++Expected: up to 50 recent journal entries for the service, including any recorded startup or failure messages.
++Also collect these logs if the worker is failed, the queue is not draining, or receipts remain missing despite an
++empty queue. If a command fails because access or a tool is missing, record the error and the last completed step.
++
++Send Tomás a message in `#larder-ops` with the symptom, worker status, queue counts and times, and relevant log
++errors. If nobody is available, leave that handoff in the channel for the next responder. A restart that repeatedly
++fails has no further documented recovery in this repository; do not keep restarting it without understanding the
++logs.
++
++The three `failed` jobs in the September incident were diagnosed as bounced emails for members without valid
++addresses. Their presence did not prevent the `todo` queue from draining. Do not assume today's failures have the
++same cause or bulk retry/delete failed jobs as part of this procedure; preserve them for diagnosis.
++
++The deploy-script omission was the cause reported in September, but this repository contains no deploy script to
++verify or fix. A running worker with missing receipts may have another cause. The receipt function in
++[`larder/receipts.py`](../../larder/receipts.py) is a stub, so it cannot establish production delivery behavior.
++
++Incident evidence: [Tomás's September 14 chat](../../notes/chat-receipts.md).

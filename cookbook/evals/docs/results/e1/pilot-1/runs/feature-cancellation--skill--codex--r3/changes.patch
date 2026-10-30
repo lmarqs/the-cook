@@ -1,0 +1,46 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..22edda5 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): when a member can cancel a pantry order and how late requests reach the pantry.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..1a63684
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,31 @@
++# Cancellation
++
++For whoever changes cancellation or answers a member who cannot cancel a pantry order. The cutoff closes app
++cancellations when packing starts, two hours before pickup. Late cancellations had left packed bags of fresh food
++unused, even after a reminder banner asked members to cancel earlier.
++
++## Cutoff
++
++A member can cancel only before the start of their pickup slot minus two hours. At that instant and afterwards,
++cancellation is refused. For a 17:00 pickup, a cancellation before 15:00 is allowed; one at 15:00 or later is refused.
++The eligibility check is [`can_cancel`](../../larder/cancellation.py).
++
++## Why packing sets the cutoff
++
++Volunteers had found packed bags left on the shelf for three Saturdays in a row, including nine bags containing
++milk, bread and greens on October 6. Members were cancelling at 16:50 for a 17:00 pickup, after packing. A banner
++had been in place since summer, but 25 bags of fresh food had already been thrown away that October.
++
++The packing shift starts two hours before each pickup slot. Cancellations before packing cost no bag; later ones
++waste a packed bag. The cutoff follows that shift start, as agreed in [issue 31](../../notes/issue-31.md).
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry; volunteers decide how to handle the request. The
++agreement in issue 31 requires the pantry's phone number in the refusal message.
++
++## Known limits
++
++The repository contains the eligibility check but no refusal-message implementation or pantry phone number, so it
++does not establish that the agreed message is displayed. When implementing or checking that message, obtain the
++pantry's contact number and include it so members can use the phone fallback.

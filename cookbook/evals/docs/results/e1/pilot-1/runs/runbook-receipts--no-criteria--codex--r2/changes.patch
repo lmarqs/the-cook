@@ -1,0 +1,130 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..ce7e742 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,11 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Runbooks
++
++[Runbooks](runbooks/README.md) own operational recovery procedures for a specific alert, request or symptom
++(Diátaxis: how-to). Each page names its reader, trigger, intended outcome, incident context and owner or known
++contact; lists required tools and permissions under **Before you begin**; gives ordered **Steps**, each with its
++expected output; and provides diagnostics and escalation under **If it fails**. Record any unknown ownership or
++recovery details explicitly. Other pages link to the procedure instead of repeating it.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..9e1cc87 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -8,6 +8,7 @@ where a payment is captured.
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++  See [Receipts stopped](runbooks/receipts-stopped.md) for recovery when receipt emails stop arriving.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..adf2dc6 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): check and start the receipt worker, verify recovery and collect evidence if it fails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..8ca6aef
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,87 @@
++# Receipts stopped
++
++For the volunteer on call when members report that receipt emails have stopped arriving. Use this procedure to
++check and start the background worker, then watch the queue drain so receipts can be sent again. In the September
++14 incident, recovery waited for Tomás because nobody else knew the steps; his [incident chat](../../notes/chat-receipts.md)
++is the source for this procedure. Tomás is the recovery contact; an ongoing runbook owner is not recorded.
++
++## Before you begin
++
++- Shell access to the host running `larder-worker`, with `systemctl` and permission to run
++  `sudo systemctl start larder-worker` and read its journal.
++- `psql` access to the `larder` database and permission to read `procrastinate_jobs`.
++- Access to the pantry's operations chat to report recovery or contact Tomás.
++
++## Steps
++
++1. Check the worker on its host:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)` for a running worker, or `inactive (dead)` if it has stopped. In the September
++   incident it stopped at 23:02, just after a deploy. The chat reports that the deploy script restarted only the
++   web app; that script is not present in this repository, so this runbook does not establish whether it is fixed.
++   If the worker is already running, continue with the queue check but skip the start step.
++
++2. Record the queue counts before changing anything:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: counts grouped by job status; a status with no jobs may have no row. Save this baseline for comparison.
++   Tomás found 212 `todo`, 0 `doing` and 3 `failed`. Those are historical counts, not targets; this query counts all
++   jobs, not just receipts. If there is no `todo` backlog and receipts are still missing, use **If it fails**.
++
++3. If the worker is stopped, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Expected: the command completes without an error. Confirm its state:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If starting fails or it stops again, use **If it fails**.
++
++4. After about a minute, run the queue query again, then repeat about once a minute while it drains:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: `todo` decreases and eventually reaches zero (or its row disappears). Tomás observed about 40 jobs
++   per minute and an empty `todo` queue by 08:45; that rate is an observation, not a guaranteed recovery time.
++   If successive checks show no decrease, or `failed` grows, use **If it fails**.
++
++5. Confirm receipt delivery with an affected member through the operations chat and record the outcome there,
++   including the worker state and before/after queue counts.
++
++   Expected: an affected member confirms that a receipt arrived, as Nadia did in the September incident, and the
++   chat has a recovery record. An empty queue alone does not confirm email delivery; if delivery cannot be
++   confirmed, report that it remains unverified.
++
++## If it fails
++
++If the worker fails to start, dies again, stays active without draining the queue, or the queue drains but receipts
++remain missing, collect the latest worker logs:
++
++```sh
++journalctl -u larder-worker -n 50
++```
++
++Expected: up to 50 recent journal entries for the worker. Send Tomás the entries, worker status, queue counts with
++their observation times, and any known deploy timing in the operations chat. If access or a command fails, report
++the error there too. The repository records no alternate recovery contact or further repair procedure; if Tomás
++is unavailable, leave that evidence and the unresolved symptom in the chat for handoff.
++
++The three `failed` jobs in September were identified as bounced emails for members without valid addresses. That
++does not explain failed jobs in a new incident. Record any remaining failures and investigate their errors before
++classifying them as bounces; this procedure provides no command to retry, delete or alter jobs.
++
++After each use, add any newly verified recovery steps or differing output to this runbook.

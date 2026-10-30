@@ -1,0 +1,224 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "write-adr--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:25:25.772656+00:00",
+  "duration_s": 58.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && ls notes && cat notes/*12*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls notes"
+    },
+    {
+      "kind": "read",
+      "path": "notes/*12*",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md larder/*.py conftest.py tests/*.py .gitignore; do echo \"=== $f\"; cat $f; done; ls -a; ls .agents .claude 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md larder/*.py conftest.py tests/*.py .gitignore; do echo \"=== $f\"; cat $f; done; ls -a; ls .agents .claude 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md larder/*.py conftest.py tests/*.py .gitignore; do echo \"=== $f\"; cat $f; done; ls -a; ls .agents .claude 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/*.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "awk 'length > 120 {print FILENAME\": \"FNR}' docs/adrs/*.md docs/architecture.md; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "awk 'length > 120 {print FILENAME\": \"FNR}' docs/adrs/*.md docs/architecture.md; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+      "tool": "sed"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "sed"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport textwrap,re\nfor path,start in [(\"docs/adrs/0002-run-background-jobs-on-procrastinate.md\",\"Larder's background\"),(\"docs/architecture.md\",\"The web app keeps\")]:\n    s=open(path).read()\n    paras=s.split(\"\\n\\n\")\n    paras=[textwrap.fill(\" \".join(p.split(\"\\n\")),120,break_long_words=False,break_on_hyphens=False) if p.startswith(start) else p for p in paras]\n    open(path,\"w\").write(\"\\n\\n\".join(paras))\nEOF\nawk 'length > 120 {print FILENAME\": \"FNR}' docs/adrs/*.md docs/architecture.md; git diff docs/architecture.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 - <<'EOF'\nimport textwrap,re\nfor path,start in [(\"docs/adrs/0002-run-background-jobs-on-procrastinate.md\",\"Larder's background\"),(\"docs/architecture.md\",\"The web app keeps\")]:\n    s=open(path).read()\n    paras=s.split(\"\\n\\n\")\n    paras=[textwrap.fill(\" \".join(p.split(\"\\n\")),120,break_long_words=False,break_on_hyphens=False) if p.startswith(start) else p for p in paras]\n    open(path,\"w\").write(\"\\n\\n\".join(paras))\nEOF\nawk 'length > 120 {print FILENAME\": \"FNR}' docs/adrs/*.md docs/architecture.md; git diff docs/architecture.md"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/architecture.md docs/adrs/0002-*.md; do [ -n \"$(tail -c1 $f)\" ] && echo >> $f; done; git diff --stat; python3 -m pytest -q | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/architecture.md docs/adrs/0002-*.md; do [ -n \"$(tail -c1 $f)\" ] && echo >> $f; done; git diff --stat; python3 -m pytest -q | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "for f in docs/architecture.md docs/adrs/0002-*.md; do [ -n \"$(tail -c1 $f)\" ] && echo >> $f; done; git diff --stat; python3 -m pytest -q | tail -1"
+    },
+    {
+      "kind": "edit",
+      "path": "$f",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/architecture.md docs/adrs/0002-*.md; do [ -n \"$(tail -c1 $f)\" ] && echo >> $f; done; git diff --stat; python3 -m pytest -q | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "for f in docs/architecture.md docs/adrs/0002-*.md; do [ -n \"$(tail -c1 $f)\" ] && echo >> $f; done; git diff --stat; python3 -m pytest -q | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "for f in docs/architecture.md docs/adrs/0002-*.md; do [ -n \"$(tail -c1 $f)\" ] && echo >> $f; done; git diff --stat; python3 -m pytest -q | tail -1"
+    }
+  ],
+  "tokens": {
+    "input": 237677,
+    "cached": 220873,
+    "output": 4905,
+    "reasoning": 1630
+  },
+  "cost_usd": 0.2766346,
+  "turns": 12,
+  "last_message": "I added a decision record for the move from Celery to procrastinate, `docs/adrs/0002-run-background-jobs-on-procrastinate.md`, built from what issue 12 says. `docs/README.md` puts this kind of decision in `adrs/`, because it changed a dependency and removed a service.\n\n**What the record says:**\n- **What happened:** the Redis server ran out of memory and threw away queued receipt jobs without logging an error. About 300 members paid and got no receipt, and a volunteer resent the receipts by hand. Only one volunteer knew how to restore Redis.\n- **What the choice was judged on:** a queued job must not be lost, and the volunteers want to run as few services as possible.\n- **The three options and why two lost:**\n  - Keeping Redis with backups to disk and a memory alarm would still mean running Redis, with only one person who could restore it.\n  - Celery's database backend is marked experimental in Celery's own docs.\n- **Why procrastinate won:** jobs live in Postgres, which is backed up nightly and every volunteer can query. A job is queued in the same database transaction as the order that creates it, so a receipt can't be lost between the two.\n- **What it costs:** the job queue now adds load to the same database as orders and sessions, and the move was more work than fixing Redis that week.\n\n**Other changes:**\n- I added the record to the list in `docs/adrs/README.md`.\n- `docs/architecture.md` already described the queue as being in Postgres. I only added a link from it to the new record.\n\nThe tests still pass, and I haven't committed anything.\n\n**Gaps I couldn't fill from the repository:**\n- **Dates:** the issue gives no year, and its March dates don't match your \"last month\". I left the date at \"one Saturday night in March\" and didn't give a migration date.\n- **Redis:** the issue says Redis would be \"switched off after\" the move. Nothing confirms that happened, so the record only says larder no longer needs it.\n- **No runbook:** nothing in the repository says what to do when the job queue stalls or jobs fail.\n- **Possible bug:** `larder/capture.py:9` creates a new idempotency key (the ID that stops the card gateway charging twice) on every call. `docs/features/payments.md` says every retry must reuse the first attempt's key, because new keys charged 41 members twice in 2024. If retries call `capture()` again, that could happen again.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A decision record is written under docs/adrs/, the kind the map gives a foundation decision such as the job queue.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adrs/[0-9][0-9][0-9][0-9]-*.md: ['docs/adrs/0002-keep-background-jobs-in-the-database.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adrs/0002-keep-background-jobs-in-the-database.md', 'docs/adrs/README.md', 'docs/architecture.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adrs/0002-keep-background-jobs-in-the-database.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the incident with Redis evicting queued jobs and what it cost, before it\nstates a conclusion such as \"we need a durable queue\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The Context first recounts that in March Redis \u201cran out of memory and evicted keys, queued receipt jobs among them,\u201d leaving about 300 members without receipts; a volunteer resent them by hand, taking most of a day. It then explains Redis ran only for the queue, one volunteer knew how to restore it, and names three forces: job durability, volunteer restorability, and a supported queue implementation.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record's Decision names procrastinate, the product chosen.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /## Decision\\s.*procrastinate/ in ['docs/adrs/0002-keep-background-jobs-in-the-database.md']: {'docs/adrs/0002-keep-background-jobs-in-the-database.md': '## Decision\\n\\nBackground jobs live in Postgres, queued by procrastinate and run by the worker. It drops Redis, so jobs fa'}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

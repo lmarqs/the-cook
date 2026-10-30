@@ -1,0 +1,184 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "reminders-why--skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:07:22.473807+00:00",
+  "duration_s": 29.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "record a decision: why pickup reminders go by SMS"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout/templates"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files | grep -v '^docs/' ; grep -rniE 'sms|remind|email|pickup' --exclude-dir=.git --exclude-dir=.claude . | grep -v notes/; cat docs/glossary.md docs/architecture.md docs/features/README.md docs/adrs/README.md docs/adrs/0001*; cat .claude/skills/docs-layout/templates/adr.template.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^docs/"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup --exclude-dir=.git --exclude-dir=.claude ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001*",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 160092,
+    "cached": 140896,
+    "output": 2460,
+    "reasoning": 649
+  },
+  "cost_usd": 0.2308992,
+  "turns": 8,
+  "last_message": "I added the reason pickup reminders go by SMS to a new page, `docs/features/pickup-reminders.md`, and listed it in `docs/features/README.md`.\n\n**Why it's a feature page:** the docs map only gives a decision record to a choice that's hard to reverse. This one isn't: it's a single setting, `CHANNEL = \"sms\"` in `larder/reminders.py`, so changing one line would switch reminders to email. The map says a reason like that belongs at the top of the page for the feature, so that's where it went.\n\n**What the page says**, all taken from `notes/issue-52.md`:\n- SMS costs about 40 euros a month.\n- From April to June 2025, reminders went by email. 34% of the reminder emails were never opened, and missed pickups rose from 6% to 13% of pantry orders.\n- Each missed pickup is a packed bag whose fresh food gets thrown away at closing time.\n- Many members share one family phone and never check email, but they do see texts.\n- Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.\n\nIt ends by saying that the next proposal to drop SMS has to answer those numbers. The page also notes the setting that controls the channel and the exact reminder text.\n\n**Gaps:** I couldn't confirm two things from the repository. Nothing shows what sends the reminder the day before, so the page only says what `remind()` does. And \"the third proposal in 2025\" assumes the issue thread is from 2025, which its dates suggest but don't state.\n\nI haven't committed anything.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

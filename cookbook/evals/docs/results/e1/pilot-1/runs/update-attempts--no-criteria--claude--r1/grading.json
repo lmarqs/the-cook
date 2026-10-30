@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "The page that owns the retry rules, docs/features/payments.md, is changed.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/payments.md: ['docs/features/payments.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/features/payments.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The payments page still opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/features/payments.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The payments page says why a capture gets 5 attempts with growing pauses, told as it happened: back-to-back attempts\nall timed out at the gateway's Friday peak and left pantry orders uncharged, not only a conclusion such as \"for\nreliability\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\u201cThe attempts used to be 3, sent back to back within a second.\u201d During the gateway\u2019s slow Friday peak, \u201c58 confirmed pantry orders were never charged,\u201d requiring manual capture. Replaying those timeouts with 5 attempts spaced 2, 4, 6 and 8 seconds apart would have captured 57 of 58, at a cost of up to 20 seconds longer waiting.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The payments page states the new rule: up to 5 attempts.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /\\b(5|five)\\b[^.\\n]{0,40}attempts|attempts[^.\\n]{0,40}\\b(5|five)\\b/ in ['docs/features/payments.md']: {'docs/features/payments.md': '5 attempts'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-no-new-page",
+      "type": "regex",
+      "text": "No page is added under docs/: the change belongs to the page that already owns the retry rules.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^diff --git a/docs/\\S+ b/docs/\\S+\\nnew file mode/ in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

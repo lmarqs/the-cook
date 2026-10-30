@@ -1,0 +1,51 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..dff8c36 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): until when a member may cancel a pantry order, and why.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..21b7de2
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,21 @@
++# Cancellation
++
++For whoever changes how a member cancels a pantry order, or answers a member whose cancellation was refused. A member
++may cancel a pantry order until 2 hours before its pickup slot starts, when volunteers start packing it. The cutoff
++exists because members cancelled after their bags were packed: in the first week of October 2026 the pantry threw away
++25 bags of fresh food, though an in-app banner had asked members to cancel earlier since the summer.
++
++## Cutoff
++
++`can_cancel` in `larder/cancellation.py` allows a cancellation while the current time is strictly before the pickup
++slot's start minus `CUTOFF`, 2 hours. For a slot starting at 17:00, a member may cancel up to 14:59:59; from 15:00
++the app refuses.
++
++The cutoff matches the packing shift, which starts 2 hours before each slot: a cancellation before it costs the
++pantry nothing, and one after it costs a packed bag. Before the cutoff, members cancelled from the app as late as
++16:50 for a 17:00 slot; on three Saturdays in a row the volunteers were left with packed bags of milk, bread and
++greens, 9 on the last of them, and the banner asking members to cancel earlier had not changed that.
++
++## After the cutoff
++
++A member who cannot come after the cutoff calls the pantry, and the volunteers decide.
+diff --git a/docs/glossary.md b/docs/glossary.md
+index 5e9d1e1..98b903d 100644
+--- a/docs/glossary.md
++++ b/docs/glossary.md
+@@ -11,6 +11,10 @@ _Avoid_: user, customer
+ The items a member asks for in one checkout, from confirmation until pickup or cancellation.
+ _Avoid_: purchase, basket
+ 
++**Pickup slot**:
++The time at which a member collects a pantry order from the pantry.
++_Avoid_: pickup time
++
+ **Capture**:
+ The gateway charging a card for an amount authorized earlier.
+ _Avoid_: settlement

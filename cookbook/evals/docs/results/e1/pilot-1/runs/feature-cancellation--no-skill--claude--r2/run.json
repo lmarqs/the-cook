@@ -1,0 +1,178 @@
+{
+  "study": "e1",
+  "case": "feature-cancellation",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "feature-cancellation--no-skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:02:54.777176+00:00",
+  "duration_s": 49.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/cancellation.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat larder/cancellation.py notes/issue-31.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/cancellation.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-31.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn cancel\\|phone\\|CUTOFF --include=*.py --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./notes"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE cancel|phone|CUTOFF|pickup|slot larder docs tests README.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/cancellation.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/features/cancellation.md'\ns=open(p).read()\ns=s.replace(\"\"\"The cutoff shipped in October 2026, after the pantry threw away 25 packed bags of\nfresh food in three weeks.\"\"\",\"\"\"The cutoff shipped in October 2026, after late cancellations left packed bags on\nthe shelf three Saturdays in a row and 25 bags of fresh food were thrown away in a week.\"\"\")\ns=s.replace(\"\"\"one after it leaves a packed bag on the shelf. In September and October 2026 members cancelled minutes before their\nslot, such as at 16:50 for a 17:00 pickup, after their bags were packed. On one Saturday 9 bags of milk, bread and\ngreens were left over, and October's first week alone added up to 25 bags of fresh food thrown away. An in-app banner\nasking members to cancel earlier had run since the summer without changing that.\"\"\",\"\"\"one after it leaves a packed bag on the shelf. In early October 2026 members were cancelling minutes before their\nslot, such as at 16:50 for a 17:00 pickup, after their bags were packed. It was the third Saturday in a row with\nbags left over; that day 9 bags of milk, bread and greens, and 25 bags of fresh food thrown away in October's first\nweek. An in-app banner asking members to cancel earlier had run since the summer without changing that.\"\"\")\ni=s.index(\"- **Both times\")\ns=s[:i].rstrip()+\"\\n\"\nopen(p,'w').write(s)\nEOF\ncat docs/features/cancellation.md; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 - <<'EOF'\np='docs/features/cancellation.md'\ns=open(p).read()\ns=s.replace(\"\"\"The cutoff shipped in October 2026, after the pantry threw away 25 packed bags of\nfresh food in three weeks.\"\"\",\"\"\"The cutoff shipped in October 2026, after late cancellations left packed bags on\nthe shelf three Saturdays in a row and 25 bags of fresh food were thrown away in a week.\"\"\")\ns=s.replace(\"\"\"one after it leaves a packed bag on the shelf. In September and October 2026 members cancelled minutes before their\nslot, such as at 16:50 for a 17:00 pickup, after their bags were packed. On one Saturday 9 bags of milk, bread and\ngreens were left over, and October's first week alone added up to 25 bags of fresh food thrown away. An in-app banner\nasking members to cancel earlier had run since the summer without changing that.\"\"\",\"\"\"one after it leaves a packed bag on the shelf. In early October 2026 members were cancelling minutes before their\nslot, such as at 16:50 for a 17:00 pickup, after their bags were packed. It was the third Saturday in a row with\nbags left over; that day 9 bags of milk, bread and greens, and 25 bags of fresh food thrown away in October's first\nweek. An in-app banner asking members to cancel earlier had run since the summer without changing that.\"\"\")\ni=s.index(\"- **Both times\")\ns=s[:i].rstrip()+\"\\n\"\nopen(p,'w').write(s)\nEOF\ncat docs/features/cancellation.md; git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/cancellation.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2"
+    }
+  ],
+  "tokens": {
+    "input": 181927,
+    "cached": 174970,
+    "output": 4477,
+    "reasoning": 1395
+  },
+  "cost_usd": 0.180134,
+  "turns": 9,
+  "last_message": "I added a page on the cancellation cutoff at `docs/features/cancellation.md` and linked it from `docs/features/README.md`. Nothing is committed.\n\n**What the page covers:**\n- **The rule:** a member can cancel a pantry order until 2 hours before their pickup slot starts (`CUTOFF` and `can_cancel` in `larder/cancellation.py`). At exactly 2 hours before, the app already refuses. A table shows this for a 17:00 slot.\n- **Why 2 hours:** volunteers start packing a slot's bags 2 hours before it begins, so later cancellations leave packed bags unused. The page uses the figures from issue 31: three Saturdays in a row with bags left over, 9 bags on one day, and 25 bags of fresh food thrown away by October 7. An in-app banner asking people to cancel earlier had been running since summer without fixing it. After the cutoff, members call the pantry and volunteers decide.\n\n**One gap you should know about.** The pantry lead accepted the cutoff on condition that the refusal message shows the pantry's phone number. Neither the message nor the number is anywhere in the repository: `can_cancel` only returns yes or no, and nothing in the repo calls it. I listed this under \"Known limits\" rather than writing the number into the page. Either it lives somewhere outside this repo, or it hasn't been built. Someone should confirm which.\n\n**What I left out:**\n- **No decision record:** this is one feature's rule and easy to change, so it doesn't meet the bar the docs guide sets for one.\n- **No new glossary terms:** each entry has to list the synonyms the team rejected, and the repo doesn't say what those were for \"pickup slot\".\n- **The receipts-language remark** in the issue is about something else.\n\nThere are no tests for `cancellation.py`. The existing tests still pass (2 passed).",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

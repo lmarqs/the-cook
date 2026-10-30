@@ -1,0 +1,70 @@
+diff --git a/docs/adrs/0002-run-background-jobs-in-postgres.md b/docs/adrs/0002-run-background-jobs-in-postgres.md
+new file mode 100644
+index 0000000..852dcf3
+--- /dev/null
++++ b/docs/adrs/0002-run-background-jobs-in-postgres.md
+@@ -0,0 +1,42 @@
++# Run background jobs in Postgres
++
++For whoever changes background jobs, the worker, deploys or the database. Background jobs, such as receipt emails,
++are queued in Postgres with procrastinate, because the Redis queue behind Celery dropped receipt jobs without an error.
++
++## Context
++
++Background jobs ran on Celery, whose queue lived in Redis. One Saturday night in March the Redis server ran out of
++memory and evicted keys, queued receipt jobs among them. Nothing logged an error; the jobs were gone. Members who had
++paid got no receipt, and about 300 wrote in by the Wednesday; the email provider showed nothing sent since Saturday
++23:10. A payments volunteer resent the receipts by hand from the orders table, which took most of a day.
++
++Keeping the jobs safe in Redis meant sizing it for the worst week and turning on persistence. Redis ran for the job
++queue alone, and one volunteer knew how to restore it. Postgres was already backed up every night and every
++volunteer could query it.
++
++Three forces judge the options: a queued job must not vanish silently, the volunteers keep the number of services
++they operate down (as in [keep sessions in the database](0001-keep-sessions-in-the-database.md)), and the work to get
++there.
++
++## Options
++
++- **Keep Celery and Redis, add persistence and a memory alarm**: the least work; lost because larder would still run
++  Redis for the queue alone, with one volunteer able to restore it.
++- **Celery with its database backend**: keeps Celery; lost because Celery's documentation marks that backend
++  experimental.
++- **procrastinate, a Postgres task queue for Python**: chosen.
++
++## Decision
++
++Background jobs are queued in Postgres with procrastinate, and the worker runs them from there. procrastinate queues
++a job in the same transaction as the pantry order that queues it, so a receipt cannot be lost between the two, and
++its queue lives in the database larder already runs and backs up. Redis is switched off once the jobs have moved.
++
++## Consequences
++
++- A queued job is a row in Postgres: it is in the nightly backup, and any volunteer can query it to find a job that
++  did not run.
++- A pantry order and its jobs commit or roll back together.
++- Larder runs no Redis, so no one has to size, persist or restore it.
++- The worker's load lands on the database that also serves pantry orders and sessions.
++- Moving the jobs cost more work than adding persistence to Redis would have.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..c78e8c1 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Run background jobs in Postgres](0002-run-background-jobs-in-postgres.md): jobs are queued in Postgres with
++  procrastinate, not in Redis with Celery.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..91b8dfc 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -13,5 +13,5 @@ where a payment is captured.
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and queues jobs there for the worker ([run background jobs in Postgres](adrs/0002-run-background-jobs-in-postgres.md)).
++A confirmed pantry order is captured through the card gateway by `larder/capture.py`.

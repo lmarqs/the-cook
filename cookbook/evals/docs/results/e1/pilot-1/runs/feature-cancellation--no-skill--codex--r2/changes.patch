@@ -1,0 +1,40 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..be3f01e 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Cancellation](cancellation.md): when a member can cancel a pantry order and how late cancellations are handled.
+diff --git a/docs/features/cancellation.md b/docs/features/cancellation.md
+new file mode 100644
+index 0000000..37c89b4
+--- /dev/null
++++ b/docs/features/cancellation.md
+@@ -0,0 +1,25 @@
++# Cancellation
++
++For whoever changes pantry order cancellation or answers a member who cannot cancel. Members may cancel before
++packing starts, two hours before their pickup slot. Late cancellations had left packed bags on the shelf for three
++Saturdays in a row; a banner asking members to cancel earlier had been in place since summer, but 25 bags of fresh
++food were thrown away in October.
++
++## Cutoff
++
++Cancellation closes when packing starts. Volunteers reported that cancellations before the packing shift cost
++nothing, while each cancellation after it starts costs a packed bag.
++
++The cutoff check lives in [`can_cancel`](../../larder/cancellation.py). At exactly two hours before the pickup slot,
++cancellation is already closed: for a 17:00 pickup, a member can cancel before 15:00, but not at 15:00 or later.
++
++## After the cutoff
++
++A member who cannot attend after the cutoff calls the pantry, and volunteers decide how to handle the pantry order.
++The [issue discussion](../../notes/issue-31.md) requires the refusal message to include the pantry phone number.
++
++## Known limits
++
++The repository contains the cutoff check, but no refusal-message implementation or pantry phone number, so it does
++not establish whether the message includes the number. When handling a late cancellation, use the pantry's current
++contact details to reach the volunteers.

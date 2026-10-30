@@ -1,0 +1,43 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..1f041da 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): how members are reminded to collect a pantry order, and why by SMS.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..635952a
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,28 @@
++# Pickup reminders
++
++For whoever changes how members are reminded to collect a pantry order, or proposes sending the reminders by email to
++save the SMS cost. The day before pickup, larder texts each member that their pantry order is ready. Reminders go by
++SMS, not email, because when they went by email in 2025, missed pickups more than doubled and the fresh food in the
++uncollected bags was thrown away.
++
++## Sending
++
++`remind` in `larder/reminders.py` sends one message the day before the pickup slot: "Your pantry order is ready for
++pickup", followed by the slot. `CHANNEL` picks the channel: `"sms"` texts the member's phone; any other value emails
++the member instead. The email path is still in the code, but no one should switch to it without reading the next
++section.
++
++## Why SMS, not email
++
++SMS reminders cost about 40 euros a month and email is free, so volunteers keep proposing email. Leo was the third
++person to ask in one year
++([issue 52](../../notes/issue-52.md)). It has been tried:
++
++- From April to June 2025, reminders went by email. The email provider's report showed that members never opened 34%
++  of them. Missed pickups went from 6% of pantry orders to 13%. Each missed pickup is a packed bag, and the fresh
++  food in it goes in the bin by closing time.
++- Many members share one phone with their family and never check email, but they do see a text.
++- Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.
++
++Issue 52 closed with the maintainer's decision to keep SMS. A proposal to drop SMS needs to explain how it will
++keep missed pickups near 6% for members who don't read email.

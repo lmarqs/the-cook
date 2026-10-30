@@ -1,0 +1,169 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "write-adr--no-skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:26:25.099964+00:00",
+  "duration_s": 41.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && ls notes && cat notes/*12*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls notes"
+    },
+    {
+      "kind": "read",
+      "path": "notes/*12*",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "for f in README.md docs/adrs/* docs/architecture.md docs/features/* docs/glossary.md docs/runbooks/*; do echo \"=== $f\"; cat $f; done; for f in larder/*.py conftest.py tests/*; do echo \"=== $f\"; cat $f; done; git log --stat | head -50"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-procrastinate.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 149588,
+    "cached": 142671,
+    "output": 3638,
+    "reasoning": 948
+  },
+  "cost_usd": 0.1565822,
+  "turns": 9,
+  "last_message": "I've written the move to procrastinate up as a new decision record in `docs/`. Nothing is committed yet.\n\n**Changes**\n- **New: `docs/adrs/0002-run-background-jobs-on-procrastinate.md`.** It records what happened, using issue 12:\n  - Redis ran out of memory one Saturday night and silently dropped queued receipt jobs.\n  - About 300 members paid but got no receipt, and a volunteer spent most of a day resending them by hand.\n  - Only one volunteer knew how to restore Redis.\n  - The three options considered, and why each lost: keep Celery with persistence and a memory alarm, use Celery's experimental database backend, or move to procrastinate.\n  - Why procrastinate won: jobs sit in Postgres, which is already backed up nightly and which every volunteer can query, and a job can be queued in the same transaction as the order that creates it.\n  - Two costs: the database now also carries the job queue, and Redis no longer has any use in larder.\n- **`docs/adrs/README.md`:** added a line linking the new record.\n- **`docs/architecture.md`:** the worker is now described as using the procrastinate queue in Postgres, and the sentence about queuing jobs links the new record.\n\nI left out the off-topic pickup-slot comment from the issue. I also didn't write a runbook for lost or failed jobs, because the repository doesn't show how anyone actually operates the procrastinate queue, and I didn't want to invent steps.\n\n**Things you should know**\n1. **Payment code doesn't do what the docs say.** `docs/features/payments.md` says every retry of a capture reuses the first attempt's idempotency key. But `larder/capture.py:9` makes a new random key on every call, which is exactly what caused the 2024 double charges. I didn't change the code because it's outside this task, but it's worth fixing, and adding a test for it.\n2. **The dates don't line up.** You said the move happened last month (September), but the issue is dated March and says \"jobs move to Postgres this month.\" So the record only says the incident was in March and doesn't say when the move finished.\n3. **Whether Redis is switched off yet isn't stated anywhere.** The record says only that Redis no longer has a use in larder. If it has been shut down, it's worth adding that.\n\nTests still pass (2 passed).",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

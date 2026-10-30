@@ -1,0 +1,36 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..af5ab90 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): why reminders go by SMS after the email trial increased missed pickups.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..41c4c63
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,21 @@
++# Pickup reminders
++
++For volunteers proposing changes to pickup reminders, including switching to email to save SMS costs. Pickup
++reminders go by SMS because an email trial increased missed pickups and wasted fresh food. This page records the
++reason after volunteers repeatedly proposed the same switch.
++
++## Why SMS
++
++From April to June 2025, larder tried email pickup reminders. The provider reported that 34% of reminder emails
++were never opened, and missed pickups rose from 6% to 13% of pantry orders. Each missed pickup leaves a packed bag;
++its fresh food goes in the bin at closing time. The pantry lead reported that many members share one phone in the
++family and never check email, but do see SMS.
++
++Larder switched back to SMS on July 1, and missed pickups were back to 6% by August. In
++[issue 52](../../notes/issue-52.md), a volunteer proposed email again to avoid the reported €40 monthly SMS cost.
++The maintainer confirmed that SMS would stay: the saving did not justify repeating the missed pickups and food
++waste seen during the trial.
++
++## Sending reminders
++
++[The reminder implementation](../../larder/reminders.py) sends a member their pickup reminder the day before.

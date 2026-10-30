@@ -1,0 +1,184 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 3,
+  "id": "reminders-why--no-criteria--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:14:06.129476+00:00",
+  "duration_s": 34.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record the decision why pickup reminders go by SMS (not email), using notes/issue-52.md and the repository."
+      }
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-52.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/glossary.md docs/architecture.md docs/features/README.md larder/reminders.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"sms\\|email\\|remind\" docs larder README.md; cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/glossary.md docs/architecture.md docs/features/README.md larder/reminders.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"sms\\|email\\|remind\" docs larder README.md; cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/glossary.md docs/architecture.md docs/features/README.md larder/reminders.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"sms\\|email\\|remind\" docs larder README.md; cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i sms\\|email\\|remind docs larder README.md"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "cat .claude/skills/docs-layout/templates/map.template.md; diff -r .claude/skills .agents/skills && echo same; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat .claude/skills/docs-layout/templates/map.template.md; diff -r .claude/skills .agents/skills && echo same; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat .claude/skills/docs-layout/templates/map.template.md; diff -r .claude/skills .agents/skills && echo same; git log --stat | head -40"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/design.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 190159,
+    "cached": 168790,
+    "output": 2904,
+    "reasoning": 843
+  },
+  "cost_usd": 0.262734,
+  "turns": 9,
+  "last_message": "I added a page explaining why pickup reminders go by SMS: `docs/features/pickup-reminders.md`, now listed in `docs/features/README.md`. All of it comes from `notes/issue-52.md` and `larder/reminders.py`.\n\n**What it says:**\n- **What the reminder does:** the day before pickup, `remind` in `larder/reminders.py` sends a text. `CHANNEL` picks SMS or email and is set to SMS.\n- **Why SMS:** email was tried from April to June 2025. 34% of reminder emails were never opened, and missed pickups rose from 6% of pantry orders to 13%. Each missed pickup means a packed bag whose fresh food is binned at closing time. Many members share one family phone and never check email.\n- **The reversal:** reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.\n- **For the next proposal:** it says the roughly 40 euros a month in SMS fees costs less than the food a lower-reach channel wastes. That weighing comes from the issue thread, not a recorded decision.\n\n**Why a feature page and not a decision record:** the repository's documentation rules keep decision records for choices whose reversal changes more than one feature or module. Switching to email means changing one constant in one file, so the reason goes on the page for the reminder itself.\n\n**Two things to know:**\n- The issue notes don't give the year of the September thread, so the page says \"the third request of its year\" without dating it.\n- `docs/README.md` is meant to list which page owns each kind of fact, but it currently holds only its opening paragraph. I followed the rules in the docs skill's own references and didn't change the map.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

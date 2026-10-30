@@ -1,0 +1,36 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..3afb43c 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -1,17 +1,25 @@
+ # Payments
+ 
+-For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+-amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members
+-being charged twice.
++For whoever changes how larder charges a card, or answers a member about a delayed or duplicate charge. Larder
++captures the authorized amount once a pantry order is confirmed. Its retry rules address duplicate charges after
++timeouts and captures that failed during the gateway's Friday peak.
+ 
+ ## Capture
+ 
+-A confirmed pantry order is captured for its authorized amount: `larder/capture.py` calls the card gateway and
+-returns its charge id.
++A confirmed pantry order is captured for its authorized amount: [the capture implementation](../../larder/capture.py)
++calls the card gateway and returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that times out is retried with growing pauses; [the capture implementation](../../larder/capture.py)
++defines the attempt limit and pause lengths.
++
++During the gateway's Friday peak, 17:00 to 19:00, slow responses left 58 confirmed pantry orders uncharged. A
++volunteer captured them by hand the following morning. The previous three attempts ran back to back within a
++second, landing in the same slow period. In a sandbox replay, five attempts spaced 2, 4, 6 and 8 seconds apart would
++have recovered 57 of those 58 captures. The team accepted up to 20 seconds of additional waiting on the confirmation
++page to reduce manual captures. Switching gateways was deferred because the contract runs to December 2026. These
++findings and the accepted trade-off came from [issue 40](../../notes/issue-40.md).
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that

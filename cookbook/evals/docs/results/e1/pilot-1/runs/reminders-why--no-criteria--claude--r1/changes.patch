@@ -1,0 +1,37 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..f9c0b68 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): the SMS a member gets the day before a pickup, and why not email.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..d54cabb
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,22 @@
++# Pickup reminders
++
++For whoever changes how members are reminded of a pickup, or proposes sending reminders by email to save the SMS
++cost. The day before a member's pickup slot, larder sends them a reminder by SMS. It goes by SMS because when the
++pantry sent reminders by email, from April to June 2025, missed pickups doubled and the fresh food in the unclaimed
++bags was thrown away.
++
++## Message
++
++`remind` in `larder/reminders.py` sends one message the day before the pickup slot: "Your pantry order is ready for
++pickup" followed by the slot.
++
++## Channel
++
++`CHANNEL` in `larder/reminders.py` picks the channel, and it is `"sms"`; the code still holds an email branch.
++
++SMS costs the pantry about 40 euros a month and email would cost nothing, so the switch keeps being proposed. From
++April to June 2025 the pantry sent reminders by email instead. The email provider reported that 34% of the reminder
++emails were never opened, and missed pickups rose from 6% of pantry orders to 13%. Every missed pickup is a bag
++already packed, and its fresh food goes in the bin by closing time. Many members share one phone across the family
++and never check email, but they see an SMS. The pantry went back to SMS on 1 July 2025, and missed pickups were back
++to 6% by August. The switch was proposed again on issue 52, the third time in a year, and the maintainers kept SMS.

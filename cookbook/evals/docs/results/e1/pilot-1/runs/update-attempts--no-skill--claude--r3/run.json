@@ -1,0 +1,162 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "update-attempts--no-skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:16:23.928664+00:00",
+  "duration_s": 33.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i attempt\\|retr\\|capture\\|\\b3\\b\\|three docs"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/payments.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/features/checkout.md docs/architecture.md; cat tests/test_capture.py; git log --stat | head -30"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/features/payments.md'\ns=open(p).read()\ns=s.replace(\"\"\"amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members\nbeing charged twice.\"\"\",\"\"\"amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members\nbeing charged twice, and because the gateway's Friday peak left pantry orders confirmed but never charged.\"\"\")\ns=s.replace(\"\"\"A capture that times out is tried again, up to 3 attempts in all, one after the other.\n\"\"\",\"\"\"A capture that times out is tried again, up to 5 attempts in all, with a growing pause before each new attempt: 2, 4,\n6 and then 8 seconds, set by `ATTEMPTS` and `BACKOFF_SECONDS` in `larder/capture.py`.\n\nThe attempts used to be 3, sent back to back within a second. The gateway answers slowly every Friday from 17:00 to\n19:00, its peak, so all three landed in the same slow minute: one Friday left 58 pantry orders confirmed but never\ncharged, and a payments volunteer captured them by hand from the gateway's dashboard the next morning. Replaying\nthose timeouts against the gateway's sandbox with 5 attempts spaced 2, 4, 6 and 8 seconds apart, 57 of the 58 went\nthrough. Switching gateways was not an option, as the contract runs to December 2026.\n\"\"\")\ns=s.replace(\"\"\"## Shaped by\"\"\",\"\"\"## Known limits\n\n- A member whose capture keeps timing out waits up to 20 seconds longer on the confirmation page, the sum of the\n  pauses. The team judged this better than volunteers capturing pantry orders by hand.\n- Spacing does not save every capture during the gateway's peak: in the replay, 1 of 58 still timed out on all 5\n  attempts. Such a pantry order stays uncharged; capture it by hand from the gateway's dashboard, as the\n  [gateway timeouts](../runbooks/gateway-timeouts.md) runbook describes for timed-out captures.\n\n## Shaped by\"\"\")\nopen(p,'w').write(s)\nEOF\ncat docs/features/payments.md; cat docs/features/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 160132,
+    "cached": 147565,
+    "output": 2990,
+    "reasoning": 758
+  },
+  "cost_usd": 0.189801,
+  "turns": 6,
+  "last_message": "I updated `docs/features/payments.md`. It was the only page that stated the retry rule (it still said \"up to 3 attempts in all, one after the other\"). No other page repeats the number, so nothing else needed changing.\n\n**What changed:**\n- **Retries:** captures now get up to 5 attempts, with pauses of 2, 4, 6 and 8 seconds between them. The page names the `ATTEMPTS` and `BACKOFF_SECONDS` constants in `larder/capture.py`, which I checked produce exactly that sequence.\n- **Why it changed:** a new paragraph gives the reasons from issue 40. The gateway is slow every Friday from 17:00 to 19:00, which is its peak, and the old 3 attempts went out back to back within a second, so all of them hit that slow window. One Friday, 58 orders were confirmed but never charged and had to be captured by hand. Replaying those timeouts in the gateway's sandbox with the new spacing, 57 of the 58 went through. Switching gateways wasn't an option because the contract runs to December 2026.\n- **Opening paragraph:** it now mentions the Friday problem as well as the 2024 double-charge incident.\n- **New \"Known limits\" section:**\n  - A member can wait up to 20 seconds longer on the confirmation page. The team accepted this as better than capturing orders by hand.\n  - Spacing out attempts doesn't save every capture: 1 of the 58 in the replay still failed all 5. The page says how to handle such orders: find them in the worker's log, using the gateway-timeouts runbook, then capture them by hand from the gateway's dashboard.\n\nThe section about reusing the same idempotency key on every attempt was already correct and still holds, so I left it alone.\n\n**Things I didn't change:**\n- **Gateway-timeouts runbook:** it doesn't include the manual-capture step from the gateway's dashboard. Its rules say to update it when its alert fires, so I didn't invent a step without that.\n- **No decision record:** retry settings are a choice one change can reverse, so under `docs/README.md` they belong on the feature page.\n- **Dates:** the issue notes are dated Nov 15\u201324 but give no year, and today is Oct 30, so \"last week\" doesn't line up with them. I left the dates of the Friday incident out of the page.\n\nThe tests pass (2 passed). Nothing is committed yet.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "reminders-why--skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T05:26:55.761559+00:00",
+  "duration_s": 31.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record a decision: why pickup reminders go by SMS (not email), based on notes/issue-52.md and repo contents"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup --include=*.py --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v skills"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat .claude/skills/docs-layout/templates/feature.template.md .claude/skills/docs-layout/references/features.md; git log --stat | head -30"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 150918,
+    "cached": 133724,
+    "output": 2560,
+    "reasoning": 696
+  },
+  "cost_usd": 0.2154488,
+  "turns": 8,
+  "last_message": "I wrote down why pickup reminders go by SMS in a new page, `docs/features/pickup-reminders.md`, and added it to the list in `docs/features/README.md`.\n\n**The page:**\n- **What it does:** the day before pickup, the member gets one reminder that their pantry order is ready. `CHANNEL` in `larder/reminders.py` sets the channel; it's set to `\"sms\"`, and the email path is still in the code.\n- **Why SMS, not email:** it tells the story from issue 52, so it stays available even if the notes file moves:\n  - SMS costs about 40 euros a month, and volunteers keep proposing email instead; Leo was the third to ask in one year.\n  - From April to June 2025, reminders went by email. The email provider's report showed 34% were never opened, and missed pickups went from 6% of pantry orders to 13%. Each missed pickup wastes the fresh food in that bag.\n  - Many members share one phone with their family and never check email.\n  - Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.\n  - The maintainer decided to keep SMS.\n- **For the next person to propose email:** the page asks them to explain how missed pickups would stay near 6% for members who don't read email.\n\n**Why a feature page and not a decision record:** the docs only use a decision record for a choice that other work depends on. This one is a single setting in one file and one change could reverse it, so the reason goes on the feature's own page.\n\n**Where it may need checking:** the issue notes don't give a year for the July 1 switch back. I wrote 2025 because the email trial ran April to June 2025 and the switch came straight after it.\n\nI didn't change any code. Nothing has been committed.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

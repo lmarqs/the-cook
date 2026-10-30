@@ -1,0 +1,182 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 1,
+  "id": "write-adr--skill--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T05:00:10.395099+00:00",
+  "duration_s": 47.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-keep-background-jobs-in-postgres.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'SKILL.md' -g '*12*' -g 'README.md' -g 'pyproject.toml' -g '*procrast*' -g '*celery*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g SKILL.md -g *12* -g README.md -g pyproject.toml -g *procrast* -g *celery*"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-12.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/architecture.md docs/adrs/README.md docs/adrs/0001-keep-sessions-in-the-database.md docs/features/checkout.md docs/features/payments.md docs/glossary.md; cat larder/orders.py larder/receipts.py larder/capture.py README.md; git status --short; rg -n -i 'celery|redis|procrastinate|job|receipt|queue' ."
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i celery|redis|procrastinate|job|receipt|queue ."
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/architecture.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-keep-background-jobs-in-postgres.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check; git diff --stat; python3 -m pytest -q"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nfor name in ['docs/adrs/0002-keep-background-jobs-in-postgres.md', 'docs/adrs/README.md', 'docs/architecture.md']:\n    page = Path(name)\n    for target in re.findall(r'\\]\\(([^)]+)\\)', page.read_text()):\n        assert (page.parent / target.split('#')[0]).is_file(), (page, target)\nprint('Changed documentation links resolve.')\nPY\n git diff --check\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 123477,
+    "cached": 111744,
+    "output": 1771,
+    "reasoning": 135
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added a [decision record]( /work/docs/adrs/0002-keep-background-jobs-in-postgres.md) covering the lost receipts, alternatives, reasons for choosing procrastinate, transaction requirement, and operational consequences. Linked it from the architecture and decisions index.\n\nIt flags that the receipt handler remains a stub and enqueue/worker configuration is absent, so those details remain unverified.\n\nDocumentation links and whitespace checks passed; tests: **2 passed**.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}
