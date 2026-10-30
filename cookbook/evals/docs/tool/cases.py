@@ -75,10 +75,16 @@ def load_case(study: str, directory: Path) -> Case:
     return Case(study, directory.name, directory, prompt, settings, data, graders)
 
 
-def load_study(study: str) -> Study:
-    directory = STUDIES / study
+def load_study(study: str, root: Path = STUDIES) -> Study:
+    """The study and its cases; a case missing a grader the outcome counts is refused: its outcome could never pass."""
+    directory = root / study
     config = yaml.safe_load((directory / "study.yaml").read_text())
     cases = [load_case(study, d) for d in sorted((directory / "cases").iterdir()) if d.is_dir()]
+    for case in cases:
+        names = {g.name for g in case.graders}
+        for name in config["outcome"]:
+            if name not in names:
+                raise ValueError(f"case {case.id} has no grader {name}, which the outcome of {study} counts")
     return Study(
         study,
         config["arms"],
