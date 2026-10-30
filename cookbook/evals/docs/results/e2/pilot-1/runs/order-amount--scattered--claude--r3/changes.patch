@@ -1,0 +1,30 @@
+diff --git a/larder/pantry.py b/larder/pantry.py
+index 117cb02..203341d 100644
+--- a/larder/pantry.py
++++ b/larder/pantry.py
+@@ -19,5 +19,9 @@ Catalog = dict[str, int]
+ 
+ 
+ def amount_cents(order: PantryOrder, catalog: Catalog) -> int:
+-    """The amount larder captures for a confirmed pantry order."""
+-    raise NotImplementedError
++    """The amount larder captures for a confirmed pantry order.
++
++    Captured at the prices on its lines, the prices the member confirmed, never at the catalog's current prices:
++    see docs/features/pantry-orders.md#amount.
++    """
++    return sum(line.quantity * line.price_cents for line in order.lines)
+diff --git a/tests/test_pantry.py b/tests/test_pantry.py
+new file mode 100644
+index 0000000..e545dbc
+--- /dev/null
++++ b/tests/test_pantry.py
+@@ -0,0 +1,8 @@
++from larder.pantry import Line, PantryOrder, amount_cents
++
++
++def test_an_order_is_captured_at_the_prices_on_its_lines():
++    order = PantryOrder("o1", (Line("rice", 2, 300), Line("beans", 1, 150)))
++    catalog = {"rice": 450, "beans": 200}
++
++    assert amount_cents(order, catalog) == 750

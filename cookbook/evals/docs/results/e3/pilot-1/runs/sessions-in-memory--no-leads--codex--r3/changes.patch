@@ -1,0 +1,66 @@
+diff --git a/larder/session_store.py b/larder/session_store.py
+index b4f7f26..acf536c 100644
+--- a/larder/session_store.py
++++ b/larder/session_store.py
+@@ -1,3 +1,19 @@
++from copy import deepcopy
++
++
++class InMemorySessions:
++    """Sessions local to this store and lost when its process exits."""
++
++    def __init__(self):
++        self._sessions: dict[str, dict] = {}
++
++    def get(self, session_id: str) -> dict | None:
++        return deepcopy(self._sessions.get(session_id))
++
++    def put(self, session_id: str, data: dict) -> None:
++        self._sessions[session_id] = deepcopy(data)
++
++
+ class PostgresSessions:
+     """Sessions in the `sessions` table, which every web server reads."""
+ 
+diff --git a/tests/test_session_store.py b/tests/test_session_store.py
+new file mode 100644
+index 0000000..ddf739d
+--- /dev/null
++++ b/tests/test_session_store.py
+@@ -0,0 +1,36 @@
++from larder.session_store import InMemorySessions
++
++
++def test_missing_session():
++    assert InMemorySessions().get("missing") is None
++
++
++def test_sessions_can_be_stored_and_replaced():
++    store = InMemorySessions()
++    store.put("member", {"order": ["rice"]})
++    store.put("other", {"order": ["beans"]})
++
++    assert store.get("member") == {"order": ["rice"]}
++    store.put("member", {"order": ["oats"]})
++
++    assert store.get("member") == {"order": ["oats"]}
++    assert store.get("other") == {"order": ["beans"]}
++
++
++def test_session_changes_require_put():
++    store = InMemorySessions()
++    data = {"order": ["rice"]}
++    store.put("member", data)
++    data["order"].append("beans")
++    retrieved = store.get("member")
++    retrieved["order"].append("oats")
++
++    assert store.get("member") == {"order": ["rice"]}
++
++
++def test_separate_stores_do_not_share_sessions():
++    store = InMemorySessions()
++    store.put("member", {})
++
++    assert store.get("member") == {}
++    assert InMemorySessions().get("member") is None

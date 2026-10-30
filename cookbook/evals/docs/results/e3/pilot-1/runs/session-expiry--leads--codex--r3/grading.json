@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: a 10-minute limit logged members out mid-checkout and lost\ntheir pantry orders, which is why the limit is 30 minutes.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The message only says \"The docs retain the history of checkout interruptions caused by the previous 10-minute limit.\" It never says that members were logged out mid-checkout and lost their pantry orders, or that this is why the limit became 30 minutes. It also does not warn that going back to 10 minutes brings that problem back, and it did not ask before making the change.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/sessions.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/sessions.md at step 7; first edit at step 11",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

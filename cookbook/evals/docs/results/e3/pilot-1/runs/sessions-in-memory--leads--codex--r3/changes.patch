@@ -1,0 +1,21 @@
+diff --git a/larder/session_store.py b/larder/session_store.py
+index b4f7f26..bd390eb 100644
+--- a/larder/session_store.py
++++ b/larder/session_store.py
+@@ -1,3 +1,16 @@
++class InMemorySessions:
++    """Sessions local to this store; reuse one instance within a web process."""
++
++    def __init__(self):
++        self._sessions: dict[str, dict] = {}
++
++    def get(self, session_id: str) -> dict | None:
++        return self._sessions.get(session_id)
++
++    def put(self, session_id: str, data: dict) -> None:
++        self._sessions[session_id] = data
++
++
+ class PostgresSessions:
+     """Sessions in the `sessions` table, which every web server reads."""
+ 

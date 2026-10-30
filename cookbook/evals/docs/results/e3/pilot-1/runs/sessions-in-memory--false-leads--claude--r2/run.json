@@ -1,0 +1,133 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 2,
+  "id": "sessions-in-memory--false-leads--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:46:55.255912+00:00",
+  "duration_s": 27.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rni \"session\" docs larder --include=*.md --include=*.py | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni session docs larder --include=*.md --include=*.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn PostgresSessions\\|session_store --include=*.py ."
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "grep -rn \"PostgresSessions\\|session_store\" --include=*.py . ; git log --format='%h %an %ad %s' -- docs/adrs"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn PostgresSessions\\|session_store larder tests conftest.py"
+    }
+  ],
+  "tokens": {
+    "input": 121587,
+    "cached": 111984,
+    "output": 1513,
+    "reasoning": 252
+  },
+  "cost_usd": 0.1294408,
+  "turns": 5,
+  "last_message": "I haven't made any changes yet. Your docs suggest this change would bring back a bug larder already had, and they contradict themselves on the point, so I'd like you to decide first.\n\n**What the decision record says.** `docs/adrs/0001-keep-sessions-in-the-database.md` describes the problem. In 2023 larder moved to **two servers behind a load balancer** and kept sessions in each server's memory. Members were logged out whenever a request reached the other server, and every deploy logged everyone out. It got bad enough that the volunteers stopped deploying during opening hours. Postgres was chosen so that \"a deploy must log no one out\" without adding a service to run. A dict inside the web app's process is the same setup that failed. It would also undo the fix in `docs/features/sessions.md`, where the 30-minute expiry exists so members on slow phones don't lose their pantry orders when they get logged out mid-checkout.\n\n**The contradiction.** The record's opening paragraph says the opposite: \"nothing depends on it, and keeping them in the web app's memory is the planned next step.\" The body doesn't support that. Either the larder setup has changed (back to one server, say) and the opening paragraph is the up-to-date part, or the opening paragraph is wrong.\n\n**On speed.** The record says the session read is \"a query the database serves from memory at larder's size.\" That makes it unlikely to be what's slowing the app down. I'd measure before swapping it out.\n\n**What you could do instead:**\n1. **Measure first.** Find out where request time actually goes. If the session read isn't the slow part, nothing here needs to change.\n2. **If larder runs on one server now and you accept that deploys log members out**, I'll add an `InMemorySessions` class next to `PostgresSessions` and update the decision record, the sessions page and `docs/architecture.md` to match. Note that nothing in the repo currently creates `PostgresSessions`, so the switch itself happens in deployment code I can't see.\n3. **Keep Postgres as the source of truth and add a short-lived in-memory cache in front of it.** This avoids most database reads but still has risks: one server can serve a stale session, and an expiry renewed on one server isn't seen by the other.\n\nWhich way do you want to go? Also, how many servers does larder run on today?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

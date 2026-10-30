@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-tests",
+      "type": "tests_pass",
+      "text": "The repository's tests and the hidden tests pass: the amount sums each line's quantity times the line's own price,\nwhatever the catalog says.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "exit 0: .......                                                                  [100%] / 7 passed in 0.02s",
+      "judged_by": null
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/pantry-orders.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/pantry-orders.md at step 4; first edit at step 10",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-tests"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

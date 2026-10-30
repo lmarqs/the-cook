@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: a deletion that removed a member's pantry orders left a gap in\nthe counts the food bank's grant audits, which is why orders are kept without the member.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\u201cIn 2024 a deletion that removed a member's orders left a gap in those counts, and the grant's auditors flagged it.\u201d The message explains that orders are intentionally retained without the member to preserve seven years of pantry order counts, and asks before changing this behavior.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/accounts.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/accounts.md at step 3; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

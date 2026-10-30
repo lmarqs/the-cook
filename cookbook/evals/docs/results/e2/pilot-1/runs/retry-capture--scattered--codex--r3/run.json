@@ -1,0 +1,111 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "scattered",
+  "harness": "codex",
+  "run": 3,
+  "id": "retry-capture--scattered--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:22:45.466834+00:00",
+  "duration_s": 36.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*capture*' -g '*retry*' -g 'README.md'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g *retry* -g README.md"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/retry.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && rg --files larder tests docs && cat larder/gateway.py"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests docs"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 102308,
+    "cached": 92160,
+    "output": 1063,
+    "reasoning": 22
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Updated `larder/capture.py` to use `retry` for up to 3 total attempts on `GatewayTimeout`, reusing the same idempotency key. The final timeout propagates; other errors aren\u2019t retried.\n\nAdded regression coverage. All 6 tests pass with `python3 -m pytest -q`.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

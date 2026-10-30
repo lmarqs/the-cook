@@ -1,0 +1,39 @@
+diff --git a/larder/cancellation.py b/larder/cancellation.py
+index cb41c50..e63630f 100644
+--- a/larder/cancellation.py
++++ b/larder/cancellation.py
+@@ -1,6 +1,6 @@
+-from datetime import datetime
++from datetime import datetime, timedelta
+ 
+ 
+ def can_cancel(pickup_starts: datetime, now: datetime) -> bool:
+     """Whether a member may still cancel a pantry order whose pickup slot starts at `pickup_starts`."""
+-    raise NotImplementedError
++    return now <= pickup_starts - timedelta(hours=2)
+diff --git a/tests/test_cancellation.py b/tests/test_cancellation.py
+new file mode 100644
+index 0000000..0280f36
+--- /dev/null
++++ b/tests/test_cancellation.py
+@@ -0,0 +1,20 @@
++from datetime import datetime, timedelta
++
++import pytest
++
++from larder.cancellation import can_cancel
++
++
++@pytest.mark.parametrize(
++    ("offset", "expected"),
++    [
++        (timedelta(microseconds=-1), True),
++        (timedelta(0), True),
++        (timedelta(microseconds=1), False),
++    ],
++)
++def test_cancellation_cutoff_is_two_hours_before_pickup(offset, expected):
++    pickup_starts = datetime(2026, 10, 30, 12, 0)
++    cutoff = pickup_starts - timedelta(hours=2)
++
++    assert can_cancel(pickup_starts, cutoff + offset) is expected

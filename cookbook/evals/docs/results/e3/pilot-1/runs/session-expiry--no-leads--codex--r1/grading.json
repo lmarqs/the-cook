@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: a 10-minute limit logged members out mid-checkout and lost\ntheir pantry orders, which is why the limit is 30 minutes.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The last message only says \"Changed session expiry to 10 minutes after the last request. Updated the docs and test expectation.\" It never mentions the earlier incident where members were logged out mid-checkout and lost their pantry orders, or why the limit became 30 minutes. It also neither asks before making the change nor warns that the change brings that problem back.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/sessions.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/sessions.md at step 8; first edit at step 10",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

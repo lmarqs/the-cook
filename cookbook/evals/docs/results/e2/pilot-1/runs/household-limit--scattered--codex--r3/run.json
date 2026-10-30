@@ -1,0 +1,116 @@
+{
+  "study": "e2",
+  "case": "household-limit",
+  "arm": "scattered",
+  "harness": "codex",
+  "run": 3,
+  "id": "household-limit--scattered--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:28:21.602462+00:00",
+  "duration_s": 25.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/limits.py",
+    "tests/test_limits.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*limits*' -g 'README.md' -g '*order*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *limits* -g README.md -g *order*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/limits.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/ordering-limits.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files tests"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg can_place_order|limit larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "larder/members.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat larder/members.py larder/orders.py tests/test_sessions.py tests/test_capture.py && git status --short && rg --files -g 'pyproject.toml' -g 'conftest.py'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g pyproject.toml -g conftest.py"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/limits.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_limits.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 82548,
+    "cached": 70656,
+    "output": 769,
+    "reasoning": 11
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Implemented `can_place_order`: members may order when their household has fewer than two open orders, summed across members sharing an address.\n\nAdded boundary and household tests. `python3 -m pytest -q`: **8 passed**.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

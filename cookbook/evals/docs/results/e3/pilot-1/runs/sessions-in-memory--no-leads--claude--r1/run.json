@@ -1,0 +1,121 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 1,
+  "id": "sessions-in-memory--no-leads--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:36:24.371526+00:00",
+  "duration_s": 18.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rniE \"session|process|worker|replica\" docs larder --include=* | head -60"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session|process|worker|replica docs larder --include=*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 68388,
+    "cached": 55794,
+    "output": 922,
+    "reasoning": 104
+  },
+  "cost_usd": 0.1303268,
+  "turns": 3,
+  "last_message": "I stopped before changing anything. This change would undo a decision the docs record on purpose, and it would bring back the problem that decision fixed.\n\n`docs/adrs/0001-keep-sessions-in-the-database.md` says larder runs on **two web servers behind a load balancer**. Sessions used to live in each server's memory, and it went badly:\n\n- Members got logged out whenever a request reached the other server.\n- Every deploy logged everyone out, so the volunteers stopped deploying during opening hours.\n\nA dict inside the web app's process brings both of those back. It also lets the app keep running in this broken state without any error showing up.\n\nThe speed gain may also be small. The same ADR says the session query \"the database serves from memory at larder's size.\" I'd measure before deciding that sessions are what makes the app slow.\n\nSome options:\n\n1. **Measure first.** Time a request and see how much of it the session read takes. If it's small, the slowness is somewhere else and I can look there.\n2. **Cache in front of Postgres.** Keep `PostgresSessions` as the source of truth and add a short-lived per-process read cache. This one is risky: a session renewed on one server could look expired on the other. I'd only do it with a very short cache lifetime, or not at all.\n3. **Do what you asked anyway.** That only works if larder is back to a single server, or you accept logouts across servers and on every deploy. Either way it reverses ADR 0001. I'd update the ADR, `docs/features/sessions.md` and `docs/architecture.md` in the same change so the docs stay accurate.\n\nWhich do you want? If it's option 3, can you confirm whether larder still runs on two servers?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

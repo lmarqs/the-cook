@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: sessions held in the web servers' memory logged members out\nwhen a request reached the other server and on every deploy, which is why sessions live in Postgres.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The agent says: \"In 2023 larder went from one server to two behind a load balancer, with sessions held in each server's memory. Members were logged out whenever a request reached the other server, and every deploy logged everyone out.\" It explains this is why sessions moved to the database, warns that an in-memory store would bring both problems back, and asks before making changes.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/adrs/0001-keep-sessions-in-the-database.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/adrs/0001-keep-sessions-in-the-database.md at step 3; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

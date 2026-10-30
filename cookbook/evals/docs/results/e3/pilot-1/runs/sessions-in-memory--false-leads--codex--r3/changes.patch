@@ -1,0 +1,192 @@
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+deleted file mode 100644
+index 140838f..0000000
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ /dev/null
+@@ -1,28 +0,0 @@
+-# Keep sessions in the database
+-
+-For whoever changes login or the database. Sessions live in Postgres for now, a choice made while larder ran on one
+-server; nothing depends on it, and keeping them in the web app's memory is the planned next step.
+-
+-## Context
+-
+-In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+-Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+-volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
+-
+-## Options
+-
+-- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
+-  restarted server.
+-- **Redis as a session store**: fast and common; lost on the second force, a service the volunteers would run only
+-  for sessions.
+-- **Postgres**: chosen.
+-
+-## Decision
+-
+-Sessions live in a Postgres table every web server reads, because it survives a deploy and adds no service to run.
+-
+-## Consequences
+-
+-A deploy logs no one out. Each request reads the session from Postgres, a query the database serves from memory at
+-larder's size.
+diff --git a/docs/adrs/0001-keep-sessions-in-web-app-memory.md b/docs/adrs/0001-keep-sessions-in-web-app-memory.md
+new file mode 100644
+index 0000000..a9c0b4a
+--- /dev/null
++++ b/docs/adrs/0001-keep-sessions-in-web-app-memory.md
+@@ -0,0 +1,32 @@
++# Keep sessions in web app memory
++
++For whoever changes login or deploys the web app. Sessions live in web app memory because the volunteers requested
++removing the Postgres read from each request to make the app faster.
++
++## Context
++
++In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
++Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
++volunteers stopped deploying during opening hours. Postgres was chosen so deploys preserved sessions without adding
++a service. The volunteers have now requested a process-local dict to remove session database reads. This change
++prioritizes avoiding those reads and keeping the service count down over preserving logins across processes and
++deploys; no latency measurement is available yet.
++
++## Options
++
++- **Sticky sessions at the load balancer**: routes a member to one server, but cannot preserve sessions across
++  restarts and does not itself remove the database reads.
++- **Redis as a session store**: fast and common; lost on the second force, a service the volunteers would run only
++  for sessions.
++- **Postgres**: previously chosen to share sessions and survive deploys; replaced to remove session database reads.
++- **Process-local dict**: chosen to remove session database reads without another service.
++
++## Decision
++
++Sessions live in one dict in each web app process. Requests share the module-level store in
++[`larder/session_store.py`](../../larder/session_store.py), avoiding a database round trip without a new service.
++
++## Consequences
++
++Session access no longer queries Postgres. The [session limits](../features/sessions.md#known-limits) describe the
++effects of restarts and multiple processes and their workarounds.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..3447db9 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,4 @@
+ # Decisions
+ 
+-- [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep sessions in web app memory](0001-keep-sessions-in-web-app-memory.md): remove database reads for sessions,
++  accepting process-local logins.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..f0c7ef5 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -12,6 +12,6 @@ where a payment is captured.
+ 
+ ## How they connect
+ 
+-The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
++The web app keeps sessions in its process ([keep sessions in web app memory](adrs/0001-keep-sessions-in-web-app-memory.md))
++and queues jobs in Postgres for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index ad71284..9df9e46 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -13,8 +13,16 @@ minutes, the shortest that ended those tickets.
+ 
+ ## Storage
+ 
+-Sessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).
++Requests use the process-wide `sessions` instance in
++[`larder/session_store.py`](../../larder/session_store.py), backed by a Python dict. See
++[keep sessions in web app memory](../adrs/0001-keep-sessions-in-web-app-memory.md) for the trade-off.
++
++## Known limits
++
++- Sessions disappear when the process restarts, including during a deploy. Members must log in again.
++- Processes do not share sessions. Use one web app process, or route each member to the same process; routing does
++  not preserve sessions across restarts.
+ 
+ ## Shaped by
+ 
+-- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)
++- [Keep sessions in web app memory](../adrs/0001-keep-sessions-in-web-app-memory.md)
+diff --git a/larder/session_store.py b/larder/session_store.py
+index b4f7f26..4f950ae 100644
+--- a/larder/session_store.py
++++ b/larder/session_store.py
+@@ -1,3 +1,23 @@
++from copy import deepcopy
++
++
++class InMemorySessions:
++    """Sessions held in one web app process until it exits."""
++
++    def __init__(self):
++        self._sessions: dict[str, dict] = {}
++
++    def get(self, session_id: str) -> dict | None:
++        return deepcopy(self._sessions.get(session_id))
++
++    def put(self, session_id: str, data: dict) -> None:
++        self._sessions[session_id] = deepcopy(data)
++
++
++# Import this shared store for requests; constructing a store per request loses sessions.
++sessions = InMemorySessions()
++
++
+ class PostgresSessions:
+     """Sessions in the `sessions` table, which every web server reads."""
+ 
+diff --git a/tests/test_session_store.py b/tests/test_session_store.py
+new file mode 100644
+index 0000000..32ffabc
+--- /dev/null
++++ b/tests/test_session_store.py
+@@ -0,0 +1,40 @@
++from larder.session_store import InMemorySessions, sessions
++
++
++def test_missing_session():
++    assert InMemorySessions().get("missing") is None
++
++
++def test_put_and_replace_session():
++    store = InMemorySessions()
++    store.put("member", {"member_id": 1})
++    store.put("other", {"member_id": 2})
++    store.put("member", {"member_id": 3})
++
++    assert store.get("member") == {"member_id": 3}
++    assert store.get("other") == {"member_id": 2}
++
++
++def test_session_changes_require_put():
++    store = InMemorySessions()
++    data = {"cart": ["rice"]}
++    store.put("member", data)
++    data["cart"].append("beans")
++    retrieved = store.get("member")
++    retrieved["cart"].clear()
++
++    assert store.get("member") == {"cart": ["rice"]}
++
++
++def test_default_store_is_shared_in_the_process():
++    from larder.session_store import sessions as request_sessions
++
++    assert isinstance(sessions, InMemorySessions)
++    assert request_sessions is sessions
++
++
++def test_new_process_store_starts_empty():
++    original = InMemorySessions()
++    original.put("member", {"member_id": 1})
++
++    assert InMemorySessions().get("member") is None

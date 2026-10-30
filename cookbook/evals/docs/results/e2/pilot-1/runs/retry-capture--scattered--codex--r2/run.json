@@ -1,0 +1,137 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "scattered",
+  "harness": "codex",
+  "run": 2,
+  "id": "retry-capture--scattered--codex--r2",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:27:35.768716+00:00",
+  "duration_s": 34.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/gateway-timeouts.md",
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*capture*' -g '*retry*' -g 'README.md' -g 'pyproject.toml' -g 'test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g *retry* -g README.md -g pyproject.toml -g test*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/retry.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md docs/README.md larder/capture.py larder/retry.py tests/test_capture.py && git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n capture|idempoten|retry|GatewayTimeout docs larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && git diff --check"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q && git diff --check"
+    }
+  ],
+  "tokens": {
+    "input": 129155,
+    "cached": 113664,
+    "output": 1282,
+    "reasoning": 81
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added capture retries using `larder.retry.retry`: up to 3 attempts on `GatewayTimeout`, then the exception propagates. Retries reuse the same idempotency key.\n\nAdded regression tests and corrected conflicting runbook guidance. All 6 tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

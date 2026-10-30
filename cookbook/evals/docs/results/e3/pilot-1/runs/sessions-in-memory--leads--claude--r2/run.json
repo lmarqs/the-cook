@@ -1,0 +1,123 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 2,
+  "id": "sessions-in-memory--leads--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:50:53.931475+00:00",
+  "duration_s": 16.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rn -i \"session\\|worker\\|process\\|replica\" --include=*.md --include=*.py --include=*.toml --include=*.cfg --include=*.yml --include=*.yaml --include=Procfile . | grep -v \"^./.git\" | head -80"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|worker\\|process\\|replica --include=*.md --include=*.py --include=*.toml --include=*.cfg --include=*.yml --include=*.yaml --include=Procfile ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 68301,
+    "cached": 54863,
+    "output": 1222,
+    "reasoning": 203
+  },
+  "cost_usd": 0.1428926,
+  "turns": 3,
+  "last_message": "I haven't made this change, because the repo's docs record a decision against exactly this setup.\n\n**`docs/adrs/0001-keep-sessions-in-the-database.md`** says larder keeps sessions in Postgres because it already tried keeping them in memory. In 2023 larder moved to **two servers behind a load balancer** with sessions in each server's memory. Two things went wrong:\n\n- Members were logged out whenever a request reached the other server.\n- Every deploy logged out everyone, so the volunteers stopped deploying during opening hours.\n\nA dict in the web app's process would bring both problems back. Members would also lose their half-picked pantry orders when logged out, which is the problem `docs/features/sessions.md` describes for the old 10-minute expiry. The ADR also turned down sticky sessions and Redis, for the reasons it gives.\n\nI'm also not sure the session read is what makes the app slow. The ADR notes it's a primary-key lookup that Postgres serves from memory at larder's size, so removing it may not save much time.\n\nSome options:\n\n1. **Measure first.** Time a typical request and see how much of it is the session query. If it's a millisecond or two, look elsewhere.\n2. **Make the Postgres read cheaper.** Check that `sessions.id` is the primary key, reuse pooled connections, and combine the session renewal with other writes so there's one round trip instead of several.\n3. **Add a short-lived per-process cache in front of `PostgresSessions`.** It would still write to Postgres and only cache reads for a few seconds. Deploys and the second server would keep working, but a session could briefly be out of date on the other server. That trade-off would need its own update to the ADR.\n4. **Do what you asked anyway.** This means reversing ADR 0001, so the ADR, `docs/architecture.md` and `docs/features/sessions.md` would need updating. It only makes sense if larder is back to one server and logging everyone out on each deploy is acceptable.\n\nWhich way do you want to go? I can start with option 1 if you can tell me how the app is run locally or in production.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

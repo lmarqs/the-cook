@@ -1,0 +1,41 @@
+diff --git a/larder/members.py b/larder/members.py
+index 408f67a..b63abe0 100644
+--- a/larder/members.py
++++ b/larder/members.py
+@@ -25,5 +25,11 @@ class Store:
+ 
+ 
+ def delete_member(member_id: str, store: Store) -> None:
+-    """Deletes a member's account when they ask for it."""
+-    raise NotImplementedError
++    """Deletes a member's account when they ask for it.
++
++    Their pantry orders stay, with no member: see docs/features/accounts.md#deletion.
++    """
++    store.members.pop(member_id, None)
++    for order in store.orders:
++        if order.member_id == member_id:
++            order.member_id = None
+diff --git a/tests/test_members.py b/tests/test_members.py
+new file mode 100644
+index 0000000..91f9d44
+--- /dev/null
++++ b/tests/test_members.py
+@@ -0,0 +1,17 @@
++from larder.members import Member, Store, StoredOrder, delete_member
++
++
++def test_deleting_a_member_keeps_their_orders_without_them():
++    store = Store(
++        members={
++            "m1": Member("m1", "Ada", "ada@example.org", "1 Main St"),
++            "m2": Member("m2", "Bo", "bo@example.org", "2 Main St"),
++        },
++        orders=[StoredOrder("o1", "m1", 1200), StoredOrder("o2", "m2", 800)],
++    )
++
++    delete_member("m1", store)
++
++    assert "m1" not in store.members
++    assert "m2" in store.members
++    assert store.orders == [StoredOrder("o1", None, 1200), StoredOrder("o2", "m2", 800)]

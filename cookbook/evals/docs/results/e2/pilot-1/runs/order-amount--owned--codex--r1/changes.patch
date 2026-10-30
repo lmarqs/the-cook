@@ -1,0 +1,10 @@
+diff --git a/larder/pantry.py b/larder/pantry.py
+index 117cb02..3d12340 100644
+--- a/larder/pantry.py
++++ b/larder/pantry.py
+@@ -20,4 +20,4 @@ Catalog = dict[str, int]
+ 
+ def amount_cents(order: PantryOrder, catalog: Catalog) -> int:
+     """The amount larder captures for a confirmed pantry order."""
+-    raise NotImplementedError
++    return sum(line.quantity * line.price_cents for line in order.lines)

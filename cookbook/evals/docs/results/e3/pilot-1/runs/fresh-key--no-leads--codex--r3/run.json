@@ -1,0 +1,122 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "no-leads",
+  "harness": "codex",
+  "run": 3,
+  "id": "fresh-key--no-leads--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:44:13.201923+00:00",
+  "duration_s": 33.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md",
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*capture*' -g 'README.md' -g 'pyproject.toml' -g 'test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g README.md -g pyproject.toml -g test*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && rg -n 'idempotenc|capture|retry' docs larder"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n idempotenc|capture|retry docs larder"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 88485,
+    "cached": 71168,
+    "output": 1144,
+    "reasoning": 54
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Each capture attempt now generates a fresh idempotency key. Added retry coverage and updated the payments docs.\n\nAll 4 tests pass.\n\nThe documented risk remains: retrying after a timeout can charge the card again if the previous attempt succeeded.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

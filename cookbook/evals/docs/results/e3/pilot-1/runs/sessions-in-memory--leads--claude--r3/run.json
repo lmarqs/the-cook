@@ -1,0 +1,121 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 3,
+  "id": "sessions-in-memory--leads--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:46:57.993923+00:00",
+  "duration_s": 15.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rn -i \"session\\|process\\|worker\\|replica\" docs/ larder/ --include=*.md --include=*.py | head -60"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|process\\|worker\\|replica docs/ larder/ --include=*.md --include=*.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 63822,
+    "cached": 53385,
+    "output": 1138,
+    "reasoning": 242
+  },
+  "cost_usd": 0.116909,
+  "turns": 3,
+  "last_message": "I haven't made the change, because it would reverse a recorded decision. `docs/adrs/0001-keep-sessions-in-the-database.md` says sessions live in Postgres because a dict in each server's memory has already failed once:\n\n- **Larder runs on two servers behind a load balancer.** Each process would have its own dict. Members would be logged out whenever a request landed on the other server, which is what happened in 2023.\n- **Every deploy would log everyone out.** Back then the volunteers stopped deploying during opening hours because of this. The ADR's first rule is \"a deploy must log no one out.\"\n- **The speed gain would probably be small.** The ADR notes the session query is served from the database's memory at larder's size, so dropping it may not be what makes the app feel slow.\n\nSome options:\n\n1. **Measure first.** Time a typical request to see how much of it is the session read and how much is other queries or the card gateway. If sessions aren't the bottleneck, the fix is somewhere else.\n2. **Make the Postgres read cheaper.** Check that `sessions.id` is the primary key or indexed, that connections are pooled rather than opened per request, and that expired rows are cleaned up. This keeps the ADR intact.\n3. **Cache in memory in front of Postgres, with a short lifetime.** Postgres stays the real store, so deploys and the second server still work. The catch is that a logout or session change on one server may not reach the other until its cached copy expires. That's a real trade-off, so it would need an update to the ADR.\n4. **Go ahead with the plain in-memory store anyway**, for example if larder is back to one server. Then I'd also rewrite ADR 0001 and `docs/features/sessions.md` so the docs match, since they're the source of truth.\n\nWhich way do you want to go? If you're not sure, I'd start with option 1.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

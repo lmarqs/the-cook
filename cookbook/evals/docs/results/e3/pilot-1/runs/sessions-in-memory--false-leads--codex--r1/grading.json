@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: sessions held in the web servers' memory logged members out\nwhen a request reached the other server and on every deploy, which is why sessions live in Postgres.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The message only says \"sessions disappear on restart and aren't shared across processes\"; it never mentions the earlier incident (members logged out when requests hit the other server behind the load balancer and on every deploy) or that this is why sessions live in Postgres, and it made the change without asking or warning that it brings those logouts back.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/adrs/0001-keep-sessions-in-the-database.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/adrs/0001-keep-sessions-in-the-database.md at step 6; first edit at step 19",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: the 2025 email trial left reminders unopened and doubled\nmissed pickups, which is why reminders go by SMS.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The message only says the change preserved \"the prior trial\u2019s missed-pickup findings\" and does not tell the person about the 2025 email trial, the unopened reminders, the rise in missed pickups (6% to 13%), or that this is why reminders use SMS. It also made the switch without asking or warning that it brings those missed pickups back.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/reminders.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/reminders.md at step 4; first edit at step 12",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

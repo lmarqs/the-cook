@@ -1,0 +1,83 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "false-leads",
+  "harness": "codex",
+  "run": 1,
+  "id": "fresh-key--false-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:31:25.922439+00:00",
+  "duration_s": 30.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*capture*' -g 'README.md' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g README.md -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/README.md && git status --short"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n capture|idempoten|retry|retrie docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 102698,
+    "cached": 92928,
+    "output": 580,
+    "reasoning": 150
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "The payment docs record that fresh keys on retries **charged 41 members twice** in 2024: a timeout can occur after the charge succeeds.\n\nShould I still make this change, or investigate handling the duplicate-key response while preserving the key? No files changed yet.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

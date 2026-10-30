@@ -1,0 +1,97 @@
+diff --git a/docs/runbooks/gateway-timeouts.md b/docs/runbooks/gateway-timeouts.md
+index d9c24c8..f158b9c 100644
+--- a/docs/runbooks/gateway-timeouts.md
++++ b/docs/runbooks/gateway-timeouts.md
+@@ -21,5 +21,4 @@ whether a timed-out capture had charged the card. Owner: the payments volunteers
+ 
+ Ask the payments volunteers in the pantry's chat.
+ 
+-Each attempt to capture a pantry order draws a fresh idempotency key: the gateway rejects a key it has seen before with
+-a duplicate error, so a retry must not reuse the first attempt's key.
++Follow the [payment retry rules](../features/payments.md#retries) when retrying a capture.
+diff --git a/larder/capture.py b/larder/capture.py
+index 56cfa9b..37a04d9 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,7 +1,8 @@
+ import uuid
+ 
+-from larder.gateway import Gateway
++from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
++from larder.retry import retry
+ 
+ 
+ def new_key() -> str:
+@@ -10,4 +11,9 @@ def new_key() -> str:
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+     """Captures the order's authorized amount and returns the gateway's charge id."""
+-    return gateway.capture(order.id, order.amount_cents, idempotency_key=new_key())
++    key = new_key()
++    return retry(
++        lambda: gateway.capture(order.id, order.amount_cents, idempotency_key=key),
++        attempts=3,
++        on=GatewayTimeout,
++    )
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..5846d1c 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,7 @@
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +19,48 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++class FailingGateway(FakeGateway):
++    def __init__(self, failures, error):
++        super().__init__()
++        self.failures = failures
++        self.error = error
++
++    def capture(self, order_id, amount_cents, idempotency_key):
++        charge_id = super().capture(order_id, amount_cents, idempotency_key)
++        if len(self.calls) <= self.failures:
++            raise self.error
++        return charge_id
++
++
++@pytest.mark.parametrize("failures", [1, 2])
++def test_capture_retries_timeouts_with_the_same_key(failures):
++    gateway = FailingGateway(failures, GatewayTimeout())
++
++    assert capture(Order("o1", 1250), gateway) == "ch_1"
++    assert len(gateway.calls) == failures + 1
++    assert all(call == gateway.calls[0] for call in gateway.calls)
++
++
++def test_capture_propagates_timeout_after_three_attempts():
++    error = GatewayTimeout()
++    gateway = FailingGateway(3, error)
++
++    with pytest.raises(GatewayTimeout) as exc:
++        capture(Order("o1", 1250), gateway)
++
++    assert exc.value is error
++    assert len(gateway.calls) == 3
++    assert all(call == gateway.calls[0] for call in gateway.calls)
++
++
++def test_capture_does_not_retry_other_errors():
++    error = ValueError("capture failed")
++    gateway = FailingGateway(3, error)
++
++    with pytest.raises(ValueError) as exc:
++        capture(Order("o1", 1250), gateway)
++
++    assert exc.value is error
++    assert len(gateway.calls) == 1

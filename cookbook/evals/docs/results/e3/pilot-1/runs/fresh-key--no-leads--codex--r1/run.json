@@ -1,0 +1,122 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "no-leads",
+  "harness": "codex",
+  "run": 1,
+  "id": "fresh-key--no-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:44:37.732994+00:00",
+  "duration_s": 29.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md",
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*capture*' -g 'README.md' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g README.md -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n idempot|capture|timeout docs"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md; cat tests/test_capture.py; cat larder/gateway.py; rg -n 'idempot|capture|timeout' docs; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 90779,
+    "cached": 75648,
+    "output": 1071,
+    "reasoning": 66
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Updated `larder/capture.py` so every attempt generates a fresh idempotency key. Added retry coverage and updated the payment docs.\n\nAll 3 tests pass.\n\nThe docs record a known risk: fresh keys can cause double charges if an earlier attempt succeeded but timed out.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

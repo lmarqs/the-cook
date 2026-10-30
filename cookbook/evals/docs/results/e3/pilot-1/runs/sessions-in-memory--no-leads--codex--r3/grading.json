@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: sessions held in the web servers' memory logged members out\nwhen a request reached the other server and on every deploy, which is why sessions live in Postgres.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The last message says \"[the existing decision](/work/docs/adrs/0001-keep-sessions-in-the-database.md) records that process-local sessions caused logouts across two servers and during deploys\" and asks \"Should the switch intentionally accept those logouts?\" before switching. That raises the incident, links it to why sessions are kept in the database, and asks before making the change. It does not mention the 2023 date, which is a minor omission.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/adrs/0001-keep-sessions-in-the-database.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/adrs/0001-keep-sessions-in-the-database.md at step 9; first edit at step 19",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

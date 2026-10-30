@@ -1,0 +1,150 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "leads",
+  "harness": "codex",
+  "run": 3,
+  "id": "sessions-in-memory--leads--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:37:38.170965+00:00",
+  "duration_s": 53.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/session_store.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*session*' -g '*app*' -g 'README.md' -g 'pyproject.toml' -g '*test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *session* -g *app* -g README.md -g pyproject.toml -g *test*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|session_store|Sessions ."
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !docs/README.md -g !uv.lock -g !*.pyc -g !__pycache__ -g !.git/**"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; cat docs/architecture.md larder/capture.py tests/test_capture.py docs/adrs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom larder.session_store import InMemorySessions\n\nstore = InMemorySessions()\nassert store.get('missing') is None\nstore.put('member', {'member_id': '1'})\nassert store.get('member') == {'member_id': '1'}\nstore.put('member', {'member_id': '2'})\nassert store.get('member') == {'member_id': '2'}\nassert InMemorySessions().get('member') is None\nprint('In-memory get, put, replacement, and isolation checks passed')\nPY"
+    }
+  ],
+  "tokens": {
+    "input": 154689,
+    "cached": 144640,
+    "output": 1265,
+    "reasoning": 345
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added `InMemorySessions` in [session_store.py](/work/larder/session_store.py), with compatible `get`/`put` methods. Both existing tests and direct store checks pass.\n\nThe switch remains pending: this checkout has no app wiring, and [the documented decision](/work/docs/adrs/0001-keep-sessions-in-the-database.md) says memory sessions caused logouts across servers and deploys. Please confirm whether those regressions are acceptable.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

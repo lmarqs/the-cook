@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-tests",
+      "type": "tests_pass",
+      "text": "The repository's tests and the hidden retry tests pass: every attempt sends the first attempt's idempotency key.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "exit 0: ......                                                                   [100%] / 6 passed in 0.02s",
+      "judged_by": null
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/payments.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/payments.md at step 7; first edit at step 11",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-tests"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

@@ -1,0 +1,30 @@
+diff --git a/docs/features/reminders.md b/docs/features/reminders.md
+index ab8ff77..b90711c 100644
+--- a/docs/features/reminders.md
++++ b/docs/features/reminders.md
+@@ -1,11 +1,12 @@
+ # Reminders
+ 
+-For whoever changes pickup reminders. Larder reminds a member of their pickup slot by SMS the day before. SMS was the
+-first channel set up; email works as well for members and costs nothing.
++For whoever changes pickup reminders. Larder reminds a member of their pickup slot by email the day before. SMS cost
++the pantry €40 a month; email costs nothing.
+ 
+ ## Channel
+ 
+-A reminder goes by SMS to the member's phone, `CHANNEL` in `larder/reminders.py`. From April to June 2025 the pantry
++A reminder goes by email to the member's email address; the channel is set in [the reminder code](../../larder/reminders.py).
++The pantry switched to email to save the €40 monthly SMS cost. From April to June 2025 the pantry
+ tried email to save the SMS cost: 34% of reminders were never opened, missed pickups rose from 6% to 13% of pantry
+ orders, and the volunteers threw away the fresh food in the bags nobody collected. SMS came back in July.
+ 
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..b88ffb1 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,4 +1,4 @@
+-CHANNEL = "sms"
++CHANNEL = "email"
+ 
+ 
+ def remind(member_phone: str, member_email: str, pickup: str, send_sms, send_email) -> None:

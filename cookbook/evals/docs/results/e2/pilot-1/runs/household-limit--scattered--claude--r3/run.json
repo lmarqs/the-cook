@@ -1,0 +1,151 @@
+{
+  "study": "e2",
+  "case": "household-limit",
+  "arm": "scattered",
+  "harness": "claude",
+  "run": 3,
+  "id": "household-limit--scattered--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:23:52.729895+00:00",
+  "duration_s": 18.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/limits.py",
+    "tests/test_limits.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat larder/limits.py && cat docs/README.md && ls tests && grep -rn \"limit\\|can_place\" --include=*.py --include=*.md . | grep -v \"^./.git\" | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "larder/limits.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn limit\\|can_place --include=*.py --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/ordering-limits.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/members.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/limits.py",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_limits.py",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -3"
+    }
+  ],
+  "tokens": {
+    "input": 119826,
+    "cached": 106072,
+    "output": 1594,
+    "reasoning": 149
+  },
+  "cost_usd": 0.16308640000000002,
+  "turns": 7,
+  "last_message": "I've implemented `can_place_order` in `larder/limits.py:6`, and all 5 tests pass, including 3 new ones I added in `tests/test_limits.py`.\n\nThe rule comes from `docs/features/ordering-limits.md`: a household is all members registered at the same address, and together they can have at most 2 open pantry orders. So a member may place an order only if their household currently has fewer than 2 open orders, counted across everyone at that address. I put the 2 in a constant, `HOUSEHOLD_OPEN_ORDER_LIMIT`. The member placing the order counts as part of their household even if they're missing from `members`.\n\nThe new tests cover a household under the limit, orders counted across members at one address, and another household's orders not counting.\n\nTwo things you may want to follow up on:\n- **Address matching is exact.** \"1 Elm St\" and \"1 Elm Street\" count as different households, so a family could get around the limit by writing their address slightly differently. That was also how the March 2025 abuse happened. The code doesn't normalise addresses anywhere; this deserves a decision of its own.\n- **The glossary repeats the household rule.** `docs/glossary.md` copies the paragraph from the ordering-limits page, but the docs rules say the feature page owns that fact. The glossary should either link to it or turn \"Household\" into a proper term entry. I haven't changed it.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 3,
+  "id": "sessions-in-memory--false-leads--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:35:12.385487+00:00",
+  "duration_s": 21.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rn -i \"session\\|process\\|worker\\|replica\" docs/ larder/ --include=*.md --include=*.py | head -80"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|process\\|worker\\|replica docs/ larder/ --include=*.md --include=*.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn PostgresSessions\\|session_store --exclude-dir=.git ."
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 94787,
+    "cached": 81092,
+    "output": 1244,
+    "reasoning": 174
+  },
+  "cost_usd": 0.1506264,
+  "turns": 4,
+  "last_message": "I haven't changed anything yet. The docs suggest a per-process dict would bring back a problem larder already had, so I'd like you to confirm first.\n\n**What the docs record:** `docs/adrs/0001-keep-sessions-in-the-database.md` says that in 2023 larder moved to **two servers behind a load balancer** while sessions stayed in each server's memory. Two things went wrong:\n\n- Members were logged out whenever a request landed on the other server.\n- Every deploy logged out everyone, so the volunteers stopped deploying during opening hours.\n\nMoving sessions to Postgres fixed both. A dict inside the web app's process brings both back. It would also make the logout-during-checkout problem in `docs/features/sessions.md` worse, since a member who is logged out loses the order they were picking.\n\n**One thing in the docs disagrees with this.** The ADR's opening paragraph says \"nothing depends on it, and keeping them in the web app's memory is the planned next step.\" The ADR's own Context section, and the architecture page (\"every web server reads\"), say the opposite. I think that opening paragraph is wrong and should be fixed whatever we decide.\n\n**On speed:** the ADR says the session read is \"a query the database serves from memory at larder's size.\" It may not be what makes requests slow. Do you have timings showing that it is?\n\n**Options:**\n\n1. **Measure first.** Time a request to find where the time actually goes before changing session storage.\n2. **Add a short-lived cache in front of Postgres.** Each process keeps a small dict cache (with a TTL of a few seconds), and writes still go to Postgres. Deploys and the second server keep working. The catch is that the two servers can briefly see slightly different session data.\n3. **Replace Postgres with the dict anyway.** This is only safe if larder is back to one server and you accept that every deploy logs everyone out. If so, the ADR needs rewriting to say that, and I'd do it in the same change.\n\nWhich do you want? Also, is larder still running on two servers?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

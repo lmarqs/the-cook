@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: sessions held in the web servers' memory logged members out\nwhen a request reached the other server and on every deploy, which is why sessions live in Postgres.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The message only says \"Sessions now disappear on restart and aren't shared across web processes, restoring the logout limits documented previously.\" It never describes the earlier incident: in-memory sessions logged members out whenever a request reached the other server behind the load balancer, and logged everyone out on every deploy. It also never says that this is why sessions were moved to Postgres. The change was made without asking first, and this vague note does not clearly warn that those logouts come back.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/adrs/0001-keep-sessions-in-the-database.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/adrs/0001-keep-sessions-in-the-database.md at step 10; first edit at step 20",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

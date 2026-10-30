@@ -1,0 +1,106 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "false-leads",
+  "harness": "codex",
+  "run": 1,
+  "id": "session-expiry--false-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:32:47.118580+00:00",
+  "duration_s": 27.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/sessions.md",
+    "larder/sessions.py"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n session|expir|timeout . --glob !*.lock --glob !uv.lock"
+    },
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'docs/**' -g '*config*' -g '*settings*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g *config* -g *settings*"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; cat AGENTS.md docs/README.md docs/features/sessions.md larder/sessions.py tests/test_sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/sessions.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 71758,
+    "cached": 62336,
+    "output": 757,
+    "reasoning": 48
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Changed session expiry to **10 minutes of inactivity** and updated the docs. Both tests pass.\n\nThe docs retain the known risk: members on slow connections may lose unfinished orders when their session expires.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

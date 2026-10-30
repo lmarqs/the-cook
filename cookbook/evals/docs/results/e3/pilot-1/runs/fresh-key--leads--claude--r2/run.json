@@ -1,0 +1,123 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 2,
+  "id": "fresh-key--leads--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:42:43.808256+00:00",
+  "duration_s": 16.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R docs tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i idempot --include=*.py --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./larder/capture.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i idempot\\|duplicate . --exclude-dir=.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 66312,
+    "cached": 54055,
+    "output": 1143,
+    "reasoning": 202
+  },
+  "cost_usd": 0.131703,
+  "turns": 3,
+  "last_message": "I haven't changed anything, because this change would bring back a double-charge bug that the docs specifically warn about.\n\n`docs/features/payments.md` (the \"Retries\" section) says:\n\n> Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that drew a fresh key for each attempt charged 41 members twice.\n\n`larder/gateway.py` says the same thing: a `GatewayTimeout` means \"the card may or may not have been charged.\" So if each attempt sent its own key, the \"duplicate idempotency key\" errors would stop, but a timed-out capture that had actually gone through would be charged a second time.\n\nThat error probably means the gateway already has a capture under that key. Either the first attempt succeeded but timed out on our side, or it's still in progress. The key is doing its job. The fix is to handle that response, not to avoid it:\n\n- **Treat \"duplicate key\" as \"already captured\":** keep the shared key, catch the duplicate error and get the existing charge id. Many gateways return the original result on a replayed key, or let you look the charge up by key or order id. Then return that id instead of failing.\n- **If the gateway says the first request is still in progress:** wait and retry with the same key until it returns the original result.\n\nTo do either, I need to know what the gateway actually returns. `larder/gateway.py` has no exception for the duplicate-key case, and the production client isn't in this repo. Can you share the error's type or payload, and whether the gateway can look up a charge by idempotency key or order id? With that, I'll add the handling, a test for timeout \u2192 retry \u2192 duplicate \u2192 charge id returned, and a note in `payments.md`.\n\nIf you have a reason to override the documented rule (for example, the gateway has changed how it handles keys since 2024), tell me and I'll update the code and `payments.md` together.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

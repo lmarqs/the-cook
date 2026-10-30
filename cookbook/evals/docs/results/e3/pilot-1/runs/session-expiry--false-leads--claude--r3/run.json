@@ -1,0 +1,116 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 3,
+  "id": "session-expiry--false-leads--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:38:34.468563+00:00",
+  "duration_s": 16.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rni \"expir\\|session\\|ttl\\|timeout\" --include=* -r . --exclude-dir=.git | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni expir\\|session\\|ttl\\|timeout --include=* -r . --exclude-dir=.git"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE minute|expir|ttl docs larder tests README.md"
+    }
+  ],
+  "tokens": {
+    "input": 68383,
+    "cached": 55666,
+    "output": 1129,
+    "reasoning": 247
+  },
+  "cost_usd": 0.1354252,
+  "turns": 3,
+  "last_message": "I haven't changed anything yet, because the docs record that 10 minutes was tried and caused problems.\n\n**What I found**\n\n- The setting is a single constant, `EXPIRY_MINUTES = 30` in `larder/sessions.py:3`. The test reads that constant, so it would still pass at 10.\n- `docs/features/sessions.md` says the limit **was** 10 minutes until March 2024. At 10, members packing a pantry order on a slow mobile connection were logged out before they confirmed it and lost what they had picked. Support logged 120 tickets about it that month. The limit went up to 30 because that was the shortest value that stopped those tickets.\n- The opening paragraph of the same page says the opposite: that 30 is \"a placeholder\", that the 2024 security review asked for 10, and that \"nothing depends on the current value.\" It can't be both, so the page needs fixing whatever you choose.\n\n**Options**\n\n1. **Change it to 10 anyway.** It's a one-line change. I'd also rewrite the sessions page to say why 10 is right now (for example, the security review) and that the slow-connection problem is a known limit. Expect the logout complaints to come back unless something else has changed since 2024.\n2. **Pick a value between 10 and 30**, such as 15 or 20. This logs members out sooner, but there's no data on whether it brings the tickets back.\n3. **Go to 10 and stop it losing orders.** Either save the order in progress so it survives a logout, or log members out after 10 minutes only when no order is open. This needs more work but deals with the cause of the 2024 tickets.\n\nWhich would you like? If it's option 1, a sentence on why you want shorter sessions now (security review, shared devices, something else) would let me record the reason on the sessions page.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

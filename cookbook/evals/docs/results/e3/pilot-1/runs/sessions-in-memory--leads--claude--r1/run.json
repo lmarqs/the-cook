@@ -1,0 +1,121 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 1,
+  "id": "sessions-in-memory--leads--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:49:04.770862+00:00",
+  "duration_s": 16.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rn -i \"session\" docs/ larder/ --include=*.md --include=*.py | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session docs/ larder/ --include=*.md --include=*.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 68649,
+    "cached": 56672,
+    "output": 1190,
+    "reasoning": 256
+  },
+  "cost_usd": 0.1309264,
+  "turns": 3,
+  "last_message": "I stopped before writing any code. This change would undo a recorded decision and bring back the outage that decision fixed.\n\n**The conflict:** `docs/adrs/0001-keep-sessions-in-the-database.md` records that larder used to keep sessions in each web server's memory. Since 2023 there have been two servers behind a load balancer, and that setup caused two problems:\n\n- Members got logged out whenever a request reached the other server.\n- Every deploy logged everyone out, so the volunteers stopped deploying during opening hours.\n\nA dict in the web app's process is the same design. `docs/architecture.md` and `docs/features/sessions.md` both depend on that decision. The ADR also notes that the session query is \"served from memory at larder's size\", so it may not be what's making the app slow.\n\n**Options:**\n\n1. **Measure first (my recommendation).** Time a few slow requests and see how long the session read takes compared with everything else. If it's a small share of the time, an in-memory store won't speed anything up, and I'd look at whatever is actually slow.\n2. **Make the Postgres read cheaper.** Check that `sessions.id` is the primary key or indexed, and use connection pooling. It's low risk and keeps the decision intact.\n3. **Add a small in-process cache in front of Postgres.** Postgres would stay the source of truth, and each server would cache sessions for a few seconds. This needs care: the two servers can briefly disagree, so a logout or session change might not take effect right away on the other server.\n4. **Replace PostgresSessions with a dict, as you asked.** This only works if larder is back to one server and you accept that every deploy logs everyone out. If you go this way, I'd also rewrite the ADR, since a reversed decision gets edited in place with the old choice and why it changed kept under Options. I'd update the sessions and architecture pages too.\n\nWhich would you like? If it's option 4, please confirm that larder runs on one server now and that the volunteers are fine with deploys logging everyone out.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

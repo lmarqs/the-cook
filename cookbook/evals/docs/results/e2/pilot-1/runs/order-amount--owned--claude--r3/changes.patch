@@ -1,0 +1,39 @@
+diff --git a/larder/pantry.py b/larder/pantry.py
+index 117cb02..bd39b3e 100644
+--- a/larder/pantry.py
++++ b/larder/pantry.py
+@@ -19,5 +19,9 @@ Catalog = dict[str, int]
+ 
+ 
+ def amount_cents(order: PantryOrder, catalog: Catalog) -> int:
+-    """The amount larder captures for a confirmed pantry order."""
+-    raise NotImplementedError
++    """The amount larder captures for a confirmed pantry order.
++
++    Charged at the prices on its lines, the ones the member confirmed, never at the catalog's current prices; see
++    docs/features/pantry-orders.md#amount.
++    """
++    return sum(line.quantity * line.price_cents for line in order.lines)
+diff --git a/tests/test_pantry.py b/tests/test_pantry.py
+new file mode 100644
+index 0000000..71d069b
+--- /dev/null
++++ b/tests/test_pantry.py
+@@ -0,0 +1,17 @@
++from larder.pantry import Line, PantryOrder, amount_cents
++
++
++def test_amount_sums_the_lines():
++    order = PantryOrder("o1", (Line("rice", 2, 300), Line("beans", 1, 150)))
++
++    assert amount_cents(order, {"rice": 300, "beans": 150}) == 750
++
++
++def test_amount_uses_the_confirmed_prices_not_the_catalog():
++    order = PantryOrder("o1", (Line("rice", 2, 300),))
++
++    assert amount_cents(order, {"rice": 450}) == 600
++
++
++def test_amount_of_an_empty_order_is_zero():
++    assert amount_cents(PantryOrder("o1", ()), {}) == 0

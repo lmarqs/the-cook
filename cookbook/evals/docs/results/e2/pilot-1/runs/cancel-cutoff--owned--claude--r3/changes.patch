@@ -1,0 +1,15 @@
+diff --git a/larder/cancellation.py b/larder/cancellation.py
+index cb41c50..a93a2ca 100644
+--- a/larder/cancellation.py
++++ b/larder/cancellation.py
+@@ -1,6 +1,8 @@
+-from datetime import datetime
++from datetime import datetime, timedelta
++
++CUTOFF_HOURS = 2
+ 
+ 
+ def can_cancel(pickup_starts: datetime, now: datetime) -> bool:
+     """Whether a member may still cancel a pantry order whose pickup slot starts at `pickup_starts`."""
+-    raise NotImplementedError
++    return now <= pickup_starts - timedelta(hours=CUTOFF_HOURS)

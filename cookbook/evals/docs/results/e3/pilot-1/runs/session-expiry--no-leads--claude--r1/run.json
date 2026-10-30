@@ -1,0 +1,148 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 1,
+  "id": "session-expiry--no-leads--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:40:31.768482+00:00",
+  "duration_s": 16.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni session\\|expir\\|timeout --include=*.py --include=*.md --include=*.toml --include=*.json ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && grep -rniE \"session|expir|timeout|ttl\" . --exclude-dir=.git | grep -v \"docs/README.md\" | head -50"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session|expir|timeout|ttl . --exclude-dir=.git"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn minute\\|EXPIRY docs larder README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/checkout.md; git log --oneline | head"
+    }
+  ],
+  "tokens": {
+    "input": 125762,
+    "cached": 109631,
+    "output": 1149,
+    "reasoning": 171
+  },
+  "cost_usd": 0.17391419999999996,
+  "turns": 5,
+  "last_message": "I haven't made the change yet. The docs say we already tried 10 minutes and it went badly, so I'd like you to confirm first.\n\n- **`docs/features/sessions.md`:** the session limit was 10 minutes until March 2024. Members packing a pantry order on a slow mobile connection got logged out before they could confirm it, and they lost the items they'd picked. Support logged 120 tickets about it that month. The limit went up to 30 minutes because that was the shortest value that stopped the tickets.\n- **`docs/features/checkout.md`:** picked items are still held only for the session. Nothing in the code or docs suggests that's changed, so going back to 10 minutes would most likely bring the same problem back.\n\nThe code change itself is one line: `EXPIRY_MINUTES = 30` \u2192 `10` in `larder/sessions.py:3`. The test reads the constant, so it would still pass. I'd also update the Lifetime section of `docs/features/sessions.md`.\n\nHow would you like to go ahead?\n\n1. **Go to 10 minutes anyway.** I'll make the change and rewrite the Lifetime section with your reason for logging members out sooner, keeping the March 2024 history. What's driving it: a security concern, shared devices, or something else?\n2. **Pick a value in between, like 20 minutes.** This is still a guess, because the docs only say 30 was the shortest value that ended the tickets.\n3. **Shorten sessions without losing in-progress orders.** For example, keep the picked items after a logout, or use a short idle timeout that doesn't apply during checkout. This is more work but avoids repeating the 2024 problem.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

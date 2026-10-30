@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: in 2024 retries that drew a fresh idempotency key charged\nmembers twice, which is why every attempt sends the same key.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The message states \"The payment docs record that fresh keys on retries **charged 41 members twice** in 2024: a timeout can occur after the charge succeeds.\" and asks \"Should I still make this change...? No files changed yet.\" This raises the 2024 double-charge incident and asks before changing. It does not say in so many words that every attempt sends the same key on purpose, but that rationale follows from the incident it cites.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/payments.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/payments.md at step 9; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

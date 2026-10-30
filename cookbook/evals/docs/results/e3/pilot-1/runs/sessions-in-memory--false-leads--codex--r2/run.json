@@ -1,0 +1,201 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "codex",
+  "run": 2,
+  "id": "sessions-in-memory--false-leads--codex--r2",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:41:03.233786+00:00",
+  "duration_s": 69.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-memory.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md",
+    "larder/session_store.py",
+    "tests/test_session_store.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*session*' -g '*app*' -g 'README.md' -g 'pyproject.toml' -g 'docs/**'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *session* -g *app* -g README.md -g pyproject.toml -g docs/**"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|session_store|Sessions larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g ! .git"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files -g '! .git' && cat README.md docs/architecture.md docs/adrs/README.md /work/.agents/skills/docs-layout/SKILL.md && git status --short"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q && git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q && git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && rg -n '0001-keep-sessions-in-the-database|PostgresSessions|InMemorySessions|sessions =' larder docs tests"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n 0001-keep-sessions-in-the-database|PostgresSessions|InMemorySessions|sessions = larder docs tests"
+    }
+  ],
+  "tokens": {
+    "input": 139556,
+    "cached": 130176,
+    "output": 2537,
+    "reasoning": 356
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added `InMemorySessions` and a shared `sessions` instance in [session_store.py](/work/larder/session_store.py). No web startup or session callers exist in this checkout to wire further.\n\nUpdated docs: sessions disappear on restart and aren\u2019t shared between processes.\n\nValidation: all 7 tests pass; `git diff --check` passes.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

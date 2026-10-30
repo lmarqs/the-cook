@@ -1,0 +1,181 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "codex",
+  "run": 1,
+  "id": "sessions-in-memory--false-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:35:10.366605+00:00",
+  "duration_s": 54.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-memory.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md",
+    "larder/session_store.py",
+    "tests/test_session_store.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*session*' -g 'README.md' -g 'pyproject.toml' -g 'docs/**'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *session* -g README.md -g pyproject.toml -g docs/**"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|session_store|sessions larder"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md docs/README.md docs/architecture.md docs/features/sessions.md docs/adrs/0001-keep-sessions-in-the-database.md larder/session_store.py larder/sessions.py tests/test_sessions.py; rg -n 'PostgresSessions|session_store|sessions' larder; git status --short"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !docs/** -g !.git/**"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n 'PostgresSessions|0001-keep-sessions-in-the-database' ."
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n 'PostgresSessions|0001-keep-sessions-in-the-database' ."
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|0001-keep-sessions-in-the-database ."
+    }
+  ],
+  "tokens": {
+    "input": 133802,
+    "cached": 108416,
+    "output": 2498,
+    "reasoning": 350
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Replaced `PostgresSessions` with dictionary-backed `InMemorySessions`, preserving `get` and `put`. No app initialization exists here to wire up; reuse one store across requests.\n\nUpdated documentation: sessions disappear on restart and aren\u2019t shared across processes.\n\nAll 6 tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

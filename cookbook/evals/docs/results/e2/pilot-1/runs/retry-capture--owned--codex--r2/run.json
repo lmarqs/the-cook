@@ -1,0 +1,106 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "owned",
+  "harness": "codex",
+  "run": 2,
+  "id": "retry-capture--owned--codex--r2",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T12:26:37.675011+00:00",
+  "duration_s": 25.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*capture*' -g '*retry*' -g 'README.md' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g *retry* -g README.md -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/retry.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat larder/gateway.py docs/features/payments.md docs/runbooks/gateway-timeouts.md; git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 84027,
+    "cached": 71040,
+    "output": 1011,
+    "reasoning": 31
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added retries using `larder.retry.retry`: up to 3 attempts on `GatewayTimeout`, then the exception propagates. All attempts reuse the same idempotency key; other errors propagate immediately.\n\nValidation: `python3 -m pytest -q` \u2014 6 passed.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

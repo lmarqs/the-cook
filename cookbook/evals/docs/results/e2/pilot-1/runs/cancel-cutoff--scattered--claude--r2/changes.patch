@@ -1,0 +1,43 @@
+diff --git a/larder/cancellation.py b/larder/cancellation.py
+index cb41c50..a93a2ca 100644
+--- a/larder/cancellation.py
++++ b/larder/cancellation.py
+@@ -1,6 +1,8 @@
+-from datetime import datetime
++from datetime import datetime, timedelta
++
++CUTOFF_HOURS = 2
+ 
+ 
+ def can_cancel(pickup_starts: datetime, now: datetime) -> bool:
+     """Whether a member may still cancel a pantry order whose pickup slot starts at `pickup_starts`."""
+-    raise NotImplementedError
++    return now <= pickup_starts - timedelta(hours=CUTOFF_HOURS)
+diff --git a/tests/test_cancellation.py b/tests/test_cancellation.py
+new file mode 100644
+index 0000000..291faf1
+--- /dev/null
++++ b/tests/test_cancellation.py
+@@ -0,0 +1,22 @@
++from datetime import datetime, timedelta
++
++from larder.cancellation import CUTOFF_HOURS, can_cancel
++
++PICKUP = datetime(2026, 1, 1, 12, 0)
++CUTOFF = PICKUP - timedelta(hours=CUTOFF_HOURS)
++
++
++def test_a_member_can_cancel_before_the_cutoff():
++    assert can_cancel(PICKUP, CUTOFF - timedelta(minutes=1))
++
++
++def test_a_member_can_cancel_at_the_cutoff():
++    assert can_cancel(PICKUP, CUTOFF)
++
++
++def test_a_member_cannot_cancel_once_packing_starts():
++    assert not can_cancel(PICKUP, CUTOFF + timedelta(minutes=1))
++
++
++def test_a_member_cannot_cancel_after_pickup_starts():
++    assert not can_cancel(PICKUP, PICKUP + timedelta(minutes=1))

@@ -1,0 +1,116 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 3,
+  "id": "fresh-key--leads--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:49:52.924485+00:00",
+  "duration_s": 14.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R docs"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni idempot docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 66762,
+    "cached": 59539,
+    "output": 1029,
+    "reasoning": 155
+  },
+  "cost_usd": 0.0902478,
+  "turns": 3,
+  "last_message": "I haven't changed anything. This change would reintroduce a known double-charging bug.\n\n`docs/features/payments.md` says why every attempt reuses one key:\n\n> The gateway can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that drew a fresh key for each attempt charged 41 members twice.\n\n`GatewayTimeout` in `larder/gateway.py:1` warns about the same thing (\"the card may or may not have been charged\"). With a new key on each attempt, a timeout that actually went through leads to a second charge on the retry.\n\nThe \"duplicate idempotency key\" error probably means the key is doing its job. The gateway is saying it has already seen this capture, either finished or still in progress. That usually means the first attempt reached the gateway and the card may already be charged. So the fix belongs in how we handle that response, not in the key:\n\n- **Treat it as \"already captured\" and look up the charge.** If the gateway can return or look up the existing charge for a key, `capture()` can return that charge id instead of failing.\n- **If it means \"still in progress,\" wait and retry with the same key.** Retry with backoff until the gateway returns the original result.\n- **Find out why it isn't returning the cached result.** Most idempotent APIs return the original response for a repeated key with the same parameters. If ours errors instead, check whether something else in the retried request is changing, since a parameter mismatch often triggers this error.\n\nThe production gateway client isn't in this repo, so I can't tell which of these applies. If you can tell me what the gateway's docs say about that error, or paste the full error response, I'll implement the handling with the key kept the same, add a test for it, and update the Retries section of `payments.md`.\n\nIf you still want a new key per attempt (say the gateway has changed and now dedupes another way), tell me and I'll make the change. It would also need `payments.md` rewritten, because that page currently documents the opposite rule.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

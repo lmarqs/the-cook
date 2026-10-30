@@ -1,0 +1,123 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 3,
+  "id": "sessions-in-memory--no-leads--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:44:49.187561+00:00",
+  "duration_s": 16.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && grep -rn -i \"session\\|worker\\|process\\|replica\" docs larder --include=* | head -60"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|worker\\|process\\|replica docs larder --include=*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session larder docs/glossary.md docs/runbooks"
+    }
+  ],
+  "tokens": {
+    "input": 68233,
+    "cached": 54799,
+    "output": 1179,
+    "reasoning": 200
+  },
+  "cost_usd": 0.1419878,
+  "turns": 3,
+  "last_message": "I haven't made the change. Moving sessions into the web app's memory would undo a decision the team already wrote down, so I'd like you to confirm first.\n\n`docs/adrs/0001-keep-sessions-in-the-database.md` describes what happened in 2023, when sessions lived in each server's memory:\n\n- **There are two web servers behind a load balancer.** A dict in one process can't be seen by the other server. Members were logged out whenever a request reached the server that didn't hold their session.\n- **Every deploy logged everyone out**, because restarting the process cleared the dict. The volunteers stopped deploying during opening hours.\n\nThe ADR also turned down Redis, because the volunteers would have to run another service just for sessions. Sticky sessions at the load balancer lost too, because they don't survive a deploy. An in-process dict would bring back both problems the ADR was written to fix.\n\nThe ADR also says the session lookup is \"a query the database serves from memory at larder's size.\" So the session read may not be what's making the app slow. Before changing how sessions are stored, I'd suggest:\n\n1. **Measuring where request time goes.** If the session lookup is a small share, moving it won't make the app feel faster.\n2. **If it does turn out to be the session read**, cheaper fixes that keep the ADR intact:\n   - Check that `sessions.id` is the primary key or indexed.\n   - Reuse database connections through a pool instead of opening one per request.\n   - Skip the write back to Postgres when the session data hasn't changed.\n\n   A per-process read cache in front of Postgres is also possible. But with two servers it can serve stale session data, for example after a logout on the other server, so I'd avoid it unless measurements show it's needed.\n\nIf you still want the in-memory store, I can write it. That would reverse the ADR, so I'd also update the ADR, `docs/features/sessions.md` and `docs/architecture.md` in the same change. Before that I'd need to know what has changed, such as moving back to a single server or accepting logouts on deploy. Which way do you want to go?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

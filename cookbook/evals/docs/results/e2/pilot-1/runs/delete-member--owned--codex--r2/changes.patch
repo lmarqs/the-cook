@@ -1,0 +1,57 @@
+diff --git a/larder/members.py b/larder/members.py
+index 408f67a..b7965c3 100644
+--- a/larder/members.py
++++ b/larder/members.py
+@@ -26,4 +26,7 @@ class Store:
+ 
+ def delete_member(member_id: str, store: Store) -> None:
+     """Deletes a member's account when they ask for it."""
+-    raise NotImplementedError
++    store.members.pop(member_id, None)
++    for order in store.orders:
++        if order.member_id == member_id:
++            order.member_id = None
+diff --git a/tests/test_members.py b/tests/test_members.py
+new file mode 100644
+index 0000000..dabc467
+--- /dev/null
++++ b/tests/test_members.py
+@@ -0,0 +1,38 @@
++from larder.members import Member, Store, StoredOrder, delete_member
++
++
++def test_delete_member_keeps_orders_without_the_member():
++    member = Member("m1", "Alice", "alice@example.com", "1 Main St")
++    other_member = Member("m2", "Bob", "bob@example.com", "2 Main St")
++    store = Store(
++        members={"m1": member, "m2": other_member},
++        orders=[
++            StoredOrder("o1", "m1", 1250),
++            StoredOrder("o2", "m2", 500),
++            StoredOrder("o3", None, 750),
++            StoredOrder("o4", "m1", 1000),
++        ],
++    )
++
++    delete_member("m1", store)
++
++    assert store.members == {"m2": other_member}
++    assert store.orders == [
++        StoredOrder("o1", None, 1250),
++        StoredOrder("o2", "m2", 500),
++        StoredOrder("o3", None, 750),
++        StoredOrder("o4", None, 1000),
++    ]
++
++
++def test_delete_member_can_be_repeated():
++    store = Store(
++        members={"m1": Member("m1", "Alice", "alice@example.com", "1 Main St")},
++        orders=[StoredOrder("o1", "m1", 1250)],
++    )
++
++    delete_member("m1", store)
++    delete_member("m1", store)
++
++    assert store.members == {}
++    assert store.orders == [StoredOrder("o1", None, 1250)]

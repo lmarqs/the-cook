@@ -1,0 +1,70 @@
+diff --git a/larder/capture.py b/larder/capture.py
+index 56cfa9b..8041a5b 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,7 +1,8 @@
+ import uuid
+ 
+-from larder.gateway import Gateway
++from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
++from larder.retry import retry
+ 
+ 
+ def new_key() -> str:
+@@ -9,5 +10,9 @@ def new_key() -> str:
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+-    """Captures the order's authorized amount and returns the gateway's charge id."""
+-    return gateway.capture(order.id, order.amount_cents, idempotency_key=new_key())
++    """Captures the order's authorized amount and returns the gateway's charge id. A GatewayTimeout is retried, up to 3
++    attempts in all, each with the same idempotency key: see docs/features/payments.md#retries."""
++    key = new_key()
++    return retry(
++        lambda: gateway.capture(order.id, order.amount_cents, idempotency_key=key), attempts=3, on=GatewayTimeout
++    )
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..4507c83 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,7 @@
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +19,31 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++class TimingOutGateway(FakeGateway):
++    def __init__(self, timeouts):
++        super().__init__()
++        self.timeouts = timeouts
++
++    def capture(self, order_id, amount_cents, idempotency_key):
++        charge_id = super().capture(order_id, amount_cents, idempotency_key)
++        if len(self.calls) <= self.timeouts:
++            raise GatewayTimeout()
++        return charge_id
++
++
++def test_capture_retries_a_timeout_with_the_same_idempotency_key():
++    gateway = TimingOutGateway(timeouts=2)
++
++    assert capture(Order("o1", 1250), gateway) == "ch_1"
++    assert len(gateway.calls) == 3
++    assert len({key for _, _, key in gateway.calls}) == 1
++
++
++def test_capture_lets_the_third_timeout_propagate():
++    gateway = TimingOutGateway(timeouts=3)
++
++    with pytest.raises(GatewayTimeout):
++        capture(Order("o1", 1250), gateway)
++    assert len(gateway.calls) == 3

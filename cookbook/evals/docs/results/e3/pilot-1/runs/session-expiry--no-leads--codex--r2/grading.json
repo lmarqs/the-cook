@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: a 10-minute limit logged members out mid-checkout and lost\ntheir pantry orders, which is why the limit is 30 minutes.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The only mention is \"The docs retain the known risk: the previous 10-minute limit interrupted slow mobile orders.\" It does not say members were logged out mid-checkout or lost their pantry orders. It does not say this incident is why the limit was raised to 30 minutes. It also does not warn that the change brings the problem back; it only notes that the docs mention a risk.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/sessions.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/sessions.md at step 6; first edit at step 13",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

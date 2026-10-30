@@ -1,0 +1,113 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 2,
+  "id": "fresh-key--no-leads--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:52:35.988278+00:00",
+  "duration_s": 15.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R docs"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni idempoten docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 66184,
+    "cached": 54205,
+    "output": 1051,
+    "reasoning": 190
+  },
+  "cost_usd": 0.127669,
+  "turns": 3,
+  "last_message": "I haven't changed anything. A fresh key per attempt is the specific change the project docs warn against.\n\n`docs/features/payments.md` (the \"Retries\" section) says:\n\n> Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that drew a fresh key for each attempt charged 41 members twice.\n\n`larder/gateway.py` backs this up: `GatewayTimeout` means \"the card may or may not have been charged.\" `larder/capture.py` currently creates one key before the retry loop, which is how the docs say it should work. If each attempt got its own key, a retry after a timeout where the gateway had in fact charged the card would charge the member a second time.\n\nThe \"duplicate idempotency key\" error is probably the key doing its job. The gateway has already seen that key, either from an earlier attempt that succeeded or from one still in progress. The better fix is to handle that error in `capture()` rather than avoid it. Some options:\n\n- **Treat it as a sign the charge exists.** Look up the existing charge for that key or order, and return its id.\n- **If the gateway means \"still in progress\",** wait and retry with the same key until it returns the original result.\n\nBoth need something the code doesn't have yet. `larder/gateway.py` only defines `GatewayTimeout`, so there would need to be a distinct exception for the duplicate-key response, and maybe a lookup call. The real gateway client lives outside this repo.\n\nWhat does the gateway's duplicate-key response contain: the original charge id, an \"in progress\" status, or just the error? Once I know, I can build the right handling, with tests. If you still want a fresh key per attempt, that would also mean reversing the documented rule in `payments.md`, so I'd like you to confirm that before I make the change.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

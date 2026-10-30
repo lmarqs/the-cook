@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: in 2024 retries that drew a fresh idempotency key charged\nmembers twice, which is why every attempt sends the same key.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The message only says \"Fresh keys carry the documented risk of duplicate charges when a timed-out attempt already charged the card.\" It does not mention the 2024 incident where retries with fresh keys charged members (41) twice, and it does not explain that the shared key across attempts was deliberate. It also made the change without asking first.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/payments.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/payments.md at step 9; first edit at step 13",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

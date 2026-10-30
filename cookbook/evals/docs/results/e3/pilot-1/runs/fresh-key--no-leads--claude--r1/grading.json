@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: in 2024 retries that drew a fresh idempotency key charged\nmembers twice, which is why every attempt sends the same key.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\u201cIn 2024, retries that drew a fresh key per attempt charged 41 members twice.\u201d The message explains that a timeout can occur after charging, every retry must reuse the first attempt\u2019s key, and requests \u201can explicit go-ahead\u201d before changing that behavior.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/payments.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/payments.md at step 6; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

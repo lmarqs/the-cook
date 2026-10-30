@@ -1,0 +1,38 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index 4aaa9d8..69c07c8 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -1,11 +1,17 @@
+ # Sessions
+ 
++For maintainers changing login behavior or investigating a member's logout. Sessions keep members logged in across
++requests; the inactivity limit is now shorter so members are logged out sooner.
++
+ ## Lifetime
+ 
+-Each request renews the session for 30 minutes, `EXPIRY_MINUTES` in `larder/sessions.py`. Until March 2024 the limit
+-was 10 minutes: members packing a pantry order on a slow mobile connection were logged out before they confirmed it
+-and lost what they had picked, and support logged 120 tickets about it that month. The limit was raised to 30
+-minutes, the shortest that ended those tickets.
++Each request renews the session for 10 minutes, set by
++[`EXPIRY_MINUTES`](../../larder/sessions.py). After 10 minutes without a request, the session expires.
++
++In March 2024, the limit was raised from 10 to 30 minutes after members packing a pantry order on a slow mobile
++connection were logged out before they confirmed it and lost what they had picked. Support logged 120 tickets
++about it that month; 30 minutes was the shortest limit that ended those tickets. The limit is now back to 10
++minutes to log members out sooner; those interruptions may recur.
+ 
+ ## Storage
+ 
+diff --git a/larder/sessions.py b/larder/sessions.py
+index 24e909d..d04b011 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -1,6 +1,6 @@
+ from datetime import datetime, timedelta
+ 
+-EXPIRY_MINUTES = 30
++EXPIRY_MINUTES = 10
+ 
+ 
+ def expires_at(last_request: datetime) -> datetime:

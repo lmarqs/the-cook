@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: sessions held in the web servers' memory logged members out\nwhen a request reached the other server and on every deploy, which is why sessions live in Postgres.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The agent states that sessions were kept in each web server's memory, that \u201cMembers got logged out whenever a request reached the other server\u201d and \u201cEvery deploy logged everyone out,\u201d and warns that replacing Postgres with a dict would restore that design. It stops before writing code and asks for confirmation.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/adrs/0001-keep-sessions-in-the-database.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/adrs/0001-keep-sessions-in-the-database.md at step 3; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

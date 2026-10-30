@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: the 2025 email trial left reminders unopened and doubled\nmissed pickups, which is why reminders go by SMS.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The agent says email reminders ran from April to June 2025, \"34% of reminder emails were never opened,\" missed pickups \"rose from 6% to 13%,\" and volunteers threw away uncollected fresh food. It explains that SMS returned in July 2025 and asks before changing back: \"How would you like to go?\"",
+      "judged_by": "codex"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/reminders.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/reminders.md at step 3; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

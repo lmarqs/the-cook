@@ -1,0 +1,259 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "scattered",
+  "harness": "claude",
+  "run": 1,
+  "id": "retry-capture--scattered--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T12:19:02.594796+00:00",
+  "duration_s": 23.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat larder/capture.py larder/retry.py && cat docs/README.md && ls docs"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/retry.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls docs"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -n -i -A2 idempot\\|capture\\|timeout docs/glossary.md docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "larder.gateway",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder.orders",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder.retry",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "uuid.uuid4().hex",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "Captures the order's authorized amount and returns the gateway's charge id.\n\n    A GatewayTimeout is retried, up to 3 attempts in all, every attempt sending the same idempotency key: the gateway\n    can time out after charging the card, and a fresh key would charge it again.",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "gateway.capture(order.id,",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "order.amount_cents,",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "super().__init__()",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "self.timeouts",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "self.calls.append((order_id,",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "len(self.calls)",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "self.timeouts:",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "len(gateway.calls)",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "gateway.calls})",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "pytest.raises(GatewayTimeout):",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "len(gateway.calls)",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "str:",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "str:",
+      "tool": "shell"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "shell"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "cat > larder/capture.py <<'EOF'\nimport uuid\n\nfrom larder.gateway import Gateway, GatewayTimeout\nfrom larder.orders import Order\nfrom larder.retry import retry\n\n\ndef new_key() -> str:\n    return uuid.uuid4().hex\n\n\ndef capture(order: Order, gateway: Gateway) -> str:\n    \"\"\"Captures the order's authorized amount and returns the gateway's charge id.\n\n    A GatewayTimeout is retried, up to 3 attempts in all, every attempt sending the same idempotency key: the gateway\n    can time out after charging the card, and a fresh key would charge it again.\"\"\"\n    key = new_key()\n    return retry(lambda: gateway.capture(order.id, order.amount_cents, idempotency_key=key), attempts=3, on=GatewayTimeout)\nEOF\ncat >> tests/test_capture.py <<'EOF'\n\n\nclass TimingOutGateway(FakeGateway):\n    def __init__(self, timeouts):\n        super().__init__()\n        self.timeouts = timeouts\n\n    def capture(self, order_id, amount_cents, idempotency_key):\n        self.calls.append((order_id, amount_cents, idempotency_key))\n        if len(self.calls) <= self.timeouts:\n            raise GatewayTimeout()\n        return \"ch_1\"\n\n\ndef test_capture_retries_a_timeout_with_the_same_idempotency_key():\n    gateway = TimingOutGateway(timeouts=2)\n\n    assert capture(Order(\"o1\", 1250), gateway) == \"ch_1\"\n    assert len(gateway.calls) == 3\n    assert len({key for _, _, key in gateway.calls}) == 1\n\n\ndef test_capture_gives_up_after_three_timeouts():\n    gateway = TimingOutGateway(timeouts=3)\n\n    with pytest.raises(GatewayTimeout):\n        capture(Order(\"o1\", 1250), gateway)\n    assert len(gateway.calls) == 3\nEOF\nsed -i '1i import pytest\\n' tests/test_capture.py && sed -i 's/^from larder.capture import capture$/from larder.capture import capture\\nfrom larder.gateway import GatewayTimeout/' tests/test_capture.py\nhead -5 tests/test_capture.py; python3 -m pytest -q 2>&1 | tail -3"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -1"
+    }
+  ],
+  "tokens": {
+    "input": 124092,
+    "cached": 114095,
+    "output": 2214,
+    "reasoning": 314
+  },
+  "cost_usd": 0.14703500000000003,
+  "turns": 6,
+  "last_message": "`capture` in `larder/capture.py` now goes through `larder.retry.retry`. If the gateway raises `GatewayTimeout`, it tries again, up to 3 attempts in all, and then lets the `GatewayTimeout` through. All 4 tests pass, including two new ones in `tests/test_capture.py`: one checks that two timeouts followed by a success make 3 calls, all with the same key; the other checks that three timeouts make 3 calls and then raise `GatewayTimeout`.\n\n**All three attempts send the same idempotency key.** The key is created once, before the retry loop, not once per attempt. The docs disagree on this, so I followed the page that owns the rule:\n\n- **`docs/features/payments.md` and `docs/architecture.md`:** every attempt must reuse the first attempt's key. The gateway can time out after it has already charged the card, and it charges again for a new key. That's how 41 members were charged twice in 2024. `docs/README.md` makes the feature page the owner of this rule.\n- **`docs/runbooks/gateway-timeouts.md`:** its last paragraph says the opposite: each attempt should get a fresh key, because the gateway rejects a reused key as a duplicate.\n\nThe runbook gives no evidence for its claim, while the payments page describes a real incident. But if the gateway really does reject a reused key, the second and third attempts would fail with a duplicate error rather than charge the card again. That's the safer way to fail, but it would mean these retries never succeed. It's worth confirming with the payments volunteers which behaviour the gateway actually has. I can then remove or correct that runbook paragraph. I haven't changed any docs.\n\nI haven't committed anything.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

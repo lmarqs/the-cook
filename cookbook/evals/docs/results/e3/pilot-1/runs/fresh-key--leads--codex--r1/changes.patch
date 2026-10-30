@@ -1,0 +1,66 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 0437f4a..6d6db7f 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -11,9 +11,14 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+-can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+-drew a fresh key for each attempt charged 41 members twice.
++Every attempt to capture one pantry order sends a fresh idempotency key because the gateway sometimes rejects a
++retried capture with a "duplicate idempotency key" error.
++
++## Known limits
++
++The gateway can report a timeout after it has already charged the card, and it charges again for a new key: in 2024
++retries that drew a fresh key for each attempt charged 41 members twice. Fresh keys therefore risk duplicate charges
++after a timeout; the [gateway timeouts runbook](../runbooks/gateway-timeouts.md#if-it-fails) names whom to contact.
+ 
+ ## Shaped by
+ 
+diff --git a/larder/capture.py b/larder/capture.py
+index fe2bcf1..374b9d3 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -8,8 +8,8 @@ ATTEMPTS = 3
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+     """Captures the order's authorized amount and returns the gateway's charge id."""
+-    key = uuid.uuid4().hex
+     for attempt in range(1, ATTEMPTS + 1):
++        key = uuid.uuid4().hex
+         try:
+             return gateway.capture(order.id, order.amount_cents, idempotency_key=key)
+         except GatewayTimeout:
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..dec4981 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,5 @@
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +17,19 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++def test_capture_retries_with_a_new_idempotency_key():
++    class RetryingGateway(FakeGateway):
++        def capture(self, order_id, amount_cents, idempotency_key):
++            charge_id = super().capture(order_id, amount_cents, idempotency_key)
++            if len(self.calls) < 3:
++                raise GatewayTimeout
++            return charge_id
++
++    gateway = RetryingGateway()
++
++    assert capture(Order("o1", 1250), gateway) == "ch_1"
++    assert len(gateway.calls) == 3
++    assert all(call[:2] == ("o1", 1250) for call in gateway.calls)
++    assert len({call[2] for call in gateway.calls}) == 3
