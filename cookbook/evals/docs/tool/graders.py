@@ -72,7 +72,10 @@ def tests_pass(run: Run, options: dict) -> tuple[bool, str]:
             shutil.copy(run.case.dir / "hidden" / name, work / "tests" / name)
         command = options.get("command", "python3 -m pytest -q -p no:cacheprovider")
         argv = sandbox.command(work, ["sh", "-c", command], network=False)
-        result = subprocess.run(argv, capture_output=True, text=True, timeout=300)
+        try:
+            result = subprocess.run(argv, capture_output=True, text=True, timeout=300)
+        except subprocess.TimeoutExpired:
+            return False, "the tests timed out after 300 s"
     tail = (result.stdout + result.stderr).strip().splitlines()[-3:]
     return result.returncode == 0, f"exit {result.returncode}: {' / '.join(tail)}"
 

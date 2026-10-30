@@ -139,3 +139,40 @@ def test_labels_point_at_each_run_relative_to_the_tool(tmp_path, monkeypatch):
 
     assert "results/e3/b1/runs/c1--leads--codex--r1/repo" in text
     assert str(tmp_path) not in text
+
+
+def test_a_run_that_exits_non_zero_without_an_event_error_fails_with_its_stderr():
+    assert harness.process_error(1, False, "starting\nAPI Error: 529 overloaded\n") == \
+        "exit 1: starting / API Error: 529 overloaded"
+    assert harness.process_error(0, False, "noise") is None
+    assert harness.process_error(-9, True, "") is None
+
+
+def test_regrading_keeps_the_process_error_the_event_stream_lacks(tmp_path):
+    study = load_study("e1")
+    directory = tmp_path / "change-decision--skill--claude--r1"
+    write_run(directory, "change-decision")
+    record = json.loads((directory / "run.json").read_text())
+    (directory / "run.json").write_text(json.dumps({**record, "exit_error": "exit 1", "error": "exit 1"}))
+    (directory / "events.jsonl").write_text("")
+
+    assert grading.load_run(study, directory).record["error"] == "exit 1"
+
+
+def test_contrasts_pair_runs_within_their_batch():
+    rows = [{"batch": batch, "case": "c1", "run": 1, "arm": arm, "harness": "claude", "id": f"{batch}-{arm}"}
+            for batch in ("b1", "b2") for arm in ("ref", "ctl")]
+
+    pairs = report.paired(rows, "ref", "ctl", "claude")
+
+    assert [(a["id"], b["id"]) for a, b in pairs] == [("b1-ref", "b1-ctl"), ("b2-ref", "b2-ctl")]
+
+
+def test_a_run_refused_on_every_attempt_is_flagged(tmp_path):
+    batch = effort_batch(tmp_path, control_steps=6)
+    run = batch / "runs" / "c1--ctl--claude--r1" / "run.json"
+    run.write_text(json.dumps({**json.loads(run.read_text()), "error": "429 Too Many Requests", "files_changed": []}))
+
+    text = report.write(effort_study(), [batch]).read_text()
+
+    assert "refused on every attempt, counted as failed: ['c1--ctl--claude--r1']" in text

@@ -40,6 +40,11 @@ def test_shell_steps_unwrap_a_login_shell_and_split_its_commands():
     ]
 
 
+def test_sed_in_place_edits_its_file():
+    assert traces.shell_steps("sed -i 's/3/5/' docs/features/payments.md") == \
+        [{"kind": "edit", "path": "docs/features/payments.md", "tool": "sed"}]
+
+
 def test_a_search_is_not_a_read():
     assert [s["kind"] for s in traces.shell_steps("rg -n capture docs")] == ["search"]
 

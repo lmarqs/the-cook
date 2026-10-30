@@ -7,6 +7,7 @@ from pathlib import Path
 
 from tool import stats
 from tool.cases import Study
+from tool.harness import refused
 from tool.traces import first_index
 
 HEADROOM = (0.10, 0.90)
@@ -43,9 +44,9 @@ def median_mean(values: list[float]) -> str:
 
 
 def paired(rows_: list[dict], reference: str, arm: str, harness: str) -> list[tuple[dict, dict]]:
-    index = {(r["case"], r["run"]): r for r in rows_ if r["arm"] == reference and r["harness"] == harness}
-    return [(index[(r["case"], r["run"])], r) for r in rows_
-            if r["arm"] == arm and r["harness"] == harness and (r["case"], r["run"]) in index]
+    index = {(r["batch"], r["case"], r["run"]): r for r in rows_ if r["arm"] == reference and r["harness"] == harness}
+    return [(index[(r["batch"], r["case"], r["run"])], r) for r in rows_
+            if r["arm"] == arm and r["harness"] == harness and (r["batch"], r["case"], r["run"]) in index]
 
 
 def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> Path:
@@ -126,6 +127,9 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
              or any(p.get("path") != "builtin" for p in r["init"].get("plugins") or []))]
     if leaky:
         flags.append(f"Runs that loaded MCP servers or non-builtin plugins, so saw more than the fixture: {leaky}.")
+    turned_away = [r["id"] for r in data if refused(r)]
+    if turned_away:
+        flags.append(f"Runs the provider refused on every attempt, counted as failed: {turned_away}.")
     missing = sum(e["verdict_missing"] for r in data for e in r["grading"]["expectations"])
     if missing:
         flags.append(f"{missing} judge calls returned no verdict and count as failed.")
@@ -169,8 +173,8 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
     lines.append("")
 
     lines += ["## Contrasts", "",
-              f"Each arm against `{reference}`, paired by case and run. Superiority: exact McNemar on the outcome and "
-              f"Wilcoxon on the steps before the owning page; Holm corrects the primary one, "
+              f"Each arm against `{reference}`, paired by batch, case and run. Superiority: exact McNemar on the "
+              f"outcome and Wilcoxon on the steps before the owning page; Holm corrects the primary one, "
               f"{'McNemar' if study.primary == 'pass' else 'Wilcoxon on steps'}, across the study. Equivalence: TOST "
               f"within ±{margins['success']:.0%} of success and ±{margins['tokens']:.0%} of tokens.", "",
               "| Contrast | Pairs | Difference in pass | b / c | McNemar p | Difference in steps, median "

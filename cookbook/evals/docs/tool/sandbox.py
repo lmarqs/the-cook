@@ -4,6 +4,7 @@ The sandbox sees the system read-only, the run's repository at /work, the tool b
 the two login files. The login files are bound, not copied, so a token refresh inside a run writes the real file.
 """
 
+import functools
 import os
 import shutil
 from pathlib import Path
@@ -21,6 +22,7 @@ def resolved(binary: str) -> Path:
     return Path(path).resolve()
 
 
+@functools.cache
 def binaries() -> dict[str, Path]:
     return {"claude": resolved("claude"), "codex": resolved("codex"), "python3": resolved("python3")}
 

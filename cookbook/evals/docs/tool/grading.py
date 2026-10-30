@@ -15,7 +15,9 @@ def load_run(study: Study, directory: Path) -> Run:
     events = directory / "events.jsonl"
     if events.exists():
         lines = [line for line in events.read_text().splitlines() if line.startswith("{")]
-        record.update(getattr(traces, record["harness"])(lines))
+        parsed = getattr(traces, record["harness"])(lines)
+        parsed["error"] = parsed["error"] or record.get("exit_error")
+        record.update(parsed)
         (directory / "run.json").write_text(json.dumps(record, indent=2) + "\n")
     return Run(directory / "repo", record, study.case(record["case"]), (directory / "changes.patch").read_text())
 

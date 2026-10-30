@@ -180,4 +180,6 @@ def test_judge_reads_the_last_json_verdict_and_blinds_the_arm():
     assert judge.verdict('thinking {"x": 1} then {"passed": true, "evidence": "Context, line 1"}') == \
         (True, "Context, line 1")
     assert judge.verdict("no json here")[0] is None
+    assert judge.verdict('{"passed": true, "evidence": "it sends f\\"{key}\\" on every attempt"}') == \
+        (True, 'it sends f"{key}" on every attempt')
     assert "docs-layout" not in judge.blind("I used the docs-layout skill in .claude/skills/docs-layout")

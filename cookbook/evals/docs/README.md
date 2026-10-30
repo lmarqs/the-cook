@@ -2,8 +2,7 @@
 
 For whoever runs or reviews the studies that measure whether the `docs` recipe pays. This tool runs Claude Code and
 Codex headless against a made-up repository, grades what they do, and reports each arm against its reference with
-the checks that tell a result from a tie. It exists because the spike of 2026-10-29 scored every arm 30 of 30 and
-could not tell them apart; it is temporary, and goes once the studies report (#94, design on #90).
+the checks that tell a result from a tie. It is temporary, and goes once the studies report (#94, design on #90).
 
 | Study | Question | Arms, reference first |
 | --- | --- | --- |
@@ -107,7 +106,8 @@ case is the E1 case of the same name, and its reader's task is a change the writ
 from the reference (Holm-corrected p ≥ 0.05 on the study's primary outcome: McNemar on pass, or Wilcoxon on effort,
 the steps before the owning page is read, counting every step of a run that never reads it), a case's reference
 passes outside 10–90% of its runs or, for effort, reads the owning page first in every run, a
-grader passes or fails every run, the judge is unvalidated or below kappa 0.61, a run saw MCP servers or plugins.
+grader passes or fails every run, the judge is unvalidated or below kappa 0.61, a run saw MCP servers or plugins,
+the provider refused a run on every attempt.
 Then each arm's pass rate with its Wilson interval, pass^k, tokens, cost, duration and steps before the owning page
 was read; each contrast's McNemar, Wilcoxon on tokens and TOST against `study.yaml`'s margins, ending as better,
 worse, equivalent or inconclusive; and a mixed-effects logistic model with a random intercept per case.

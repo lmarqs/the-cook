@@ -25,6 +25,7 @@ def source_batch(tmp_path_factory) -> Path:
         "reminders-why--no-skill--claude--r1": ("", [], None),
         "tenet--bare--codex--r2": ("", [], None),
     }
+    (batch / "runs" / "change-decision--bare--claude--r1").mkdir(parents=True)
     for run_id, (patch, changed, error) in runs.items():
         case, arm, name, run = run_id.split("--")
         directory = batch / "runs" / run_id

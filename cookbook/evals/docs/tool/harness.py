@@ -83,6 +83,8 @@ def handoff_jobs(study: Study, source_batch: Path | None) -> list[Job]:
     case_ids = {c.id for c in study.cases}
     selected, slots = [], set()
     for directory in sorted((source_batch / "runs").iterdir()):
+        if not (directory / "run.json").exists():
+            continue
         record = json.loads((directory / "run.json").read_text())
         if record["case"] not in case_ids or record["harness"] not in study.harnesses:
             continue
@@ -99,6 +101,14 @@ def refused(result: dict) -> bool:
     """The provider turned the run away before it changed a file: its capacity, not the arm, decided the outcome."""
     return bool(result.get("error")) and not result["files_changed"] \
         and bool(PROVIDER_REFUSAL.search(str(result["error"])))
+
+
+def process_error(exit_code: int, timed_out: bool, stderr: str) -> str | None:
+    """The failure of a run that exited non-zero without the event stream naming one, as its stderr tells it."""
+    if not exit_code or timed_out:
+        return None
+    tail = " / ".join(stderr.strip().splitlines()[-3:])
+    return f"exit {exit_code}: {tail}" if tail else f"exit {exit_code}"
 
 
 def with_retries(run_once: Callable[[], dict], tries: int = TRIES) -> dict:
@@ -141,12 +151,13 @@ def run_job(study: Study, job: Job, batch_dir: Path) -> dict:
         fixtures.git(repo, "add", "-A")
         changed = [line for line in fixtures.git(repo, "diff", "--cached", "--name-only").splitlines() if line]
         (directory / "changes.patch").write_text(fixtures.git(repo, "diff", "--cached"))
+        exit_error = process_error(process.returncode, timed_out, (directory / "stderr.txt").read_text())
         return {
             "study": study.id, **asdict(job), "id": job.id,
             "model": study.harnesses[job.harness]["model"],
             "started": started.isoformat(), "duration_s": round(duration, 1),
             "exit_code": process.returncode, "timed_out": timed_out,
-            "files_changed": changed, **record,
+            "files_changed": changed, **record, "exit_error": exit_error, "error": record["error"] or exit_error,
         }
 
     result = with_retries(run_once)

@@ -157,6 +157,9 @@ def simple_steps(tokens: list[str], command: str) -> list[dict]:
         return steps
     name = words[0].rsplit("/", 1)[-1]
     operands = [w for w in words[1:] if not w.startswith("-")]
+    if name == "sed" and any(w.startswith(("-i", "--in-place")) for w in words[1:]):
+        files = [o for o in operands[1:] if looks_like_path(o)]
+        return [{"kind": "edit", "path": relative(o), "tool": name} for o in files] + steps
     if name in PRINTERS:
         if name in ("sed", "awk") and operands:
             operands = operands[1:]

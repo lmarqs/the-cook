@@ -45,12 +45,13 @@ def material(run: Run, options: dict) -> str:
 
 
 def verdict(text: str) -> tuple[bool | None, str]:
-    for match in reversed(list(re.finditer(r"\{.*?\}", text, re.S))):
+    decoder = json.JSONDecoder()
+    for start in reversed([m.start() for m in re.finditer(r"\{", text)]):
         try:
-            answer = json.loads(match.group(0))
+            answer, _ = decoder.raw_decode(text, start)
         except json.JSONDecodeError:
             continue
-        if isinstance(answer.get("passed"), bool):
+        if isinstance(answer, dict) and isinstance(answer.get("passed"), bool):
             return answer["passed"], str(answer.get("evidence", ""))
     return None, f"no verdict in: {text[:200]}"
 
@@ -75,8 +76,11 @@ def ask(run: Run, text: str, options: dict, models: dict) -> tuple[bool | None, 
         work.mkdir()
         eval_dir.mkdir()
         (eval_dir / "mcp.json").write_text('{"mcpServers": {}}\n')
-        result = subprocess.run(sandbox.command(work, argv, eval_dir=eval_dir), input=prompt,
-                                capture_output=True, text=True, timeout=600)
+        try:
+            result = subprocess.run(sandbox.command(work, argv, eval_dir=eval_dir), input=prompt,
+                                    capture_output=True, text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return None, "the judge timed out after 600 s", judge
     lines = [line for line in result.stdout.splitlines() if line.startswith("{")]
     answer = getattr(traces, judge)(lines)["last_message"]
     passed, evidence = verdict(answer)
