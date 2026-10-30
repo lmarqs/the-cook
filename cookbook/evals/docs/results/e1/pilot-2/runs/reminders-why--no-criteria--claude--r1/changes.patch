@@ -1,0 +1,63 @@
+diff --git a/docs/adrs/0002-send-pickup-reminders-by-sms.md b/docs/adrs/0002-send-pickup-reminders-by-sms.md
+new file mode 100644
+index 0000000..aafb036
+--- /dev/null
++++ b/docs/adrs/0002-send-pickup-reminders-by-sms.md
+@@ -0,0 +1,38 @@
++# Send pickup reminders by SMS
++
++For whoever proposes switching pickup reminders to email to save the SMS cost, or changes `larder/reminders.py`.
++Reminders go by SMS, about 40 euros a month, because when they went by email for three months twice as many pantry
++orders were never picked up.
++
++## Context
++
++The day before pickup, larder reminds each member of their pantry order's pickup slot. SMS costs about 40 euros a
++month and email costs nothing, so switching keeps being proposed: issue 52 was the third proposal in one year.
++
++The pantry tried it. From April to June 2025 reminders went by email. The email provider reported that 34% of the
++reminder emails were never opened, and missed pickups rose from 6% of pantry orders to 13%. Many members share one
++phone across the family and never check email; an SMS they see. Each missed pickup is a packed bag whose fresh food
++is thrown away at closing time. Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by
++August.
++
++Two forces judge the options: a member must see the reminder, since a missed pickup wastes the food packed for it;
++and the pantry runs on a small budget, so a channel that costs nothing is preferred when it reaches members as well.
++
++## Options
++
++- **Email**: free, and `remind` already sends it when `CHANNEL` is not `"sms"`; lost on the first force, since in the
++  2025 trial a third of the emails went unopened and missed pickups doubled, to 13%.
++- **SMS**: chosen.
++
++## Decision
++
++Pickup reminders go by SMS, because it is the channel members see: missed pickups stay at 6%, against 13% by email.
++The 40 euros a month costs less than the food a doubled rate of missed pickups throws away. The maintainer confirmed
++it when closing issue 52.
++
++## Consequences
++
++Members see their reminder and missed pickups stay near 6% of pantry orders. The pantry pays about 40 euros a month for
++SMS. A proposal to save that cost needs evidence that the new channel keeps missed pickups near 6%; what would change
++the answer is members reading email, not email's price. Switching back is one constant, `CHANNEL` in
++`larder/reminders.py`.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..efc58ea 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Send pickup reminders by SMS](0002-send-pickup-reminders-by-sms.md): reminders go by SMS, not email, because
++  members miss email reminders and their pickups.
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..695f954 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,3 +1,4 @@
++# Why SMS and not email: docs/adrs/0002-send-pickup-reminders-by-sms.md
+ CHANNEL = "sms"
+ 
+ 

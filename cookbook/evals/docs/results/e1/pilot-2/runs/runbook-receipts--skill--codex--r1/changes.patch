@@ -1,0 +1,110 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..208b40a 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -8,6 +8,7 @@ where a payment is captured.
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++  For missing emails, follow [Receipts stopped](runbooks/receipts-stopped.md).
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..2bedabf 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): restore the receipt worker, watch the queue drain, and escalate failures.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..7bd785b
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,83 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipt emails. Restore the worker and drain the waiting
++jobs so members receive their receipts. Previous outages left receipts waiting overnight because the deploy script
++restarted only the web app; recovery depended on Tomás being awake. Owner: Tomás, in `#larder-ops`.
++
++## Before you begin
++
++- Access to the host running `larder-worker`, with `systemctl`, permission to run
++  `sudo systemctl start larder-worker`, and permission to read its journal.
++- `psql` access to the production `larder` database on that host. The repository does not specify the host address
++  or how to obtain access; use the existing production access, not a local development database.
++- Access to `#larder-ops` for escalation. The recovery below does not require Tomás to be available.
++
++## Steps
++
++1. Check the worker on its host:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)` for a healthy worker. `inactive (dead)` matches the previous outage, when it stopped
++   immediately after deployment. An inactive service can make this command exit nonzero; read the status output.
++
++2. Record the queue counts before changing anything:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: one row per status present. `todo` counts waiting jobs, `doing` counts jobs in progress, and `failed`
++   counts failed jobs. An absent status row means zero. The previous outage showed 212 `todo`, zero `doing`, and
++   three `failed`; these are an example, not required counts. If the worker is already active, skip starting it
++   and continue to step 4. If it is inactive and jobs are waiting, continue to step 3. For other states, or no
++   waiting jobs despite missing receipts, use **If it fails**.
++
++3. Start the inactive worker:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Expected: the command completes without an error. Confirm with `systemctl status larder-worker`: it should now
++   show `active (running)`. If it does not, use **If it fails**.
++
++4. Check progress after about one minute, then repeat while jobs remain:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: `todo` decreases, eventually reaching zero (or no `todo` row). In the previous recovery it fell by
++   about 40 jobs per minute; this is an observation, not a guaranteed rate. If it stays flat or grows, or the worker
++   stops again, use **If it fails**.
++
++5. Confirm receipt delivery with an affected member in the incident chat.
++
++   Expected: confirmation that a missing receipt arrived, as in the previous recovery. Queue counts alone do not
++   confirm delivery. Record the final counts and delivery result in `#larder-ops`; if confirmation is unavailable,
++   report that the queue drained but delivery is unconfirmed.
++
++## If it fails
++
++- If the worker dies immediately, fails to start, or the queue does not drain, collect its latest logs:
++
++  ```sh
++  journalctl -u larder-worker -n 50
++  ```
++
++  Expected: up to 50 recent journal entries for the service. Send the relevant errors, worker status, queue counts
++  before and after, and any recent deployment time to Tomás in `#larder-ops`. If he is unavailable, leave this
++  handoff in the channel; the repository documents no alternate responder or further recovery procedure. Avoid
++  repeatedly starting a worker that immediately dies.
++- If the worker stays active but receipts still do not arrive, include that result and any `failed` count in the
++  same handoff. The three failed jobs in the previous incident were confirmed email bounces from invalid member
++  addresses; do not assume new failures have that cause or retry them indiscriminately.
++- If access, the database query, or journal access fails, record the error and request the missing access in
++  `#larder-ops`; do not treat unavailable counts as an empty queue.
++- After each recurrence, update this runbook with new symptoms, outputs, or recovery steps. The historical evidence
++  is [Tomás's chat](../../notes/chat-receipts.md); the [architecture](../architecture.md) explains the worker and
++  database connection. The deploy-script cause remains unresolved in the available repository, which contains no
++  deploy script to fix.

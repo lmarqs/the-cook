@@ -1,0 +1,38 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..da135ca 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Reminders](reminders.md): the pickup reminder, and why it goes by SMS, not email.
+diff --git a/docs/features/reminders.md b/docs/features/reminders.md
+new file mode 100644
+index 0000000..0321742
+--- /dev/null
++++ b/docs/features/reminders.md
+@@ -0,0 +1,23 @@
++# Reminders
++
++For whoever changes pickup reminders, or proposes sending them by email to save the SMS cost. The day before pickup,
++larder sends each member a reminder of their pantry order's pickup slot, by SMS. A trial of email reminders in 2025
++doubled missed pickups, and members threw away less food once the reminders went back to SMS.
++
++## Message
++
++`remind` in `larder/reminders.py` sends the member one message, "Your pantry order is ready for pickup" and the
++slot, the day before pickup.
++
++## Channel
++
++Reminders go by SMS, `CHANNEL` in `larder/reminders.py`; the code can also send them by email. SMS costs the pantry
++about 40 euros a month, and email would cost nothing, so volunteers keep proposing the switch: [issue 52](../../notes/issue-52.md) in September
++was the third proposal that year.
++
++Email was tried from April to June 2025. The email provider reported that 34% of the reminder emails were never
++opened, and missed pickups rose from 6% of pantry orders to 13%. A missed pickup leaves a packed bag behind, and the
++fresh food in it is thrown away at closing time. Many members share one phone with their family and never check
++email; an SMS they see. Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.
++
++A proposal to save the SMS cost has to answer those missed pickups and the food thrown away with them.

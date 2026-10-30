@@ -1,0 +1,45 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..3d60bb1 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): how a member is reminded of a pickup, and why by SMS rather than email.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..7cdf3a2
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,30 @@
++# Pickup reminders
++
++For whoever changes how members are reminded of a pickup, or proposes sending reminders by email to save the SMS
++cost. The day before pickup, larder texts each member that their pantry order is ready. Reminders go by SMS because
++from April to June 2025 they went by email, and missed pickups rose from 6% to 13% of pantry orders.
++
++## Sending
++
++`remind` in `larder/reminders.py` sends the member one message the day before their pickup slot:
++"Your pantry order is ready for pickup" followed by the slot.
++
++## Channel
++
++The channel is `CHANNEL` in `larder/reminders.py`, `"sms"`: the message goes to the member's phone. The code can
++send it by email instead, and that is the change volunteers keep proposing, since SMS costs the pantry about 40 euros
++a month and email costs nothing.
++
++Email was tried from April to June 2025. The email provider reported that 34% of the reminder emails were never
++opened, and missed pickups went from 6% of pantry orders to 13%. Each missed pickup is a bag volunteers packed for
++nothing, and the fresh food in it goes in the bin by closing time. Many members share one phone across the family and
++never check email; a text they see. Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by
++August.
++
++The question came up a third time in one year in issue 52 (`notes/issue-52.md`), and the maintainer kept SMS: the
++40 euros a month was weighed against the missed pickups and food above, and lost.
++
++## Shaped by
++
++- No decision record: the channel is one constant in one module, below the bar for a record, so its reason lives on
++  this page.

@@ -1,0 +1,48 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..4462548 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -1,17 +1,25 @@
+ # Payments
+ 
+ For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+-amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members
+-being charged twice.
++amount once a pantry order is confirmed. Gateway timeouts have left confirmed pantry orders uncharged and, when
++retried with fresh keys in 2024, charged 41 members twice; the retry rules address both failures.
+ 
+ ## Capture
+ 
+-A confirmed pantry order is captured for its authorized amount: `larder/capture.py` calls the card gateway and
++A confirmed pantry order is captured for its authorized amount: [`larder/capture.py`](../../larder/capture.py) calls the card gateway and
+ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that raises `GatewayTimeout` is tried again, up to 5 attempts in all, with pauses of 2, 4, 6 and 8 seconds
++before successive retries. If the final attempt times out, the timeout is raised to the caller. The pauses add up
++to 20 seconds of waiting on the confirmation page, in addition to time spent calling the gateway.
++
++As recorded in [issue 40](../../notes/issue-40.md), Friday gateway slowdowns from 17:00 to 19:00 left 58 confirmed
++pantry orders uncharged, requiring a volunteer to capture them manually the next morning. The previous three
++attempts ran back to back within a second, all during the same slowdown. A sandbox replay with the current spacing
++would have captured 57 of those 58 pantry orders. Switching gateways was ruled out while the contract runs through
++December 2026; the maintainer accepted the extra confirmation-page wait to reduce manual captures.
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+diff --git a/docs/runbooks/gateway-timeouts.md b/docs/runbooks/gateway-timeouts.md
+index 119293a..e4f129d 100644
+--- a/docs/runbooks/gateway-timeouts.md
++++ b/docs/runbooks/gateway-timeouts.md
+@@ -15,7 +15,8 @@ whether a timed-out capture had charged the card. Owner: the payments volunteers
+    Expected: an incident is listed, or the status is green.
+ 2. Once it is green, find the timed-out captures in the worker's log: lines with `GatewayTimeout`.
+ 
+-   Expected: three lines per pantry order that gave up, one for each attempt, with its order id.
++   Expected: one line for each attempt in the [capture retry policy](../features/payments.md#retries), with the
++   pantry order's id, for each pantry order that gave up.
+ 
+ ## If it fails
+ 

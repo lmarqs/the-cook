@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "Record 0001, the session-store decision, is changed: the map edits a changed decision in place, keeping its number.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "the run failed: {\"message\": \"Selected model is at capacity. Please try a different model.\"}",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "the run failed: {\"message\": \"Selected model is at capacity. Please try a different model.\"}",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "the run failed: {\"message\": \"Selected model is at capacity. Please try a different model.\"}",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the sessions table filling the database disk during Saturday pickup and\nwhat it cost, before it states a conclusion such as \"the session store did not scale\".",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "the run failed: {\"message\": \"Selected model is at capacity. Please try a different model.\"}",
+      "judged_by": null
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record keeps the previous choice, Postgres, under Options, and its Decision names signed cookies.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "the run failed: {\"message\": \"Selected model is at capacity. Please try a different model.\"}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No second decision record is added: the map edits a changed decision in place instead of superseding it with a new\nrecord.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "the run failed: {\"message\": \"Selected model is at capacity. Please try a different model.\"}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 6,
+    "total": 6,
+    "pass_rate": 0.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

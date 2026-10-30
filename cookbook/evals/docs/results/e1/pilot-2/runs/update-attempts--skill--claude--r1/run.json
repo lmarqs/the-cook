@@ -1,0 +1,181 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "update-attempts--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:48:14.122603+00:00",
+  "duration_s": 29.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md",
+    "docs/runbooks/gateway-timeouts.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/issue-40.md larder/capture.py && grep -rn -i \"attempt\\|retr\\|capture\" docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i attempt\\|retr\\|capture docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn capture larder/ README.md docs/features/checkout.md"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 172264,
+    "cached": 153143,
+    "output": 2769,
+    "reasoning": 474
+  },
+  "cost_usd": 0.2389286,
+  "turns": 11,
+  "last_message": "I've updated the docs so they match the new capture behaviour in `larder/capture.py`: 5 attempts, with pauses of 2, 4, 6 and 8 seconds between them. Tests pass; that's expected, since only docs changed.\n\n**`docs/features/payments.md`** (where the retry rules are documented):\n- **Retries:** \"up to 3 attempts in all, one after the other\" now says 5 attempts with the growing pauses. I added why it changed, taken from `notes/issue-40.md`:\n  - The gateway is slow every Friday from 17:00 to 19:00, and the 3 back-to-back attempts all landed in the same slow minute.\n  - One Friday, 58 pantry orders went uncharged and a volunteer captured them by hand.\n  - Replaying those timeouts against the gateway's sandbox, 5 spaced attempts would have charged 57 of the 58.\n- **Opening paragraph:** now mentions that Friday incident alongside the existing 2024 double-charge story.\n- **New \"Known limits\" section:**\n  - A member can wait up to 20 seconds longer on the confirmation page.\n  - An order whose 5 attempts all time out still stays uncharged. The workaround is the gateway-timeouts runbook, then a manual capture from the gateway's dashboard.\n\n**`docs/runbooks/gateway-timeouts.md`:** the expected output for step 2 said \"three lines per pantry order that gave up\". It now says five, and links to the retry rules so the number has one source.\n\nI didn't write a decision record. By the criteria in `docs/README.md`, a retry count that one change can reverse doesn't qualify, so it belongs on the payments page.\n\nSome things in the thread are unclear:\n- **Dates:** it gives only day and month (Nov 15\u201324), with no year, and doesn't match your \"last week\". I left them out of the docs.\n- **Where capture runs:** the thread says the member waits on the confirmation page, which suggests the capture happens during the web request. The runbook says to look in the worker's log. I couldn't settle this from the code because nothing in the repository calls `capture()`, so I left both pages as they were on that point.\n\nNothing is committed yet.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

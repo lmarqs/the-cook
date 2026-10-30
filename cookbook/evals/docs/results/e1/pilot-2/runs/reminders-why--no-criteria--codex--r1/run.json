@@ -1,0 +1,167 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-criteria",
+  "harness": "codex",
+  "run": 1,
+  "id": "reminders-why--no-criteria--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T08:43:16.567906+00:00",
+  "duration_s": 57.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/adrs/0002-keep-pickup-reminders-on-sms.md",
+    "docs/adrs/README.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'SKILL.md' -g 'docs/**' -g 'notes/**'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g SKILL.md -g docs/** -g notes/**"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i sms|remind|pickup|pick.up|email . --glob !*.lock --glob !.git/**"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat /work/.agents/skills/docs-layout/templates/adr.template.md /work/.agents/skills/docs-layout/references/adrs.md"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !*.lock -g !.git/** -g !__pycache__/**"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files -g '!*.lock' -g '!.git/**' -g '!__pycache__/**' && git log -6 --oneline && cat docs/adrs/0001-keep-sessions-in-the-database.md docs/features/README.md docs/features/checkout.md docs/architecture.md larder/reminders.py && wc -l docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "wc",
+      "command": "rg --files -g '!*.lock' -g '!.git/**' -g '!__pycache__/**' && git log -6 --oneline && cat docs/adrs/0001-keep-sessions-in-the-database.md docs/features/README.md docs/features/checkout.md docs/architecture.md larder/reminders.py && wc -l docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-keep-pickup-reminders-on-sms.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nfiles = [Path('docs/README.md'), Path('docs/adrs/README.md'), Path('docs/adrs/0002-keep-pickup-reminders-on-sms.md')]\nfor path in files:\n    body = path.read_text()\n    assert '[[fill:' not in body, path\n    for target in re.findall(r'\\[[^\\]]+\\]\\(([^)]+)\\)', body):\n        assert (path.parent / target.split('#', 1)[0]).exists(), (path, target)\nprint('Checked local links and template completion in all three changed pages.')\nPY\n git diff --check\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 116065,
+    "cached": 97024,
+    "output": 1813,
+    "reasoning": 210
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [Keep pickup reminders on SMS](/work/docs/adrs/0002-keep-pickup-reminders-on-sms.md), linked from the docs indexes.\n\nIt records the \u20ac40 monthly tradeoff, the email trial\u2019s unopened reminders, missed pickups rising from 6% to 13%, wasted fresh food, and the return to 6% after SMS resumed.\n\nChecked local links and diff formatting. No code changed.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

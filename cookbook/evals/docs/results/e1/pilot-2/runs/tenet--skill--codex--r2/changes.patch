@@ -1,0 +1,65 @@
+diff --git a/docs/README.md b/docs/README.md
+index 8dbe27e..c2b4d49 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -153,3 +153,5 @@ Facts that fail test 1 or 2 go to the kind above that owns them; facts that fail
+ 
+ The `docs-layout` skill writes pages of each kind, adds terms and reviews the tree.
+ <!-- cook:end io.github.lmarqs.cookbook:docs#seed/kinds -->
++
++Before proposing another service, read the [tenet on services volunteers operate](philosophy.md#tenets).
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..60a653a 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,7 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the volunteers who run larder [keep the number of services they operate down](../philosophy.md#tenets).
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..9587fb5 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,7 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the volunteers [keep the number of services they operate down](../philosophy.md#tenets).
+ 
+ ## Options
+ 
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..ab65e0a
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,23 @@
++# Philosophy
++
++For whoever proposes another service for larder. This page states the trade-off to start from: favor the services
++volunteers already operate. In [issue 70](../notes/issue-70.md), the same argument came up for the third time that
++year, after earlier decisions about sessions and background jobs.
++
++## Tenets
++
++### Add a service we operate only for a need Postgres cannot meet, with two volunteers able to restore it.
++
++This rules out adding a service just because it is a familiar solution, or because one volunteer can set it up.
++A proposal for a service volunteers would operate has to show both what Postgres cannot do and which two volunteers
++can restore the service. Start from [larder's existing architecture](architecture.md).
++
++The tenet is already applied in [keeping sessions in the database](adrs/0001-keep-sessions-in-the-database.md) and
++[running background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md).
++
++In issue 70, pantry search took four seconds and missed "Rice, brown" when searching for "rice". Before adding
++Elasticsearch, the proposer tried Postgres full-text search on the item name: it took 40 ms and found the item, so
++they chose that approach. A service's setup effort alone does not settle the cost of operating and restoring it.
++
++External services remain an option: larder uses a card gateway, and a hosted service that no volunteer has to run is
++acceptable. The tenet limits what volunteers take on operating; it does not prohibit every outside dependency.

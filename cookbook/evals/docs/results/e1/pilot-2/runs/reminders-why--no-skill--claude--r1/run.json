@@ -1,0 +1,158 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "reminders-why--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:34:56.215308+00:00",
+  "duration_s": 27.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/issue-52.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i remind\\|sms --exclude-dir=.git ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 122233,
+    "cached": 108091,
+    "output": 2249,
+    "reasoning": 605
+  },
+  "cost_usd": 0.1796942,
+  "turns": 6,
+  "last_message": "I added a new page, `docs/features/pickup-reminders.md`, explaining why pickup reminders go by SMS. I also linked it from `docs/features/README.md`.\n\nThe page says:\n- **What happens:** the day before a pickup, `remind` in `larder/reminders.py` sends the member a message. The `CHANNEL` setting is `\"sms\"`, and the email code is still there from the trial.\n- **Why SMS:** SMS costs about 40 euros a month, which is why people keep proposing email. Reminders went by email from April to June 2025:\n  - 34% of the emails were never opened.\n  - Missed pickups rose from 6% to 13% of pantry orders, and each missed pickup meant a packed bag of fresh food thrown away at closing time.\n  - Many members share one family phone and never check email, but they see texts.\n  \n  After the switch back to SMS on July 1, 2025, missed pickups were back to 6% by August.\n- **For the next person:** a proposal to switch has to show how email would keep missed pickups as low as SMS does. Saving the 40 euros alone was already weighed and lost.\n\nAll the facts come from `notes/issue-52.md`, and the page links to it. I made it a feature page rather than a decision record because the docs guide reserves decision records for choices that affect more than one part of the system. This choice only affects reminders and can be reversed by changing one setting.\n\nThe notes don't say what year issue 52 was filed, so the page doesn't date it.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "tenet--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:39:49.193085+00:00",
+  "duration_s": 49.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes .claude/skills/docs-layout -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/README.md && find docs notes .claude/skills/docs-layout -type f && git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat \"$f\"; done; ls; grep -rn -i \"postgres\\|service\\|redis\\|search\" --include=*.py . | head -30"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat \"$f\"; done; ls; grep -rn -i \"postgres\\|service\\|redis\\|search\" --include=*.py . | head -30"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat \"$f\"; done; ls; grep -rn -i \"postgres\\|service\\|redis\\|search\" --include=*.py . | head -30"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i postgres\\|service\\|redis\\|search --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE search|tsvector|postgres|procrastinate|redis larder tests README.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git remote -v; cat README.md .gitignore"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".gitignore",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-postgres.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "docs/philosophy.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/philosophy.md && git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 308949,
+    "cached": 285504,
+    "output": 4461,
+    "reasoning": 1178
+  },
+  "cost_usd": 0.3338008,
+  "turns": 14,
+  "last_message": "I added the rule as a tenet in a new `docs/philosophy.md`. The docs map says a rule that guides many decisions goes there, and one decision applying it goes in a decision record. The rule is the one the maintainer (Ana) stated in `notes/issue-70.md`: larder runs one database and one web app, and a new service has to do something Postgres can't, with two volunteers able to restore it.\n\n**What the page says:**\n- **What it rules out:** a service for a job Postgres can already do, and a service only one volunteer knows how to restore.\n- **What it allows:** the card gateway, which runs outside larder, and a hosted service nobody on the team has to run. That keeps it from being read as \"never add a service\".\n- **The history:** the three times it came up. Redis for sessions was turned down in 2023 because only one volunteer could have run it. Redis for Celery in March 2025 evicted 300 receipt jobs one Saturday night. Elasticsearch was proposed in October 2026 because item search was slow, and Postgres full-text search was used instead.\n- **Links:** to the two existing decision records that apply the rule, sessions (0001) and background jobs (0002).\n\nI also added a link to the tenet in both of those records. Each already listed \"keep the number of services down\" as a reason in its Context section.\n\n**Things I worked out myself, since nobody could be asked:**\n- **No link to the issue:** the repository has no git remote, so I told the story on the page instead of linking an issue URL.\n- **\"This year\":** the issue says the argument came up three times this year, but its own dates are 2023, March 2025 and October 2026. The page just gives those dates.\n- **The 40 ms figure:** it comes from the volunteer's comment. The issue ends with them saying they *will* switch to Postgres full-text search, and there's no search code in the repository yet. The page calls it \"a trial\", so adjust that wording if it isn't accurate.\n- **One small inference:** the line \"the volunteers who run larder are few and not always available\" comes from Tom's question, \"who runs it when you are away?\"\n\n**Left out on purpose:** I didn't write a decision record for the search choice. It affects only one feature and one change could reverse it, so it doesn't meet the map's bar. Once Postgres search is built, its feature page can link the tenet. The off-topic report in the issue, that the pickup slot page shows Sunday twice, isn't recorded anywhere yet.\n\nI didn't run the tests because only docs changed, and nothing is committed.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

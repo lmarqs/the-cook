@@ -1,0 +1,254 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "no-criteria",
+  "harness": "codex",
+  "run": 2,
+  "id": "change-decision--no-criteria--codex--r2",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T08:50:19.379105+00:00",
+  "duration_s": 79.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*session*' -g 'issue-63.md' -g 'README.md' -g 'SKILL.md' -g '*.md' docs notes larder /work/.agents/skills/docs-layout /work 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *session* -g issue-63.md -g README.md -g SKILL.md -g *.md docs notes larder /work/.agents/skills/docs-layout /work"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat AGENTS.md docs/README.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/sessions.md docs/adrs/README.md docs/adrs/0001-keep-sessions-in-the-database.md notes/issue-63.md larder/sessions.py tests/test_sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i session|cookie|postgres|database|signing|secret . --glob !*.lock --glob !.git/**"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !uv.lock -g !**/__pycache__/** -g !**/.pytest_cache/** -g !**/.git/** -g !**/.agents/** -g !**/.codex/**"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "CLAUDE.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/design.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && git status --short && rg -n '0001-keep-sessions-in-the-database|sessions (live|in|from) (in )?Postgres|keeps sessions in Postgres' docs && git diff"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && git status --short && rg -n '0001-keep-sessions-in-the-database|sessions (live|in|from) (in )?Postgres|keeps sessions in Postgres' docs && git diff"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && git status --short && rg -n '0001-keep-sessions-in-the-database|sessions (live|in|from) (in )?Postgres|keeps sessions in Postgres' docs && git diff"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n 0001-keep-sessions-in-the-database|sessions (live|in|from) (in )?Postgres|keeps sessions in Postgres docs"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && git status --short && rg -n '0001-keep-sessions-in-the-database|sessions (live|in|from) (in )?Postgres|keeps sessions in Postgres' docs && git diff"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nerrors = []\nfor page in Path('docs').rglob('*.md'):\n    for target in re.findall(r'\\]\\(([^)]+)\\)', page.read_text()):\n        if '://' in target:\n            continue\n        name, _, anchor = target.partition('#')\n        dest = page.parent / name if name else page\n        if not dest.is_file():\n            errors.append(f'{page}: missing {target}')\n        elif anchor:\n            headings = [re.sub(r'[^\\w -]', '', h.lower()).replace(' ', '-') for h in re.findall(r'^#+ (.+)$', dest.read_text(), re.M)]\n            if anchor not in headings:\n                errors.append(f'{page}: missing anchor {target}')\nif errors:\n    raise SystemExit('\\n'.join(errors))\nprint('All documentation file links and heading anchors resolve.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff -- docs/architecture.md docs/features/sessions.md docs/adrs/README.md && cat docs/adrs/0001-keep-sessions-in-signed-cookies.md && git diff --check"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff -- docs/architecture.md docs/features/sessions.md docs/adrs/README.md && cat docs/adrs/0001-keep-sessions-in-signed-cookies.md && git diff --check"
+    }
+  ],
+  "tokens": {
+    "input": 162009,
+    "cached": 144768,
+    "output": 2804,
+    "reasoning": 239
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Updated the session docs, architecture, and decision index. Renamed ADR 0001 for signed cookies, preserving the outage history, alternatives, and tradeoffs.\n\nDocumented the shared key, expiry, rotation, and revocation limits.\n\nValidation: all documentation links resolve, `git diff --check` passes, and both tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

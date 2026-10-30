@@ -1,0 +1,197 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 3,
+  "id": "runbook-receipts--no-criteria--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:34:11.685517+00:00",
+  "duration_s": 41.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat notes/chat-receipts.md docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Write a runbook for receipts stopping (worker down) from notes/chat-receipts.md"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/README.md; echo ----; cat docs/runbooks/README.md docs/runbooks/gateway-timeouts.md; echo ----; cat .claude/skills/docs-layout/templates/runbook.template.md .claude/skills/docs-layout/references/runbooks.md; echo ----; cat docs/glossary.md docs/architecture.md; grep -rn -i \"receipt\\|worker\\|procrastinate\\|deploy\" docs larder README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/README.md; echo ----; cat docs/runbooks/README.md docs/runbooks/gateway-timeouts.md; echo ----; cat .claude/skills/docs-layout/templates/runbook.template.md .claude/skills/docs-layout/references/runbooks.md; echo ----; cat docs/glossary.md docs/architecture.md; grep -rn -i \"receipt\\|worker\\|procrastinate\\|deploy\" docs larder README.md"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/README.md; echo ----; cat docs/runbooks/README.md docs/runbooks/gateway-timeouts.md; echo ----; cat .claude/skills/docs-layout/templates/runbook.template.md .claude/skills/docs-layout/references/runbooks.md; echo ----; cat docs/glossary.md docs/architecture.md; grep -rn -i \"receipt\\|worker\\|procrastinate\\|deploy\" docs larder README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i receipt\\|worker\\|procrastinate\\|deploy docs larder README.md"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat .claude/skills/docs-layout/templates/map.template.md; echo ----; cat .claude/skills/docs-layout/references/adopt.md; cat larder/receipts.py; cat README.md; git log --stat | head -50"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat .claude/skills/docs-layout/templates/map.template.md; echo ----; cat .claude/skills/docs-layout/references/adopt.md; cat larder/receipts.py; cat README.md; git log --stat | head -50"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 141098,
+    "cached": 125030,
+    "output": 3805,
+    "reasoning": 1506
+  },
+  "cost_usd": 0.22959400000000005,
+  "turns": 8,
+  "last_message": "I wrote the runbook the next volunteer on call can follow: `docs/runbooks/receipts-stopped.md`. It's built from Tom\u00e1s's chat in `notes/chat-receipts.md` and set up like the existing gateway-timeouts runbook. I also added it to the list in `docs/runbooks/README.md`. I haven't committed anything.\n\n**What it tells the volunteer to do:**\n1. Run `systemctl status larder-worker`. It should say `inactive (dead)`, usually starting just after a deploy. If the worker is actually running, the worker isn't the problem and they skip to the last section.\n2. Count the waiting receipt jobs with the `psql \u2026 procrastinate_jobs` query.\n3. Start the worker with `sudo systemctl start larder-worker` and check it shows `active (running)`.\n4. Run the query again a minute later. The `todo` count should be dropping, last time by about 40 a minute.\n5. Keep checking until `todo` is 0. A few `failed` jobs can stay; last time they were receipts that bounced because the member had no valid email address, and nothing needed doing.\n6. **If it fails:** if the worker dies again straight away, collect the output of `journalctl -u larder-worker -n 50` and send it to Tom\u00e1s.\n\n**You need to check:**\n- **Who owns it:** I named Tom\u00e1s, because the chat sends failures to him. Nobody actually said he owns the runbook.\n- **Which server:** the runbook says \"the server that runs `larder-worker`\" because the repository doesn't name it. Add the hostname so the volunteer doesn't have to hunt for it.\n- **The cause:** the chat says the deploy script restarts only the web app, not the worker, and that's why receipts keep stopping. The script isn't in this repository, so I couldn't fix it. Until it also restarts the worker, this will keep happening after deploys.\n- **The docs index:** `docs/README.md` doesn't yet list which page owns which fact. Its normal setup step needs a `cook` tool that isn't in this repository, so I followed the existing runbook's layout instead.\n\nI left `notes/chat-receipts.md` in place. The runbook now covers what's in it, so you can delete it if you like.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

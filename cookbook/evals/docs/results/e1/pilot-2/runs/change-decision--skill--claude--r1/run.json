@@ -1,0 +1,241 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "change-decision--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T09:03:20.977413+00:00",
+  "duration_s": 65.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/README.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Update docs/ for the session move from Postgres to signed cookies (larder/sessions.py, notes/issue-63.md)"
+      }
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -path ./.git -prune -o -type f -print | sort && cat docs/README.md && cat notes/issue-63.md && cat larder/sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|redis\\|postgres\" larder/ --include=*.py | grep -v \"^larder/sessions.py\"; cat .claude/skills/docs-layout/references/adrs.md; diff -r .claude/skills .agents/skills && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|redis\\|postgres\" larder/ --include=*.py | grep -v \"^larder/sessions.py\"; cat .claude/skills/docs-layout/references/adrs.md; diff -r .claude/skills .agents/skills && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|redis\\|postgres\" larder/ --include=*.py | grep -v \"^larder/sessions.py\"; cat .claude/skills/docs-layout/references/adrs.md; diff -r .claude/skills .agents/skills && echo same"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|redis\\|postgres larder/ --include=*.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|redis\\|postgres\" larder/ --include=*.py | grep -v \"^larder/sessions.py\"; cat .claude/skills/docs-layout/references/adrs.md; diff -r .claude/skills .agents/skills && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|redis\\|postgres\" larder/ --include=*.py | grep -v \"^larder/sessions.py\"; cat .claude/skills/docs-layout/references/adrs.md; diff -r .claude/skills .agents/skills && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -c \"\nfrom larder.sessions import verify\nfor c in ['nodot','!!!.abc']:\n    try: print(repr(c), verify(c))\n    except Exception as e: print(repr(c), 'raises', type(e).__name__)\n\"; git log --format='%h %ad %s' --date=short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -c \"\nfrom larder.sessions import verify\nfor c in ['nodot','!!!.abc']:\n    try: print(repr(c), verify(c))\n    except Exception as e: print(repr(c), 'raises', type(e).__name__)\n\"; git log --format='%h %ad %s' --date=short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git mv docs/adrs/0001-keep-sessions-in-the-database.md docs/adrs/0001-keep-sessions-in-signed-cookies.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -c \"\nimport datetime;[print(y, datetime.date(y,8,3).strftime('%A')) for y in (2024,2025,2026)]\"; grep -rn \"keep-sessions-in-the-database\\|in the database\\|Postgres\" docs/ README.md AGENTS.md; python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn keep-sessions-in-the-database\\|in the database\\|Postgres docs/ README.md AGENTS.md"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -c \"\nimport datetime;[print(y, datetime.date(y,8,3).strftime('%A')) for y in (2024,2025,2026)]\"; grep -rn \"keep-sessions-in-the-database\\|in the database\\|Postgres\" docs/ README.md AGENTS.md; python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport re,pathlib\np=pathlib.Path('docs/adrs/0001-keep-sessions-in-signed-cookies.md'); s=p.read_text()\ns=s.replace(\"sessions moved there from\\nPostgres in August 2026, after\",\"sessions moved there from\\nPostgres after\")\ns=s.replace(\"On Saturday, August 3, 2026, the database disk filled\",\"On Saturday, August 3, the database disk filled\")\ns=s.replace(\"left after the\\n  August 2026 outage,\",\"left after the\\n  August outage,\")\np.write_text(s)\np=pathlib.Path('docs/features/sessions.md'); s=p.read_text()\ns=s.replace(\"the cookie replaced a Postgres table in 2026, after\",\"the cookie replaced a Postgres table after\")\np.write_text(s)\nEOF\ngrep -n \"2026\" docs -r; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "s=p.read_text()",
+      "command": "python3 - <<'EOF'\nimport re,pathlib\np=pathlib.Path('docs/adrs/0001-keep-sessions-in-signed-cookies.md'); s=p.read_text()\ns=s.replace(\"sessions moved there from\\nPostgres in August 2026, after\",\"sessions moved there from\\nPostgres after\")\ns=s.replace(\"On Saturday, August 3, 2026, the database disk filled\",\"On Saturday, August 3, the database disk filled\")\ns=s.replace(\"left after the\\n  August 2026 outage,\",\"left after the\\n  August outage,\")\np.write_text(s)\np=pathlib.Path('docs/features/sessions.md'); s=p.read_text()\ns=s.replace(\"the cookie replaced a Postgres table in 2026, after\",\"the cookie replaced a Postgres table after\")\np.write_text(s)\nEOF\ngrep -n \"2026\" docs -r; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "s=p.read_text()",
+      "command": "python3 - <<'EOF'\nimport re,pathlib\np=pathlib.Path('docs/adrs/0001-keep-sessions-in-signed-cookies.md'); s=p.read_text()\ns=s.replace(\"sessions moved there from\\nPostgres in August 2026, after\",\"sessions moved there from\\nPostgres after\")\ns=s.replace(\"On Saturday, August 3, 2026, the database disk filled\",\"On Saturday, August 3, the database disk filled\")\ns=s.replace(\"left after the\\n  August 2026 outage,\",\"left after the\\n  August outage,\")\np.write_text(s)\np=pathlib.Path('docs/features/sessions.md'); s=p.read_text()\ns=s.replace(\"the cookie replaced a Postgres table in 2026, after\",\"the cookie replaced a Postgres table after\")\np.write_text(s)\nEOF\ngrep -n \"2026\" docs -r; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 - <<'EOF'\nimport re,pathlib\np=pathlib.Path('docs/adrs/0001-keep-sessions-in-signed-cookies.md'); s=p.read_text()\ns=s.replace(\"sessions moved there from\\nPostgres in August 2026, after\",\"sessions moved there from\\nPostgres after\")\ns=s.replace(\"On Saturday, August 3, 2026, the database disk filled\",\"On Saturday, August 3, the database disk filled\")\ns=s.replace(\"left after the\\n  August 2026 outage,\",\"left after the\\n  August outage,\")\np.write_text(s)\np=pathlib.Path('docs/features/sessions.md'); s=p.read_text()\ns=s.replace(\"the cookie replaced a Postgres table in 2026, after\",\"the cookie replaced a Postgres table after\")\np.write_text(s)\nEOF\ngrep -n \"2026\" docs -r; git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 300362,
+    "cached": 276203,
+    "output": 6590,
+    "reasoning": 1524
+  },
+  "cost_usd": 0.3802326,
+  "turns": 16,
+  "last_message": "The docs now describe sessions as signed cookies. Nothing under `docs/` still says sessions live in Postgres, and the tests pass (2 passed). Nothing is committed yet.\n\n**What changed**\n\n- **`docs/adrs/0001-keep-sessions-in-signed-cookies.md`** (renamed from `0001-keep-sessions-in-the-database.md`): The move changed an existing decision rather than undoing it, so I updated the record in place and kept its number.\n  - **Context:** now tells the outage from issue 63: 2.1M session rows that were never deleted filled the disk, larder was down 09:40\u201312:50 during Saturday pickup, and 11 members left without their order.\n  - **Options:** the Postgres table is kept as the earlier choice, with why it was dropped. The nightly cleanup job and Redis are added, each with why it lost.\n  - **Decision:** sessions are cookies signed with a shared key in `LARDER_SESSION_KEY`.\n  - **Consequences:** a single member can't be logged out from the server, changing the key logs everyone out (so it's only changed between pickups), and anyone with the key can sign in as any member.\n- **`docs/features/sessions.md`**:\n  - The storage section now describes the cookie format and how `sign`/`verify` check it.\n  - It warns that a server without `LARDER_SESSION_KEY` falls back to the key `dev-only`. That server then accepts cookies anyone can forge and rejects cookies from the other servers.\n  - A new known-limits section covers the two logout limits.\n- **`docs/architecture.md`, `docs/adrs/README.md`, `docs/features/README.md`**: their session wording and links now point to the new record.\n\n**Things to check**\n\n- **The date:** you said the move was last month (September), but issue 63 is dated August 3\u20139 and calls August 3 a Saturday. That date only falls on a Saturday in 2024, not 2025 or 2026. I couldn't settle this from the repository, so the pages say \"August\" with no year. Add the year once someone confirms it.\n- **Key rotation:** I didn't write a runbook for changing the key. The repository has only the one-line rule \"only between pickups\", with no steps and no owner. A runbook is worth writing once whoever manages the deploy secrets can supply those.\n- **Unrelated note in the issue:** Leo mentions that the pickup slot page shows Sunday twice. That's a bug, not something for the docs, so I left it out.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

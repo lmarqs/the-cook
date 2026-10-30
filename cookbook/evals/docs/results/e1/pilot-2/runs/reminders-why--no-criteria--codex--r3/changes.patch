@@ -1,0 +1,62 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..30b6e59 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,5 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Decisions](adrs/README.md): choices and the evidence behind them, including why pickup reminders use SMS.
+diff --git a/docs/adrs/0002-keep-pickup-reminders-on-sms.md b/docs/adrs/0002-keep-pickup-reminders-on-sms.md
+new file mode 100644
+index 0000000..f2a0d92
+--- /dev/null
++++ b/docs/adrs/0002-keep-pickup-reminders-on-sms.md
+@@ -0,0 +1,36 @@
++# Keep pickup reminders on SMS
++
++For volunteers proposing a cheaper reminder channel or changing pickup reminders. Larder keeps SMS because an email
++trial increased missed pickups, leaving packed fresh food to be thrown away.
++
++## Context
++
++Larder tried email pickup reminders from April to June 2025. According to the provider's report cited in
++[issue 52](../../notes/issue-52.md), 34% of reminder emails were never opened. Missed pickups rose from 6% to 13% of
++pantry orders. Each missed pickup leaves a packed bag, whose fresh food goes in the bin by closing time.
++
++The pantry lead reported that many members share one phone in the family and never check email, but see SMS.
++Larder switched back to SMS on July 1, 2025; missed pickups were back to 6% by August. In issue 52, a volunteer
++proposed email again to save the reported SMS cost of €40 per month. This was the third such proposal that year;
++the maintainer closed it with the decision to keep SMS.
++
++The options are judged by whether members see reminders and collect their pantry orders, the resulting food waste,
++and the monthly sending cost.
++
++## Options
++
++- **Email**: free to send, saving the reported €40 monthly SMS bill. Rejected because the trial left many reminders
++  unopened and coincided with missed pickups rising from 6% to 13%, wasting packed fresh food.
++- **SMS**: costs the reported €40 per month, but reaches members who do not check email. Chosen after missed pickups
++  returned to 6% following the switch back.
++
++## Decision
++
++Keep pickup reminders on SMS. The trial and return to SMS support paying the sending cost to reduce missed pickups
++and food waste. [The reminder implementation](../../larder/reminders.py) selects SMS with `CHANNEL = "sms"`.
++
++## Consequences
++
++Larder retains the SMS bill. The return to SMS was followed by missed pickups returning to their earlier 6% rate;
++it did not eliminate missed pickups. Any future proposal to switch channels needs evidence that members will see
++the reminders and that the saving will not repeat the trial's increase in missed pickups and food waste.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..a41b62e 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep pickup reminders on SMS](0002-keep-pickup-reminders-on-sms.md): the email trial increased missed pickups and
++  food waste, so larder keeps the SMS cost.

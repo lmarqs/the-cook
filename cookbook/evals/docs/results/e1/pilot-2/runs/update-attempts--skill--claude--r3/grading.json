@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "The page that owns the retry rules, docs/features/payments.md, is changed.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/payments.md: ['docs/features/payments.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/features/payments.md', 'docs/runbooks/gateway-timeouts.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The payments page still opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/features/payments.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The payments page says why a capture gets 5 attempts with growing pauses, told as it happened: back-to-back attempts\nall timed out at the gateway's Friday peak and left pantry orders uncharged, not only a conclusion such as \"for\nreliability\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The page explains that the old 3 attempts were \u201csent back to back within a second\u201d during the gateway\u2019s Friday peak, leaving 58 pantry orders uncharged and requiring manual capture. Replaying those timeouts \u201cwith 5 attempts spaced 2, 4, 6 and 8 seconds apart, 57 of the 58 went through.\u201d It also states that members wait up to 20 seconds longer.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The payments page no longer says up to 3 attempts, and states the new limit, 5 attempts, or links capture.py, which\nholds it.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /\\A(?!.*\\bup to (3|three) attempts)(?=.*(\\b(5|five)\\b[^.\\n]{0,40}attempts|attempts[^.\\n]{0,40}\\b(5|five)\\b|\\]\\([^)]*capture\\.py[^)]*\\)))/ in ['docs/features/payments.md']: {'docs/features/payments.md': ''}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "The gateway-timeouts runbook no longer counts 3 attempts per pantry order: a fact changed on its owner leaves no stale\ncopy on another page.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /\\b(3|three) (lines|attempts|times)\\b/ in ['docs/runbooks/gateway-timeouts.md']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

@@ -1,0 +1,70 @@
+diff --git a/docs/README.md b/docs/README.md
+index 8dbe27e..1f27a61 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,6 +2,9 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++Before proposing another service, start with [the service tenet](philosophy.md#keep-the-services-volunteers-operate-few-and-recoverable).
++
+ <!-- cook:begin io.github.lmarqs.cookbook:docs#seed/kinds -->
+ <!-- io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills --skills-root=.claude/skills -->
+ ## Decisions, `adrs/`
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..853f40e 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,7 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the volunteers who run larder follow [the service tenet](../philosophy.md#keep-the-services-volunteers-operate-few-and-recoverable).
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..39e9dee 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,7 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the volunteers follow [the service tenet](../philosophy.md#keep-the-services-volunteers-operate-few-and-recoverable).
+ 
+ ## Options
+ 
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..63ae423
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,24 @@
++# Philosophy
++
++For anyone proposing a new service or weighing infrastructure choices. Larder favors services its volunteers can
++operate; the argument came up for the third time this year in [issue 70](../notes/issue-70.md), after earlier choices
++about sessions and background jobs.
++
++## Tenets
++
++### Keep the services volunteers operate few and recoverable
++
++Keep larder on one database and one web app; add a service volunteers must operate only when it does something
++Postgres cannot and at least two volunteers can restore it.
++
++A proposal must explain what Postgres cannot do and identify the two volunteers able to restore the added service.
++This rules out adding a service just because someone can set it up, or when its recovery depends on one person.
++In issue 70, Postgres full-text search brought the reported search from four seconds to 40 ms and found the missing
++item, so the Elasticsearch proposal did not justify another service.
++
++The [session decision](adrs/0001-keep-sessions-in-the-database.md) applies this tenet by using the existing database;
++the [background job decision](adrs/0002-run-background-jobs-on-postgres.md) applies it after a queue lost jobs and
++only one volunteer knew how to restore it.
++
++This permits external services: larder already uses a card gateway, and a hosted service that no volunteer has to
++operate is acceptable. The constraint is on what volunteers must run and restore.

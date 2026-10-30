@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "Record 0001, the session-store decision, is changed: the map edits a changed decision in place, keeping its number.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adrs/0001-*.md: ['docs/adrs/0001-keep-sessions-in-signed-cookies.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adrs/0001-keep-sessions-in-signed-cookies.md', 'docs/adrs/README.md', 'docs/architecture.md', 'docs/features/sessions.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adrs/0001-keep-sessions-in-signed-cookies.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the sessions table filling the database disk during Saturday pickup and\nwhat it cost, before it states a conclusion such as \"the session store did not scale\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "Context narrates the incident before any conclusion: \"On August 3, the database disk filled up and larder was down from 09:40 to 12:50 during Saturday pickup. The `sessions` table held 2.1 million rows: every login since 2023, because expired sessions were never deleted. Volunteers handed out bags from a paper list, and eleven members left without their pantry orders.\" It then names the forces (\"A deploy must still preserve logins, and the volunteers want to keep services and maintenance jobs down\"). No verdict such as \"the session store did not scale\" comes before this account.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record keeps the previous choice, Postgres, under Options, and its Decision names signed cookies.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /## Options\\s.*Postgres.*## Decision\\s.*cookie/ in ['docs/adrs/0001-keep-sessions-in-signed-cookies.md']: {'docs/adrs/0001-keep-sessions-in-signed-cookies.md': '## Options\\n\\n- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No second decision record is added: the map edits a changed decision in place instead of superseding it with a new\nrecord.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^--- /dev/null\\n\\+\\+\\+ b/docs/adrs/(?!0001-)\\d{4}-/ in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

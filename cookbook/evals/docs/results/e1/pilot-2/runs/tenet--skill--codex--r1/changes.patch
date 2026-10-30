@@ -1,0 +1,84 @@
+diff --git a/docs/README.md b/docs/README.md
+index 8dbe27e..6573ab6 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -63,6 +63,8 @@ Holds what the system does, one page per unit of behavior. Diátaxis type: refer
+ 
+ Holds the tenets that guide the decisions: what the team favors when options conflict. Diátaxis type: explanation.
+ 
++Read [Philosophy](philosophy.md) before proposing another service.
++
+ - One page.
+ - A `Tenets` section: each tenet in one sentence, what it rules out, and links to the records in `adrs/` that apply it.
+   A tenet that rules nothing out cannot guide a decision.
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..38885f0 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,7 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the [limits on adding a service to operate](../philosophy.md#tenets) apply.
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..8c22398 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,7 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the [limits on adding a service to operate](../philosophy.md#tenets) apply.
+ 
+ ## Options
+ 
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..917301c 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -4,6 +4,8 @@ For whoever joins larder or changes how its parts connect. Larder is one Python
+ with a worker for background jobs and an external card gateway. Written when a new volunteer spent a week finding
+ where a payment is captured.
+ 
++Before proposing another service, start with the [limits on adding a service to operate](philosophy.md#tenets).
++
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+@@ -13,5 +15,5 @@ where a payment is captured.
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and [queues jobs there for the worker](adrs/0002-run-background-jobs-on-postgres.md). A confirmed pantry order is
++captured through the card gateway by `larder/capture.py`.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..5b369ab
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,18 @@
++# Philosophy
++
++For whoever proposes another service for larder. Start with the operating limits below: after the session-store and
++job-queue debates, [issue 70](../notes/issue-70.md) reopened the same argument over Elasticsearch for pantry item
++search, and volunteers asked to stop rediscovering it.
++
++## Tenets
++
++### Prefer what Postgres can do; add a service to operate only when Postgres cannot meet the need and two volunteers can restore it.
++
++Rules out adding a service just because someone can set it up: the proposal must establish what Postgres cannot do
++and which two volunteers can restore the new service when one is away. This limits what volunteers operate;
++the [external card gateway](architecture.md#parts) and a hosted service nobody on the team has to run are allowed.
++
++Applied in [keeping sessions in the database](adrs/0001-keep-sessions-in-the-database.md) and
++[running background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md). The search proposal supplied
++another test: searching for "rice" took four seconds and missed "Rice, brown"; Postgres full-text search on the item
++name brought it to 40 ms and found the item, so the proposer chose that over Elasticsearch.

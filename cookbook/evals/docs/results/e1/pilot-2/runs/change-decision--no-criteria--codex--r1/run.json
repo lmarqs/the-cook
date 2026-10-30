@@ -1,0 +1,216 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "no-criteria",
+  "harness": "codex",
+  "run": 1,
+  "id": "change-decision--no-criteria--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T08:46:24.797852+00:00",
+  "duration_s": 102.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/README.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'SKILL.md' -g 'README.md' -g '*session*' -g 'issue-63.md' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g SKILL.md -g README.md -g *session* -g issue-63.md -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs notes larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i session|cookie|postgres|redis|expir|LARDER_SESSION . --hidden -g !.git/**"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/architecture.md docs/glossary.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md README.md; cat /work/.agents/skills/docs-layout/references/adopt.md /work/.agents/skills/docs-layout/references/adrs.md /work/.agents/skills/docs-layout/templates/adr.template.md /work/.agents/skills/docs-layout/templates/feature.template.md; rg -n -i 'session|cookie|postgres|redis|expir|LARDER_SESSION' . --hidden -g '!.git/**'; git status --short; git log -5 --oneline"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/architecture.md docs/glossary.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md README.md; cat /work/.agents/skills/docs-layout/references/adopt.md /work/.agents/skills/docs-layout/references/adrs.md /work/.agents/skills/docs-layout/templates/adr.template.md /work/.agents/skills/docs-layout/templates/feature.template.md; rg -n -i 'session|cookie|postgres|redis|expir|LARDER_SESSION' . --hidden -g '!.git/**'; git status --short; git log -5 --oneline"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n '0001-keep-sessions-in-the-database|Sessions live in Postgres|keeps sessions in Postgres' docs; python3 - <<'PY'\nfrom pathlib import Path\nimport re\nerrors = []\nfor page in Path('docs').rglob('*.md'):\n    for target in re.findall(r'\\[[^\\]]*\\]\\(([^)]+)\\)', page.read_text()):\n        if '://' in target:\n            continue\n        file, _, anchor = target.partition('#')\n        dest = page.parent / file if file else page\n        if not dest.exists():\n            errors.append(f'{page}: missing {target}')\n        elif anchor:\n            headings = re.findall(r'^#+ (.+)$', dest.read_text(), re.M)\n            slugs = [re.sub(r'[^\\w\\- ]', '', h.lower()).replace(' ', '-') for h in headings]\n            if anchor not in slugs:\n                errors.append(f'{page}: missing heading {target}')\nprint('\\n'.join(errors) if errors else 'All documentation links and heading anchors resolve.')\nraise SystemExit(bool(errors))\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n '0001-keep-sessions-in-the-database|Sessions live in Postgres|keeps sessions in Postgres' docs; python3 - <<'PY'\nfrom pathlib import Path\nimport re\nerrors = []\nfor page in Path('docs').rglob('*.md'):\n    for target in re.findall(r'\\[[^\\]]*\\]\\(([^)]+)\\)', page.read_text()):\n        if '://' in target:\n            continue\n        file, _, anchor = target.partition('#')\n        dest = page.parent / file if file else page\n        if not dest.exists():\n            errors.append(f'{page}: missing {target}')\n        elif anchor:\n            headings = re.findall(r'^#+ (.+)$', dest.read_text(), re.M)\n            slugs = [re.sub(r'[^\\w\\- ]', '', h.lower()).replace(' ', '-') for h in headings]\n            if anchor not in slugs:\n                errors.append(f'{page}: missing heading {target}')\nprint('\\n'.join(errors) if errors else 'All documentation links and heading anchors resolve.')\nraise SystemExit(bool(errors))\nPY"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n 0001-keep-sessions-in-the-database|Sessions live in Postgres|keeps sessions in Postgres docs"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check; git diff --stat; rg -n '0001-keep-sessions-in-the-database|Sessions live in Postgres|keeps sessions in Postgres' docs; python3 - <<'PY'\nfrom pathlib import Path\nimport re\nerrors = []\nfor page in Path('docs').rglob('*.md'):\n    for target in re.findall(r'\\[[^\\]]*\\]\\(([^)]+)\\)', page.read_text()):\n        if '://' in target:\n            continue\n        file, _, anchor = target.partition('#')\n        dest = page.parent / file if file else page\n        if not dest.exists():\n            errors.append(f'{page}: missing {target}')\n        elif anchor:\n            headings = re.findall(r'^#+ (.+)$', dest.read_text(), re.M)\n            slugs = [re.sub(r'[^\\w\\- ]', '', h.lower()).replace(' ', '-') for h in headings]\n            if anchor not in slugs:\n                errors.append(f'{page}: missing heading {target}')\nprint('\\n'.join(errors) if errors else 'All documentation links and heading anchors resolve.')\nraise SystemExit(bool(errors))\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; git diff -- docs/README.md docs/features/sessions.md docs/architecture.md docs/adrs/README.md docs/features/README.md; cat docs/adrs/0001-keep-sessions-in-signed-cookies.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; git diff -- docs/README.md docs/features/sessions.md docs/architecture.md docs/adrs/README.md docs/features/README.md; cat docs/adrs/0001-keep-sessions-in-signed-cookies.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 162795,
+    "cached": 140800,
+    "output": 3376,
+    "reasoning": 288
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Updated the session docs, architecture, and indexes for signed cookies. Decision 0001 now preserves the outage history, alternatives, and tradeoffs. Documented expiry, cookie format, shared key configuration, and logout limits, and added ownership guidance to the docs map.\n\nValidation: all documentation links resolve, diff checks pass, and `python3 -m pytest -q` passes (2 tests).",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

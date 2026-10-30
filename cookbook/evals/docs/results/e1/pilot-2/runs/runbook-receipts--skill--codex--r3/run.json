@@ -1,0 +1,166 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 3,
+  "id": "runbook-receipts--skill--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T08:32:10.816654+00:00",
+  "duration_s": 69.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'SKILL.md' -g '*receipt*' -g 'README.md' -g 'pyproject.toml' -g 'docs/**' -g 'notes/**'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g SKILL.md -g *receipt* -g README.md -g pyproject.toml -g docs/** -g notes/**"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files && git status --short && cat /work/.agents/skills/docs-layout/templates/runbook.template.md /work/.agents/skills/docs-layout/references/runbooks.md"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n receipt|worker|procrastinate|deploy|Tom\u00e1s|volunteer . --glob !notes/chat-receipts.md --glob !.agents/** --glob !.codex/**"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md README.md docs/architecture.md docs/features/README.md larder/receipts.py larder/orders.py larder/__init__.py && rg -n 'receipt|worker|procrastinate|deploy|Tom\u00e1s|volunteer' . --glob '!notes/chat-receipts.md' --glob '!.agents/**' --glob '!.codex/**' && git log -5 --oneline"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check && python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 98324,
+    "cached": 83456,
+    "output": 1946,
+    "reasoning": 165
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [Receipts stopped](/work/docs/runbooks/receipts-stopped.md) and linked it from the runbook index.\n\nIt covers worker checks, queue counts, recovery commands, delivery confirmation, and escalation to Tom\u00e1s\u2014including a handoff when he\u2019s unavailable.\n\nValidation: 2 tests passed; diff checks passed. Production recovery was not performed.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

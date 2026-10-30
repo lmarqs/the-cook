@@ -1,0 +1,264 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 3,
+  "id": "change-decision--no-criteria--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:38:51.544510+00:00",
+  "duration_s": 55.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -path ./.git -prune -o -type f -print | sort && cat docs/README.md && cat notes/issue-63.md && cat larder/sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat \"$f\"; done; cat tests/test_sessions.py; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat \"$f\"; done; cat tests/test_sessions.py; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat \"$f\"; done; cat tests/test_sessions.py; git log --stat | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "for f in docs/README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md README.md; do echo \"=== $f\"; cat \"$f\"; done; cat tests/test_sessions.py; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adopt.md references/adrs.md references/design.md references/architecture.md references/features.md templates/map.template.md templates/adr.template.md; diff -r . /work/.agents/skills/docs-layout && echo SAME"
+    },
+    {
+      "kind": "read",
+      "path": "references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/design.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adopt.md references/adrs.md references/design.md references/architecture.md references/features.md templates/map.template.md templates/adr.template.md; diff -r . /work/.agents/skills/docs-layout && echo SAME"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adopt.md references/adrs.md references/design.md references/architecture.md references/features.md templates/map.template.md templates/adr.template.md; diff -r . /work/.agents/skills/docs-layout && echo SAME"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work && git mv docs/adrs/0001-keep-sessions-in-the-database.md docs/adrs/0001-keep-sessions-in-signed-cookies.md && grep -rn \"keep-sessions-in-the-database\\|Postgres\\|session\" --include=*.md . | grep -v \"^./.agents\\|^./.claude\\|^./notes\"; ls cook 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cd /work && git mv docs/adrs/0001-keep-sessions-in-the-database.md docs/adrs/0001-keep-sessions-in-signed-cookies.md && grep -rn \"keep-sessions-in-the-database\\|Postgres\\|session\" --include=*.md . | grep -v \"^./.agents\\|^./.claude\\|^./notes\"; ls cook 2>&1"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn keep-sessions-in-the-database\\|Postgres\\|session --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.agents\\|^./.claude\\|^./notes"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls cook"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work && git status --short; grep -rn \"keep-sessions-in-the-database\\|Postgres\\|ession\" docs README.md AGENTS.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cd /work && git status --short; grep -rn \"keep-sessions-in-the-database\\|Postgres\\|ession\" docs README.md AGENTS.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn keep-sessions-in-the-database\\|Postgres\\|ession docs README.md AGENTS.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn keep-sessions-in-the-database\\|sessions in Postgres docs"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "grep -rn \"keep-sessions-in-the-database\\|sessions in Postgres\" docs; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "grep -rn \"keep-sessions-in-the-database\\|sessions in Postgres\" docs; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 260238,
+    "cached": 233671,
+    "output": 5394,
+    "reasoning": 1595
+  },
+  "cost_usd": 0.36708620000000003,
+  "turns": 13,
+  "last_message": "I've updated the docs so they say sessions are signed cookies. They had all still said sessions live in Postgres. Nothing is committed. The tests pass, but this change only touched docs.\n\n**What changed**\n- **The session decision record** is now titled \"Keep sessions in signed cookies\". I edited it in place and kept its number. The file was renamed with `git mv` to `docs/adrs/0001-keep-sessions-in-signed-cookies.md` so its history follows it. The record now covers:\n  - the 2023 story and the outage from issue 63, so it doesn't depend on `notes/` staying around;\n  - every option that was considered and why it lost, including the old Postgres table and the nightly cleanup job;\n  - why signed cookies were chosen;\n  - the costs: a session can't be ended from the server before it expires, and changing the key logs everyone out, so it's only done between pickups.\n- **The decisions list** (`docs/adrs/README.md`) has the new title and link.\n- **`docs/architecture.md`** now says sessions are signed cookies that any server checks with a shared key, and that no session reaches Postgres.\n- **`docs/features/sessions.md`**: the Storage section now describes the cookie, the `LARDER_SESSION_KEY` key and what `verify` checks. A new \"Known limits\" section covers ending a session early and changing the key. Its links now point to the renamed record.\n\nNo links to the old file name are left.\n\n**Still open**\n- **The docs map is incomplete.** `docs/README.md` has no section listing the page types and what belongs on each. The project's docs skill says to generate it with a `./cook` tool, which isn't in the repo, so I used the rules from the skill's own reference files instead.\n- **There's no step-by-step guide for changing the key.** The issue only says to do it between pickups. It doesn't say how the deploy secrets are managed, so I didn't make up the steps.\n\n**Problems in `larder/sessions.py`** (I didn't change the code)\n- **Forgeable logins if the key is missing:** if `LARDER_SESSION_KEY` isn't set on a server, the key quietly becomes `\"dev-only\"`. Anyone could then sign a valid cookie for any member. It would be safer to refuse to start without the key in production.\n- **Malformed cookies crash:** `verify` raises an error on a malformed cookie (bad base64 or bad JSON) instead of returning `None`.\n- **No test for `verify`:** nothing checks that it rejects forged or expired cookies.\n\nI can fix these if you'd like.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

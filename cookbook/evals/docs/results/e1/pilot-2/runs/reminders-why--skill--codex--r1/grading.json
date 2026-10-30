@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A feature page under docs/features/ is written or changed: the reminder channel is how one feature behaves, which\nthe map gives a feature page rather than a decision record.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/[!R]*.md: ['docs/features/pickup-reminders.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/features/README.md', 'docs/features/pickup-reminders.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "Each feature page written or changed opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/features/pickup-reminders.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The page says why reminders go by SMS, told as it happened: the 2025 email trial and what it cost, not only a\nconclusion such as \"SMS is more reliable\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\"The April\u2013June 2025 email trial left 34% of reminder emails unopened... Missed pickups rose from 6% to 13% of pantry orders. Each missed pickup left a packed bag whose fresh food went in the bin at closing time. The pantry lead reported that many members share one phone in the family and never check email... The pantry switched back to SMS on July 1, 2025; missed pickups were back to 6% by August.\" The page tells the trial as it happened, including its cost in missed pickups and wasted food.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The page carries the trial's measured result: 34% of email reminders unopened, or missed pickups at 13%.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /13 ?%|34 ?%/ in ['docs/features/pickup-reminders.md']: {'docs/features/pickup-reminders.md': '34%'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No decision record is written or changed: the reminder channel is a feature's behavior, not a foundation decision.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^\\+\\+\\+ b/docs/adrs// in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

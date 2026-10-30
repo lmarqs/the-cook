@@ -1,0 +1,58 @@
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..30042ec 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,8 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the volunteers who run larder keep the number of services they operate down
++([one database and one web app](../philosophy.md#larder-runs-one-database-and-one-web-app-and-a-new-service-must-do-what-postgres-cannot-with-two-volunteers-able-to-restore-it)).
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..829e132 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,8 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the volunteers keep the number of services they operate down
++([one database and one web app](../philosophy.md#larder-runs-one-database-and-one-web-app-and-a-new-service-must-do-what-postgres-cannot-with-two-volunteers-able-to-restore-it)).
+ 
+ ## Options
+ 
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..8d030a8
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,24 @@
++# Philosophy
++
++For whoever proposes a new service, store or dependency for larder, or reviews such a proposal. It holds what the
++team favors when two good options conflict. Written in October 2026, when a proposal to add Elasticsearch for item
++search became the third time the team argued from the start whether larder should run one more service, after Redis
++for sessions in 2023 and Redis for Celery in March 2025.
++
++## Tenets
++
++### Larder runs one database and one web app, and a new service must do what Postgres cannot, with two volunteers able to restore it
++
++Rules out running a service for a job Postgres can do, and running one that only one volunteer knows how to restore.
++It does not rule out every service: the card gateway runs outside larder, and a hosted service nobody on the team has
++to run passes.
++
++The volunteers who run larder are few and not always available. In 2023 Redis for sessions was turned down because
++only one volunteer would have run it. In March 2025 Redis did run, for Celery's queue: it evicted 300 receipt jobs
++one Saturday night, and the one volunteer who could restore it spent a day resending receipts by hand. Both times
++Postgres did the job. In October 2026 a volunteer proposed Elasticsearch because searching for "rice" took four
++seconds and missed "Rice, brown"; in a trial, Postgres full-text search on the item name answered in 40 ms and found
++it, and was taken instead.
++
++Applied in [keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md) and
++[run background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md).

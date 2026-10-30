@@ -1,0 +1,37 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..14caca2 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): how a member is reminded of a pickup, and why by SMS, not email.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..af6f993
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,22 @@
++# Pickup reminders
++
++For whoever changes how members are reminded of a pickup, or proposes sending the reminder by email to save the SMS
++cost. The day before a pickup, larder texts the member that their pantry order is ready. The reminder goes by SMS,
++not email, because the email trial of April to June 2025 doubled missed pickups; written when
++[issue 52](../../notes/issue-52.md) became the third request that year to switch.
++
++## Message
++
++`remind` in `larder/reminders.py` sends "Your pantry order is ready for pickup {pickup}." the day before the pickup
++slot. `CHANNEL` in the same file picks the channel; it is `"sms"`. The email branch remains from the trial.
++
++## Why SMS, not email
++
++SMS costs about 40 euros a month and email is free, so volunteers keep proposing to switch. From April to June 2025
++reminders went by email. The email provider reported that 34% of the reminder emails were never opened, and missed
++pickups rose from 6% of pantry orders to 13%. Each missed pickup is a packed bag whose fresh food is thrown away at
++closing time. Many members share one phone across the family and never check email, but they see a text. Reminders
++went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.
++
++A proposal to switch to email needs to show how it would keep missed pickups at the SMS rate; the saving alone was
++weighed and lost.

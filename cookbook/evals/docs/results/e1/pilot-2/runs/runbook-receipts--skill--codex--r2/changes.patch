@@ -1,0 +1,122 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..1895edb 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -8,6 +8,7 @@ where a payment is captured.
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++  For missing receipt emails, follow [Receipts stopped](runbooks/receipts-stopped.md).
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..12d610c 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): check the worker, recover queued receipts, and hand off failures with evidence.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..1726224
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,95 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipts. Restore receipt delivery by checking the worker,
++starting it if stopped, and watching the queued jobs drain; while it is down, members do not receive receipt emails.
++Written after repeated overnight outages left volunteers waiting for Tomás to recover delivery. Owner: Tomás,
++the recovery contact identified in the [September 14 incident chat](../../notes/chat-receipts.md).
++
++## Before you begin
++
++- Terminal access to the host running `larder-worker`, with permission to inspect its systemd status and journal
++  and run `sudo systemctl start larder-worker`.
++- `psql` access to the application's `larder` database on that host.
++- Access to the pantry's chat, `#larder-ops`, to contact Tomás if recovery fails.
++
++The [architecture](../architecture.md#parts) explains the worker's role. In the September incident, it had stopped
++after a deploy; Tomás found that the deploy script restarted only the web app. That is a diagnostic clue, not proof
++of the cause of a new outage. No deploy script is present in this repository to verify or fix that behavior.
++
++## Steps
++
++1. Check the worker on its host:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)` for a healthy worker. `inactive (dead)` was the September failure; note the stop
++   time and whether it followed a deploy. An inactive service can make this command exit nonzero; read the status.
++   If the unit cannot be found, use **If it fails** rather than creating a service.
++
++2. Record the queue counts before changing anything:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: rows of statuses and counts. A stopped worker can leave `todo` jobs waiting. September's baseline was
++   212 `todo`, no `doing`, and 3 `failed`; these are historical counts, not targets. A status with no jobs may have
++   no row. Keep this baseline to distinguish existing failures from new ones.
++
++3. If the worker is stopped, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Expected: the command completes without an error. If the worker was already running, skip this action and
++   continue to check progress; an active worker with a stalled queue needs the failure path below.
++
++4. Check the worker again:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If it stops again immediately, go to **If it fails**.
++
++5. After about a minute, check the queue again, and repeat about once a minute while it drains:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: `todo` decreases, eventually reaching zero (or its row disappears). September's queue drained at about
++   40 jobs per minute; use that as context, not a guaranteed rate. Also watch `doing` and `failed`: a shrinking
++   `todo` count with growing failures is not successful delivery. Use **If it fails** if the queue does not make
++   progress across checks, `doing` stays stuck, or failures increase.
++
++6. Confirm that members are receiving receipts through the original report in `#larder-ops`.
++
++   Expected: receipt arrival is confirmed, as it was in September, and the worker remains running with the backlog
++   drained. Queue counts alone do not prove an email reached a member. Record the status, counts, delivery
++   confirmation (or that it is still pending), and anything learned in the incident chat; update this runbook with
++   new recovery findings each time the symptom recurs.
++
++## If it fails
++
++Collect the worker's recent logs:
++
++```sh
++journalctl -u larder-worker -n 50
++```
++
++Expected: the last available journal entries for the worker, which may show why it stopped or cannot process jobs.
++If access is denied or no entries appear, include that in the handoff. Contact Tomás in `#larder-ops` with the
++symptom, stop time, before/after queue counts, service status, command errors, and relevant log lines. If he is
++unavailable, leave that evidence in the channel for the next responder; the repository names no backup recovery
++contact. Avoid repeated starts when the worker immediately dies again.
++
++If access or a command fails, stop at that step and report the exact error through the same handoff. If the worker
++is active but receipts are still missing, collect the logs and counts rather than treating a restart as a known fix.
++
++The three `failed` jobs in September were confirmed bounced emails for members without valid addresses. Do not
++assume today's failed jobs have that cause or blindly retry or delete them; inspect the available errors and hand
++off unexplained failures. Those known bounces did not prevent the rest of September's queue from draining.

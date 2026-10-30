@@ -1,0 +1,26 @@
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..92a46da
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,20 @@
++# Philosophy
++
++For whoever proposes a change to how larder is built, such as a new service, store or dependency, before writing the
++proposal. It states what the volunteers who run larder favor when options conflict. Written after issue 70, a
++proposal to add Elasticsearch for pantry item search, made the team argue out whether to run one more service for the
++third time, after Redis for sessions in 2023 and Redis for the job queue in 2025, each time from scratch.
++
++## Tenets
++
++- **A new service has to do something Postgres cannot, and two volunteers must be able to restore it.** Larder runs
++  one Postgres database and one web app, kept by volunteers who are not always around; a service only one of them can
++  restore is down until that person is back. In March 2025 the Redis instance holding the job queue evicted 300
++  receipt jobs on a Saturday night, and only one volunteer could restore it.
++  - Rules out: a service added for a job Postgres already does, such as Redis for sessions or for a job queue, or
++    Elasticsearch for item search, where Postgres full-text search on the item name brought a search for "rice" from
++    four seconds to 40 ms and found "Rice, brown". It rules out too a service only one volunteer knows how to restore.
++  - Does not rule out: a service someone else runs. The card gateway is outside larder, and a hosted service nobody
++    on the team has to run would be accepted.
++  - Applied in: [keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md) and
++    [run background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md).

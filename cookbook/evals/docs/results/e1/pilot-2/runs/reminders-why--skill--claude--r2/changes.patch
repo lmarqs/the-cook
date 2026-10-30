@@ -1,0 +1,38 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..59770f0 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): the day-before reminder of a pickup, and why it goes by SMS, not email.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..c4928ca
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,23 @@
++# Pickup reminders
++
++For whoever changes how members are reminded of a pickup, or is about to propose email reminders to save the SMS
++cost. The day before a pickup, larder texts the member that their pantry order is ready and when to collect it. The
++reminder goes by SMS, at about 40 euros a month, because a trial of email reminders in 2025 more than doubled the
++pantry orders nobody picked up, and their fresh food was thrown away.
++
++## Message
++
++The day before the pickup slot, `remind` in `larder/reminders.py` sends the member one message: "Your pantry order is
++ready for pickup {pickup}."
++
++## Channel
++
++The message goes by SMS to the member's phone. `CHANNEL` in `larder/reminders.py` selects it; the email branch
++beside it is the one the 2025 trial used.
++
++Email is free and SMS is not, so switching has been proposed several times; issue 52 was the third request in one
++year. It was tried: from April to June 2025 reminders went by email. The email provider reported that 34% of the
++reminder emails were never opened, and missed pickups rose from 6% of pantry orders to 13%. Each missed pickup is a
++packed bag whose fresh food goes in the bin by closing time. Many members share one phone within a family and never
++check email, but they see a text. Reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by
++August.

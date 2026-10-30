@@ -1,0 +1,227 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "reminders-why--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T09:01:57.383742+00:00",
+  "duration_s": 35.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record the decision why pickup reminders go by SMS rather than email (context: notes/issue-52.md)"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001*",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup --include=*.py --include=*.md --include=*.toml --include=*.json ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.claude"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/glossary.md docs/architecture.md docs/features/README.md docs/adrs/README.md docs/adrs/0001*; cat docs/features/checkout.md; grep -rniE \"sms|remind|email|pickup\" --include=*.py --include=*.md --include=*.toml --include=*.json . | grep -v \"^./.claude\" | head -50; git ls-files"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adrs.md",
+      "tool": "sed"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat larder/reminders.py larder/receipts.py larder/orders.py README.md; cat docs/features/payments.md docs/features/sessions.md; cat .claude/skills/docs-layout/templates/feature.template.md .claude/skills/docs-layout/references/features.md; sed -n 1,80p .claude/skills/docs-layout/references/adrs.md; git log --oneline"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 231341,
+    "cached": 214883,
+    "output": 3002,
+    "reasoning": 836
+  },
+  "cost_usd": 0.2346166,
+  "turns": 10,
+  "last_message": "I've added a new page, `docs/features/pickup-reminders.md`, that explains why pickup reminders go by SMS, and listed it in `docs/features/README.md`.\n\n**What the page says** (all taken from `notes/issue-52.md` and `larder/reminders.py`):\n- **What it does:** the day before a pickup, `remind` texts the member that their order is ready. The channel is set by `CHANNEL = \"sms\"`.\n- **The cost:** SMS costs about 40 euros a month, and email would be free. That is why volunteers keep proposing the switch; issue 52 was the third time this year.\n- **The email trial, April to June 2025:**\n  - The email provider's report showed 34% of reminder emails were never opened.\n  - Missed pickups rose from 6% to 13% of orders, and the fresh food in each missed bag is thrown away at closing time.\n  - Many members share one family phone and never check email, but they do see texts.\n- **The outcome:** reminders went back to SMS on July 1, missed pickups were back to 6% by August, and the maintainers closed the issue keeping SMS.\n\n**Why a feature page and not a decision record:** the docs only give decision records to choices that other work is built on and that are hard to undo. This one is a single setting in one file, and it was switched to email and back with one change each time. So the reasoning goes on the feature's own page, at the top and under \"Channel\", which is where someone proposing email will look.\n\n**Things to know:**\n- The page links to `notes/issue-52.md` as the source, but it repeats the numbers in full, so it still holds up if the notes move.\n- No questions are left open; everything came from the repository.\n- I haven't committed anything.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

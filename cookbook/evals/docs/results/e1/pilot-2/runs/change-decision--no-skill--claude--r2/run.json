@@ -1,0 +1,186 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "change-decision--no-skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:36:15.947984+00:00",
+  "duration_s": 59.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-63.md && cat larder/sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|postgres\\|database\" larder conftest.py tests | grep -v \"^larder/sessions.py\"; ls -a; ls .claude .agents 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|postgres\\|database\" larder conftest.py tests | grep -v \"^larder/sessions.py\"; ls -a; ls .claude .agents 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md tests/test_sessions.py; do echo \"=== $f\"; cat \"$f\"; done; grep -rn -i \"session\\|postgres\\|database\" larder conftest.py tests | grep -v \"^larder/sessions.py\"; ls -a; ls .claude .agents 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i session\\|postgres\\|database larder conftest.py tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/sessions.py"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude .agents"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .claude .agents -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --format='%ad %an %s' && python3 -m pytest -q 2>&1 | tail -3"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git log --format='%ad %an %s' && python3 -m pytest -q 2>&1 | tail -3"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git mv docs/adrs/0001-keep-sessions-in-the-database.md docs/adrs/0001-keep-sessions-in-signed-cookies.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport pathlib\np=pathlib.Path(\"docs/adrs/README.md\")\np.write_text(p.read_text().replace(\"- [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.\",\n\"- [Keep sessions in signed cookies](0001-keep-sessions-in-signed-cookies.md): a session is a signed cookie, not a row in\\n  Postgres or a server's memory.\"))\np=pathlib.Path(\"docs/architecture.md\")\ns=p.read_text()\ns=s.replace(\"serves the pantry, takes pantry orders and keeps sessions.\",\"serves the pantry, takes pantry orders and signs and checks session cookies.\")\ns=s.replace(\"The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))\\nand queues jobs there for the worker.\",\n\"The web app keeps no session state: each request carries its session in a cookie that every server checks with the\\nshared key ([keep sessions in signed cookies](adrs/0001-keep-sessions-in-signed-cookies.md)). It queues jobs in\\nPostgres for the worker.\")\np.write_text(s)\nEOF\ngit diff docs/adrs/README.md docs/architecture.md | grep '^[+-]'"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep ^[+-]"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport pathlib\np=pathlib.Path(\"docs/features/sessions.md\")\ns=p.read_text()\ns=s.replace(\"\"\"## Storage\n\nSessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).\n\n## Shaped by\n\n- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)\n\"\"\",\"\"\"## Storage\n\nA session is a cookie, not a server-side record\n([keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)). `sign` in `larder/sessions.py`\nbuilds its value: the member's id and the session's expiry as JSON, base64-encoded, then `.` and an HMAC-SHA256 of\nthat JSON under the key in `LARDER_SESSION_KEY`. `verify` returns the member the cookie logs in, or `None` when the\nsignature does not match or the expiry has passed. Without `LARDER_SESSION_KEY` the module falls back to the key\n`dev-only`, meant only for development.\n\n## Known limits\n\n- Larder cannot log out one member before their session expires: the cookie stays valid until its expiry, at most 30\n  minutes after their last request. Workaround: wait out the expiry, or rotate the key, which logs out every member.\n- Rotating `LARDER_SESSION_KEY` logs out every member at once. Workaround: rotate it only between pickups.\n\n## Shaped by\n\n- [Keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)\n\"\"\")\ns=s.replace(\"connections were logged out mid-checkout and lost their pantry orders.\",\"connections were logged out mid-checkout and lost their pantry orders. Since August 2026 the session is a signed\\ncookie rather than a Postgres row, because the never-pruned session table filled the database disk.\")\np.write_text(s)\nEOF\ngrep -rn \"the-database\\|in Postgres\" docs README.md AGENTS.md; python3 -m pytest -q | tail -1; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport pathlib\np=pathlib.Path(\"docs/features/sessions.md\")\ns=p.read_text()\ns=s.replace(\"\"\"## Storage\n\nSessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).\n\n## Shaped by\n\n- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)\n\"\"\",\"\"\"## Storage\n\nA session is a cookie, not a server-side record\n([keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)). `sign` in `larder/sessions.py`\nbuilds its value: the member's id and the session's expiry as JSON, base64-encoded, then `.` and an HMAC-SHA256 of\nthat JSON under the key in `LARDER_SESSION_KEY`. `verify` returns the member the cookie logs in, or `None` when the\nsignature does not match or the expiry has passed. Without `LARDER_SESSION_KEY` the module falls back to the key\n`dev-only`, meant only for development.\n\n## Known limits\n\n- Larder cannot log out one member before their session expires: the cookie stays valid until its expiry, at most 30\n  minutes after their last request. Workaround: wait out the expiry, or rotate the key, which logs out every member.\n- Rotating `LARDER_SESSION_KEY` logs out every member at once. Workaround: rotate it only between pickups.\n\n## Shaped by\n\n- [Keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)\n\"\"\")\ns=s.replace(\"connections were logged out mid-checkout and lost their pantry orders.\",\"connections were logged out mid-checkout and lost their pantry orders. Since August 2026 the session is a signed\\ncookie rather than a Postgres row, because the never-pruned session table filled the database disk.\")\np.write_text(s)\nEOF\ngrep -rn \"the-database\\|in Postgres\" docs README.md AGENTS.md; python3 -m pytest -q | tail -1; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 - <<'EOF'\nimport pathlib\np=pathlib.Path(\"docs/features/sessions.md\")\ns=p.read_text()\ns=s.replace(\"\"\"## Storage\n\nSessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).\n\n## Shaped by\n\n- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)\n\"\"\",\"\"\"## Storage\n\nA session is a cookie, not a server-side record\n([keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)). `sign` in `larder/sessions.py`\nbuilds its value: the member's id and the session's expiry as JSON, base64-encoded, then `.` and an HMAC-SHA256 of\nthat JSON under the key in `LARDER_SESSION_KEY`. `verify` returns the member the cookie logs in, or `None` when the\nsignature does not match or the expiry has passed. Without `LARDER_SESSION_KEY` the module falls back to the key\n`dev-only`, meant only for development.\n\n## Known limits\n\n- Larder cannot log out one member before their session expires: the cookie stays valid until its expiry, at most 30\n  minutes after their last request. Workaround: wait out the expiry, or rotate the key, which logs out every member.\n- Rotating `LARDER_SESSION_KEY` logs out every member at once. Workaround: rotate it only between pickups.\n\n## Shaped by\n\n- [Keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)\n\"\"\")\ns=s.replace(\"connections were logged out mid-checkout and lost their pantry orders.\",\"connections were logged out mid-checkout and lost their pantry orders. Since August 2026 the session is a signed\\ncookie rather than a Postgres row, because the never-pruned session table filled the database disk.\")\np.write_text(s)\nEOF\ngrep -rn \"the-database\\|in Postgres\" docs README.md AGENTS.md; python3 -m pytest -q | tail -1; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 203993,
+    "cached": 191450,
+    "output": 5625,
+    "reasoning": 1612
+  },
+  "cost_usd": 0.25107,
+  "turns": 9,
+  "last_message": "I've updated the docs so they describe sessions as signed cookies. The tests still pass (2 passed). I haven't committed anything.\n\n**What changed**\n- **Decision record**: renamed to `docs/adrs/0001-keep-sessions-in-signed-cookies.md`. It keeps number 0001 and is rewritten in place, as `docs/README.md` asks when a decision changes.\n  - It now tells the August outage from issue 63: the `sessions` table had grown to 2.1 million rows and filled the disk, and larder was down from 09:40 to 12:50 during Saturday pickup, with 11 members leaving without their order.\n  - The options now include the old Postgres choice and why it changed, plus the nightly cleanup job and Redis and why they lost.\n  - The consequences list what the team accepted: you can't log out a single member early, changing the key logs out everyone (so change it only between pickups), a deploy still logs no one out, and all web servers need the same key.\n- **`docs/features/sessions.md`**: the Storage section now describes the cookie (what it holds, `LARDER_SESSION_KEY`, and the `dev-only` fallback key). A new Known limits section lists the two limits with workarounds, and the opening paragraph mentions the move.\n- **`docs/architecture.md`** and **`docs/adrs/README.md`**: they no longer say sessions are in Postgres, and their links point to the renamed record.\n\n**Assumptions**\n- The issue gives dates but no year. You said the move was last month, but the issue's dates are August 3\u20139. I wrote \"August 2026\".\n- I didn't write a runbook for changing the session key. The repository doesn't say how the deploy secrets are managed, and I didn't want to make up steps.\n\n**Problems in the code (not fixed, outside the docs task)**\n- **Fallback key**: if `LARDER_SESSION_KEY` is missing on a server, `larder/sessions.py` quietly uses the key `dev-only`. Anyone who has read the code could then forge a login cookie for any member. Making it fail at startup would be safer.\n- **Bad cookies crash**: `verify()` raises an error on a cookie that isn't valid base64 or JSON, instead of returning `None`.\n- **Time zone mismatch**: `verify()` compares the expiry to a time-zone-aware \"now\". A cookie signed with a time that has no time zone, as the test does, would make that comparison raise an error.\n- **Unrelated bug**: in the issue thread, Leo reports that the pickup slot page shows Sunday twice. It doesn't seem to be tracked anywhere else.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

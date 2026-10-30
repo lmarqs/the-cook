@@ -1,0 +1,162 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-skill",
+  "harness": "codex",
+  "run": 1,
+  "id": "runbook-receipts--no-skill--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T08:34:11.904275+00:00",
+  "duration_s": 43.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/**' -g '*receipt*' -g 'README*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/** -g *receipt* -g README*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden -g ! .git -g !**/.git/** -g *SKILL.md -g *deploy* -g *worker*"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; ls -la .agents .claude .codex"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la .agents .claude .codex"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat; python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/runbooks/receipts-stopped.md'), Path('docs/runbooks/README.md'), Path('docs/architecture.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        linked = path.parent / target.split('#')[0]\n        assert linked.exists(), (path, target)\nprint('Documentation links resolve.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat; python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/runbooks/receipts-stopped.md'), Path('docs/runbooks/README.md'), Path('docs/architecture.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        linked = path.parent / target.split('#')[0]\n        assert linked.exists(), (path, target)\nprint('Documentation links resolve.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check && git diff --stat; python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/runbooks/receipts-stopped.md'), Path('docs/runbooks/README.md'), Path('docs/architecture.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        linked = path.parent / target.split('#')[0]\n        assert linked.exists(), (path, target)\nprint('Documentation links resolve.')\nPY"
+    }
+  ],
+  "tokens": {
+    "input": 126818,
+    "cached": 112384,
+    "output": 1844,
+    "reasoning": 130
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added a [receipt recovery runbook](/work/docs/runbooks/receipts-stopped.md) covering worker checks, queue counts, recovery, delivery verification, and escalation when recovery fails or nobody is available.\n\nLinked it from the runbook index and architecture page. Documentation links resolve; tests pass (`2 passed`).\n\nThe deploy-script issue remains unresolved; this change documents recovery.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

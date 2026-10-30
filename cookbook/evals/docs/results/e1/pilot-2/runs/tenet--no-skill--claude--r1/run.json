@@ -1,0 +1,139 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "tenet--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:50:49.445269+00:00",
+  "duration_s": 36.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-70.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a .agents .claude"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "ls -a .agents .claude 2>&1; for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/sessions.md docs/runbooks/README.md README.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "ls -a .agents .claude 2>&1; for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/sessions.md docs/runbooks/README.md README.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "ls -a .agents .claude 2>&1; for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/sessions.md docs/runbooks/README.md README.md; do echo \"=== $f\"; cat \"$f\"; done"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "read",
+      "path": ".gitignore",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-postgres.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 151471,
+    "cached": 146629,
+    "output": 3397,
+    "reasoning": 1276
+  },
+  "cost_usd": 0.1359538,
+  "turns": 7,
+  "last_message": "I added the rule as a tenet in a new page, `docs/philosophy.md`. `docs/README.md` says that page owns \"what the team favors when options conflict\". I haven't committed anything.\n\n**The tenet: \"Run one database and one web app\".** Larder runs one Postgres database and one web app (with its worker). A new service has to do something Postgres can't, and two volunteers must be able to restore it. This is Ana's wording from issue 70. I added \"with its worker\" so the page doesn't contradict `docs/architecture.md`, which lists the worker as a part. The page has these parts:\n- **Why:** the reason as it happened. In March 2025 Redis evicted 300 receipt jobs, and the one volunteer who could restore it spent a day resending receipts by hand.\n- **Rules out:** running a service ourselves for something Postgres already does, such as Redis for sessions or a job queue, or Elasticsearch for search that Postgres full-text search covers. It also rules out any self-run service fewer than two volunteers can restore.\n- **Does not rule out:** the external card gateway, a hosted service nobody has to run, or a service that does what Postgres can't and that two volunteers can restore. This follows Ana's \"it does not mean never\".\n- **A proposal starts from:** what Postgres can't do here, and which two volunteers will restore the new service.\n- **Applied in:** links to ADR 0001 (sessions) and ADR 0002 (jobs).\n\nBoth ADRs already listed \"keep the number of services down\" as a deciding factor. I linked that sentence in each to the tenet, so the rule is stated in one place.\n\n**Left out on purpose:**\n- **No ADR for search.** Using Postgres full-text search instead of Elasticsearch is a choice about one feature, not a foundation decision. Priya has only said she'll do it, and there's no search code in the repo yet. Once it's built, it belongs on a feature page.\n- **Leo's pickup-slot bug** isn't part of this.\n\n**Counts don't match:** you and Nadia both say this is the third time \"this year\", but the issue only dates the earlier cases to 2023 and March 2025. So the page just says \"a third time\" and gives the actual years.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

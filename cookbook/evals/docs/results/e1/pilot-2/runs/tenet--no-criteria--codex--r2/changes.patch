@@ -1,0 +1,80 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..6b0d9d0 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,19 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Kinds
++
++| Kind | Owns | Required content | Diátaxis type |
++| --- | --- | --- | --- |
++| [Philosophy](philosophy.md) | Standing trade-offs that guide future proposals. | One page with a lead and `Tenets`; each tenet rules something out and links decisions that apply it. | Explanation |
++| [Architecture](architecture.md) | The system's parts and how they connect. | One page with a lead, `Parts` and `How they connect`; link the reasons to their owning pages. | Explanation |
++| [Decisions](adrs/README.md) | Why a foundation decision was taken. | Numbered `NNNN-<slug>.md` records with a lead, `Context`, `Options`, `Decision` and `Consequences`; explain why each alternative lost and the choice won. | Explanation |
++| [Features](features/README.md) | Member-visible behavior. | A lead, the behavior and its reasons, and links to decisions that shaped it. | Explanation |
++| [Runbooks](runbooks/README.md) | How to respond to an operational trigger. | One page per trigger with a lead naming its owner, `Before you begin`, `Steps` with expected results, and `If it fails`. | How-to |
++
++A decision merits a record when reversing it changes more than one feature or module. A recurring trade-off belongs
++in philosophy; an implementation choice below that bar stays in the code and its review. Each directory's README
++lists its pages. Each fact has one owner; other pages link to it.
++
++The [glossary](glossary.md) owns shared terms and their rejected synonyms.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..3276359 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -4,6 +4,8 @@ For whoever joins larder or changes how its parts connect. Larder is one Python
+ with a worker for background jobs and an external card gateway. Written when a new volunteer spent a week finding
+ where a payment is captured.
+ 
++Before proposing another service, start from [the service tenet](philosophy.md#prefer-what-we-already-run-and-can-restore).
++
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+@@ -13,5 +15,5 @@ where a payment is captured.
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and [queues jobs there for the worker](adrs/0002-run-background-jobs-on-postgres.md). A confirmed pantry order is
++captured through the card gateway by `larder/capture.py`.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..28cd2b8
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,29 @@
++# Philosophy
++
++For whoever proposes a service or weighs an option no decision record settles. These tenets say which trade-offs
++larder favors. Written after [the pantry search discussion](../notes/issue-70.md) raised the cost of operating one
++more service again and asked that future proposals start from the rule already used for sessions and jobs.
++
++## Tenets
++
++### Prefer what we already run and can restore
++
++Larder's starting point is one database and one web app. Before proposing another service for volunteers to
++operate, show both that it does something Postgres cannot and that two volunteers can restore it. This rules out
++adding a service just because it is a familiar solution, or relying on its proposer as the only person who can
++recover it. A proposal starts with the unmet need, what was tried in Postgres, and who can restore the new service.
++
++The rule grew out of operating experience. In 2023 Redis for sessions was turned down because only one volunteer
++would have run it; [keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md) records the choice and
++its alternatives. Redis was later used for Celery, and its queue failure exposed the cost of depending on one
++volunteer for recovery; [run background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md) records that
++incident and the replacement. Both needs could be met by Postgres.
++
++The pantry search proposal applied the same rule: search for "rice" took four seconds and missed "Rice, brown".
++The proposer reported that Postgres full-text search on the item name took 40 ms and found it, and chose that
++instead of Elasticsearch. Those results are evidence from the discussion, not a search implementation in this
++repository.
++
++External services remain an option: the card gateway is already outside larder, and a hosted service that nobody
++on the volunteer team has to run is acceptable. The rule limits the operational burden volunteers take on; it does
++not prohibit every external dependency.

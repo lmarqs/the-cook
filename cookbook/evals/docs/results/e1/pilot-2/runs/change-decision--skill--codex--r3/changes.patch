@@ -1,0 +1,169 @@
+diff --git a/docs/adrs/0001-keep-sessions-in-signed-cookies.md b/docs/adrs/0001-keep-sessions-in-signed-cookies.md
+new file mode 100644
+index 0000000..2d2c2c6
+--- /dev/null
++++ b/docs/adrs/0001-keep-sessions-in-signed-cookies.md
+@@ -0,0 +1,45 @@
++# Keep sessions in signed cookies
++
++For whoever changes login, deploys or session storage. Sessions live in signed cookies because expired database
++sessions filled the disk and stopped Saturday pickup.
++
++## Context
++
++In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
++Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
++volunteers stopped deploying during opening hours. Sessions moved to Postgres, which survived deploys without adding
++a service to run.
++
++On August 3, the database disk filled up: the session table held 2.1 million rows, with every login since 2023 still
++present because expired sessions were never deleted. Larder was down from 09:40 to 12:50 during Saturday pickup.
++Volunteers used a paper list, and eleven people left without their pantry order because volunteers could not find
++it. Deleting expired rows restored service. [Issue 63](../../notes/issue-63.md) records the discussion and the
++August 9 shipment of the replacement.
++
++A deploy must still log no one out. The volunteers want fewer services and maintenance jobs to watch, and session
++storage must no longer grow unchecked. They accept losing individual server-side revocation within the
++[session lifetime](../features/sessions.md#lifetime).
++
++## Options
++
++- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
++  restarted server.
++- **Redis as a session store**: fast and common; lost because it adds a service the volunteers would run only for
++  sessions.
++- **Postgres with a nightly expiry cleanup job**: Postgres was chosen first because it survived deploys and was
++  already running. Cleanup would prevent a repeat of the disk incident, but adds a job to watch and keeps a database
++  read on every request.
++- **Signed cookies**: chosen; remove the session table and its per-request query without adding a service or cleanup
++  job, at the cost of individual server-side revocation.
++
++## Decision
++
++Keep the member and expiry in a signed cookie that every web server can verify with the same key. This survives
++deploys while removing session storage, queries and cleanup work. The accepted revocation trade-off is reasonable
++for a pantry with the current session lifetime. The [session implementation](../../larder/sessions.py) supplies the
++signing and verification; the [architecture](../architecture.md#how-they-connect) shows how it connects.
++
++## Consequences
++
++The session table is dropped, and session checks no longer depend on Postgres. Deploys preserve logins when servers
++share the key. Maintainers must account for the [revocation limit and key rotation policy](../features/sessions.md#known-limits).
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+deleted file mode 100644
+index d4ebd12..0000000
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ /dev/null
+@@ -1,28 +0,0 @@
+-# Keep sessions in the database
+-
+-For whoever changes login, deploys or the database. Sessions live in Postgres, the one store larder already runs,
+-because sessions held in the web app's memory were lost on every deploy.
+-
+-## Context
+-
+-In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+-Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+-volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
+-
+-## Options
+-
+-- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
+-  restarted server.
+-- **Redis as a session store**: fast and common; lost on the second force, a service the volunteers would run only
+-  for sessions.
+-- **Postgres**: chosen.
+-
+-## Decision
+-
+-Sessions live in a Postgres table every web server reads, because it survives a deploy and adds no service to run.
+-
+-## Consequences
+-
+-A deploy logs no one out. Each request reads the session from Postgres, a query the database serves from memory at
+-larder's size.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..6d1bb22 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,4 @@
+ # Decisions
+ 
+-- [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep sessions in signed cookies](0001-keep-sessions-in-signed-cookies.md): why sessions moved out of Postgres after
++  expired rows filled the disk, and the trade-off in revocation.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..a92b760 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -12,6 +12,10 @@ where a payment is captured.
+ 
+ ## How they connect
+ 
+-The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
++The web app issues signed session cookies to the member's browser and verifies them with a key shared across web
++servers ([keep sessions in signed cookies](adrs/0001-keep-sessions-in-signed-cookies.md)). Session signing and
++verification live in [larder/sessions.py](../larder/sessions.py); the [sessions page](features/sessions.md) owns their
++lifetime and key handling.
++
++The web app queues jobs in Postgres for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..d0080dd 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -1,5 +1,5 @@
+ # Features
+ 
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+-- [Sessions](sessions.md): how long a member stays logged in.
++- [Sessions](sessions.md): session lifetime, signed cookies, deployment key handling and revocation limits.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index ad71284..3b9e155 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -1,20 +1,36 @@
+ # Sessions
+ 
+ For whoever changes login or the session expiry, or answers a member who was logged out. A session keeps a member
+-logged in until 30 minutes pass without a request. The limit was 10 minutes until 2024, when members on slow mobile
+-connections were logged out mid-checkout and lost their pantry orders.
++logged in between requests using a signed cookie. Slow mobile checkout prompted the current lifetime; a later
++database disk incident prompted the [storage change](../adrs/0001-keep-sessions-in-signed-cookies.md).
+ 
+ ## Lifetime
+ 
+-Each request renews the session for 30 minutes, `EXPIRY_MINUTES` in `larder/sessions.py`. Until March 2024 the limit
++Each request renews the session for 30 minutes; see `EXPIRY_MINUTES` and `expires_at` in
++[larder/sessions.py](../../larder/sessions.py). Until March 2024 the limit
+ was 10 minutes: members packing a pantry order on a slow mobile connection were logged out before they confirmed it
+ and lost what they had picked, and support logged 120 tickets about it that month. The limit was raised to 30
+ minutes, the shortest that ended those tickets.
+ 
+ ## Storage
+ 
+-Sessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).
++The cookie carries the member and expiry, signed with a key shared by all web servers. See `sign` and `verify` in
++[larder/sessions.py](../../larder/sessions.py) for the format and validation. The
++[storage decision](../adrs/0001-keep-sessions-in-signed-cookies.md) explains why the session table was dropped.
++
++## Deployment key
++
++`LARDER_SESSION_KEY` is supplied through deploy secrets. Keep the same key on every web server and across deploys
++so existing cookies remain valid. The implementation falls back to `dev-only` when the variable is absent; deploys
++must supply the shared secret.
++
++## Known limits
++
++- A maintainer cannot revoke one member's session from the server before its cookie expires. Wait for expiry under
++  the [session lifetime](#lifetime); the team accepted this limit for the pantry.
++- Rotating the signing key logs everyone out. Rotate it only between pickups, as agreed in
++  [issue 63](../../notes/issue-63.md).
+ 
+ ## Shaped by
+ 
+-- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)
++- [Keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)

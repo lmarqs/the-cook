@@ -1,0 +1,102 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..1dff303 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -8,6 +8,7 @@ where a payment is captured.
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++  Follow [receipt recovery](runbooks/receipts-stopped.md) when receipt emails stop.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..27f0307 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): restore the worker and check delivery when receipt emails stop.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..dc5e15e
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,75 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipts. Restore receipt delivery and drain the pending
++jobs; while the worker is down, members do not receive their receipt emails. Written after repeated overnight
++stoppages left volunteers waiting for Tomás to recover the worker. Owner: the on-call volunteers.
++
++## Before you begin
++
++- Shell access to the host running `larder-worker`, with permission to read its systemd status and journal and to
++  start it with `sudo`.
++- Database access so `psql larder` connects to that deployment's database.
++- Access to the pantry's chat to escalate to Tomás.
++
++The [worker and queue](../architecture.md#parts) handle background receipt delivery. In the previous incident,
++the worker stopped after a deploy: the deploy script restarted only the web app. Check the worker even if the web
++app is responding. This procedure recovers delivery; it does not fix the deploy script.
++
++## Steps
++
++1. Check the worker on its host:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected for the previous failure: `inactive (dead)`, with a stop time near the deploy. If it is already
++   `active (running)`, continue to check queue progress; do not start it again merely because receipts are missing.
++
++2. Count jobs before taking action:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected with a stopped worker: pending `todo` jobs and no `doing` jobs. A status with no jobs may be absent
++   from the results. Record the counts so you can compare them after recovery.
++
++3. If the worker is inactive, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Check its status again using step 1. Expected: `active (running)`. If it fails to start or dies again, follow
++   **If it fails** below.
++
++4. After about a minute, repeat the queue count from step 2, then keep checking while jobs drain.
++
++   Expected: `todo` decreases and eventually reaches zero (or its row disappears). Tomás saw about 40 jobs per
++   minute in the previous incident; that is an observation, not a required processing rate. If the count does
++   not decrease, follow **If it fails** below.
++
++5. Confirm that members are receiving receipts and check the worker status once more.
++
++   Expected: delivery is confirmed, the worker remains `active (running)`, and the pending backlog has drained.
++   A zero `todo` count alone does not establish that emails arrived; check for `doing` or `failed` jobs if delivery
++   is still missing.
++
++## If it fails
++
++- If the worker will not start, dies again, or stays active without draining the queue, collect its recent logs:
++
++  ```sh
++  journalctl -u larder-worker -n 50
++  ```
++
++  Contact Tomás in the pantry's chat with the status output, job counts before and after the start, and relevant
++  log lines. If nobody is available, leave that evidence in the chat for handoff; this repository documents no
++  further recovery procedure. Avoid repeated starts when the worker immediately dies.
++- If access or a command fails, preserve the error and escalate through the same chat; do not guess another
++  host, database, or service name.
++- If jobs fail or receipts still do not arrive, inspect the recent worker logs and escalate with the evidence.
++  The three failed jobs in the previous incident were bounced emails with invalid addresses; do not assume new
++  failures have the same cause or bulk-retry them without diagnosis.
++- After using this runbook, update it with any new recovery steps established during the incident.

@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "docs/philosophy.md is written or changed: a rule that guides many decisions is a tenet, which the map gives the\nphilosophy page.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/philosophy.md: ['docs/philosophy.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/README.md', 'docs/adrs/0001-keep-sessions-in-the-database.md', 'docs/adrs/0002-run-background-jobs-on-postgres.md', 'docs/architecture.md', 'docs/philosophy.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The philosophy page opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/philosophy.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The page states the tenet, what it rules out, and why, told as it happened: the Redis queue that lost receipt jobs\nand only one volunteer could restore, not only a conclusion such as \"fewer services are simpler\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The page states the tenet: \"A proposal for another service the volunteers would operate must show both a need Postgres cannot meet and two volunteers able to restore the proposed service.\" It says what that rules out (\"adding a service just because it is a familiar or convenient tool for the job, or because one volunteer can set it up over a weekend\") and what it allows (\"the card gateway is already outside larder, and a hosted service that volunteers do not have to operate is an acceptable option\"). Its reason is the actual history, not only a conclusion: \"Redis was rejected for sessions because only one volunteer would have run it\" and \"Redis holding the job queue lost receipt jobs and again depended on one volunteer for recovery.\" It is a pass on the stated expectation, but a thin one. The page leaves out the reference answer's specifics: the 2023 date, the 300 evicted jobs, and the Saturday night in March 2025.",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The tenet links the two records that apply it: sessions in the database and background jobs on Postgres.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /adrs/0001-.*adrs/0002-|adrs/0002-.*adrs/0001-/ in ['docs/philosophy.md']: {'docs/philosophy.md': 'adrs/0001-keep-sessions-in-the-database.md) chose Postgres. Later, Redis holding the job queue lost\\nreceipt jobs and aga'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No decision record is added: the map gives a rule that guides many decisions to the philosophy page, and one decision\napplying it to a record.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^--- /dev/null\\n\\+\\+\\+ b/docs/adrs/\\d{4}-/ in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

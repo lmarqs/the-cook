@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "docs/philosophy.md is written or changed: a rule that guides many decisions is a tenet, which the map gives the\nphilosophy page.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/philosophy.md: ['docs/philosophy.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adrs/0001-keep-sessions-in-the-database.md', 'docs/adrs/0002-run-background-jobs-on-postgres.md', 'docs/philosophy.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The philosophy page opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/philosophy.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The page states the tenet, what it rules out, and why, told as it happened: the Redis queue that lost receipt jobs\nand only one volunteer could restore, not only a conclusion such as \"fewer services are simpler\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The tenet is \u201cAdd a service only for what Postgres cannot do, and only with two volunteers to restore it.\u201d The page rules out redundant or single-maintainer services while allowing hosted services and the external card gateway. It recounts Redis for sessions being turned down in 2023 and states: \u201cIn March 2025 Redis did run, for Celery's queue: it evicted 300 receipt jobs one Saturday night, and only one volunteer could restore it.\u201d",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The tenet links the two records that apply it: sessions in the database and background jobs on Postgres.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /adrs/0001-.*adrs/0002-|adrs/0002-.*adrs/0001-/ in ['docs/philosophy.md']: {'docs/philosophy.md': 'adrs/0001-keep-sessions-in-the-database.md) and\\n[run background jobs on Postgres](adrs/0002-'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No decision record is added: the map gives a rule that guides many decisions to the philosophy page, and one decision\napplying it to a record.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^--- /dev/null\\n\\+\\+\\+ b/docs/adrs/\\d{4}-/ in ['diff']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

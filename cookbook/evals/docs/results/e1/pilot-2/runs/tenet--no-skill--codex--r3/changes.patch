@@ -1,0 +1,77 @@
+diff --git a/docs/README.md b/docs/README.md
+index 8dbe27e..bb52eda 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -63,6 +63,8 @@ Holds what the system does, one page per unit of behavior. Diátaxis type: refer
+ 
+ Holds the tenets that guide the decisions: what the team favors when options conflict. Diátaxis type: explanation.
+ 
++- [Philosophy](philosophy.md) holds the tenets a new service proposal starts from.
++
+ - One page.
+ - A `Tenets` section: each tenet in one sentence, what it rules out, and links to the records in `adrs/` that apply it.
+   A tenet that rules nothing out cannot guide a decision.
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..d2a1581 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,7 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the [service-operation tenet](../philosophy.md#tenets) limits what the volunteers take on.
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..1b8cbf6 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,7 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the [service-operation tenet](../philosophy.md#tenets) limits what the volunteers take on.
+ 
+ ## Options
+ 
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..6d52500 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -12,6 +12,8 @@ where a payment is captured.
+ 
+ ## How they connect
+ 
++Proposals to add a service start from the [service-operation tenet](philosophy.md#tenets).
++
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..122032c
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,19 @@
++# Philosophy
++
++For whoever proposes a new dependency or service for larder. These tenets guide the trade-offs a proposal starts
++from. The [search discussion in issue 70](../notes/issue-70.md) raised the cost of operating another service for the
++third time that year, after the session-store and job-queue decisions had already turned on it.
++
++## Tenets
++
++**Prefer the Postgres database and web app larder already runs; add a service volunteers must operate only for
++something Postgres cannot do and only when two volunteers can restore it.**
++
++This rules out adding a service just because someone can set it up: the proposal must establish both the capability
++Postgres lacks and who can restore the service when its proposer is away. The rule applies to services volunteers
++operate; it allows the external card gateway and a hosted service nobody on the team has to run.
++
++The [session-store decision](adrs/0001-keep-sessions-in-the-database.md) rejected Redis as another service to operate.
++The [background-job decision](adrs/0002-run-background-jobs-on-postgres.md) moved off Redis after queued receipts were
++lost and only one volunteer could restore it. In issue 70, trying Postgres full-text search resolved the reported
++search problem, so the proposal no longer needed Elasticsearch.

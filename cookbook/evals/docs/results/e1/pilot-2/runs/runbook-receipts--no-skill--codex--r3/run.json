@@ -1,0 +1,141 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-skill",
+  "harness": "codex",
+  "run": 3,
+  "id": "runbook-receipts--no-skill--codex--r3",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T09:05:17.543053+00:00",
+  "duration_s": 59.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/**' -g '*receipt*' -g 'README*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/** -g *receipt* -g README*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; cat README.md docs/architecture.md docs/features/payments.md docs/features/checkout.md larder/receipts.py; rg --files --hidden .agents .claude .codex 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden .agents .claude .codex"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; cat docs/runbooks/receipts-stopped.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; cat docs/runbooks/receipts-stopped.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/runbooks/receipts-stopped.md'), Path('docs/runbooks/README.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        linked = path.parent / target.split('#', 1)[0]\n        assert linked.exists(), f'{path}: missing {target}'\n    assert all(line == line.rstrip() for line in path.read_text().splitlines()), path\nprint('Runbook links and whitespace checked.')\nPY\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 107589,
+    "cached": 97024,
+    "output": 1934,
+    "reasoning": 207
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [Receipts stopped](/work/docs/runbooks/receipts-stopped.md) and linked it from the runbook index.\n\nIt covers worker checks, queue counts, recovery commands, expected results, delivery confirmation, and escalation if recovery fails or Tom\u00e1s is unavailable.\n\nLinks and whitespace checked; tests pass (`2 passed`).",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

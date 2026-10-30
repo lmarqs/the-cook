@@ -1,0 +1,177 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-criteria",
+  "harness": "codex",
+  "run": 1,
+  "id": "runbook-receipts--no-criteria--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T08:29:19.304664+00:00",
+  "duration_s": 76.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'README.md' -g '*receipt*' -g 'SKILL.md' -g '*on-call*' -g '*oncall*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g README.md -g *receipt* -g SKILL.md -g *on-call* -g *oncall*"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/README.md docs/runbooks/README.md notes/chat-receipts.md; rg --files; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "CLAUDE.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n receipt|worker|deploy|procrastinate|Tom\u00e1s|runbook ."
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\npages = [Path('docs/README.md'), Path('docs/runbooks/README.md'), Path('docs/runbooks/receipts-stopped.md')]\nfor page in pages:\n    for target in re.findall(r'\\[[^\\]]+\\]\\(([^)]+)\\)', page.read_text()):\n        assert (page.parent / target.split('#', 1)[0]).is_file(), (page, target)\nrunbook = pages[-1].read_text()\nassert [line for line in runbook.splitlines() if line.startswith('## ')] == ['## Before you begin', '## Steps', '## If it fails']\nassert '[[fill:' not in runbook\nprint('Documentation links, runbook sections, and template checks passed.')\nPY\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 114127,
+    "cached": 95872,
+    "output": 2370,
+    "reasoning": 199
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added the [Receipts stopped runbook](/work/docs/runbooks/receipts-stopped.md) and linked it from the documentation guides.\n\nIt covers worker checks, queue counts, starting the worker, confirming delivery, and escalation with logs. Missing access details and backup contacts are explicitly recorded.\n\nDocumentation checks passed. The deployment gap Tom\u00e1s identified remains unresolved; no deploy script exists in this repository.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

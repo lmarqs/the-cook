@@ -1,0 +1,154 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "tenet--no-skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:36:58.685637+00:00",
+  "duration_s": 35.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-70.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/runbooks/README.md README.md; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/runbooks/README.md README.md; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/runbooks/README.md README.md; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "find .agents .claude -type f | head; git status --ignored --short"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-postgres.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "docs/*.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/*.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "awk 'length > 120 {print FILENAME\": \"FNR\": \"length}' docs/*.md docs/adrs/*.md; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 177867,
+    "cached": 162836,
+    "output": 3149,
+    "reasoning": 1189
+  },
+  "cost_usd": 0.2157392,
+  "turns": 8,
+  "last_message": "I wrote the rule into a new page, `docs/philosophy.md`. `docs/README.md` already sets aside that page for \"tenets that guide the decisions\", meaning what the team favors when options conflict. This rule applies to many decisions, so it isn't a decision record of its own.\n\n**The tenet:** larder runs one database and one web app. A new service has to do something Postgres can't, and two volunteers must be able to restore it. This is Ana's wording from issue 70. The page also lists:\n- **The reason:** there are only a few volunteers, so a service that only one of them can restore is down whenever that person is away.\n- **What it rules out:** adding something like Redis or Elasticsearch because it's faster or more common for a job Postgres can do, and any service only one volunteer knows how to restore.\n- **What it doesn't rule out:** a service outside larder that no volunteer runs, such as the card gateway or a hosted service.\n- **Where it's been applied:** links to the two decision records, ADR 0001 (sessions) and ADR 0002 (background jobs).\n- **History, in the page's intro:** Redis for sessions in 2023; Redis for Celery, which lost 300 receipt jobs in March 2025; and Elasticsearch for item search in issue 70, where Postgres full-text search was used instead.\n\nI also edited ADRs 0001 and 0002: both already list \"keep the number of services they operate down\" as a reason, and that phrase now links to the tenet. Only docs changed. I haven't committed anything.\n\nTwo things I read one way from the notes that you may want to check:\n- **\"Third time this year\":** Nadia says this in the issue, but Tom's history puts the earlier two cases in 2023 and 2025. So the page says the argument came up three times and doesn't claim \"this year.\"\n- **Hosted services:** Ana says the team \"would take a hosted service nobody has to run.\" It's unclear whether such a service must still do something Postgres can't. I wrote it as not ruled out and stopped there.\n\nI left out the 40 ms search figure from issue 70, because there's no search code in the repository yet to back it up.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

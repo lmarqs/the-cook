@@ -1,0 +1,194 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..191661f 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,26 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Kinds and ownership
++
++- **[Features](features/README.md)** (explanation): current behavior of a unit of the app. Each page opens with who
++  needs it and why the behavior exists, describes its parts under subject-specific headings, and ends with
++  **Shaped by**, linking the decisions behind it. Behavior and configuration belong here; other pages link them.
++- **[Decisions](adrs/README.md)** (explanation): why a structural choice was made. Record a choice when reversing it
++  changes how the app's parts work together or imposes lasting operational constraints, and repository evidence
++  supplies the problem, alternatives and tradeoffs. Each record has a lead, then **Context**, **Options**,
++  **Decision**, and **Consequences**. Keep its number when the choice changes; update its title, slug and incoming
++  links, and preserve the earlier choice and why it changed in the reasoning.
++- **[Architecture](architecture.md)** (explanation): the current parts and their connections. Its lead sets scope;
++  **Parts** identifies components and **How they connect** describes connections. Link decisions for their reasons
++  and features for detailed behavior.
++- **[Runbooks](runbooks/README.md)** (how-to): actions for a concrete operational trigger. Each page has a lead naming
++  the reader, trigger, outcome and owner, then **Before you begin**, **Steps**, and **If it fails**. Each step states
++  the expected output so an operator can tell whether it worked.
++- **[Glossary](glossary.md)** (reference): shared terms and rejected synonyms. Each entry gives the preferred name,
++  its definition, and an **Avoid** list where needed.
++
++Each fact has one owning page by these criteria; other pages link to it. The guides in the directories list their
++pages. Code is evidence for current behavior; issue notes and version history supply the history and reasons to
++preserve on the owning page.
+diff --git a/docs/adrs/0001-keep-sessions-in-signed-cookies.md b/docs/adrs/0001-keep-sessions-in-signed-cookies.md
+new file mode 100644
+index 0000000..7674665
+--- /dev/null
++++ b/docs/adrs/0001-keep-sessions-in-signed-cookies.md
+@@ -0,0 +1,48 @@
++# Keep sessions in signed cookies
++
++For whoever changes login, deploys or the database. Sessions live in signed cookies after an unbounded session table
++filled the database disk during Saturday pickup. This record preserves why the shared database was chosen first
++and why a session store is no longer used.
++
++## Context
++
++In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
++Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
++volunteers stopped deploying during opening hours. Postgres replaced that memory: every server could read the same
++sessions, and it was already operated for the app.
++
++[Issue 63](../../notes/issue-63.md) records the later failure: expired sessions were never deleted, leaving 2.1 million
++rows containing every login since 2023. The database disk filled and larder was down from 09:40 to 12:50 during
++Saturday pickup. Volunteers used a paper list, and eleven members left without their pantry orders because the
++volunteers could not find them. Removing the expired rows restored service.
++
++The replacement must survive deploys and requests reaching different servers, avoid another disk-filling session
++table, and keep the services and jobs volunteers operate down. Losing server-side logout of an individual member
++before expiry is acceptable with the [session lifetime](../features/sessions.md#lifetime).
++
++## Options
++
++- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
++  restarted server.
++- **Redis as a session store**: fast and shared across servers; rejected in 2023 and again in issue 63 because it
++  adds a service only Tom can run.
++- **Postgres with a nightly expiry cleanup job**: the original shared store survives deploys and adds no service;
++  cleanup would prevent the table growing without bound. Left because it adds a job to watch and still requires a
++  database read on every request.
++- **Signed cookies**: chosen; any web server checks the member and expiry with the shared key, removing the session
++  store and its per-request query without adding a service or cleanup job.
++
++## Decision
++
++Keep the member and expiry in a signed cookie that every web server can verify with the same key. This meets the
++deploy and volunteer-operation constraints while removing the session table that caused the outage. See
++[sessions](../features/sessions.md) for the implemented behavior and key configuration, and
++[architecture](../architecture.md#how-they-connect) for the connections.
++
++## Consequences
++
++The `sessions` table was dropped when this shipped; session checks no longer depend on a database query. Deploys
++preserve logins while servers retain the shared key. There is no server-side session record to revoke for one
++member, so a cookie remains usable until expiry. Key rotation invalidates everyone's cookies; it is restricted to
++between pickups to avoid logging members out during pickup. The session feature page owns the
++[operational behavior](../features/sessions.md#key-and-logout).
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+deleted file mode 100644
+index d4ebd12..0000000
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ /dev/null
+@@ -1,28 +0,0 @@
+-# Keep sessions in the database
+-
+-For whoever changes login, deploys or the database. Sessions live in Postgres, the one store larder already runs,
+-because sessions held in the web app's memory were lost on every deploy.
+-
+-## Context
+-
+-In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+-Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+-volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
+-
+-## Options
+-
+-- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
+-  restarted server.
+-- **Redis as a session store**: fast and common; lost on the second force, a service the volunteers would run only
+-  for sessions.
+-- **Postgres**: chosen.
+-
+-## Decision
+-
+-Sessions live in a Postgres table every web server reads, because it survives a deploy and adds no service to run.
+-
+-## Consequences
+-
+-A deploy logs no one out. Each request reads the session from Postgres, a query the database serves from memory at
+-larder's size.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..1a71db6 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,4 @@
+ # Decisions
+ 
+-- [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep sessions in signed cookies](0001-keep-sessions-in-signed-cookies.md): why sessions moved from memory to
++  Postgres and then to cookies after the database disk filled.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..f422ec0 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -12,6 +12,8 @@ where a payment is captured.
+ 
+ ## How they connect
+ 
+-The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
++The web app verifies signed session cookies locally with a key shared by every web server
++([keep sessions in signed cookies](adrs/0001-keep-sessions-in-signed-cookies.md));
++[sessions](features/sessions.md) describes their contents, lifetime and key configuration. Postgres remains the app's
++database and holds the job queue for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..4ee5b18 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -1,5 +1,5 @@
+ # Features
+ 
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+-- [Sessions](sessions.md): how long a member stays logged in.
++- [Sessions](sessions.md): session lifetime, signed cookie format, shared key configuration and logout limits.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index ad71284..bd73dd2 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -6,15 +6,31 @@ connections were logged out mid-checkout and lost their pantry orders.
+ 
+ ## Lifetime
+ 
+-Each request renews the session for 30 minutes, `EXPIRY_MINUTES` in `larder/sessions.py`. Until March 2024 the limit
++Each request renews the session for 30 minutes, `EXPIRY_MINUTES` in
++[`larder/sessions.py`](../../larder/sessions.py). `sign(member_id, last_request)` sets the expiry to 30 minutes after
++that request; `verify(cookie, now)` returns the member id if the signature matches and the expiry has not passed,
++or `None` for a signature mismatch or a passed expiry. Until March 2024 the limit
+ was 10 minutes: members packing a pantry order on a slow mobile connection were logged out before they confirmed it
+ and lost what they had picked, and support logged 120 tickets about it that month. The limit was raised to 30
+ minutes, the shortest that ended those tickets.
+ 
+ ## Storage
+ 
+-Sessions live in Postgres ([keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)).
++The cookie carries JSON fields `member` (the member id) and `expires` (an ISO-formatted timestamp). Its value is the
++URL-safe base64 encoding of that JSON, a dot, and a hexadecimal HMAC-SHA256 signature over the JSON bytes. The payload
++is signed, not encrypted. Session data lives in the cookie; the web server verifies it locally. See the
++[architecture](../architecture.md#how-they-connect) for where sessions fit in the app.
++
++## Key and logout
++
++Every web server must use the same `LARDER_SESSION_KEY`, supplied through deploy secrets. The module reads it at
++import time; when unset, the code falls back to `dev-only`. A deploy with the same key preserves logins across
++servers. Changing the key invalidates all existing cookies, so rotate it only between pickups.
++
++There is no server-side mechanism to invalidate one member's cookie before it expires. The
++[decision record](../adrs/0001-keep-sessions-in-signed-cookies.md) explains why this limit was accepted and why key
++rotation is scheduled between pickups.
+ 
+ ## Shaped by
+ 
+-- [Keep sessions in the database](../adrs/0001-keep-sessions-in-the-database.md)
++- [Keep sessions in signed cookies](../adrs/0001-keep-sessions-in-signed-cookies.md)

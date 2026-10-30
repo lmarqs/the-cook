@@ -1,0 +1,201 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "change-decision--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:54:11.724844+00:00",
+  "duration_s": 68.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-63.md && cat larder/sessions.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; cat tests/test_sessions.py; grep -rn session larder/ --include=*.py | grep -v '^larder/sessions.py'; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; cat tests/test_sessions.py; grep -rn session larder/ --include=*.py | grep -v '^larder/sessions.py'; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; cat tests/test_sessions.py; grep -rn session larder/ --include=*.py | grep -v '^larder/sessions.py'; git log --stat | head -50"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn session larder/ --include=*.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/sessions.py"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/features/*.md docs/glossary.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; cat tests/test_sessions.py; grep -rn session larder/ --include=*.py | grep -v '^larder/sessions.py'; git log --stat | head -50"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git mv docs/adrs/0001-keep-sessions-in-the-database.md docs/adrs/0001-keep-sessions-in-signed-cookies.md && grep -rn \"keep-sessions\\|Postgres\\|sessions\" docs README.md AGENTS.md | grep -v \"^docs/README.md\""
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn keep-sessions\\|Postgres\\|sessions docs README.md AGENTS.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^docs/README.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0001-keep-sessions-in-signed-cookies.md'\ns=open(p).read()\nfor a,b in [\n(\"the Postgres table that kept them\\nuntil August 2026 grew until it filled\",\"the Postgres table that kept them\\nbefore grew until it filled\"),\n(\"On Saturday 3 August 2026 the database disk filled up\",\"On Saturday 3 August the database disk filled up\"),\n(\"lost in 2023 and again in 2026 because\",\"lost in 2023 and again after the outage because\"),\n(\"the choice from 2023 to 2026, since\",\"the choice from 2023 until the outage, since\"),\n]:\n    assert a in s, a; s=s.replace(a,b)\nopen(p,'w').write(s)\nEOF\ngrep -rn \"database.md\\|2026\" docs; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "s=s.replace(a,b)",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0001-keep-sessions-in-signed-cookies.md'\ns=open(p).read()\nfor a,b in [\n(\"the Postgres table that kept them\\nuntil August 2026 grew until it filled\",\"the Postgres table that kept them\\nbefore grew until it filled\"),\n(\"On Saturday 3 August 2026 the database disk filled up\",\"On Saturday 3 August the database disk filled up\"),\n(\"lost in 2023 and again in 2026 because\",\"lost in 2023 and again after the outage because\"),\n(\"the choice from 2023 to 2026, since\",\"the choice from 2023 until the outage, since\"),\n]:\n    assert a in s, a; s=s.replace(a,b)\nopen(p,'w').write(s)\nEOF\ngrep -rn \"database.md\\|2026\" docs; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0001-keep-sessions-in-signed-cookies.md'\ns=open(p).read()\nfor a,b in [\n(\"the Postgres table that kept them\\nuntil August 2026 grew until it filled\",\"the Postgres table that kept them\\nbefore grew until it filled\"),\n(\"On Saturday 3 August 2026 the database disk filled up\",\"On Saturday 3 August the database disk filled up\"),\n(\"lost in 2023 and again in 2026 because\",\"lost in 2023 and again after the outage because\"),\n(\"the choice from 2023 to 2026, since\",\"the choice from 2023 until the outage, since\"),\n]:\n    assert a in s, a; s=s.replace(a,b)\nopen(p,'w').write(s)\nEOF\ngrep -rn \"database.md\\|2026\" docs; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0001-keep-sessions-in-signed-cookies.md'\ns=open(p).read()\nfor a,b in [\n(\"the Postgres table that kept them\\nuntil August 2026 grew until it filled\",\"the Postgres table that kept them\\nbefore grew until it filled\"),\n(\"On Saturday 3 August 2026 the database disk filled up\",\"On Saturday 3 August the database disk filled up\"),\n(\"lost in 2023 and again in 2026 because\",\"lost in 2023 and again after the outage because\"),\n(\"the choice from 2023 to 2026, since\",\"the choice from 2023 until the outage, since\"),\n]:\n    assert a in s, a; s=s.replace(a,b)\nopen(p,'w').write(s)\nEOF\ngrep -rn \"database.md\\|2026\" docs; python3 -m pytest -q 2>&1 | tail -2; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0001-keep-sessions-in-signed-cookies.md'\ns=open(p).read()\nfor a,b in [\n(\"signed with a key every web server shares, so no store keeps sessions; the Postgres table that kept them\\nbefore grew until it filled the database disk and took larder down during Saturday pickup.\",\n \"signed with a key every web server shares, so no store keeps sessions; the Postgres table that used to keep them\\ngrew until it filled the database disk and took larder down during Saturday pickup.\"),\n(\"- **Redis as a session store**: fast and common; lost in 2023 and again after the outage because it is one more service, and\\n  only one volunteer could run it.\",\n \"- **Redis as a session store**: fast and common; lost in 2023 and again after the outage because it is one more\\n  service, and only one volunteer could run it.\"),\n(\"- **Postgres table, with a nightly job deleting expired sessions**: the choice from 2023 until the outage, since it survived a\\n  deploy and added no service. The table without cleanup filled the disk; the cleanup job would have bounded it, but\\n  it is one more job to watch, and every request still reads the table.\",\n \"- **Postgres table, with a nightly job deleting expired sessions**: the table was the choice from 2023 until the\\n  outage, since it survived a deploy and added no service, but without cleanup it filled the disk. The nightly job\\n  would bound it; it lost because it is one more job to watch, and every request still reads the table.\"),\n]:\n    assert a in s, a; s=s.replace(a,b)\nopen(p,'w').write(s)\nEOF\nawk 'length>120{print FILENAME\": \"FNR}' docs/**/*.md docs/*.md"
+    },
+    {
+      "kind": "other",
+      "tool": "s=s.replace(a,b)",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0001-keep-sessions-in-signed-cookies.md'\ns=open(p).read()\nfor a,b in [\n(\"signed with a key every web server shares, so no store keeps sessions; the Postgres table that kept them\\nbefore grew until it filled the database disk and took larder down during Saturday pickup.\",\n \"signed with a key every web server shares, so no store keeps sessions; the Postgres table that used to keep them\\ngrew until it filled the database disk and took larder down during Saturday pickup.\"),\n(\"- **Redis as a session store**: fast and common; lost in 2023 and again after the outage because it is one more service, and\\n  only one volunteer could run it.\",\n \"- **Redis as a session store**: fast and common; lost in 2023 and again after the outage because it is one more\\n  service, and only one volunteer could run it.\"),\n(\"- **Postgres table, with a nightly job deleting expired sessions**: the choice from 2023 until the outage, since it survived a\\n  deploy and added no service. The table without cleanup filled the disk; the cleanup job would have bounded it, but\\n  it is one more job to watch, and every request still reads the table.\",\n \"- **Postgres table, with a nightly job deleting expired sessions**: the table was the choice from 2023 until the\\n  outage, since it survived a deploy and added no service, but without cleanup it filled the disk. The nightly job\\n  would bound it; it lost because it is one more job to watch, and every request still reads the table.\"),\n]:\n    assert a in s, a; s=s.replace(a,b)\nopen(p,'w').write(s)\nEOF\nawk 'length>120{print FILENAME\": \"FNR}' docs/**/*.md docs/*.md"
+    }
+  ],
+  "tokens": {
+    "input": 204139,
+    "cached": 182638,
+    "output": 6837,
+    "reasoning": 2094
+  },
+  "cost_usd": 0.34521959999999996,
+  "turns": 10,
+  "last_message": "I've updated the docs to match the move to signed cookies. I used only `larder/sessions.py`, `notes/issue-63.md` and the existing pages. The tests pass (2 passed). Nothing is committed.\n\n**What changed**\n- **The decision record** (`docs/adrs/0001-\u2026`): the docs guide says a changed decision is edited in place, keeping its number. So it's now `0001-keep-sessions-in-signed-cookies.md`, renamed with `git mv`.\n  - **Context** tells the outage as issue 63 records it: 2.1M `sessions` rows filled the disk, larder was down 09:40\u201312:50 during Saturday pickup, and eleven members left without their order.\n  - **Options** keeps the old Postgres choice and why it lost. It also covers Redis and the nightly cleanup job.\n  - **Consequences** records the trade-offs Ana listed: the server can't log out one member before the session expires, and rotating the key logs everyone out, so it's rotated only between pickups.\n- **`docs/features/sessions.md`**: the Storage section now describes the cookie and `LARDER_SESSION_KEY`. A new Known limits section lists three things with a workaround each: no early logout for one member, key rotation logging everyone out, and the fallback key below.\n- **`docs/architecture.md`**: sessions no longer live in Postgres. Every web server checks the cookie with the shared key.\n- **`docs/adrs/README.md`**: the link and summary now point to the new record.\n\n**Questions for the next maintainer**\n- **Year of the outage:** issue 63 gives dates but no year, and I left it out of the docs. You said the move was last month, but 3 August was a Saturday in 2024, not in 2026. The record says \"Saturday 3 August\" so it doesn't guess.\n- **Fallback key (security):** if `LARDER_SESSION_KEY` isn't set, `larder/sessions.py` signs cookies with `\"dev-only\"`. Anyone who reads the repository could then forge a session for any member. I listed this as a known limit, but the code should probably refuse to start without the key.\n- **Bad cookies crash instead of being rejected:**\n  - A garbled cookie makes `verify()` raise an error rather than return `None`.\n  - Comparing a session time that has no timezone against the current time would also raise an error. The existing test builds such a time but only checks `expires_at`, so it doesn't hit this.\n  \n  These are code bugs, so I left them out of the docs.\n- **Not covered:** Leo's aside in issue 63, that the pickup slot page shows Sunday twice, has nothing to do with sessions.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

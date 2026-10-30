@@ -1,0 +1,142 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "tenet--no-skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:46:19.957864+00:00",
+  "duration_s": 38.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md && cat notes/issue-70.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/payments.md docs/features/sessions.md docs/runbooks/README.md; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/payments.md docs/features/sessions.md docs/runbooks/README.md; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in README.md docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/README.md docs/features/payments.md docs/features/sessions.md docs/runbooks/README.md; do echo \"=== $f\"; cat $f; done; ls -a .agents .claude 2>&1"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "read",
+      "path": ".gitignore",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "docs/philosophy.md",
+      "tool": "awk"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "awk 'length>120{print FILENAME\": \"FNR\": \"length}' docs/philosophy.md; git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 181543,
+    "cached": 176417,
+    "output": 3357,
+    "reasoning": 1395
+  },
+  "cost_usd": 0.1433754,
+  "turns": 7,
+  "last_message": "I wrote the rule into a new page, `docs/philosophy.md`. `docs/README.md` names that page as the home for tenets, meaning what the team favours when options conflict. The rule guides many decisions, so it belongs there rather than in a single decision record. I haven't committed it.\n\n**What the page says:**\n- **The opening paragraph** says it's for anyone proposing a new service, store or dependency, and should be read before writing the proposal. It explains the page exists because issue 70 (Elasticsearch for pantry item search) was the third time the team argued this from scratch. The first two were Redis for sessions in 2023 and Redis for the job queue in 2025.\n- **The tenet**, in Ana's words from the issue: a new service has to do something Postgres cannot, and two volunteers must be able to restore it. The page explains why using the March 2025 Saturday night, when Redis dropped 300 receipt jobs and only one volunteer could restore it.\n- **What it rules out:** Redis for sessions or a job queue, and Elasticsearch for search. For search it gives the evidence: Postgres full-text search cut a search for \"rice\" from 4 seconds to 40 ms and found \"Rice, brown\".\n- **What it doesn't rule out:** services someone else runs. Ana named the card gateway, and said a hosted service nobody on the team has to run would be accepted.\n- **Where it's been applied:** it links the two existing decision records, sessions in the database (`adrs/0001`) and background jobs on Postgres (`adrs/0002`).\n\n**Things to check:**\n- The issue doesn't say which year it was written, so the page doesn't date it.\n- Ana's comment doesn't say whether a hosted service must also do something Postgres can't. I only wrote what she said: such a service would be accepted. Someone should confirm that's the intended reading.\n- I didn't add the Postgres item search to the docs. No search feature page exists yet, and Priya's change isn't in the code.\n- `docs/architecture.md` links the sessions decision record but not the background-jobs one, though its own rules say it should. I left it alone because it's outside this task.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

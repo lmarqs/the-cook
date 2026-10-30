@@ -1,0 +1,177 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "tenet--skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:49:41.565465+00:00",
+  "duration_s": 35.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout/templates .claude/skills/docs-layout/references"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/philosophy.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/philosophy.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/architecture.md docs/adrs/*.md docs/glossary.md docs/features/README.md; ls .claude/skills/docs-layout/templates .claude/skills/docs-layout/references; cat .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; git log --oneline | head; grep -rn -i \"search\\|postgres\" --include=*.py . | head -30"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i search\\|postgres --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R larder"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni search\\|tsvector\\|redis\\|elastic larder docs"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport re\nfor f,old in [(\"docs/adrs/0001-keep-sessions-in-the-database.md\",\"the volunteers who run larder keep the number of services they operate down.\"),\n              (\"docs/adrs/0002-run-background-jobs-on-postgres.md\",\"the volunteers keep the number of services they operate down.\")]:\n    s=open(f).read()\n    assert s.count(old.split()[0]) and old in s.replace(\"\\n\",\" \"), f\nEOF\ngrep -n \"operate down\" -B1 docs/adrs/*.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-postgres.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 202734,
+    "cached": 186662,
+    "output": 3036,
+    "reasoning": 761
+  },
+  "cost_usd": 0.22656440000000003,
+  "turns": 10,
+  "last_message": "I wrote the rule into the docs as a tenet in a new page, `docs/philosophy.md`. That page type holds the rules the team applies when options conflict. The tenet:\n\n> **A new service must do what Postgres cannot, with two volunteers able to restore it.**\n\nIt's taken from Ana's wording in the issue thread. The page says what the rule rules out: adding a service for a job Postgres already does, or one that only one volunteer can restore. It also says what it allows: a hosted service nobody on the team has to run, like the card gateway. It gives the history from the thread so the reasons can be checked:\n- **2023:** Redis for sessions.\n- **March 2025:** Redis for Celery's job queue, which evicted 300 receipt jobs and only one volunteer could restore.\n- **Issue 70:** Elasticsearch for pantry search. Postgres full-text search cut the \"rice\" search from four seconds to 40 ms and found \"Rice, brown\".\n\nIt links the two existing decision records where the rule was applied. Both records already listed \"keep the number of services down\" as one of the factors weighed; I linked that line back to the tenet in `docs/adrs/0001-keep-sessions-in-the-database.md` and `docs/adrs/0002-run-background-jobs-on-postgres.md`.\n\nChoices I made without anyone to ask:\n- **No decision record for search.** Choosing Postgres search affects one feature, which doesn't meet the bar for a record. Search also isn't in `larder/` yet, so it gets no feature page until someone builds it.\n- **No year for issue 70.** The thread doesn't give one, and \"third time this year\" doesn't fit a March 2025 incident if the issue is from 2026. The page names the issue instead of a date.\n\nI left Leo's off-topic comment about the pickup slot page alone. Nothing is committed yet.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

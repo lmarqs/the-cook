@@ -1,0 +1,72 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..dada4c2 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,21 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Kinds
++
++- [Philosophy](philosophy.md) owns standing trade-offs that guide future proposals, rather than one past choice.
++  This explanation page has a lead and `Tenets`; each tenet says what it rules out and links decisions that apply it.
++- [Architecture](architecture.md) owns the current parts and how they connect. This explanation page has a lead,
++  `Parts` and `How they connect`; it links the decisions behind structural choices.
++- [Decisions](adrs/README.md) own the reasons for individual foundational choices: choices whose reversal changes
++  how the system is built, rather than a local implementation detail. These explanation pages use
++  `NNNN-<slug>.md` and contain a lead, `Context`, `Options`, `Decision` and `Consequences`, including why alternatives
++  lost and the choice won. A standing trade-off across decisions belongs in Philosophy.
++- [Features](features/README.md) own current member-visible behavior. These reference pages have a lead, sections
++  describing the behavior and links to the decisions that shaped it.
++- [Runbooks](runbooks/README.md) own operational procedures for a trigger. These how-to pages have a lead naming
++  the trigger and owner, `Before you begin`, `Steps` with expected results and `If it fails`.
++- [Glossary](glossary.md) owns shared names. Each entry defines a term and lists rejected synonyms under `Avoid`.
++
++Each fact has one owner; other pages link it. The guides for kinds with multiple pages list each page and its purpose.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..2f88477 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -4,6 +4,8 @@ For whoever joins larder or changes how its parts connect. Larder is one Python
+ with a worker for background jobs and an external card gateway. Written when a new volunteer spent a week finding
+ where a payment is captured.
+ 
++Proposals to add a service start from the [service tenet](philosophy.md#add-a-service-only-for-a-capability-postgres-cannot-provide-with-two-volunteers-able-to-restore-it).
++
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..4c26706
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,27 @@
++# Philosophy
++
++For whoever proposes a new service or weighs a change that no decision record settles. Larder favors services its
++volunteers can operate with the capacity they have. The same argument came up again in
++[issue 70](../notes/issue-70.md), after session storage and background jobs had already tested the trade-off; future
++proposals start from the tenet below.
++
++## Tenets
++
++### Add a service only for a capability Postgres cannot provide, with two volunteers able to restore it
++
++Larder's baseline is one database and one web app. A proposal to add a service the volunteers must operate has to
++show both what it does that Postgres cannot and which two volunteers can restore it. This rules out adding a
++service merely because it is a familiar tool for the task, or because one volunteer can set it up over a weekend.
++
++In 2023 Redis was proposed for sessions, but only one volunteer would have operated it. Postgres met the need.
++In March 2025 Redis held the Celery queue and evicted 300 receipt jobs on a Saturday night; only one volunteer knew
++how to restore it, and resending receipts took a day of manual work. Postgres also met that need. The decisions to
++[keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md) and
++[run background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md) apply this tenet.
++
++In issue 70, pantry search took four seconds and missed “Rice, brown” when searching for “rice”. Elasticsearch was
++proposed; Postgres full-text search on the item name instead brought the search to 40 ms and found the item.
++That resolved the reported search problem without another service to operate.
++
++External services are allowed: larder already uses a card gateway, and a hosted service that the volunteers do not
++have to run is an option. The rule constrains the services volunteers operate; it does not ban outside capabilities.

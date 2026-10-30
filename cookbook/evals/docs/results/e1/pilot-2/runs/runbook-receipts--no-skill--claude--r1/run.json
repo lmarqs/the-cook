@@ -1,0 +1,178 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "runbook-receipts--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T09:01:32.330036+00:00",
+  "duration_s": 45.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/chat-receipts.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/runbooks/README.md docs/runbooks/gateway-timeouts.md docs/architecture.md docs/features/README.md docs/features/payments.md docs/glossary.md larder/receipts.py README.md; do echo \"=== $f\"; cat $f; done; ls -a; ls .agents .claude 2>&1; grep -rn \"worker\\|deploy\\|procrastinate\" --include=*.py --include=*.md . | grep -v notes/"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/runbooks/README.md docs/runbooks/gateway-timeouts.md docs/architecture.md docs/features/README.md docs/features/payments.md docs/glossary.md larder/receipts.py README.md; do echo \"=== $f\"; cat $f; done; ls -a; ls .agents .claude 2>&1; grep -rn \"worker\\|deploy\\|procrastinate\" --include=*.py --include=*.md . | grep -v notes/"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/runbooks/README.md docs/runbooks/gateway-timeouts.md docs/architecture.md docs/features/README.md docs/features/payments.md docs/glossary.md larder/receipts.py README.md; do echo \"=== $f\"; cat $f; done; ls -a; ls .agents .claude 2>&1; grep -rn \"worker\\|deploy\\|procrastinate\" --include=*.py --include=*.md . | grep -v notes/"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .agents .claude"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn worker\\|deploy\\|procrastinate --include=*.py --include=*.md ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find .agents .claude -type f"
+    },
+    {
+      "kind": "read",
+      "path": ".gitignore",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "read",
+      "path": "timeouts](gateway-timeouts.md):",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "out.",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "stopped](receipts-stopped.md):",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "emails.",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "shell"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "cat > docs/runbooks/README.md <<'EOF'\n# Runbooks\n\n- [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.\n- [Receipts stopped](receipts-stopped.md): what to do when members get no receipt emails.\nEOF\ngit diff --stat; python3 -m pytest -q 2>&1 | tail -1"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 150551,
+    "cached": 139236,
+    "output": 4156,
+    "reasoning": 1435
+  },
+  "cost_usd": 0.20143919999999998,
+  "turns": 7,
+  "last_message": "I wrote a runbook for when receipts stop, built from Tom\u00e1s's chat: `docs/runbooks/receipts-stopped.md`. It's linked from `docs/runbooks/README.md` and follows the runbook format in `docs/README.md`. Nothing was committed. The runbook hasn't been tried against the real server.\n\n**What the volunteer on call does:**\n1. Run `systemctl status larder-worker`. If it says `inactive (dead)`, the worker that sends receipts has stopped.\n2. Count the waiting receipt jobs in the `procrastinate_jobs` table before changing anything.\n3. Run `sudo systemctl start larder-worker`.\n4. Re-run the count every minute or two until `todo` reaches 0. On September 14 it dropped by about 40 a minute.\n5. Check the `failed` count. A few failed jobs were expected on September 14 (bounced emails to invalid addresses). A count that keeps growing is a problem.\n6. Tell the pantry's chat that receipts are flowing again, and add anything new to the runbook.\n\nIf the worker dies again, or `todo` doesn't go down, they run `journalctl -u larder-worker -n 50` and send the output to Tom\u00e1s. That's the escalation step from his chat.\n\n**Gaps the repository couldn't fill:**\n- **Cause of last night's stop:** I don't know it. The runbook only says that on September 14 the worker stopped after a deploy. Whoever handled last night should add what they saw, which the runbook asks for anyway.\n- **Root cause:** the deploy script restarts only the web app, not the worker. That script isn't in this repository, so I couldn't fix it. Until someone adds a worker restart to it, any deploy can stop receipts again.\n- **Owner:** no team owns the worker, so the runbook says that and names Tom\u00e1s as the contact. It also doesn't name the server, because I couldn't find which one runs larder. Someone should fill in both.\n- **Script vs. steps:** the docs prefer a script for fixed commands. I kept these as steps because the volunteer has to judge the output between them, and a script I can't test seemed riskier.\n\nI left `notes/chat-receipts.md` as it is. You could delete it now that the runbook holds what it says.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

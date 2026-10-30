@@ -1,0 +1,125 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..8da7fcb 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,11 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Runbooks
++
++[Runbooks](runbooks/README.md) own operational recovery procedures for a specific alert, request or symptom. They
++are how-to guides for the volunteer on call. Each page contains a lead identifying the responder, trigger, outcome,
++incident context and owner or known contact; **Before you begin** lists access and tools; **Steps** pairs each action
++with its expected output; **If it fails** gives failure handling and escalation. Record missing operational details
++explicitly when the repository cannot establish them.
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..9b23c4d 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): check and start the receipt worker, verify recovery, and escalate failures.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..0dcacb7
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,94 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipt emails. Use this to check the background worker,
++start it if stopped, and verify that queued work drains and receipts arrive. In the September 14 incident, the
++worker had stopped after a deploy; volunteers had previously waited until noon for help. Recovery contact: Tomás
++in the pantry's chat. The repository does not name an ongoing runbook owner.
++
++## Before you begin
++
++- A shell on the host running `larder-worker`, with permission to inspect its systemd service and journal and run
++  `sudo systemctl start larder-worker`.
++- `psql` access to the `larder` database on that environment.
++- Access to the pantry's chat for receipt confirmation and escalation to Tomás.
++
++The repository does not record the host name, login instructions, database credentials, or a backup contact. Use
++existing operational access; if it is unavailable, report that blocker in the pantry's chat.
++
++## Steps
++
++1. Check the worker:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: the status identifies `larder-worker` and shows its state. `inactive (dead)` matches the September
++   incident; note when it stopped and whether that followed a deploy. If it is already `active (running)`, leave it
++   running and check the queue next. For a failed service, collect its journal as described below.
++
++2. Record the queue counts before taking recovery action:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: counts grouped by status. In September there were 212 `todo`, 0 `doing`, and 3 `failed` jobs. These are
++   historical counts, not targets. A status with no jobs may have no row; no `todo` row means zero queued jobs.
++   A stopped worker with `todo` jobs matches the known recovery path. If there are no `todo` jobs but receipts are
++   missing, use **If it fails**.
++
++3. If the worker is `inactive (dead)`, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   ```
++
++   Expected: the command completes without an error. If it errors, collect the journal and escalate below.
++
++4. Check the worker again:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If it stops again immediately, use **If it fails**.
++
++5. After about a minute, repeat the queue query from step 2. Continue checking about once a minute while the worker
++   is running and the queue is draining.
++
++   Expected: `todo` decreases and eventually reaches zero (or its row disappears). Tomás observed about 40 jobs per
++   minute in September; that is an observation, not a guaranteed rate. If `todo` stays unchanged or grows, or
++   `failed` increases, collect the journal and escalate below.
++
++6. Confirm in the pantry's chat that affected members are receiving their receipts.
++
++   Expected: receipt delivery is confirmed, as Nadia confirmed in September. A drained queue alone does not confirm
++   email delivery. Record the worker state, before/after counts, and delivery confirmation in the incident handoff;
++   if delivery remains unconfirmed, include that in the escalation.
++
++## If it fails
++
++If the worker fails to start, dies again, stays active without draining the queue, or receipts remain missing,
++collect its recent logs:
++
++```sh
++journalctl -u larder-worker -n 50
++```
++
++Expected: up to 50 recent journal entries for the service, including any startup or job errors. If access is denied
++or no entries are available, record that too. Contact Tomás in the pantry's chat with the service state, stop time,
++queue counts and their trend, recent deploy context, relevant errors, and whether receipt delivery was confirmed.
++If he is unavailable, leave that handoff in the chat; the repository provides no alternate contact or further
++recovery procedure. Avoid repeated starts if the worker immediately dies again.
++
++The three `failed` jobs in September were confirmed email bounces for members without valid addresses. They did
++not prevent the `todo` queue from draining. Do not assume new failed jobs are the same: inspect available errors
++and include unresolved failures in the handoff. This procedure does not establish a safe way to retry failed jobs.
++
++Tomás reported that the deploy script restarted only the web app, leaving the worker stopped. The repository
++contains no deploy script or evidence of a fix. After future deploys, use the worker and queue checks above to
++verify recovery; starting the worker resolves this symptom but does not fix that deployment gap.
++
++Source: [September 14 incident chat](../../notes/chat-receipts.md). After an incident, update this runbook with any
++newly verified steps, differing outputs, or confirmed contact/access details.

@@ -1,0 +1,108 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..097a490 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,20 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++## Kinds
++
++- [Philosophy](philosophy.md) owns the standing trade-offs that guide new proposals (explanation). Its single page
++  has a lead and `Tenets`; each tenet states what it rules out and links the decision records that apply it.
++- [Architecture](architecture.md) owns the system's parts and how they connect (explanation). Its single page has a
++  lead, `Parts` and `How they connect`; reasons for choices live in the linked decision records.
++- [Decisions](adrs/README.md) own the reasons for foundation choices whose reversal changes more than one feature
++  or module (explanation). Each `NNNN-<slug>.md` has a lead, `Context`, `Options`, `Decision` and `Consequences`.
++  Implementation choices below that bar stay in code and review; standing trade-offs belong in Philosophy.
++- [Features](features/README.md) own member-visible behavior (explanation). Each page has a lead, sections describing
++  the behavior and its limits, and links to the decisions that shaped it.
++- [Runbooks](runbooks/README.md) own responses to operational triggers (how-to). Each page has a lead naming the
++  trigger and owner, `Before you begin`, `Steps` with expected results, and `If it fails`.
++
++[Glossary](glossary.md) owns shared terminology: each entry names the concept, defines it and lists rejected
++synonyms under `Avoid`. State a fact on its owning page and link to it elsewhere.
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..dce9336 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,7 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the [tenet on adding services](../philosophy.md#prefer-what-we-already-run-over-one-more-service) applies to the store.
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..c6ca4e3 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,8 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the [tenet on adding services](../philosophy.md#prefer-what-we-already-run-over-one-more-service)
++applies to the queue.
+ 
+ ## Options
+ 
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..da91e42 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -4,6 +4,9 @@ For whoever joins larder or changes how its parts connect. Larder is one Python
+ with a worker for background jobs and an external card gateway. Written when a new volunteer spent a week finding
+ where a payment is captured.
+ 
++Before proposing another service, read the
++[tenet on what we already run](philosophy.md#prefer-what-we-already-run-over-one-more-service).
++
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+@@ -13,5 +16,5 @@ where a payment is captured.
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and [queues jobs there for the worker](adrs/0002-run-background-jobs-on-postgres.md). A confirmed pantry order is
++captured through the card gateway by `larder/capture.py`.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..85e26e5
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,28 @@
++# Philosophy
++
++For whoever proposes a new service or weighs a trade-off no decision record settles. These tenets guide proposals
++before implementation. Written after the service argument recurred in [issue 70](../notes/issue-70.md), following
++the session-store and background-job discussions.
++
++## Tenets
++
++### Prefer what we already run over one more service
++
++Redis was rejected for sessions because only one volunteer would have run it; the
++[session decision](adrs/0001-keep-sessions-in-the-database.md) chose Postgres. Later, Redis holding the job queue lost
++receipt jobs and again depended on one volunteer for recovery; the
++[background-job decision](adrs/0002-run-background-jobs-on-postgres.md) moved jobs to Postgres. Those decisions apply
++this tenet to separate needs.
++
++Larder's operating baseline is one database and one web app. A proposal for another service the volunteers would
++operate must show both a need Postgres cannot meet and two volunteers able to restore the proposed service. This
++rules out adding a service just because it is a familiar or convenient tool for the job, or because one volunteer
++can set it up over a weekend.
++
++In issue 70, pantry search for "rice" reportedly took four seconds and missed "Rice, brown". Elasticsearch was
++proposed, but Postgres full-text search on the item name brought the reported time to 40 ms and found the missing
++item. That removed the need for another service in that proposal.
++
++This allows external services: the card gateway is already outside larder, and a hosted service that volunteers
++do not have to operate is an acceptable option. For a new service volunteers would operate, start the proposal
++with the unmet need and the two people able to restore it.

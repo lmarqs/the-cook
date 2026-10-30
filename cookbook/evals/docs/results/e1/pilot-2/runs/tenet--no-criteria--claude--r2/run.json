@@ -1,0 +1,278 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 2,
+  "id": "tenet--no-criteria--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:38:17.134037+00:00",
+  "duration_s": 58.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record the recurring \"one more service\" argument from notes/issue-70.md into docs/"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "wc",
+      "command": "wc -l docs/README.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md; do echo \"=== $f\"; cat \"$f\"; done; ls .claude/skills/docs-layout .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "wc -l docs/README.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md; do echo \"=== $f\"; cat \"$f\"; done; ls .claude/skills/docs-layout .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "wc -l docs/README.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md; do echo \"=== $f\"; cat \"$f\"; done; ls .claude/skills/docs-layout .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "wc -l docs/README.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md; do echo \"=== $f\"; cat \"$f\"; done; ls .claude/skills/docs-layout .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat templates/map.template.md; echo ====; cat references/philosophy.md templates/philosophy.template.md; echo ====; cat references/adopt.md"
+    },
+    {
+      "kind": "read",
+      "path": "templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cd /work/.claude/skills/docs-layout && cat templates/map.template.md; echo ====; cat references/philosophy.md templates/philosophy.template.md; echo ====; cat references/adopt.md"
+    },
+    {
+      "kind": "read",
+      "path": "references/philosophy.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/philosophy.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cd /work/.claude/skills/docs-layout && cat templates/map.template.md; echo ====; cat references/philosophy.md templates/philosophy.template.md; echo ====; cat references/adopt.md"
+    },
+    {
+      "kind": "read",
+      "path": "references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --stat | head -40; cat docs/runbooks/README.md; head -5 docs/features/*.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/*.md",
+      "tool": "head"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && for f in references/adopt.md references/philosophy.md templates/philosophy.template.md references/design.md references/adrs.md references/architecture.md; do echo \"--- $f\"; cat $f; done"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "cd /work/.claude/skills/docs-layout && for f in references/adopt.md references/philosophy.md templates/philosophy.template.md references/design.md references/adrs.md references/architecture.md; do echo \"--- $f\"; cat $f; done"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "cd /work/.claude/skills/docs-layout && for f in references/adopt.md references/philosophy.md templates/philosophy.template.md references/design.md references/adrs.md references/architecture.md; do echo \"--- $f\"; cat $f; done"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "cd /work/.claude/skills/docs-layout && for f in references/adopt.md references/philosophy.md templates/philosophy.template.md references/design.md references/adrs.md references/architecture.md; do echo \"--- $f\"; cat $f; done"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work && ls -a; ls cook* 2>/dev/null; which cook; grep -rn \"philosophy\\|tenet\" docs AGENTS.md"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls cook*"
+    },
+    {
+      "kind": "other",
+      "tool": "which",
+      "command": "cd /work && ls -a; ls cook* 2>/dev/null; which cook; grep -rn \"philosophy\\|tenet\" docs AGENTS.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn philosophy\\|tenet docs AGENTS.md"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work && ls larder tests; grep -rni \"search\\|tsvector\\|elastic\" larder tests | head; cat README.md"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni search\\|tsvector\\|elastic larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport re,pathlib\nanchor=\"../philosophy.md#add-a-service-only-for-what-postgres-cannot-do-and-only-with-two-volunteers-to-restore-it\"\nfor f,old in [(\"docs/adrs/0001-keep-sessions-in-the-database.md\",\"keep the number of services they operate down.\"),\n              (\"docs/adrs/0002-run-background-jobs-on-postgres.md\",\"keep the number of services they operate down.\")]:\n    p=pathlib.Path(f); t=p.read_text()\n    assert t.count(old)==1\n    t=t.replace(old,f\"keep the number of services they operate down\\n([a tenet]({anchor})).\")\n    p.write_text(t)\nEOF\ngit diff docs/adrs"
+    },
+    {
+      "kind": "other",
+      "tool": "t=p.read_text()",
+      "command": "python3 - <<'EOF'\nimport re,pathlib\nanchor=\"../philosophy.md#add-a-service-only-for-what-postgres-cannot-do-and-only-with-two-volunteers-to-restore-it\"\nfor f,old in [(\"docs/adrs/0001-keep-sessions-in-the-database.md\",\"keep the number of services they operate down.\"),\n              (\"docs/adrs/0002-run-background-jobs-on-postgres.md\",\"keep the number of services they operate down.\")]:\n    p=pathlib.Path(f); t=p.read_text()\n    assert t.count(old)==1\n    t=t.replace(old,f\"keep the number of services they operate down\\n([a tenet]({anchor})).\")\n    p.write_text(t)\nEOF\ngit diff docs/adrs"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/000[12]*.md",
+      "tool": "sed"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -n Postgres cannot docs/adrs/*.md"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "sed -i 's/(\\[a tenet\\](/([a service only for what Postgres cannot do](/' docs/adrs/000[12]*.md && grep -n \"Postgres cannot\" docs/adrs/*.md && python3 -m pytest -q 2>&1 | tail -1"
+    }
+  ],
+  "tokens": {
+    "input": 336253,
+    "cached": 314832,
+    "output": 4948,
+    "reasoning": 2045
+  },
+  "cost_usd": 0.3331984,
+  "turns": 14,
+  "last_message": "I wrote the rule from issue 70 into a new page, `docs/philosophy.md`, as a tenet. The next proposal for a new service can start from it.\n\n**The tenet:** *Add a service only for what Postgres cannot do, and only with two volunteers to restore it.*\n\n- **What it rules out:** a service that does a job Postgres can already do, and a service only one volunteer could restore.\n- **What it allows:** services larder doesn't run itself, such as the card gateway or a hosted service nobody has to look after. Ana made this point in the issue.\n- **History behind it, taken from the issue thread:** Redis for sessions was turned down in 2023. Redis for Celery lost 300 receipt jobs in March 2025. Issue 70's Elasticsearch proposal moved to Postgres full-text search, which answered in 40 ms and found \"Rice, brown\".\n- **Where it was applied:** the page links the two decisions that already follow it, keeping sessions in the database and running background jobs on Postgres. Both of those records now link back to the tenet where they say the volunteers want to run as few services as possible.\n\nThe tests pass, but they don't cover the docs. Nothing is committed.\n\n**Choices I made without anyone to confirm:**\n- **Wording:** Ana said \"one database and one web app\", but `docs/architecture.md` also lists a worker. The page says \"one Postgres database and its own code, the web app and its worker\" so it matches the architecture page.\n- **Search:** Postgres full-text search for pantry items isn't in the code yet; it's still Priya's plan. The page describes it only as what happened in issue 70, not as something larder does now. I didn't write a decision record for it, because it affects only search and isn't a foundation decision.\n- **Year:** the issue doesn't give a year. I wrote October 2026 based on today's date.\n\n**A gap in the docs:** `docs/README.md` should say which kinds of page the docs use (decisions, features, philosophy and so on). It only has its intro paragraph. The skill fills that section in with a `cook` tool that isn't in this repository, so I couldn't add it. It needs setting up separately.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

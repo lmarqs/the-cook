@@ -1,0 +1,187 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "runbook-receipts--skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:42:12.019298+00:00",
+  "duration_s": 30.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/members-get-no-receipts.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/chat-receipts.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Write a runbook for \"customers stop receiving receipts\" from notes/chat-receipts.md"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".gitignore",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -a"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls scripts deploy"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i receipt\\|worker\\|deploy docs larder tests conftest.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^docs/README"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/members-get-no-receipts.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 135217,
+    "cached": 116258,
+    "output": 2784,
+    "reasoning": 666
+  },
+  "cost_usd": 0.2305556,
+  "turns": 8,
+  "last_message": "I wrote a runbook from Tom\u00e1s's chat so the next volunteer on call can restore receipts without asking anyone: `docs/runbooks/members-get-no-receipts.md`. I also added it to the runbooks list in `docs/runbooks/README.md`. Nothing was run; this only adds documentation.\n\nThe runbook has four steps, each with the output that shows it worked:\n1. **Check the worker:** `systemctl status larder-worker`. Expect `inactive (dead)`, usually since the last deploy.\n2. **Count the waiting jobs** with Tom\u00e1s's `procrastinate_jobs` query, before restarting anything.\n3. **Start the worker:** `sudo systemctl start larder-worker`.\n4. **Watch the queue empty:** rerun the query until the `todo` count reaches 0 (about 40 a minute last time). A few `failed` jobs are bounced emails from members with no valid address and need no action.\n\nIf the worker dies again straight away, the volunteer collects the output of `journalctl -u larder-worker -n 50` and sends it to Tom\u00e1s in #larder-ops.\n\nDecisions you might want to change:\n- **Title and wording:** I called it \"Members get no receipts\" because the glossary uses \"member\", not \"customer\".\n- **Owner:** Nothing in the repo names an owner for receipts, so I put Tom\u00e1s, the person the chat says to ping. Change it if someone else should own it.\n- **No script:** The docs guidelines say a runbook made of a fixed list of commands should become a script. I kept these as written steps because the volunteer has to decide between them (worker running or not, failed jobs or not).\n- **The chat:** I left `notes/chat-receipts.md` in place; you can delete it now that the runbook covers it.\n\n**The cause isn't fixed.** The worker stops because the deploy script restarts only the web app. That script isn't in this repository, so I couldn't change it, and receipts will stop after future deploys until someone adds the worker restart to it.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

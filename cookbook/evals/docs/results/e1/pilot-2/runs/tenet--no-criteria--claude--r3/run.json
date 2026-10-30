@@ -1,0 +1,190 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 3,
+  "id": "tenet--no-criteria--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T09:00:02.665431+00:00",
+  "duration_s": 44.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/architecture.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/README.md docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md docs/runbooks/README.md; do echo \"=== $f\"; cat \"$f\"; done; wc -l docs/README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/README.md docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md docs/runbooks/README.md; do echo \"=== $f\"; cat \"$f\"; done; wc -l docs/README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/README.md docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md docs/runbooks/README.md; do echo \"=== $f\"; cat \"$f\"; done; wc -l docs/README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "wc",
+      "command": "for f in docs/README.md docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/README.md docs/runbooks/README.md; do echo \"=== $f\"; cat \"$f\"; done; wc -l docs/README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adopt.md templates/map.template.md references/philosophy.md templates/philosophy.template.md; diff -r /work/.claude/skills/docs-layout /work/.agents/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "read",
+      "path": "references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/map.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "references/philosophy.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "templates/philosophy.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adopt.md templates/map.template.md references/philosophy.md templates/philosophy.template.md; diff -r /work/.claude/skills/docs-layout /work/.agents/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cd /work/.claude/skills/docs-layout && cat references/adopt.md templates/map.template.md references/philosophy.md templates/philosophy.template.md; diff -r /work/.claude/skills/docs-layout /work/.agents/skills/docs-layout && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "cd",
+      "command": "cd /work && ls cook* 2>/dev/null; grep -rniE \"search|tsvector|elastic\" larder tests docs | head; git log --oneline | head"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls cook*"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE search|tsvector|elastic larder tests docs"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cd /work && ls cook* 2>/dev/null; grep -rniE \"search|tsvector|elastic\" larder tests docs | head; git log --oneline | head"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport re\np='docs/adrs/0001-keep-sessions-in-the-database.md'\ns=open(p).read()\ns=s.replace(\"\"\"the volunteers who run larder keep the number of services they operate down.\"\"\",\"\"\"the volunteers who run larder keep the number of services they operate down\n([philosophy](../philosophy.md#a-new-service-must-do-what-postgres-cannot-and-two-volunteers-must-be-able-to-restore-it)).\"\"\")\nopen(p,'w').write(s)\np='docs/adrs/0002-run-background-jobs-on-postgres.md'\ns=open(p).read()\ns=s.replace(\"\"\"must not be lost, and the volunteers keep the number of services they operate down.\"\"\",\"\"\"must not be lost, and the volunteers keep the number of services they operate down\n([philosophy](../philosophy.md#a-new-service-must-do-what-postgres-cannot-and-two-volunteers-must-be-able-to-restore-it)).\"\"\")\nopen(p,'w').write(s)\np='docs/architecture.md'\ns=open(p).read()\ns=s.replace(\"\"\"- **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.\n\"\"\",\"\"\"- **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.\n\nA part added beside these meets [the tenet on new services](philosophy.md#a-new-service-must-do-what-postgres-cannot-and-two-volunteers-must-be-able-to-restore-it).\n\"\"\")\nopen(p,'w').write(s)\nEOF\ngit diff --stat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 218436,
+    "cached": 200123,
+    "output": 4154,
+    "reasoning": 1418
+  },
+  "cost_usd": 0.2695446,
+  "turns": 10,
+  "last_message": "The rule from issue 70 is now in the docs as a tenet in a new page, `docs/philosophy.md`. The tenet is: **a new service must do what Postgres cannot, and two volunteers must be able to restore it.**\n\n**What the page says**\n- **Why it was written:** Elasticsearch for item search (October 2026) was the third proposal to argue this from scratch, after Redis for sessions (2023) and Redis for Celery (March 2025).\n- **The reason behind the rule:** in March 2025 Redis evicted 300 receipt jobs, and only one volunteer could restore it.\n- **What it rules out:** a service that duplicates something Postgres already does (a cache, a queue, a session store, a search engine), and any service only one volunteer can restore.\n- **What it allows:** services larder doesn't run itself, like the card gateway or a hosted service nobody has to operate.\n- **How a proposal should start:** by showing what Postgres can do on the problem. Postgres full-text search took \"rice\" from 4 s to 40 ms and found \"Rice, brown\".\n- **Where it's applied:** it links decisions 0001 (sessions) and 0002 (background jobs).\n\n**Links added to the tenet**\n- `docs/adrs/0001-keep-sessions-in-the-database.md` and `docs/adrs/0002-run-background-jobs-on-postgres.md`: both already gave \"keep the number of services down\" as a reason in their Context, and now link to the tenet there.\n- `docs/architecture.md`: one line under Parts saying any new part must meet the tenet.\n\n**Choices I made without anyone to ask**\n- **A tenet, not a decision record.** No search code exists yet, so the Elasticsearch-versus-Postgres choice hasn't been made in the repo. When Priya's full-text search lands, it may deserve its own record (0003), which would then be listed under the tenet.\n- **\"Third time this year.\"** Nadia says this in the thread, but the repository only shows the 2023 and 2025 proposals plus this one. The page says \"the third time\" without \"this year\".\n- **The documentation map is empty.** `docs/README.md` doesn't list any kinds of page, so none of the existing pages are formally declared either, philosophy included. The skill's fix is the `adopt` procedure, which starts from a `cook` command that isn't in this repo, so I left the map alone.\n\nNothing is committed. The change is the new page plus three small edits, ready for review.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

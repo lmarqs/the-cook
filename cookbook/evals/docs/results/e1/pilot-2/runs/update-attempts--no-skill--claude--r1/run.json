@@ -1,0 +1,148 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "no-skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "update-attempts--no-skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:59:32.944705+00:00",
+  "duration_s": 27.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md",
+    "docs/runbooks/gateway-timeouts.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat docs/README.md notes/issue-40.md larder/capture.py && grep -rn -i \"attempt\\|retr\\|capture\" docs/ notes/ README* 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i attempt\\|retr\\|capture docs/ notes/ README*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat -n docs/features/payments.md docs/runbooks/gateway-timeouts.md docs/glossary.md docs/architecture.md docs/features/checkout.md; cat tests/test_capture.py; git log --stat -3"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/features/payments.md'\ns=open(p).read()\ns=s.replace(\"\"\"amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members\nbeing charged twice.\"\"\",\"\"\"amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members\nbeing charged twice, and because on busy Fridays retries sent back to back left pantry orders confirmed but never\ncharged.\"\"\")\ns=s.replace(\"\"\"A capture that times out is tried again, up to 3 attempts in all, one after the other.\n\"\"\",\"\"\"A capture that times out is tried again, up to 5 attempts in all, with a growing pause before each retry: 2, 4, 6\nand then 8 seconds. The attempt count and pause step are `ATTEMPTS` and `BACKOFF_SECONDS` in `larder/capture.py`.\n\nThe pauses exist because the gateway answers slowly every Friday from 17:00 to 19:00, its peak. Captures used to make\n3 attempts back to back, all within a second, so all three landed in the same slow minute: one Friday, 58 pantry\norders were confirmed but never charged, and a payments volunteer captured them by hand the next morning. Replaying\nthose timeouts against the gateway's sandbox with 5 attempts paused 2, 4, 6 and 8 seconds apart, 57 of the 58 went\nthrough ([issue 40](../../notes/issue-40.md)).\n\"\"\")\ns=s.replace(\"\"\"## Shaped by\"\"\",\"\"\"## Known limits\n\n- A member whose capture times out waits up to 20 seconds longer on the confirmation page, the sum of the pauses.\n  Accepted as better than capturing pantry orders by hand.\n- A capture can still fail after all 5 attempts during a long gateway slowdown: in the replay, 1 of 58 did. A payments\n  volunteer captures such a pantry order by hand from the gateway's dashboard; [gateway\n  timeouts](../runbooks/gateway-timeouts.md) finds them in the worker's log.\n\n## Shaped by\"\"\")\nopen(p,'w').write(s)\np='docs/runbooks/gateway-timeouts.md'\ns=open(p).read()\ns=s.replace(\"Expected: three lines per pantry order that gave up\",\"Expected: five lines per pantry order that gave up\")\nopen(p,'w').write(s)\nEOF\ngit diff --stat; python3 -m pytest -q 2>&1 | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/features/payments.md'\ns=open(p).read()\ns=s.replace(\"\"\"amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members\nbeing charged twice.\"\"\",\"\"\"amount once a pantry order is confirmed. Its retry rules exist because in 2024 a gateway timeout led to 41 members\nbeing charged twice, and because on busy Fridays retries sent back to back left pantry orders confirmed but never\ncharged.\"\"\")\ns=s.replace(\"\"\"A capture that times out is tried again, up to 3 attempts in all, one after the other.\n\"\"\",\"\"\"A capture that times out is tried again, up to 5 attempts in all, with a growing pause before each retry: 2, 4, 6\nand then 8 seconds. The attempt count and pause step are `ATTEMPTS` and `BACKOFF_SECONDS` in `larder/capture.py`.\n\nThe pauses exist because the gateway answers slowly every Friday from 17:00 to 19:00, its peak. Captures used to make\n3 attempts back to back, all within a second, so all three landed in the same slow minute: one Friday, 58 pantry\norders were confirmed but never charged, and a payments volunteer captured them by hand the next morning. Replaying\nthose timeouts against the gateway's sandbox with 5 attempts paused 2, 4, 6 and 8 seconds apart, 57 of the 58 went\nthrough ([issue 40](../../notes/issue-40.md)).\n\"\"\")\ns=s.replace(\"\"\"## Shaped by\"\"\",\"\"\"## Known limits\n\n- A member whose capture times out waits up to 20 seconds longer on the confirmation page, the sum of the pauses.\n  Accepted as better than capturing pantry orders by hand.\n- A capture can still fail after all 5 attempts during a long gateway slowdown: in the replay, 1 of 58 did. A payments\n  volunteer captures such a pantry order by hand from the gateway's dashboard; [gateway\n  timeouts](../runbooks/gateway-timeouts.md) finds them in the worker's log.\n\n## Shaped by\"\"\")\nopen(p,'w').write(s)\np='docs/runbooks/gateway-timeouts.md'\ns=open(p).read()\ns=s.replace(\"Expected: three lines per pantry order that gave up\",\"Expected: five lines per pantry order that gave up\")\nopen(p,'w').write(s)\nEOF\ngit diff --stat; python3 -m pytest -q 2>&1 | tail -1"
+    }
+  ],
+  "tokens": {
+    "input": 93435,
+    "cached": 80576,
+    "output": 2528,
+    "reasoning": 689
+  },
+  "cost_usd": 0.16951519999999998,
+  "turns": 4,
+  "last_message": "I've updated two pages so the docs match the new capture retries in `larder/capture.py`.\n\n**`docs/features/payments.md`**\n- **Retries:** now says a capture makes up to 5 attempts, with pauses of 2, 4, 6 and 8 seconds between them. It names the two settings in `capture.py` that control this.\n- **Why it changed:** the section now gives the reason from issue 40. The gateway is slow every Friday from 17:00 to 19:00. The old 3 attempts all went out within one second, so 58 pantry orders were confirmed but never charged, and a volunteer had to charge them by hand. When those timeouts were replayed against the gateway's test system with the new pauses, 57 of the 58 went through.\n- **Lead:** now mentions the Friday failures as a second reason the retry rules exist.\n- **New \"Known limits\" section:**\n  - A member can wait up to 20 seconds longer on the confirmation page (the four pauses added up). The issue thread accepted this.\n  - A capture can still fail after all 5 attempts (1 of 58 did in the replay). The workaround is to charge it by hand from the gateway's dashboard, and the section links the gateway timeouts runbook for finding those orders.\n\n**`docs/runbooks/gateway-timeouts.md`**\n- The expected log output now says five `GatewayTimeout` lines per order that gave up, not three.\n\nI didn't write a decision record: this is a setting one change can undo, and `docs/README.md` says those belong on the feature page. The architecture page, glossary and checkout page don't mention the attempt count, so they needed no change. The tests pass (2 passed), and nothing is committed.\n\nThe dates don't line up. You said the change was last week (it's 30 October), but the issue comments are dated 15\u201324 November with no year. So I left dates out of the docs.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

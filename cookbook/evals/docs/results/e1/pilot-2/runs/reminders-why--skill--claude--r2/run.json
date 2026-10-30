@@ -1,0 +1,197 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "id": "reminders-why--skill--claude--r2",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:53:32.451219+00:00",
+  "duration_s": 36.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/README.md",
+    "docs/features/pickup-reminders.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record the decision that pickup reminders go by SMS (not email), using notes/issue-52.md and the repository as evidence."
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v .claude"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls docs/adrs"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-*.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE sms|remind|email|pickup docs README.md larder"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^larder/reminders.py"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat larder/reminders.py docs/adrs/README.md docs/adrs/0001-*.md docs/features/README.md docs/glossary.md docs/architecture.md .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md; grep -rniE \"sms|remind|email|pickup\" docs README.md larder | grep -v \"^larder/reminders.py\"; git log --stat -5 | head -40"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/pickup-reminders.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 199869,
+    "cached": 178975,
+    "output": 3036,
+    "reasoning": 845
+  },
+  "cost_usd": 0.263611,
+  "turns": 9,
+  "last_message": "I've written down why pickup reminders go by SMS, in a new page at `docs/features/pickup-reminders.md`. I also added it to the list in `docs/features/README.md`. Only docs changed, so I didn't run the tests.\n\n**What the page says**, all taken from `notes/issue-52.md` and `larder/reminders.py`:\n- The day before a pickup, `remind` texts the member that their pantry order is ready. A setting called `CHANNEL` in the code picks SMS.\n- **The trial:** Email is free and SMS costs about 40 euros a month, so people keep asking to switch. Issue 52 was the third request in one year. Reminders went by email from April to June 2025:\n  - 34% of the reminder emails were never opened.\n  - Missed pickups rose from 6% of pantry orders to 13%. Each missed pickup is a packed bag whose fresh food is thrown away at closing time.\n- **Why email fails here:** many members share one phone within a family and never check email, but they see texts.\n- **Switching back:** reminders went back to SMS on July 1, 2025, and missed pickups were back to 6% by August.\n\n**Why a feature page and not a decision record:** the docs only give a decision its own record when reversing it would affect several parts of the app. This choice is one setting in one file, so the reason belongs on the page describing reminders. The page opens with the reason, so anyone proposing email will find the numbers before they start.\n\n**What I left out:**\n- A line saying \"bring evidence that members now read email before proposing it again.\" Nobody in the repository said that, so I didn't put it in the team's mouth. Add it if you agree with it.\n- A year for issue 52. The thread gives dates like \"Sep 2\" without a year, so the page just calls it issue 52.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

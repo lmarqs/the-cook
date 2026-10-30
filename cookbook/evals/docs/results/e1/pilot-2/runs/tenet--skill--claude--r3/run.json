@@ -1,0 +1,162 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 3,
+  "id": "tenet--skill--claude--r3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T09:04:28.916500+00:00",
+  "duration_s": 46.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0001-keep-sessions-in-the-database.md",
+    "docs/adrs/0002-run-background-jobs-on-postgres.md",
+    "docs/philosophy.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout"
+      }
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.claude"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "for f in docs/adrs/*.md docs/architecture.md docs/glossary.md docs/features/*.md docs/runbooks/*.md .claude/skills/docs-layout/templates/philosophy.template.md .claude/skills/docs-layout/references/philosophy.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni search\\|tsvector\\|redis\\|elastic\\|procrastinate --include=*.py ."
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE search|tsvector|redis|elastic|procrastinate larder tests README.md conftest.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -rniE \"search|tsvector|redis|elastic|procrastinate\" larder tests README.md conftest.py; echo; cat README.md"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/philosophy.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\nimport re\np='docs/adrs/0001-keep-sessions-in-the-database.md'\ns=open(p).read()\ns=s.replace(\"the volunteers who run larder keep the number of services they operate down.\",\"the volunteers who run larder keep the number of services they operate down\\n([one database and one web app](../philosophy.md#larder-runs-one-database-and-one-web-app-a-new-service-must-do-what-postgres-cannot-with-two-volunteers-able-to-restore-it)).\")\nopen(p,'w').write(s)\np='docs/adrs/0002-run-background-jobs-on-postgres.md'\ns=open(p).read()\ns=s.replace(\"the volunteers keep the number of services they operate down.\",\"the volunteers keep the number of services they operate down\\n([one database and one web app](../philosophy.md#larder-runs-one-database-and-one-web-app-a-new-service-must-do-what-postgres-cannot-with-two-volunteers-able-to-restore-it)).\")\nopen(p,'w').write(s)\nEOF\ngit diff"
+    }
+  ],
+  "tokens": {
+    "input": 200079,
+    "cached": 179328,
+    "output": 3386,
+    "reasoning": 867
+  },
+  "cost_usd": 0.26953760000000004,
+  "turns": 9,
+  "last_message": "I wrote the rule into the docs as a tenet in a new page, `docs/philosophy.md`. The docs map says a rule that guides many decisions is a tenet, not a decision record, and this one has already settled three proposals. Nothing is committed.\n\n**What the page says**\n- **The tenet** (Ana's wording from issue 70): larder runs one database and one web app; a new service must do something Postgres cannot, and two volunteers must be able to restore it.\n- **What it rules out:** adding a service for a job Postgres already does, and running any service fewer than two volunteers can restore.\n- **What it allows:** services larder doesn't run itself, like the card gateway or a hosted service nobody has to operate. Ana was explicit that the rule doesn't mean \"never\".\n- **How it came up:**\n  - **2023, Redis for sessions:** turned down.\n  - **March 2025, Redis for Celery's queue:** it ran, then evicted 300 receipt jobs one Saturday night.\n  - **Issue 70, Elasticsearch for item search:** Postgres full-text search brought a \"rice\" search from four seconds to 40 ms and found \"Rice, brown\".\n- **Where it was applied:** it links both decision records, 0001 (sessions) and 0002 (background jobs).\n\n**Other edits**\n- Both decision records already mentioned \"keep the number of services down\" as a reason for their choice. I added a link from that line to the new tenet in each.\n\n**Things to check**\n- **\"Third time this year\":** the issue thread says this, but the three cases span 2023, 2025 and issue 70. The note gives no year for the issue (probably 2026). So the page says \"three times\" and lists the years it can support.\n- **Search isn't built yet:** the code has no search, so the page says the proposal \"turned to\" Postgres search rather than that it exists. Once it ships, the search work could get its own feature page.\n- **Long link:** the tenet is one long sentence, as the docs template asks, so its heading link is long. Shortening the heading would shorten the link.\n- **Not written:** no decision record for turning down Elasticsearch. Switching search to Postgres is a small change one change could undo, so it doesn't meet the bar for a record. Leo's off-topic Sunday bug also isn't in the docs.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

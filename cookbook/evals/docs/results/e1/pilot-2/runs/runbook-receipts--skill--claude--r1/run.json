@@ -1,0 +1,195 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "runbook-receipts--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T08:33:22.666789+00:00",
+  "duration_s": 45.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md",
+    "scripts/restart-receipts-worker.sh"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git ls-files && cat notes/chat-receipts.md docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Write a runbook for \"receipts stopped\" from notes/chat-receipts.md"
+      }
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn -i receipt\\|worker\\|procrastinate\\|deploy docs larder README.md .gitignore"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat README.md docs/features/README.md docs/features/payments.md larder/receipts.py; git log --stat | head -40"
+    },
+    {
+      "kind": "edit",
+      "path": "scripts/restart-receipts-worker.sh",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "other",
+      "tool": "chmod",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && bash -n scripts/restart-receipts-worker.sh && echo ok && python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "other",
+      "tool": "bash",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && bash -n scripts/restart-receipts-worker.sh && echo ok && python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && bash -n scripts/restart-receipts-worker.sh && echo ok && python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "chmod +x scripts/restart-receipts-worker.sh && bash -n scripts/restart-receipts-worker.sh && echo ok && python3 -m pytest -q 2>&1 | tail -2"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 202026,
+    "cached": 178472,
+    "output": 4292,
+    "reasoning": 1248
+  },
+  "cost_usd": 0.30990239999999997,
+  "turns": 10,
+  "last_message": "I've written a runbook for when receipts stop and a script that does the fix. The script passes a syntax check but hasn't been run against the real server, because neither the server nor its database is here. Whoever is on call next should treat its first real run with some care.\n\n**What's new**\n- **`docs/runbooks/receipts-stopped.md`**: the runbook, built from Tom\u00e1s's chat. It explains:\n  - **Cause:** the deploy script restarts only the web app, so the worker that sends receipts stays dead after a deploy.\n  - **Steps:** each one shows the output that means it worked, such as `inactive (dead)`, the waiting receipts dropping by about 40 a minute, and none left at the end. It also says a few failed jobs are normal: they are receipts to bounced email addresses.\n  - **If the worker dies again:** copy the last 50 lines of its log and send them to Tom\u00e1s.\n  - **By hand:** the individual commands, in case the script can't be used.\n- **`scripts/restart-receipts-worker.sh`**: shows the worker's status and the waiting receipts, and starts the worker only if it is down. It then prints the count every minute until it reaches zero. If the worker dies again, it prints the last 50 log lines and stops. The docs rules say a fixed list of commands should become a script, which is why this exists.\n- **`docs/runbooks/README.md`**: now lists the new runbook.\n\n**Things I assumed that someone should check**\n- **Owner:** I named Tom\u00e1s as the owner and the person to contact, because the chat says \"ping me\". The repo doesn't say who actually owns this.\n- **Access:** the runbook assumes the volunteer has a shell on the larder server with `sudo` and `psql` access to the `larder` database, as Tom\u00e1s did. I couldn't find the server's name or how volunteers get access, so a new volunteer still needs to be told.\n- **Real fix:** the deploy script isn't in this repo, so I couldn't make it restart the worker. Until someone does, this will keep happening after deploys. The runbook ends with a check to do after each deploy as a stopgap.\n\nThe tests pass. Nothing is committed. I left `notes/chat-receipts.md` as it was.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

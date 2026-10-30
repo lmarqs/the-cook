@@ -1,0 +1,76 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A runbook is written under docs/runbooks/, the kind the map gives what to do when a trigger fires.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/runbooks/[!R]*.md: ['docs/runbooks/members-get-no-receipts.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/runbooks/README.md', 'docs/runbooks/members-get-no-receipts.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The runbook opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/runbooks/members-get-no-receipts.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The runbook says why it exists, told as it happened: the worker stayed down after a deploy and receipts stopped\nuntil someone who knew the fix was found, not only a conclusion such as \"receipts can stop\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "\u201cWritten after it happened twice: the first time nobody on call knew what to do and members waited until noon, and on September 14 Tom\u00e1s found the worker stopped since a deploy at 23:02, because the deploy script restarts only the web app.\u201d",
+      "judged_by": "codex"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The run gives the query that counts the waiting jobs in procrastinate_jobs, on the runbook or in a script the runbook\nnames.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /^\\+.*procrastinate_jobs/ in ['diff']: {'diff': '+   `psql larder -c \"select status, count(*) from procrastinate_jobs'}",
+      "judged_by": null
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "The runbook names a script: the map turns steps that are a fixed list of commands into a script the runbook names.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "match /\\b(scripts|bin)/[\\w.-]+/ in ['docs/runbooks/members-get-no-receipts.md']: no match",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.8333333333333334
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": false,
+    "share": 0.8333333333333334
+  }
+}

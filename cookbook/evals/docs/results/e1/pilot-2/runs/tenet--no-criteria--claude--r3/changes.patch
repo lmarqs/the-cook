@@ -1,0 +1,73 @@
+diff --git a/docs/adrs/0001-keep-sessions-in-the-database.md b/docs/adrs/0001-keep-sessions-in-the-database.md
+index d4ebd12..f144482 100644
+--- a/docs/adrs/0001-keep-sessions-in-the-database.md
++++ b/docs/adrs/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,8 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the volunteers who run larder keep the number of services they operate down
++([philosophy](../philosophy.md#a-new-service-must-do-what-postgres-cannot-and-two-volunteers-must-be-able-to-restore-it)).
+ 
+ ## Options
+ 
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+index 8b4d536..4a87495 100644
+--- a/docs/adrs/0002-run-background-jobs-on-postgres.md
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,8 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the volunteers keep the number of services they operate down
++([philosophy](../philosophy.md#a-new-service-must-do-what-postgres-cannot-and-two-volunteers-must-be-able-to-restore-it)).
+ 
+ ## Options
+ 
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..2c5e4c2 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -10,6 +10,9 @@ where a payment is captured.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
++A part added beside these meets
++[the tenet on new services](philosophy.md#a-new-service-must-do-what-postgres-cannot-and-two-volunteers-must-be-able-to-restore-it).
++
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..299bcd2
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,25 @@
++# Philosophy
++
++For whoever proposes a service for larder to run, or weighs one that no decision record settles. It holds what the
++team favors. Written in October 2026 after a proposal to add Elasticsearch for pantry item search
++([issue 70](../notes/issue-70.md)) argued the same trade-off as Redis for sessions in 2023 and Redis for Celery in
++March 2025, each time from the start.
++
++## Tenets
++
++### A new service must do what Postgres cannot, and two volunteers must be able to restore it
++
++Larder runs one Postgres database and one web app, with its worker. Each service added beside them is one more thing
++a volunteer must keep alive and restore on a Saturday night, and when only one volunteer can, larder stops when that
++volunteer is away. In March 2025 the Redis instance holding Celery's queue evicted 300 receipt jobs, and the one
++volunteer who knew it spent a day restoring it and resending receipts by hand.
++
++Rules out a service that duplicates what Postgres already does, such as a cache, a queue, a session store or a search
++engine, and a service only one volunteer can restore. It does not rule out a service larder does not run: the card
++gateway is outside, and a hosted service nobody has to operate is welcome.
++
++A proposal starts by showing what Postgres does on the problem. In October 2026 Postgres full-text search on the item
++name brought a search for "rice" from four seconds to 40 ms and found "Rice, brown", where Elasticsearch was proposed.
++
++Applied in [keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md) and
++[run background jobs on Postgres](adrs/0002-run-background-jobs-on-postgres.md).
