@@ -1,0 +1,8 @@
+owning_page: docs/features/pantry-orders.md
+facts:
+  - id: confirmed-price
+    copies: [docs/architecture.md, docs/features/checkout.md, docs/features/payments.md]
+    stale_at: docs/features/payments.md
+    stale: >-
+      A pantry order is captured at the catalog's current prices, so a member always pays what the pantry charges
+      today, even when a price changed after they confirmed.

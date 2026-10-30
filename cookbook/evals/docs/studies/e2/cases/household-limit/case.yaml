@@ -1,0 +1,7 @@
+owning_page: docs/features/ordering-limits.md
+facts:
+  - id: household-limit
+    copies: [docs/architecture.md, docs/features/checkout.md, docs/glossary.md]
+    stale_at: docs/features/checkout.md
+    stale: >-
+      A member holds at most 2 open pantry orders at a time; each member's orders are counted on their own.

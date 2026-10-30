@@ -1,0 +1,5 @@
+owning_page: docs/adrs/0001-keep-sessions-in-the-database.md
+false_leads:
+  docs/adrs/0001-keep-sessions-in-the-database.md: >-
+    For whoever changes login or the database. Sessions live in Postgres for now, a choice made while larder ran on
+    one server; nothing depends on it, and keeping them in the web app's memory is the planned next step.

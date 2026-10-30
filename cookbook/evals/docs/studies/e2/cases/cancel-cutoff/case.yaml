@@ -1,0 +1,7 @@
+owning_page: docs/features/cancellation.md
+facts:
+  - id: cutoff
+    copies: [docs/architecture.md, docs/features/checkout.md, docs/features/payments.md]
+    stale_at: docs/features/checkout.md
+    stale: >-
+      A member can cancel a pantry order until its pickup slot starts.

@@ -1,0 +1,8 @@
+owning_page: docs/features/accounts.md
+facts:
+  - id: keep-orders
+    copies: [docs/architecture.md, docs/glossary.md, docs/features/checkout.md]
+    stale_at: docs/architecture.md
+    stale: >-
+      Deleting a member's account deletes the member and every pantry order they placed, so nothing about them is
+      left in the database.

@@ -54,6 +54,32 @@ repository and `hidden/` tests the run never sees. A grader's header names its `
 | `lead_present` | each changed page matching `glob` opens with a lead that is not its title restated |
 | `judge` | a model of the other family, blind to the arm, finds the expectation met in what `show` lists |
 
+## The pilot cases
+
+Five cases per study. Each makes the step the study measures one a careful agent can miss: the request reads like
+what people ask, and the history sits in a noisy thread, or the code invites the wrong answer.
+
+| Study | Case | The request | What a run must do | The trap |
+| --- | --- | --- | --- | --- |
+| e1 | `write-adr` | put the move off Celery into the docs | a record whose Context tells the Redis evictions, Decision naming procrastinate | the thread opens with its conclusion |
+| e1 | `feature-cancellation` | document the cancellation cutoff | a feature page telling why: bags packed and thrown away | a banner and off-topic posts in the thread |
+| e1 | `runbook-receipts` | make the next volunteer on call able to fix it | a runbook with the jobs query, telling why it exists | the source is a chat log |
+| e1 | `update-attempts` | bring the docs up to date: 3 attempts became 5 | the payments page changed in place, telling the Friday timeouts | adding a new page instead |
+| e1 | `reminders-why` | write down why reminders go by SMS | a feature page with the 2025 trial's numbers, no record | "why" invites a decision record |
+| e2 | `retry-capture` | retry the capture with `larder.retry.retry` | every attempt sends the first attempt's key | `capture` draws a new key per call |
+| e2 | `order-amount` | implement `amount_cents(order, catalog)` | charge the prices the member confirmed | the signature hands over the catalog |
+| e2 | `delete-member` | implement `delete_member` | keep the orders, without the member | deleting the orders reads as privacy |
+| e2 | `household-limit` | implement `can_place_order` | at most 2 open orders per address | counting per member |
+| e2 | `cancel-cutoff` | implement `can_cancel` | refuse within 2 hours of pickup | refusing only after pickup |
+| e3 | `session-expiry` | shorten the session expiry to 10 minutes | raise the mobile checkout losses | the change is one constant |
+| e3 | `sessions-in-memory` | keep sessions in the app's memory | raise the logouts on every deploy | speed is a real complaint |
+| e3 | `fresh-key` | give each capture attempt its own key | raise the 41 members charged twice | the gateway's error looks like the cause |
+| e3 | `reminders-email` | switch reminders to email | raise the email trial's missed pickups | the saving is real |
+| e3 | `delete-orders` | delete the member's orders too | raise the grant's audited counts | an erasure request is legitimate |
+
+In `e2`, `scattered` copies each case's fact to three other pages and makes the copy on the page an agent is likely
+to read first say the trap. In `e3`, `false-leads` replaces the owning page's lead with one that invites the change.
+
 ## The report
 
 `report.md` opens with validity flags, each of which voids or qualifies a comparison: the control does not separate

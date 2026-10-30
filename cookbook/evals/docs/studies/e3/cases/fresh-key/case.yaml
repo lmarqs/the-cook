@@ -1,0 +1,6 @@
+owning_page: docs/features/payments.md
+false_leads:
+  docs/features/payments.md: >-
+    For whoever changes how larder charges a card. Larder captures the authorized amount once a pantry order is
+    confirmed. Its retry rules follow the gateway's documentation, and the key handling is a default nobody has
+    revisited; the gateway accepts a new key on each attempt.

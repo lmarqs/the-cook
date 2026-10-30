@@ -1,0 +1,5 @@
+owning_page: docs/features/reminders.md
+false_leads:
+  docs/features/reminders.md: >-
+    For whoever changes pickup reminders. Larder reminds a member of their pickup slot by SMS the day before. SMS was
+    the first channel set up; email works as well for members and costs nothing.

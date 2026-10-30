@@ -2,6 +2,5 @@
 max_turns: 40
 timeout_seconds: 900
 ---
-Record in the repository's documentation our decision to run background jobs on Postgres with procrastinate instead
-of Celery with Redis. The discussion is in notes/issue-12.md. Nobody is available to answer questions; use what the
-repository holds.
+Background jobs moved from Celery to procrastinate last month; issue 12 in notes/ has the discussion. Put what the
+next maintainer needs into the docs. Nobody is available to answer questions; use what the repository holds.
