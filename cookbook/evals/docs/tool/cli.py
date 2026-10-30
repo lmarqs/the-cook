@@ -24,6 +24,7 @@ def main(argv: list[str] | None = None) -> int:
     fixture.add_argument("case")
     fixture.add_argument("arm")
     fixture.add_argument("dest", type=Path)
+    fixture.add_argument("--source-run", type=Path, help="for a study with a source: the writer's run directory")
 
     run = commands.add_parser("run", help="run a study's jobs in the sandbox")
     run.add_argument("study", choices=studies())
@@ -35,6 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("-j", "--parallel", type=int, default=2)
     run.add_argument("--max-cost-usd", type=float)
     run.add_argument("--seed", type=int)
+    run.add_argument("--from", dest="source_batch", help="for a study with a source: the source study's batch")
 
     grade = commands.add_parser("grade", help="grade a batch's runs")
     grade.add_argument("study", choices=studies())
@@ -60,12 +62,16 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "fixture":
         study = load_study(args.study)
-        print(fixtures.build(study.case(args.case), args.arm, args.dest.resolve()))
+        if study.source:
+            print(fixtures.build_handoff(study, study.case(args.case), args.arm, args.source_run, args.dest.resolve()))
+        else:
+            print(fixtures.build(study.case(args.case), args.arm, args.dest.resolve()))
     elif args.command == "run":
         study = load_study(args.study)
         seed = args.seed if args.seed is not None else random.SystemRandom().randrange(2**31)
         batch = args.batch or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        selected = harness.jobs(study, args.case, args.arm, args.harness, args.runs or study.runs, seed)
+        source = RESULTS / study.source / args.source_batch if study.source and args.source_batch else None
+        selected = harness.jobs(study, args.case, args.arm, args.harness, args.runs or study.runs, seed, source)
         print(f"batch {batch}: {len(selected)} jobs, seed {seed}", flush=True)
         print(harness.run(study, batch, selected, args.parallel, args.max_cost_usd, seed))
     elif args.command == "grade":

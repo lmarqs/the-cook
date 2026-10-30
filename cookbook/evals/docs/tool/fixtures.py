@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from tool import arms
-from tool.cases import FIXTURE, REPO, Case
+from tool.cases import FIXTURE, REPO, Case, Study, load_study
 
 COOK = REPO / "cook"
 RECIPE = "io.github.lmarqs.cookbook:docs:0.0.0#seed"
@@ -46,8 +46,8 @@ def cook(repo: Path) -> None:
     (repo / "cook.lock").unlink()
 
 
-def build(case: Case, arm: str, dest: Path) -> Path:
-    """Writes the run's repository at `dest` and returns it, committed on `main`."""
+def build(case: Case, arm: str, dest: Path, commit: bool = True) -> Path:
+    """Writes the run's repository at `dest` and returns it, committed on `main` unless `commit` is false."""
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(FIXTURE, dest, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
@@ -57,7 +57,37 @@ def build(case: Case, arm: str, dest: Path) -> Path:
     git(dest, "init", "-q")
     cook(dest)
     arms.apply(case.study, arm, dest, case)
-    (dest / ".gitignore").write_text("__pycache__/\n.pytest_cache/\n")
-    git(dest, "add", "-A")
-    git(dest, "commit", "-q", "-m", "larder")
+    if commit:
+        commit_all(dest)
+    return dest
+
+
+def commit_all(repo: Path) -> None:
+    (repo / ".gitignore").write_text("__pycache__/\n.pytest_cache/\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "larder")
+
+
+UNWRITTEN = "unwritten"
+
+
+def build_handoff(study: Study, case: Case, arm: str, source_run: Path | None, dest: Path) -> Path:
+    """The reader's repository: the writer's as its run left it, without the case's `remove` paths, in one commit so
+    no history holds the sources. The `unwritten` arm starts from the writer's `skill` repository, before any writing."""
+    writer = load_study(study.source).case(case.id)
+    build(writer, "skill" if arm == UNWRITTEN else arm, dest, commit=False)
+    if source_run is not None:
+        patch = source_run / "changes.patch"
+        if patch.read_text().strip():
+            git(dest, "apply", "--whitespace=nowarn", str(patch.resolve()))
+    for relative in case.data.get("remove", []):
+        target = dest / relative
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
+    files = case.dir / "files"
+    if files.is_dir():
+        shutil.copytree(files, dest, dirs_exist_ok=True)
+    commit_all(dest)
     return dest

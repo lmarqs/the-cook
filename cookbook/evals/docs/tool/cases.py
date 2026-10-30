@@ -60,6 +60,7 @@ class Study:
     margins: dict
     cases: list[Case]
     primary: str = "pass"
+    source: str | None = None
 
     @property
     def reference(self) -> str:
@@ -102,6 +103,7 @@ def load_study(study: str, root: Path = STUDIES) -> Study:
         config.get("margins", {"success": 0.10, "tokens": 0.15}),
         cases,
         primary,
+        config.get("source"),
     )
 
 

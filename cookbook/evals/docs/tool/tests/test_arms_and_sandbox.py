@@ -44,6 +44,8 @@ def test_e1_arms_differ_only_by_the_skill_or_the_criteria(built):
     assert removed and all(p.split("/")[2] == "docs-layout" for p in removed)
     assert changed(skill, built[("e1", "no-criteria")]) == {"docs/README.md"}
     assert "## Decisions, `adrs/`" not in built[("e1", "no-criteria")]["docs/README.md"]
+    assert changed(skill, built[("e1", "bare")]) == removed | {"docs/README.md"}
+    assert built[("e1", "bare")]["docs/README.md"] == built[("e1", "no-criteria")]["docs/README.md"]
 
 
 def test_e2_scattered_adds_three_copies_one_of_them_stale(built):

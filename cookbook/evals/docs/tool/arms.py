@@ -76,6 +76,7 @@ TRANSFORMS = {
     ("e1", "skill"): [],
     ("e1", "no-skill"): [remove_skill],
     ("e1", "no-criteria"): [remove_criteria],
+    ("e1", "bare"): [remove_skill, remove_criteria],
     ("e2", "owned"): [],
     ("e2", "scattered"): [scatter],
     ("e3", "leads"): [],

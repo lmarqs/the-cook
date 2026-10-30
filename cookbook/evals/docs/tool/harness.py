@@ -25,6 +25,7 @@ class Job:
     arm: str
     harness: str
     run: int
+    source: str = ""
 
     @property
     def id(self) -> str:
@@ -61,15 +62,36 @@ def versions() -> dict:
 
 
 def jobs(study: Study, cases: list[str] | None, arms: list[str] | None, harnesses: list[str] | None,
-         runs: int, seed: int) -> list[Job]:
-    selected = [
-        Job(case.id, arm, harness, n)
-        for case in study.cases if not cases or case.id in cases
-        for arm in study.arms if not arms or arm in arms
-        for harness in study.harnesses if not harnesses or harness in harnesses
-        for n in range(1, runs + 1)
-    ]
+         runs: int, seed: int, source_batch: Path | None = None) -> list[Job]:
+    """Every (case, arm, harness, run) selected; a study with a `source` takes one job per writer run instead."""
+    if study.source:
+        selected = handoff_jobs(study, source_batch)
+    else:
+        selected = [Job(case.id, arm, harness, n) for case in study.cases for arm in study.arms
+                    for harness in study.harnesses for n in range(1, runs + 1)]
+    selected = [j for j in selected if (not cases or j.case in cases) and (not arms or j.arm in arms)
+                and (not harnesses or j.harness in harnesses)]
     random.Random(seed).shuffle(selected)
+    return selected
+
+
+def handoff_jobs(study: Study, source_batch: Path | None) -> list[Job]:
+    """A reader job per writer run of a case and arm the study has, except runs the provider refused; and an
+    `unwritten` job per case, harness and run number the writers had."""
+    if source_batch is None:
+        raise ValueError(f"{study.id} reads a batch of {study.source}: pass --from <batch>")
+    case_ids = {c.id for c in study.cases}
+    selected, slots = [], set()
+    for directory in sorted((source_batch / "runs").iterdir()):
+        record = json.loads((directory / "run.json").read_text())
+        if record["case"] not in case_ids or record["harness"] not in study.harnesses:
+            continue
+        slots.add((record["case"], record["harness"], record["run"]))
+        if record["arm"] in study.arms and not refused(record):
+            source = directory.relative_to(RESULTS) if directory.is_relative_to(RESULTS) else directory
+            selected.append(Job(record["case"], record["arm"], record["harness"], record["run"], str(source)))
+    selected += [Job(case, fixtures.UNWRITTEN, harness, run) for case, harness, run in sorted(slots)
+                 if fixtures.UNWRITTEN in study.arms]
     return selected
 
 
@@ -95,7 +117,11 @@ def run_job(study: Study, job: Job, batch_dir: Path) -> dict:
     directory.mkdir(parents=True, exist_ok=True)
 
     def run_once() -> dict:
-        repo = fixtures.build(case, job.arm, directory / "repo")
+        if study.source:
+            source = RESULTS / job.source if job.source else None
+            repo = fixtures.build_handoff(study, case, job.arm, source, directory / "repo")
+        else:
+            repo = fixtures.build(case, job.arm, directory / "repo")
         argv = sandbox.command(repo, agent_command(job.harness, study.harnesses[job.harness], case),
                                eval_dir=batch_dir / "eval")
         started = datetime.now(timezone.utc)

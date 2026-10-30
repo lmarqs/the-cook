@@ -1,5 +1,5 @@
 # E1, the skill: does an agent with docs-layout write pages to the map's criteria?
-arms: [skill, no-skill, no-criteria]
+arms: [skill, no-skill, bare, no-criteria]
 harnesses:
   claude: {model: claude-opus-5-5}
   codex: {model: gpt-6.1-sol, effort: medium}
