@@ -9,10 +9,24 @@ inside a page may repeat what the same page's body says.
 
 - What the repository shows nowhere else: the reason behind a choice, a convention, a rule and its scope. The code,
   contract files and version history hold their own facts, and a page links to them.
-- What is true now.
-- Its reasoning: a decision record gives the options and the reasons, a rule gives its reason, and a reference page
-  links the decisions that shaped it.
+- What is true now, and why it is so.
+- Its reasons, told as they happened: the situation as it was met, what it cost and what was tried, then the
+  conclusion. "We need a queue" is a conclusion; "the payment call timed out inside the request, and customers who
+  retried were charged twice" is a reason a reader can test. A decision record gives the options and the reasons, a
+  rule gives its reason, and a reference page links the decisions that shaped it.
 - Front matter holds keys a program reads, such as a site generator's.
+
+## The lead
+
+Every page opens, under its title, with its lead: what a reader needs to know about the page before reading it, in
+this order:
+
+1. Who reads it, and when they reach for it.
+2. What it says.
+3. Why it exists: what moved the team to write it, told as it happened.
+
+A kind may name more for its lead. The lead is written last and read first: a page whose lead cannot be written is
+not ready, and a body that says more or less than its lead fails review.
 
 ## Terms
 

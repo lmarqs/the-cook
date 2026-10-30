@@ -1,6 +1,7 @@
 # [[fill: the trigger: the alert, request or symptom]]
 
-[[fill: the outcome, one line on the impact, and the owner]]
+[[fill: the lead: who runs it and when; the outcome, with one line on the impact; what moved the team to write
+it; the owner]]
 
 ## Before you begin
 

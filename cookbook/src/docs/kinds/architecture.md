@@ -6,5 +6,5 @@ type: explanation.
 - One page. The lead says what the system is and where its boundary is.
 - Sections: `Parts`, each part with its responsibility and where it lives in the repository; `How they connect`, the
   dependencies and main flows, with diagrams where they help.
-- Each structural choice links its record in `adrs/`; the page states no reasons. Interface rules, behavior and
+- Each structural choice links its record in `adrs/`; the page states no reasons for them. Interface rules, behavior and
   requirements live in their own kinds.

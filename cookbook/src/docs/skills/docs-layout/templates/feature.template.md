@@ -1,6 +1,7 @@
 # [[fill: the unit of behavior]]
 
-[[fill: a lead paragraph: what the unit is and what it is for]]
+[[fill: the lead: who reads this page and when; what the unit is; why it exists, or why it is as it is: what went
+wrong, or could not be done, without it]]
 
 ## [[fill: a part of the unit, following its own structure]]
 

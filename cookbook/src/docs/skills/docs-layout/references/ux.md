@@ -12,7 +12,8 @@ Group the rules under headings by subject, as the example does; each rule is one
 ```markdown
 # Error messages
 
-Scope: every message the `acme` command line prints on a failure.
+For whoever writes or reviews a failure message. Set in 2024, when half the support tickets quoted a message that
+named no next step. Scope: every message the `acme` command line prints on a failure.
 
 ## Content
 

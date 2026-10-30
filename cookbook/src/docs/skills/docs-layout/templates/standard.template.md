@@ -1,6 +1,7 @@
 # [[fill: the subject of the standard]]
 
-Scope: [[fill: the interfaces this standard covers]].
+[[fill: the lead: who reads this standard and when; what moved the team to set it]] Scope: [[fill: the interfaces
+this standard covers]].
 
 ## [[fill: a group of rules]]
 

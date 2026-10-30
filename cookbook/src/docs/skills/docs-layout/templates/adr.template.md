@@ -1,8 +1,11 @@
 # [[fill: the decision taken, as a short sentence]]
 
+[[fill: the lead: whom the decision concerns; the decision; in a clause, what moved it]]
+
 ## Context
 
-[[fill: the forces at play: the problem, the constraints and the goals that make this a decision]]
+[[fill: what happened: the situation as it was met, what it cost and what was tried; then the forces the options are
+judged by]]
 
 ## Options
 
@@ -11,7 +14,8 @@
 
 ## Decision
 
-[[fill: the choice, and why it won over the other options]]
+[[fill: the choice, and why it won over the other options; the product that implements it, if any, and why that
+one]]
 
 ## Consequences
 

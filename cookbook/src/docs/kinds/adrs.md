@@ -10,8 +10,11 @@ explanation.
   reverse; a convention that static checking, such as linting, enforces, since its configuration already states it.
 - The file is `NNNN-<slug>.md`, numbered in sequence; a deleted record's number is best left unused, since an old
   reference may still name it. The title names the decision taken.
-- Sections, in order: `Context`, the forces at play; `Options`, each alternative and why it lost; `Decision`, the
-  choice and why it won; `Consequences`, what becomes easier and what it costs.
+- The lead says whom the decision concerns, the decision, and in a clause what moved it.
+- Sections, in order: `Context`, what happened: the situation that raised the decision, what it cost and what was
+  tried, then the forces the options are judged by; `Options`, each alternative and why it lost; `Decision`, the
+  choice and why it won, with the product that implements it, if any, and why that one; `Consequences`, what becomes
+  easier and what it costs.
 - A record fits on about one page.
 - A decision that changes is edited in place: it keeps its number, its title and slug follow the new choice, and
   `Options` keeps the previous choice and why it changed. A record is deleted when its decision is reversed outright,

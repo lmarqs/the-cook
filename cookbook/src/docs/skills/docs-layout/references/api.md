@@ -13,7 +13,8 @@ Sections after `Contract` hold what the interface has of authentication, version
 ```markdown
 # Orders API
 
-The Orders API lets the mobile app and partner shops place and track orders.
+For whoever integrates a partner or changes the API. The Orders API lets the mobile app and partner shops place and
+track orders. Partners asked for it in 2024, when they were keying 200 emailed orders a day into acme by hand.
 
 ## Contract
 
