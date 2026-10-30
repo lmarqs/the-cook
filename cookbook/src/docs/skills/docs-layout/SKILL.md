@@ -1,6 +1,6 @@
 ---
 name: docs-layout
-description: Writes and reviews the pages of docs/, the source of truth people and agents share, by the criteria in its map, docs/README.md. Use it to record a decision; describe a feature, an interface, a UX standard, a runbook, the architecture or the tenets; state the repository's Objective; add a glossary term; declare a kind of the team's own; put a fact learned while working on the page that owns it; review or fix docs/; or adopt the layout in an existing repository. Code comments and READMEs outside docs/, the root README's Objective aside, follow the repository's own guidance.
+description: Writes and reviews the pages of docs/, the source of truth people and agents share, by the criteria in its map, docs/README.md. Use it to record a decision; describe a feature, an interface, a UX standard, a runbook, the architecture or the tenets; state the repository's Objective; add a glossary term; declare a kind of the team's own; review or fix docs/; or adopt the layout in an existing repository. Code comments and READMEs outside docs/, the root README's Objective aside, follow the repository's own guidance.
 argument-hint: "[adopt | review [--fix] | <kind> [title] | term <term> | kind <name> | objective]"
 ---
 
@@ -23,7 +23,7 @@ start of every task here: this skill says how to work, the map says what goes wh
 | `review` | [Review](#review) the tree and report; files stay as they are |
 | `review --fix` | Review, then [fix what it finds](#review---fix) |
 | `adopt` | Follow [references/adopt.md](references/adopt.md) from its first step |
-| None | Pick the procedure the request fits; a fact learned while working goes to [its owner](#record-what-you-learn) |
+| None | Pick the procedure the request fits |
 
 ## Write a page
 
@@ -94,11 +94,6 @@ to the page that owns them, remove the file and its guide line, and point its li
    move it to the goal or drop it as they decide.
 4. Where another page states the problem or the goal, replace the statement with a link to `README.md#objective`.
 5. Run the check.
-
-## Record what you learn
-
-During any task, a fact learned about the system goes to its owner in the same change, where people and every agent
-read it: a behavior to `features/`, a reason to `adrs/`, a fix for something that fires to `runbooks/`.
 
 ## Review
 

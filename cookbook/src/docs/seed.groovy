@@ -47,7 +47,7 @@ and Codex 0.160.1.
 criteria, where a fact goes, what a page holds, terms, guides and the check command | Always | owned |
 | `<skills>/docs-layout/` | `SKILL.md`, `references/`, `scripts/check.sh` and `templates/` | Always | owned |
 | Each `--instructions` file | The section `docs`: the argument line as an HTML comment, then a list item \
-saying `docs/` is the source of truth, where a learned fact goes, and the check and skill to use | \
+saying `docs/` is the source of truth, that a behavior change ships with its page, and the check and skill to use | \
 `--instructions` | owned |
 
 The kind directories, their guides, the one-page kinds, the glossary and the Objective appear with their first

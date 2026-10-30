@@ -95,10 +95,9 @@ class DocsSeedCookTest {
           "<!-- ${opening} -->\n" +
           '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact. Read the owning ' +
           'page before\n' +
-          '  changing an area. A behavior change ships with its page, and a fact learned about the system goes to ' +
-          'the page that\n' +
-          '  owns it. `sh .agents/skills/docs-layout/scripts/check.sh` must pass; write a page with the ' +
-          '`docs-layout` skill.\n' +
+          '  changing an area. A behavior change ships with its page. ' +
+          '`sh .agents/skills/docs-layout/scripts/check.sh` must\n' +
+          '  pass; write a page with the `docs-layout` skill.\n' +
           '<!-- cook:end io.github.lmarqs.cookbook:docs#seed/docs -->\n'
     }
 

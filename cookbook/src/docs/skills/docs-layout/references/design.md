@@ -27,5 +27,4 @@ Each rule, its reason and its source. The design and its full decision register 
 | An interface page links its contract file | The definition file is the contract, and the reference is built from it | OpenAPI Initiative; Google AIP-192 |
 | One runbook per trigger, steps with expected output | The responder verifies each step under pressure | Google SRE workbook; AWS OPS07-BP03 |
 | A glossary with rejected synonyms | One word per concept makes search and review find every use | Pocock; Good Docs terminology system; ASD-STE100 |
-| A fact learned while working goes to its page | Shared pages reach people and every agent; private memory reaches one | Codex: "Keep required team guidance in AGENTS.md or checked-in documentation"; Claude Code: a repeated correction is a CLAUDE.md edit |
 | The check runs before a change is done | Links and structure are checked by a program; review covers the rest | GitLab `docs-lint`; Rao et al. 2022 on review |

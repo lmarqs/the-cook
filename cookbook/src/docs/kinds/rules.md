@@ -9,8 +9,7 @@ inside a page may repeat what the same page's body says.
 
 - What the repository shows nowhere else: the reason behind a choice, a convention, a rule and its scope. The code,
   contract files and version history hold their own facts, and a page links to them.
-- What is true now. A page changes in the same change as its subject, and a fact learned while working goes to the
-  page that owns it.
+- What is true now. A page changes in the same change as its subject.
 - Its reasoning: a decision record gives the options and the reasons, a rule gives its reason, and a reference page
   links the decisions that shaped it.
 - Front matter holds keys a program reads, such as a site generator's.

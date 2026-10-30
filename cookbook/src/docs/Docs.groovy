@@ -133,9 +133,8 @@ class Docs {
       "<!-- ${cookedWith} -->",
       '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact. Read the owning page ' +
       'before',
-      '  changing an area. A behavior change ships with its page, and a fact learned about the system goes to the ' +
-      'page that',
-      "  owns it. `sh ${skills}/${SKILL}/scripts/check.sh` must pass; write a page with the `${SKILL}` skill.",
+      "  changing an area. A behavior change ships with its page. `sh ${skills}/${SKILL}/scripts/check.sh` must",
+      "  pass; write a page with the `${SKILL}` skill.",
     ]*.toString()
     instructions.collectEntries { [(it): lines] }
   }
