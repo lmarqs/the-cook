@@ -112,7 +112,7 @@ class DocsSeedCookTest {
 
         if (!fenced) {
           (line.replaceAll(/`[^`]*`/, '') =~ /\]\(([^)#]+)(#[^)]*)?\)/).each { all, target, anchor ->
-            assert new File(page.parentFile, target).canonicalPath.startsWith(SKILL.canonicalPath + '/')
+            assert new File(page.parentFile, target).canonicalPath.startsWith(SKILL.canonicalPath + File.separator)
             assert new File(page.parentFile, target).exists(): "${page.name} links ${target}"
           }
         }
