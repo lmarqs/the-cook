@@ -17,7 +17,7 @@ def tree(root: Path) -> dict[str, str]:
 @pytest.fixture(scope="module")
 def built(tmp_path_factory) -> dict[tuple[str, str], dict[str, str]]:
     trees = {}
-    for study_id, case_id in (("e1", "write-adr"), ("e2", "retry-capture"), ("e3", "session-expiry")):
+    for study_id, case_id in (("e1", "change-decision"), ("e2", "retry-capture"), ("e3", "session-expiry")):
         study = load_study(study_id)
         for arm in study.arms:
             dest = tmp_path_factory.mktemp(f"{study_id}-{arm}") / "repo"

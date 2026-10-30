@@ -41,7 +41,7 @@ def repo(tmp_path: Path) -> Path:
     return root
 
 
-def make_run(repo: Path, changed: list[str], steps=None, last_message="", case="e1/write-adr") -> Run:
+def make_run(repo: Path, changed: list[str], steps=None, last_message="", case="e1/change-decision") -> Run:
     study, case_id = case.split("/")
     record = {"files_changed": changed, "steps": steps or [], "last_message": last_message, "harness": "claude"}
     return Run(repo, record, load_case(study, STUDIES / study / "cases" / case_id), "")

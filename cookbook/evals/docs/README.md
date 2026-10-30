@@ -57,14 +57,15 @@ repository and `hidden/` tests the run never sees. A grader's header names its `
 ## The pilot cases
 
 Five cases per study. Each makes the step the study measures one a careful agent can miss: the request reads like
-what people ask, and the history sits in a noisy thread, or the code invites the wrong answer.
+what people ask, and the history sits in a noisy thread, or the code invites the wrong answer. Each E1 case sets one
+of the map's rules against a common documentation habit, and its `06-trap` grader checks that rule.
 
 | Study | Case | The request | What a run must do | The trap |
 | --- | --- | --- | --- | --- |
-| e1 | `write-adr` | put the move off Celery into the docs | a record whose Context tells the Redis evictions, Decision naming procrastinate | the thread opens with its conclusion |
-| e1 | `feature-cancellation` | document the cancellation cutoff | a feature page telling why: bags packed and thrown away | a banner and off-topic posts in the thread |
-| e1 | `runbook-receipts` | make the next volunteer on call able to fix it | a runbook with the jobs query, telling why it exists | the source is a chat log |
-| e1 | `update-attempts` | bring the docs up to date: 3 attempts became 5 | the payments page changed in place, telling the Friday timeouts | adding a new page instead |
+| e1 | `change-decision` | bring the docs up to date: sessions moved to signed cookies | record 0001 edited in place, Options keeping Postgres, Context telling the full disk | superseding it with a new record |
+| e1 | `tenet` | write the "one more service" argument into the docs | `philosophy.md` with the tenet, what it rules out and links to records 0001 and 0002 | a rule worded like a decision invites a record |
+| e1 | `runbook-receipts` | make the next volunteer on call able to fix it | a runbook naming a script that holds the jobs query, telling why it exists | the source is a chat log that says "users" and "customers" |
+| e1 | `update-attempts` | bring the docs up to date: 3 attempts became 5 | the payments page changed in place, telling the Friday timeouts, and no stale count left | the runbook still counts three lines per pantry order |
 | e1 | `reminders-why` | write down why reminders go by SMS | a feature page with the 2025 trial's numbers, no record | "why" invites a decision record |
 | e2 | `retry-capture` | retry the capture with `larder.retry.retry` | every attempt sends the first attempt's key | `capture` draws a new key per call |
 | e2 | `order-amount` | implement `amount_cents(order, catalog)` | charge the prices the member confirmed | the signature hands over the catalog |

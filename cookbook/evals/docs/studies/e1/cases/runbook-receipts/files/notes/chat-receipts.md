@@ -1,6 +1,6 @@
 # Chat export: #larder-ops, September 14
 
-**Nadia, 08:12:** members say no receipts since last night again 😩
+**Nadia, 08:12:** users say no receipts since last night again 😩
 
 **Tomás, 08:20:** on it
 
@@ -18,9 +18,9 @@ last night's deploy
 **Tomás, 08:38:** `sudo systemctl start larder-worker`, then the same query a minute later: todo going down, about
 40 a minute
 
-**Tomás, 08:45:** todo 0. the 3 failed are bounced emails, those members have no valid address, not our problem
+**Tomás, 08:45:** todo 0. the 3 failed are bounced emails, those customers have no valid address, not our problem
 
-**Nadia, 08:50:** receipts arriving, thanks!! can we write this down? this is the second time and Tomás was asleep
+**Nadia, 08:50:** customers are getting receipts, thanks!! can we write this down? this is the second time and Tomás was asleep
 the first time, we waited till noon
 
 **Tomás, 08:52:** if it happens and I'm not around: check the worker, count the todo jobs, start the worker, watch

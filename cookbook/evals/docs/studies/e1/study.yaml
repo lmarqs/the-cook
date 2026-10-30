@@ -5,4 +5,4 @@ harnesses:
   codex: {model: gpt-6.1-sol, effort: medium}
 runs: 1
 margins: {success: 0.10, tokens: 0.15}
-outcome: [01-page-written, 02-structure, 03-lead, 04-reason-told, 05-fact-stated]
+outcome: [01-page-written, 02-structure, 03-lead, 04-reason-told, 05-fact-stated, 06-trap]
