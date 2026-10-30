@@ -138,14 +138,20 @@ def simple_steps(tokens: list[str], command: str) -> list[dict]:
         return []
     steps = []
     words = []
-    redirect = None
-    for token in tokens:
-        if token in (">", ">>"):
-            redirect = token
-        elif redirect:
-            steps.append({"kind": "edit", "path": relative(token), "tool": "shell"})
-            redirect = None
-        elif token != "<":
+    target = None
+    for index, token in enumerate(tokens):
+        following = tokens[index + 1] if index + 1 < len(tokens) else ""
+        if target:
+            if target == "file" and not token.startswith("/dev/"):
+                steps.append({"kind": "edit", "path": relative(token), "tool": "shell"})
+            target = None
+        elif token.isdigit() and following[:1] in (">", "<"):
+            continue
+        elif token in (">", ">>", ">|", "&>", "&>>"):
+            target = "file"
+        elif token in (">&", "<&", "<", "<<", "<<<"):
+            target = "other"
+        else:
             words.append(token)
     if not words:
         return steps

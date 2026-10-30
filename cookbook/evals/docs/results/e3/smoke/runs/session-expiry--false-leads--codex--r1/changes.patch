@@ -1,0 +1,59 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index abbcaf6..20a1f14 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -1,15 +1,19 @@
+ # Sessions
+ 
+-For whoever changes login or the session expiry. A session keeps a member logged in until 30 minutes pass without a
+-request. The 30 minutes are a placeholder: the 2024 security review asked for 10, and nothing depends on the current
+-value.
++For whoever changes login or the session expiry. A session keeps a member logged in until 10 minutes pass without a
++request. The limit was shortened so members are logged out sooner.
+ 
+ ## Lifetime
+ 
+-Each request renews the session for 30 minutes, `EXPIRY_MINUTES` in `larder/sessions.py`. Until March 2024 the limit
+-was 10 minutes: members packing a pantry order on a slow mobile connection were logged out before they confirmed it
+-and lost what they had picked, and support logged 120 tickets about it that month. The limit was raised to 30
+-minutes, the shortest that ended those tickets.
++Each request renews the session for the expiry interval set by `EXPIRY_MINUTES` in
++[`larder/sessions.py`](../../larder/sessions.py).
++
++## Known limits
++
++Members packing a pantry order on a slow mobile connection may be logged out before they confirm it and lose what
++they picked. The previous 10-minute limit caused 120 support tickets in March 2024; raising it to 30 minutes ended
++those tickets. The limit is now shortened again to log members out sooner. Members must confirm their order before
++the session expires to avoid losing their selections.
+ 
+ ## Storage
+ 
+diff --git a/larder/sessions.py b/larder/sessions.py
+index 24e909d..d04b011 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -1,6 +1,6 @@
+ from datetime import datetime, timedelta
+ 
+-EXPIRY_MINUTES = 30
++EXPIRY_MINUTES = 10
+ 
+ 
+ def expires_at(last_request: datetime) -> datetime:
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..c8317b2 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,9 +1,9 @@
+ from datetime import datetime, timedelta
+ 
+-from larder.sessions import EXPIRY_MINUTES, expires_at
++from larder.sessions import expires_at
+ 
+ 
+ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+-    assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++    assert expires_at(start) == start + timedelta(minutes=10)

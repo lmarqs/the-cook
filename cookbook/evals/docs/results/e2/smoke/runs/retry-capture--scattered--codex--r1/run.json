@@ -1,0 +1,111 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "scattered",
+  "harness": "codex",
+  "run": 1,
+  "id": "retry-capture--scattered--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T03:45:19.819739+00:00",
+  "duration_s": 23.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*capture*' -g '*gateway*' -g 'README.md' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g *gateway* -g README.md -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests docs"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files larder tests docs; git status --short; rg -n 'idempoten|capture|retry|retries' docs larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n idempoten|capture|retry|retries docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 104908,
+    "cached": 92032,
+    "output": 1085,
+    "reasoning": 45
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added up to 3 total capture attempts on `GatewayTimeout`, reusing the same idempotency key. The third timeout propagates; other exceptions propagate immediately.\n\nAll 6 tests pass with `python3 -m pytest -q`.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

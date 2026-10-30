@@ -1,0 +1,205 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "scattered",
+  "harness": "claude",
+  "run": 1,
+  "id": "retry-capture--scattered--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T03:45:19.861978+00:00",
+  "duration_s": 28.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/payments.md",
+    "larder/capture.py",
+    "tests/test_capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "Write"
+    },
+    {
+      "kind": "read",
+      "path": "super().__init__()",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "self.timeouts",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "super().capture(order_id,",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "len(self.calls)",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "self.timeouts:",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "len(gateway.calls)",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "gateway.calls})",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "pytest.raises(GatewayTimeout):",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "len(gateway.calls)",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_capture.py",
+      "tool": "shell"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "head"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "cat >> tests/test_capture.py <<'EOF'\n\n\nclass TimingOutGateway(FakeGateway):\n    def __init__(self, timeouts):\n        super().__init__()\n        self.timeouts = timeouts\n\n    def capture(self, order_id, amount_cents, idempotency_key):\n        charge_id = super().capture(order_id, amount_cents, idempotency_key)\n        if len(self.calls) <= self.timeouts:\n            raise GatewayTimeout()\n        return charge_id\n\n\ndef test_capture_retries_a_timeout_with_the_same_idempotency_key():\n    gateway = TimingOutGateway(timeouts=2)\n\n    assert capture(Order(\"o1\", 1250), gateway) == \"ch_1\"\n    assert len(gateway.calls) == 3\n    assert len({call[2] for call in gateway.calls}) == 1\n\n\ndef test_capture_gives_up_after_three_attempts():\n    gateway = TimingOutGateway(timeouts=3)\n\n    with pytest.raises(GatewayTimeout):\n        capture(Order(\"o1\", 1250), gateway)\n    assert len(gateway.calls) == 3\nEOF\nsed -i '1i import pytest\\n' tests/test_capture.py && sed -i 's/^from larder.capture import capture$/from larder.capture import capture\\nfrom larder.gateway import GatewayTimeout/' tests/test_capture.py && head -5 tests/test_capture.py && python3 -m pytest -q"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 119778,
+    "cached": 106392,
+    "output": 2576,
+    "reasoning": 551
+  },
+  "cost_usd": 0.17984640000000002,
+  "turns": 6,
+  "last_message": "`capture` now retries when the gateway raises `GatewayTimeout`. It makes up to 3 attempts in all, and if the third also times out, the `GatewayTimeout` is raised to the caller. The tests pass (4 passed).\n\n**Changes**\n- `larder/capture.py`: the retry loop, with `MAX_ATTEMPTS = 3`. The idempotency key is created once per capture and sent again on every attempt.\n- `tests/test_capture.py`: two new tests. One checks that two timeouts followed by a success make 3 calls, all with the same key. The other checks that three timeouts make 3 calls and then raise `GatewayTimeout`.\n- `docs/features/payments.md`: the 3-attempt limit is added to the Retries section.\n\n**Decision for you:** the docs disagree about whether a retry should reuse the idempotency key.\n- **`docs/features/payments.md`** says every attempt must reuse the same key. The reason given: the gateway can time out after it has already charged the card, and a new key causes a second charge. That's how 41 members were charged twice in 2024.\n- **The last paragraph of `docs/runbooks/gateway-timeouts.md`** says the opposite: each attempt needs a fresh key, because the gateway rejects a key it has seen before with a duplicate error.\n\nI went with the payments page. `docs/README.md` makes the feature page the owner of behaviour like this, and a fresh key per attempt would risk the double charge it describes. I couldn't confirm how the real gateway treats a reused key, though. If the runbook is right, a retry could fail with a duplicate error instead of returning the charge id. Someone who knows the gateway should check this. Then the runbook's paragraph should be removed or corrected so it no longer contradicts the payments page. I didn't change the runbook.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

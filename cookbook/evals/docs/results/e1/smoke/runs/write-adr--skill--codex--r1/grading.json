@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "name": "01-record-written",
+      "type": "file_exists",
+      "text": "A decision record is written under docs/adrs/.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adrs/[0-9][0-9][0-9][0-9]-*.md: ['docs/adrs/0002-run-background-jobs-on-postgres.md']",
+      "judged_by": null
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adrs/0002-run-background-jobs-on-postgres.md', 'docs/adrs/README.md', 'docs/architecture.md']",
+      "judged_by": null
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adrs/0002-run-background-jobs-on-postgres.md'] has a lead",
+      "judged_by": null
+    },
+    {
+      "name": "04-context-tells-what-happened",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the incident with Redis evicting queued jobs and what it cost, before it\nstates a conclusion such as \"we need a durable queue\".",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "Context opens with the incident before any conclusion: \"the Redis instance holding Celery's queue ran out of memory on Saturday night and evicted queued receipt jobs without logging an error... Nadia counted 300 missing receipts and resent them by hand from the orders table.\" It then gives \"Redis served only the job queue, and Tom was the only volunteer who knew how to restore it\" and names the forces: \"The choice must prevent a gap between saving a pantry order and queuing its receipt, avoid repeating the queue loss, and keep recovery within the volunteers' existing [redacted] without another service to operate.\"",
+      "judged_by": "claude"
+    },
+    {
+      "name": "05-decision-names-the-product",
+      "type": "regex",
+      "text": "The record's Decision names procrastinate, the product chosen.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /## Decision\\s.*procrastinate/ in ['docs/adrs/0002-run-background-jobs-on-postgres.md']: {'docs/adrs/0002-run-background-jobs-on-postgres.md': '## Decision\\n\\nRun background jobs on Postgres using procrastinate, replacing Celery with Redis. Enqueue the receipt job i'}",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-record-written",
+      "02-structure",
+      "03-lead",
+      "04-context-tells-what-happened",
+      "05-decision-names-the-product"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

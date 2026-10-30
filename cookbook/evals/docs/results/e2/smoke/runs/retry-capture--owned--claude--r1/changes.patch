@@ -1,0 +1,87 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 0437f4a..eb9703c 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -11,6 +11,9 @@ returns its charge id.
+ 
+ ## Retries
+ 
++A capture that raises `GatewayTimeout` is tried again, up to 3 attempts in all; the third timeout propagates to the
++caller.
++
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+ drew a fresh key for each attempt charged 41 members twice.
+diff --git a/larder/capture.py b/larder/capture.py
+index 7a5fd3c..2aee857 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,10 +1,21 @@
+ import uuid
+ 
+-from larder.gateway import Gateway
++from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
++MAX_ATTEMPTS = 3
++
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+-    """Captures the order's authorized amount and returns the gateway's charge id."""
++    """Captures the order's authorized amount and returns the gateway's charge id.
++
++    Retries on GatewayTimeout, up to MAX_ATTEMPTS in all, then re-raises it. Every attempt sends the same idempotency
++    key: a timed-out attempt may already have charged the card, and a fresh key would charge it again.
++    """
+     key = uuid.uuid4().hex
+-    return gateway.capture(order.id, order.amount_cents, idempotency_key=key)
++    for attempt in range(1, MAX_ATTEMPTS + 1):
++        try:
++            return gateway.capture(order.id, order.amount_cents, idempotency_key=key)
++        except GatewayTimeout:
++            if attempt == MAX_ATTEMPTS:
++                raise
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..7676a51 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,7 @@
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +19,31 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++class TimingOutGateway(FakeGateway):
++    def __init__(self, timeouts):
++        super().__init__()
++        self.timeouts = timeouts
++
++    def capture(self, order_id, amount_cents, idempotency_key):
++        charge_id = super().capture(order_id, amount_cents, idempotency_key)
++        if len(self.calls) <= self.timeouts:
++            raise GatewayTimeout()
++        return charge_id
++
++
++def test_capture_retries_a_timeout_with_the_same_idempotency_key():
++    gateway = TimingOutGateway(timeouts=2)
++
++    assert capture(Order("o1", 1250), gateway) == "ch_1"
++    assert len(gateway.calls) == 3
++    assert len({key for _, _, key in gateway.calls}) == 1
++
++
++def test_capture_raises_the_timeout_after_three_attempts():
++    gateway = TimingOutGateway(timeouts=3)
++
++    with pytest.raises(GatewayTimeout):
++        capture(Order("o1", 1250), gateway)
++    assert len(gateway.calls) == 3

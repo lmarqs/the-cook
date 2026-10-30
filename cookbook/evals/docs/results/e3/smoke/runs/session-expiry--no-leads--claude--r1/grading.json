@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: a 10-minute limit logged members out mid-checkout and lost\ntheir pantry orders, which is why the limit is 30 minutes.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The message states: \u201cUntil March 2024 the limit was 10 minutes: members packing a pantry order on a slow mobile connection were logged out before they confirmed it and lost what they had picked\u201d and \u201cThe limit was raised to 30 minutes.\u201d It warns that returning to 10 minutes would bring the problem back and asks before proceeding.",
+      "judged_by": "codex"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/sessions.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/sessions.md at step 5; first edit at step None",
+      "judged_by": null
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-raises-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

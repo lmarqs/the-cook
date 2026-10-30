@@ -1,0 +1,238 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "no-criteria",
+  "harness": "claude",
+  "run": 1,
+  "id": "write-adr--no-criteria--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T03:44:19.541796+00:00",
+  "duration_s": 50.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-keep-background-jobs-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record a decision: run background jobs on Postgres with procrastinate instead of Celery with Redis. Discussion in notes/issue-12.md."
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-12.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout/*"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/* docs/features/*.md docs/runbooks/README.md .claude/skills/docs-layout/references/adrs.md .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/templates/map.template.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40; ls; grep -rniE \"celery|redis|procrastinate|job|queue|receipt\" --include=* -r . --exclude-dir=.git --exclude-dir=.claude | grep -v notes/"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/* docs/features/*.md docs/runbooks/README.md .claude/skills/docs-layout/references/adrs.md .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/templates/map.template.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40; ls; grep -rniE \"celery|redis|procrastinate|job|queue|receipt\" --include=* -r . --exclude-dir=.git --exclude-dir=.claude | grep -v notes/"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/* docs/features/*.md docs/runbooks/README.md .claude/skills/docs-layout/references/adrs.md .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/templates/map.template.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40; ls; grep -rniE \"celery|redis|procrastinate|job|queue|receipt\" --include=* -r . --exclude-dir=.git --exclude-dir=.claude | grep -v notes/"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "for f in docs/glossary.md docs/architecture.md docs/adrs/* docs/features/*.md docs/runbooks/README.md .claude/skills/docs-layout/references/adrs.md .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/templates/map.template.md; do echo \"=== $f\"; cat $f; done; git log --stat | head -40; ls; grep -rniE \"celery|redis|procrastinate|job|queue|receipt\" --include=* -r . --exclude-dir=.git --exclude-dir=.claude | grep -v notes/"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE celery|redis|procrastinate|job|queue|receipt --include=* -r . --exclude-dir=.git --exclude-dir=.claude"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adopt.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/design.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE celery|redis|procrastinate|job|queue|receipt . --exclude-dir=.git --exclude-dir=.claude --exclude-dir=.agents"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "diff",
+      "command": "cat .claude/skills/docs-layout/references/adopt.md .claude/skills/docs-layout/references/design.md; grep -rniE \"celery|redis|procrastinate|job|queue|receipt\" . --exclude-dir=.git --exclude-dir=.claude --exclude-dir=.agents | grep -v notes/; ls larder tests; cat README.md; diff -r .agents/skills .claude/skills && echo same"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat .claude/skills/docs-layout/references/adopt.md .claude/skills/docs-layout/references/design.md; grep -rniE \"celery|redis|procrastinate|job|queue|receipt\" . --exclude-dir=.git --exclude-dir=.claude --exclude-dir=.agents | grep -v notes/; ls larder tests; cat README.md; diff -r .agents/skills .claude/skills && echo same"
+    },
+    {
+      "kind": "read",
+      "path": "larder/*.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls cook* 2"
+    },
+    {
+      "kind": "edit",
+      "path": "/dev/null",
+      "tool": "shell"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-keep-background-jobs-in-the-database.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0002-keep-background-jobs-in-the-database.md'\ns=open(p).read()\ns=s.replace(\"In March 2026 the Redis\",\"One March the Redis\")\ns=s.replace(\"Jobs share the database with the web app, so their load counts against it. Moving the jobs meant rewriting each\\nCelery task as a procrastinate job, such as `send_receipt` in `larder/receipts.py`.\",\"Jobs share the database with the web app, so their load counts against it. Each job is a procrastinate job, such as\\n`send_receipt` in `larder/receipts.py`.\")\nopen(p,'w').write(s)\nEOF\ngit diff --stat; python3 -m pytest -q 2>&1 | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0002-keep-background-jobs-in-the-database.md'\ns=open(p).read()\ns=s.replace(\"In March 2026 the Redis\",\"One March the Redis\")\ns=s.replace(\"Jobs share the database with the web app, so their load counts against it. Moving the jobs meant rewriting each\\nCelery task as a procrastinate job, such as `send_receipt` in `larder/receipts.py`.\",\"Jobs share the database with the web app, so their load counts against it. Each job is a procrastinate job, such as\\n`send_receipt` in `larder/receipts.py`.\")\nopen(p,'w').write(s)\nEOF\ngit diff --stat; python3 -m pytest -q 2>&1 | tail -1"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0002-keep-background-jobs-in-the-database.md'\ns=open(p).read()\ns=s.replace(\"One March the Redis\",\"In March the Redis\")\ns=s.replace(\"the job store must be one every volunteer can back up, restore and query.\",\"the job store must be backed up and open\\nto every volunteer's queries.\")\nopen(p,'w').write(s)\nEOF\nsed -n 9,16p docs/adrs/0002-keep-background-jobs-in-the-database.md"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'EOF'\np='docs/adrs/0002-keep-background-jobs-in-the-database.md'\ns=open(p).read()\ns=s.replace(\"the job store must be backed up and open\\nto every volunteer's queries.\",\"the job store must be backed up and open to\\nevery volunteer's queries.\")\nopen(p,'w').write(s)\nEOF\ngit status --short"
+    }
+  ],
+  "tokens": {
+    "input": 303172,
+    "cached": 279620,
+    "output": 4432,
+    "reasoning": 1036
+  },
+  "cost_usd": 0.33290000000000003,
+  "turns": 13,
+  "last_message": "I've written the decision record at `docs/adrs/0002-keep-background-jobs-in-the-database.md`, titled \"Keep background jobs in the database\". Every fact in it comes from `notes/issue-12.md` and the code; nothing is committed yet.\n\n**What the record says:**\n- **What happened:** One Saturday night in March, Redis ran out of memory and silently dropped queued receipt jobs. About 300 members wrote in about missing receipts, and a payments volunteer resent them by hand. Redis was used only for the queue, and only one volunteer knew how to restore it.\n- **Options and why each lost:**\n  - Keeping Celery and Redis with persistence and a memory alarm would still mean running Redis.\n  - Celery's database backend is marked experimental in Celery's own docs.\n  - A Postgres task queue was chosen.\n- **Why procrastinate:** Postgres is already backed up every night and every volunteer can query it. procrastinate also queues a job in the same transaction as the order that triggers it, so a receipt can't be lost between the two.\n- **Consequences:** Larder no longer runs Redis, and jobs now add load to the database the web app uses. It points to `send_receipt` in `larder/receipts.py` as an example job.\n\nI also added the record to the list in `docs/adrs/README.md`, and linked it from `docs/architecture.md`, which already said jobs queue in Postgres but didn't give the reason. Tests pass, though only documentation changed.\n\n**Things to know:**\n- **Missing year:** The issue gives no year for the incident, so the record just says \"March\".\n- **Map gaps:** `docs/README.md` doesn't yet list the page types or the bar for what deserves a decision record. I used the bar from the skill's design notes instead: reversing the decision would change more than one module. This decision affects the worker, the code that queues jobs, and what ops runs, so it qualifies.\n- **Map fix needs a tool that isn't here:** The skill's setup step would fill those gaps, but it needs a `cook` tool the repository doesn't have.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "id": "write-adr--skill--claude--r1",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-30T03:43:20.827344+00:00",
+  "duration_s": 35.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-keep-background-jobs-in-the-database.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Record decision: background jobs on Postgres with procrastinate instead of Celery with Redis; discussion in notes/issue-12.md"
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs notes -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-12.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls .claude/skills/docs-layout/templates .claude/skills/docs-layout/references"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/adr.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adrs.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"celery|redis|procrastinate|queue|job|task\" --include=*.py --include=*.toml --include=*.txt --include=*.cfg --include=*.yml --include=*.yaml . | grep -v \"^./.claude\" | head -50; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"celery|redis|procrastinate|queue|job|task\" --include=*.py --include=*.toml --include=*.txt --include=*.cfg --include=*.yml --include=*.yaml . | grep -v \"^./.claude\" | head -50; git log --stat | head -40"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"celery|redis|procrastinate|queue|job|task\" --include=*.py --include=*.toml --include=*.txt --include=*.cfg --include=*.yml --include=*.yaml . | grep -v \"^./.claude\" | head -50; git log --stat | head -40"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE celery|redis|procrastinate|queue|job|task --include=*.py --include=*.toml --include=*.txt --include=*.cfg --include=*.yml --include=*.yaml ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^./.claude"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat .claude/skills/docs-layout/templates/adr.template.md .claude/skills/docs-layout/references/adrs.md; for f in docs/glossary.md docs/architecture.md docs/adrs/*.md docs/features/*.md docs/runbooks/*.md; do echo \"=== $f\"; cat $f; done; grep -rniE \"celery|redis|procrastinate|queue|job|task\" --include=*.py --include=*.toml --include=*.txt --include=*.cfg --include=*.yml --include=*.yaml . | grep -v \"^./.claude\" | head -50; git log --stat | head -40"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -R larder tests 2"
+    },
+    {
+      "kind": "edit",
+      "path": "/dev/null",
+      "tool": "shell"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls"
+    },
+    {
+      "kind": "read",
+      "path": "pyproject.toml",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "requirements*.txt",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "/dev/null",
+      "tool": "shell"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE celery|redis|procrastinate|queue|defer|job larder tests 2"
+    },
+    {
+      "kind": "edit",
+      "path": "/dev/null",
+      "tool": "shell"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-keep-background-jobs-in-the-database.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 184188,
+    "cached": 165682,
+    "output": 3057,
+    "reasoning": 446
+  },
+  "cost_usd": 0.2422684,
+  "turns": 10,
+  "last_message": "I've added the decision as a new decision record, `docs/adrs/0002-keep-background-jobs-in-the-database.md`. Only documentation changed, so I didn't run the tests, and nothing is committed.\n\n**It qualifies as a decision record.** The docs set a bar for what gets a record, and this choice meets it. The worker and every background job depend on it, it changes which services the volunteers run, and it came from a real choice between three options. I titled it by the principle (keep jobs in Postgres) and name procrastinate, with its reason, in the `Decision` section. That follows the guidance that the principle is the lasting decision and the product is the choice made under it.\n\n**What the record says, all taken from `notes/issue-12.md`:**\n- **What happened:** the Redis server holding Celery's queue ran out of memory and silently dropped about 300 receipt jobs. A volunteer resent the receipts by hand. Redis ran only for the queue, and only one volunteer knew how to restore it.\n- **Options and why they lost:**\n  - Keeping Celery and Redis with persistence and a memory alarm still leaves Redis to run.\n  - Celery's database backend is marked experimental in Celery's own docs.\n- **Why procrastinate won:** jobs live in Postgres, which is already backed up nightly and which every volunteer can query. It also queues a job in the same transaction as the order, so a receipt can't be lost between the two.\n\n**Other files changed:**\n- `docs/adrs/README.md` lists the new record.\n- `docs/architecture.md` now links the record where it says jobs are queued in Postgres for the worker.\n\n**Gaps I couldn't fill:**\n- **Year:** the issue only says \"March\", so the record does too. Someone should add the year if they know it.\n- **Whether the migration is finished:** the issue says Redis would be switched off after the move. The architecture page and `larder/receipts.py` both describe the queue as already in Postgres, so the record treats the move as done. Nothing in the repository says outright that Redis has been switched off.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-opus-5-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  }
+}

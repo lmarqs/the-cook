@@ -4,13 +4,19 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from tool import graders, judge
+from tool import graders, judge, traces
 from tool.cases import Study
 from tool.graders import Run
 
 
 def load_run(study: Study, directory: Path) -> Run:
+    """The run, its record parsed again from its event stream when that is kept, so parser fixes reach old runs."""
     record = json.loads((directory / "run.json").read_text())
+    events = directory / "events.jsonl"
+    if events.exists():
+        lines = [line for line in events.read_text().splitlines() if line.startswith("{")]
+        record.update(getattr(traces, record["harness"])(lines))
+        (directory / "run.json").write_text(json.dumps(record, indent=2) + "\n")
     return Run(directory / "repo", record, study.case(record["case"]), (directory / "changes.patch").read_text())
 
 

@@ -1,0 +1,122 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "no-leads",
+  "harness": "codex",
+  "run": 1,
+  "id": "session-expiry--no-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T03:46:20.492919+00:00",
+  "duration_s": 27.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/sessions.md",
+    "larder/sessions.py",
+    "tests/test_sessions.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg -n 'session|expiry|expire' . --glob '!*.lock' --glob '!uv.lock'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n session|expiry|expire . --glob !*.lock --glob !uv.lock"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g ! .git"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files -g 'AGENTS.md' -g '! .git'; cat larder/sessions.py tests/test_sessions.py docs/README.md docs/features/sessions.md; cat /work/.agents/skills/docs-layout/SKILL.md; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/sessions.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_sessions.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q; git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q; git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q; git diff --check; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 70360,
+    "cached": 59264,
+    "output": 761,
+    "reasoning": 60
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Changed session expiry to 10 minutes after the last request. Updated the docs and regression test; both tests pass.\n\nThe docs retain the known risk: this limit previously caused slow-connection members to lose their picks.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

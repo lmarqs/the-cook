@@ -1,0 +1,142 @@
+{
+  "study": "e1",
+  "case": "write-adr",
+  "arm": "no-skill",
+  "harness": "codex",
+  "run": 1,
+  "id": "write-adr--no-skill--codex--r1",
+  "model": "gpt-6.1-sol",
+  "started": "2026-10-30T03:43:20.787511+00:00",
+  "duration_s": 53.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adrs/0002-run-background-jobs-on-postgres-with-procrastinate.md",
+    "docs/adrs/README.md",
+    "docs/architecture.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/issue-12.md' -g 'README*' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/issue-12.md -g README* -g pyproject.toml"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat AGENTS.md docs/README.md notes/issue-12.md docs/adrs/README.md docs/adrs/0001-keep-sessions-in-the-database.md docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-12.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adrs/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden -g !\\.git/** -g *SKILL.md -g larder/** -g tests/** -g *requirements* -g *toml"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n Celery|Redis|procrastinate|queue|background docs larder notes"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/0002-run-background-jobs-on-postgres-with-procrastinate.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adrs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\npages = [Path('docs/adrs/0002-run-background-jobs-on-postgres-with-procrastinate.md'), Path('docs/adrs/README.md'), Path('docs/architecture.md')]\nfor page in pages:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', page.read_text()):\n        assert (page.parent / target.split('#')[0]).exists(), (page, target)\nprint('All local links in the changed documentation resolve.')\nPY\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 125239,
+    "cached": 101760,
+    "output": 1442,
+    "reasoning": 78
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [ADR 0002](docs/adrs/0002-run-background-jobs-on-postgres-with-procrastinate.md), recording the incident, alternatives, decision, and trade-offs from `notes/issue-12.md`.\n\nLinked it from the decision index and architecture page. Local links and whitespace checks pass. No code changed.",
+  "is_error": false,
+  "error": null,
+  "init": null
+}

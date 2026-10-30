@@ -1,0 +1,76 @@
+diff --git a/docs/adrs/0002-run-background-jobs-on-postgres.md b/docs/adrs/0002-run-background-jobs-on-postgres.md
+new file mode 100644
+index 0000000..09355bc
+--- /dev/null
++++ b/docs/adrs/0002-run-background-jobs-on-postgres.md
+@@ -0,0 +1,40 @@
++# Run background jobs on Postgres
++
++For whoever changes background jobs, pantry orders or their operation. Jobs run on Postgres with procrastinate
++because Redis evicted receipt jobs and left volunteers to resend 300 missing receipts by hand.
++
++## Context
++
++In the March incident recorded in [issue 12](../../notes/issue-12.md), the Redis instance holding Celery's queue ran
++out of memory on Saturday night and evicted queued receipt jobs without logging an error. Members reported paying
++without receiving receipts; Nadia counted 300 missing receipts and resent them by hand from the orders table.
++
++Redis served only the job queue, and Tom was the only volunteer who knew how to restore it. Postgres was already
++backed up nightly, and every volunteer could query it. The choice must prevent a gap between saving a pantry order
++and queuing its receipt, avoid repeating the queue loss, and keep recovery within the volunteers' existing skills
++without another service to operate.
++
++## Options
++
++- **Keep Celery with Redis, adding persistence and a memory alarm**: preserves the existing queue and addresses the
++  eviction incident with persistence and capacity sized for the worst week. It loses because Redis remains a
++  separate service whose recovery depends on one volunteer.
++- **Use Celery with its database backend**: would remove the separate Redis service, but Ana reported in the
++  discussion that this option was marked experimental in Celery's documentation; the team rejected that uncertainty
++  for receipt delivery.
++- **Use procrastinate with Postgres**: chosen because it can enqueue a job in the same transaction as the pantry
++  order and uses the database the volunteers already back up and query.
++
++## Decision
++
++Run background jobs on Postgres using procrastinate, replacing Celery with Redis. Enqueue the receipt job in the
++same transaction as its pantry order so both commit together. Procrastinate supplies that transaction integration
++for Python while allowing the team to retire the service used only for the queue. Ana confirmed the choice on
++March 9 in issue 12.
++
++## Consequences
++
++Saving a pantry order and queuing its receipt share a commit boundary. Queue inspection and recovery use the
++existing Postgres skills and nightly backups. Moving the jobs requires replacing the Celery integration; Redis is
++switched off after the move. Postgres also takes on the queue's storage and workload, so background jobs share the
++application database's capacity and availability.
+diff --git a/docs/adrs/README.md b/docs/adrs/README.md
+index 9c61e9b..558c44e 100644
+--- a/docs/adrs/README.md
++++ b/docs/adrs/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Run background jobs on Postgres](0002-run-background-jobs-on-postgres.md): procrastinate shares the pantry order's
++  transaction and uses the database volunteers already operate after Redis lost receipt jobs.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 3a9e067..b4ff2db 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,11 +7,12 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+-- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, using
++  [the Postgres queue with procrastinate](adrs/0002-run-background-jobs-on-postgres.md).
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adrs/0001-keep-sessions-in-the-database.md))
+-and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++and [queues jobs for the worker](adrs/0002-run-background-jobs-on-postgres.md#decision). A confirmed pantry order is
++captured through the card gateway by `larder/capture.py`.

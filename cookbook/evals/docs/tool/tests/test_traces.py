@@ -50,3 +50,10 @@ def test_first_index_finds_the_first_matching_step():
     assert traces.first_index(steps, "read", "b") == 2
     assert traces.first_index(steps, "edit") == 1
     assert traces.first_index(steps, "read", "c") is None
+
+
+def test_redirecting_a_descriptor_or_to_dev_null_is_not_an_edit():
+    steps = traces.shell_steps("ls -R docs larder 2>/dev/null; cat a.py 2>&1 >> log.txt")
+
+    assert [s for s in steps if s["kind"] == "edit"] == [{"kind": "edit", "path": "log.txt", "tool": "shell"}]
+    assert steps[0] == {"kind": "search", "tool": "ls", "command": "ls -R docs larder"}
