@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 // Of the artifacts under src/, these are the ones released to Maven Central.
-def released = ['agents', 'git', 'ralph']
+def released = ['agents', 'docs', 'git', 'ralph']
 def packagePath = project.group.toString().replace('.', '/')
 def central = layout.buildDirectory.dir('central')
 def cleanCentral = tasks.register('cleanCentral', Delete) { delete central }

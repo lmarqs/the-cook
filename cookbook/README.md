@@ -12,7 +12,7 @@ Models may depend on other models for their types and on ordinary libraries. Rec
 A cookbook releases as jars in a Maven-layout repository, one jar with a POM per directory under `src/`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
 everything a reader needs without the source checkout. This cookbook's `build.gradle` writes them with plain Gradle. Each release of this repository publishes the `agents`,
-`git` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
+`docs`, `git` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
 with no `cook.toml`; the other directories are not published.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without

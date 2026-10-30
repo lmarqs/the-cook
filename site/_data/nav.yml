@@ -33,6 +33,9 @@
     - title: agents
       path: cookbook/src/agents/README.md
       match: cookbook/src/agents/
+    - title: docs
+      path: cookbook/src/docs/README.md
+      match: cookbook/src/docs/
     - title: git
       path: cookbook/src/git/README.md
     - title: ralph
