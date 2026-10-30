@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from tool import stats
+from tool.cases import EVALS
 
 COLUMNS = ["run", "grader", "expectation", "material", "judge", "evidence", "owner"]
 
@@ -27,7 +28,7 @@ def write(batch_dir: Path) -> Path:
                     continue
                 writer.writerow({
                     "run": directory.name, "grader": e["name"], "expectation": e["text"],
-                    "material": str(directory / "repo"), "judge": "pass" if e["passed"] else "fail",
+                    "material": str((directory / "repo").relative_to(EVALS)), "judge": "pass" if e["passed"] else "fail",
                     "evidence": e["evidence"], "owner": kept.get((directory.name, e["name"]), ""),
                 })
     return path

@@ -124,3 +124,18 @@ def test_with_effort_primary_a_control_that_takes_no_more_steps_is_flagged(tmp_p
     text = report.write(effort_study(), [effort_batch(tmp_path, control_steps=1)]).read_text()
 
     assert "The control `ctl` does not separate from `ref` on claude" in text
+
+
+def test_labels_point_at_each_run_relative_to_the_tool(tmp_path, monkeypatch):
+    from tool import label
+
+    monkeypatch.setattr(label, "EVALS", tmp_path)
+    directory = tmp_path / "results" / "e3" / "b1" / "runs" / "c1--leads--codex--r1"
+    directory.mkdir(parents=True)
+    (directory / "grading.json").write_text(json.dumps({"expectations": [
+        {"name": "03", "type": "judge", "text": "t", "passed": True, "evidence": "e"}]}))
+
+    text = label.write(tmp_path / "results" / "e3" / "b1").read_text()
+
+    assert "results/e3/b1/runs/c1--leads--codex--r1/repo" in text
+    assert str(tmp_path) not in text
