@@ -59,13 +59,15 @@ class DocsSeedCookTest {
     assert map.text.contains('`ux/`')
   }
 
-  @Test void refusesWithoutSkillsAndAnUnknownKind() {
+  @Test void refusesWithoutSkillsOutsideTheRepositoryAndAnUnknownKind() {
     def kitchen = kitchen()
     assert shouldFail(IllegalArgumentException) { cook(kitchen, SEED, [:]) }.message ==
     "${SEED}: Missing --skills: The directory, from the repository root, the docs-layout skill is written under, " +
     'such as .agents/skills'
     assert shouldFail(IllegalArgumentException) { cook(kitchen, SEED, [skills: ['s'], kinds: ['howto']]) }.message ==
     "${SEED}: --kinds=howto is not one of: adrs, api, architecture, features, philosophy, runbooks, ux"
+    def skillsOutside = shouldFail(IllegalArgumentException) { cook(kitchen, SEED, [skills: ['../skills']]) }
+    assert skillsOutside.message.startsWith("${SEED}: --skills=../skills is outside the repository")
   }
 
   @Test void ownsTheSkillUnderTheNamedDirectory() {
@@ -81,64 +83,13 @@ class DocsSeedCookTest {
     assert new File(kitchen, 'docs/README.md').text.contains('`.claude/skills/docs-layout/`')
   }
 
-  @Test void statesTheRuleInEachInstructionsFileAndRemovesItWhenNoLongerNamed() {
-    def kitchen = kitchen()
-    def agents = new File(kitchen, 'AGENTS.md')
-    agents.text = '# Agents\n'
-    def readme = new File(kitchen, 'README.md')
-    readme.text = '# Project\n'
-    def both = [skills: ['.agents/skills'], instructions: ['README.md', 'AGENTS.md']]
-    def line = 'io.github.lmarqs.cookbook:docs#seed --instructions=AGENTS.md --instructions=README.md ' +
-        '--skills=.agents/skills'
-    def section = { String opening ->
-      '<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/docs -->\n' +
-          "<!-- ${opening} -->\n" +
-          '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact, and the\n' +
-          '  `docs-layout` skill writes and reviews pages.\n' +
-          '<!-- cook:end io.github.lmarqs.cookbook:docs#seed/docs -->\n'
-    }
-
-    cook(kitchen, SEED, both).commit()
-
-    assert agents.text == '# Agents\n' + section(line)
-    assert readme.text == '# Project\n' + section(line)
-    def lines = section(line).readLines()
-    assert lines.every { it.length() <= 120 }
-    assert cook(kitchen, SEED, both).actions == [:]
-
-    cook(kitchen, SEED, [skills: ['.agents/skills'], instructions: ['AGENTS.md']]).commit()
-
-    assert agents.text == '# Agents\n' +
-    section('io.github.lmarqs.cookbook:docs#seed --instructions=AGENTS.md --skills=.agents/skills')
-    assert readme.text == '# Project\n'
-  }
-
-  @Test void refusesAnInstructionsFileOutsideTheRepositoryOrMissing() {
-    def kitchen = kitchen()
-    def error = shouldFail(IllegalArgumentException) {
-      cook(kitchen, SEED, [skills: ['.agents/skills'], instructions: ['AGENTS.md']])
-    }
-    assert error.message.readLines() == [
-      "${SEED}: AGENTS.md section io.github.lmarqs.cookbook:docs#seed/docs",
-      '  AGENTS.md is missing',
-      '    the section goes into a file the team keeps, and the recipe never creates it',
-      '    create the file, or cook the recipe that writes it earlier in the same invocation',
-    ]*.toString()
-    def outside = shouldFail(IllegalArgumentException) {
-      cook(kitchen, SEED, [skills: ['.agents/skills'], instructions: ['/tmp/AGENTS.md']])
-    }
-    assert outside.message.startsWith("${SEED}: --instructions=/tmp/AGENTS.md is outside the repository")
-    def skillsOutside = shouldFail(IllegalArgumentException) { cook(kitchen, SEED, [skills: ['../skills']]) }
-    assert skillsOutside.message.startsWith("${SEED}: --skills=../skills is outside the repository")
-  }
-
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(COOKBOOK, 'docs/seed.groovy').text, 'seed.groovy')
 
-    assert texts.params*.names == [['instructions'], ['kinds'], ['skills']]
+    assert texts.params*.names == [['kinds'], ['skills']]
     assert texts.ingredients == ['io.github.lmarqs.cookbook.docs.Docs']
     assert texts.help.readLines().findAll { it.startsWith('## ') } ==
-    ['## API', '## Consumes', '## Produces', '## Connections', '## Re-cooking']
+    ['## API', '## Produces', '## Connections', '## Re-cooking']
     assert texts.help.contains('Never touches')
     assert texts.yieldText
   }

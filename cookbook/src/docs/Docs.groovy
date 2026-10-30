@@ -7,8 +7,8 @@ package io.github.lmarqs.cookbook.docs
  *
  * ## Writes for
  *
- * Markdown in `docs/README.md` and in each instructions file named, such as `AGENTS.md`; an Agent
- * Skill, `SKILL.md` with its references and templates, under the skills directory named.
+ * Markdown in `docs/README.md`; an Agent Skill, `SKILL.md` with its references and templates, under the skills
+ * directory named.
  *
  * ## Instances
  *
@@ -21,9 +21,7 @@ package io.github.lmarqs.cookbook.docs
  *
  * @ingredient(Docs) def docs
  *
- * docs.instructions(['AGENTS.md'])
- * docs.layout('io.github.lmarqs.cookbook:docs#seed --instructions=AGENTS.md --skills=.agents/skills',
- *     '.agents/skills', Docs.KINDS)
+ * docs.layout('io.github.lmarqs.cookbook:docs#seed --skills=.agents/skills', '.agents/skills', Docs.KINDS)
  * ```
  *
  * ## With other models
@@ -45,13 +43,11 @@ class Docs {
   private String cookedWith
   private String skills
   private List<String> kinds = []
-  private List<String> instructions = []
 
   /**
    * Requests the layout: the map at `docs/README.md` offering `kinds`, and the `docs-layout` skill under `skills`, a
    * directory by its path from the repository root. `cookedWith` names the recipe and its arguments, which the map's
-   * section and each instructions section open with. Rejects a blank `cookedWith` or `skills`, an empty `kinds` and a
-   * kind outside `KINDS`.
+   * section opens with. Rejects a blank `cookedWith` or `skills`, an empty `kinds` and a kind outside `KINDS`.
    */
   void layout(String cookedWith, String skills, List<String> kinds) {
     if (!cookedWith?.trim()) {
@@ -75,15 +71,6 @@ class Docs {
     this.cookedWith = cookedWith
     this.skills = skills
     this.kinds = KINDS.findAll { it in kinds }
-  }
-
-  /**
-   * Has the docs rule stated in each Markdown file in `paths`, by its path from the repository root, in a `docs`
-   * section. A file the draft lacks is refused when the sections are written: the rule goes into a file the team
-   * keeps.
-   */
-  void instructions(List<String> paths) {
-    instructions = paths.unique(false)
   }
 
   /** `docs/README.md`, seeded when absent and never owned: the map's title and introduction, which the team edits. */
@@ -115,24 +102,5 @@ class Docs {
     }
 
     resources("skills/${SKILL}").collectEntries { path, body -> ["${SKILL}/${path}".toString(), body] }
-  }
-
-  /**
-   * The `docs` section of each file `instructions` named, when the layout is requested: the recipe and its arguments
-   * as an HTML comment, then a list item saying `docs/` is the source of truth, that the map says which page owns a
-   * fact, and the skill that writes pages.
-   */
-  @Sections(path = '.', id = 'docs', comment = '<!--', missing = 'fail')
-  Map<String, List<String>> instructionsSections() {
-    if (!cookedWith || !instructions) {
-      return null
-    }
-
-    def lines = [
-      "<!-- ${cookedWith} -->",
-      '- Docs: `docs/` is the source of truth; `docs/README.md` says which page owns a fact, and the',
-      "  `${SKILL}` skill writes and reviews pages.",
-    ]*.toString()
-    instructions.collectEntries { [(it): lines] }
   }
 }
