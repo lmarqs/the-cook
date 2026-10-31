@@ -71,5 +71,3 @@ Compare each page with the map, and report where it differs from these signs:
 
 Give each difference with the description it differs from and the step that would close it. A page that serves its
 readers in a shape of its own is not a difference. The team decides.
-
-[references/design.md](references/design.md) gives the reason behind each choice.

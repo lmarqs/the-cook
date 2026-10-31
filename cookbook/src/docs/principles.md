@@ -1,7 +1,68 @@
-# Why the layout is shaped as it is
+# Principles of the docs recipe
 
-Each choice, its reason and its source. The design is on issues #90 and #101 of `lmarqs/the-cook`, and its full
-decision register on #90.
+What the recipe stands for, each principle with its reason and the sources behind it, then the register of the
+choices made from them. The `docs-layout` skill is built from this page: the skill carries the rules, the questions
+and the giveaways an agent applies, and this page carries why. A change to the skill that breaks a principle here is
+a change to this page first. The design is on issues #90 and #101 of `lmarqs/the-cook`, and its full decision
+register on #90.
+
+## A fact carries its story
+
+A reason is told as what happened: the situation, what it cost, what was tried, then the conclusion. "We need a
+queue" is a conclusion; "the payment call timed out and customers who retried were charged twice" is a reason a
+reader months later can test to see whether it still holds. This is the trait the recipe exists to spread, and the
+one an abstract page loses first. Sources: PEP 1, Motivation; Rust RFC template, Motivation; arc42 tips 9-3 and 9-6.
+
+## One owner per fact
+
+Each fact reads best on one page; other pages link it, with link text that names the fact. A copy drifts from its
+original, and a restated value is what goes stale: outdated references were found in 28.9% of 991 top projects
+(Tan et al. 2024). The code, contracts and version history own their own facts, so a page holds only what the
+repository shows nowhere else.
+
+## The kind is the question a reader brings, never the subject
+
+A subject feeds several kinds: a cart's rules are a feature, keeping the cart server-side is a decision, resetting
+one is a runbook. An agent that sorts by subject or by wording files the storage decision under the uploads feature
+and the cart's design under the decisions. Diátaxis names the same symptom in human authors: kinds "bleed into each
+other" when sorted by form rather than by the reader's need, and its fix is a question put to each fact. The skill
+therefore describes each kind by when a fact belongs there and by the misfilings with their giveaways, never by a
+sorting rule.
+
+## Teach by criteria and one example, never by a form
+
+Models learn surface cues from the examples and labels in a prompt and apply them where the cue and the meaning part:
+shortcut learning (Geirhos et al. 2020; McCoy et al. 2019; Niven and Kao 2019), spurious concept-label links in
+in-context examples (Zhou et al. 2024), and label frequency, order and formatting moving classification by tens of
+points (Zhao et al. 2021; Lu et al. 2022; Sclar et al. 2023). A template is a form to fill and gets filled: its
+blanks survived into committed pages and pages were forced into its sections. Each kind therefore has criteria, what
+a good page achieves, and one example marked as one good page, not the page.
+
+## The team owns its map
+
+The map the owner judged best was written by hand, in the team's words, with one worked example and the misfilings
+that team meets. A cooked map was fought where it was adopted. The skill writes the map with the person, and where
+the map and the skill differ, the map wins.
+
+## Shape follows the readers
+
+A rigid output format lowers the quality of what is written into it (Tam et al. 2024), and a page reshaped to an
+example loses the structure and wording that served its readers. A kind's existing pages set its shape; an existing
+page is edited for its facts, and its structure changes only when it fails a reader.
+
+## A page never holds a placeholder
+
+A blank in a committed page reads as a fact nobody knows, and stays. What the sources do not give is asked of the
+person; what stays unknown is left out and reported.
+
+## Structure appears with its first content
+
+A directory, a guide or a glossary with nothing in it says something exists that does not. Diátaxis: "Don't do that.
+It's horrible."
+
+## Choices
+
+Each choice, its reason and its source.
 
 | Choice | Reason | Source |
 | --- | --- | --- |

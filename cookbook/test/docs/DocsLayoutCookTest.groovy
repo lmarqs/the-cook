@@ -16,7 +16,7 @@ class DocsLayoutCookTest {
   private static final File SKILL = new File(COOKBOOK, 'docs/skills/docs-layout')
   private static final List<String> KINDS = new File(SKILL, 'references').list()
   .collect { it - '.md' }
-  .findAll { !(it in ['map', 'glossary', 'adopt', 'design']) }
+  .findAll { !(it in ['map', 'glossary', 'adopt']) }
   .sort()
 
   /** The model of a stand-in for the earlier `seed` recipe: an owned section of the map and a skill template. */
@@ -160,6 +160,18 @@ docs.on = true
     }
   }
 
+  @Test void thePrinciplesTheSkillIsBuiltFromLiveBesideItAndAreNotShipped() {
+    def principles = new File(COOKBOOK, 'docs/principles.md')
+    assert principles.exists()
+    ['## A fact carries its story', '## One owner per fact', '## The kind is the question a reader brings',
+     '## Teach by criteria and one example', '## The team owns its map', '## Shape follows the readers',
+     '## A page never holds a placeholder', '## Choices', '| Choice | Reason | Source |']
+    .each { assert principles.text.contains(it): "principles.md lacks ${it}" }
+    assert !SKILL.listFiles().any { it.name == 'principles.md' }
+    assert !new File(SKILL, 'references/design.md').exists()
+    assert new File(COOKBOOK, 'docs/README.md').text.contains('(principles.md)')
+  }
+
   @Test void theSkillNamesEveryArgumentAndMeetsTheSkillSpec() {
     def text = new File(SKILL, 'SKILL.md').text
     def front = text.split('---\n')[1]
@@ -177,7 +189,7 @@ docs.on = true
       assert text.contains(it)
     }
     assert !new File(SKILL, 'templates').exists()
-    (KINDS + ['map', 'glossary', 'adopt', 'design']).each { assert text.contains("references/${it}.md") }
+    (KINDS + ['map', 'glossary', 'adopt']).each { assert text.contains("references/${it}.md") }
   }
 
   @Test void theReferencesTeachEachKindWithinTheBudget() {
@@ -193,7 +205,7 @@ docs.on = true
     def map = new File(references, 'map.md').text
     ['one owner', '## The lead', '## Misfilings', '## A new kind', 'what happened'].each { assert map.contains(it) }
     assert !new File(COOKBOOK, 'docs/kinds').exists()
-    def words = ([new File(SKILL, 'SKILL.md')] + references.listFiles().findAll { it.name != 'design.md' })
+    def words = ([new File(SKILL, 'SKILL.md')] + references.listFiles().toList())
     .sum { it.text.split(/\s+/).size() }
     assert words < 3450: "the skill holds ${words} words"
   }
