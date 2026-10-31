@@ -101,7 +101,19 @@ class Docs {
     }
 
     def text = (kinds.collect { resource("kinds/${it}.md") } + resource('kinds/common.md')).join('\n')
-    ["<!-- ${cookedWith} -->".toString()] + text.readLines()
+    ["<!-- ${cookedWith} -->".toString()] + linkExisting(text).readLines()
+  }
+
+  /**
+   * `text` with each kind's `directory/` or `page.md` in its heading, and `glossary.md` in the terms, made a link when
+   * the page exists, a directory by its guide; a page not yet written stays plain, so the map holds no dead link.
+   */
+  private String linkExisting(String text) {
+    text.replaceAll(/(?m)^(## [^\n]*, |Terms live in )`([a-z]+)(\/|\.md)`/) { String all, String lead, String name,
+      String end ->
+      def target = end == '/' ? "${name}/README.md" : "${name}.md"
+      current("docs/${target}") == null ? all : "${lead}[`${name}${end}`](${target})".toString()
+    }
   }
 
   /** Whole files under each skills root, `docs-layout/` and everything in it, when the layout is requested. */
