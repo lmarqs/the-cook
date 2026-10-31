@@ -1,7 +1,8 @@
 # Interfaces
 
 Holds what an interface's contract file leaves out: who calls it and why, authentication, versioning, deprecation and
-limits. An interface is any contract another system depends on: an HTTP API, an event stream, a queue, a webhook. Diátaxis type: reference.
+limits. An interface is any contract another system depends on: an HTTP API, an event stream, a queue, a
+webhook. Diátaxis type: reference.
 
 A fact belongs here when a caller needs it and the definition file, an OpenAPI document, a proto or a schema, does
 not hold it. The definition is the contract; a copy of it in prose drifts.

@@ -45,8 +45,9 @@ Repeat `--skills-root`. A newer version updates the skill and nothing under `doc
 `seed` recipe of an earlier version cooks `#layout` with the same `--skills-root`, then runs
 `./cook discard io.github.lmarqs.cookbook:docs#seed`, which removes the old skill files and the `kinds` section the
 old recipe wrote into `docs/README.md`, edits inside it included; text to keep moves outside its markers first. Until
-the discard, `./cook check` stops at `#seed`, which the newer version no longer has. `/docs-layout map` then writes
-the kinds back in the team's words.
+the discard, `#seed` stays in `cook.lock`: `./cook check` and `./cook replicate` cook it again from its earlier
+version after `#layout`, putting the old skill back, and `./cook update` finds no `#seed` in the newer version.
+`/docs-layout map` then writes the kinds back in the team's words.
 ''')
 @yield('''
 Write the map with the skill, such as `/docs-layout map` in Claude Code.

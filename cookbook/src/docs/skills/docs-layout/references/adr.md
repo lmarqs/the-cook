@@ -29,7 +29,8 @@ This shows one good page, not the page. `docs/adr/0007-keep-sessions-in-a-shared
 For whoever changes login or deploys. Sessions live in one store every replica reads.
 
 In 2023 the web tier went to four replicas, and each deploy logged out everyone on the restarted one: 300
-"logged out mid-checkout" tickets the first month. Sticky sessions, the stopgap, did not survive a deploy. A session must survive deploys, end at once on logout, and hold a 20 KB cart.
+"logged out mid-checkout" tickets the first month. Sticky sessions, the stopgap, did not survive a deploy. A session
+must survive deploys, end at once on logout, and hold a 20 KB cart.
 
 Signed cookies keep no server state, but cannot be ended early and a cart exceeds the 4 KB a cookie holds. Sticky
 sessions need nothing new, and lose every user of a restarted replica. A store every replica reads meets all three.

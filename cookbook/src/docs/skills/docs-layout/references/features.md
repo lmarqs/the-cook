@@ -22,8 +22,8 @@ This shows one good page, not the page. `docs/features/sessions.md` in the made-
 ```markdown
 # Sessions
 
-For whoever changes login. A session keeps a user logged in until logout or 30 minutes without a request. The limit was 10 minutes until 2023, when shoppers paying on slow connections lost their
-carts mid-checkout.
+For whoever changes login. A session keeps a user logged in until logout or 30 minutes without a request. The limit
+was 10 minutes until 2023, when shoppers paying on slow connections lost their carts mid-checkout.
 
 Each request renews the session for 30 minutes; logout deletes it at once. Every replica reads the same
 [session store](../adr/0007-keep-sessions-in-a-shared-store.md), so a user stays logged in whichever one answers.

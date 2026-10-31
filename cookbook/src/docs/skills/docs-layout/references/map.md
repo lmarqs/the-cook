@@ -8,7 +8,7 @@ belongs to each, and what a good page of each achieves.
 The kind is the question a reader brings to a fact, never the fact's subject: one subject feeds several kinds. In
 the made-up `acme`, the session timeout is a feature rule, the shared session store is a decision, and clearing
 sessions is a runbook. Each fact has one owner; other pages link it, since a copy drifts, with link text that names
-the fact, as `wait out [the rate limit](api/orders.md#limits)`.
+the fact, as `wait out [the rate limit](api/orders.md)`.
 
 ## What a page holds
 
