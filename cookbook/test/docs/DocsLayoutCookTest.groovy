@@ -50,8 +50,8 @@ class DocsLayoutCookTest {
   @Test void refusesWithoutSkillsOutsideTheRepositoryAndKinds() {
     def kitchen = kitchen()
     assert shouldFail(IllegalArgumentException) { cook(kitchen, LAYOUT, [:]) }.message ==
-    "${LAYOUT}: Missing --skills-root: A directory, from the repository root, the docs-layout skill is written under, " +
-    'such as .agents/skills'
+    "${LAYOUT}: Missing --skills-root: A directory, from the repository root, the docs-layout skill is written " +
+    'under, such as .agents/skills'
     def kinds = shouldFail(IllegalArgumentException) { cook(kitchen, LAYOUT, ['skills-root': ['s'], kinds: ['adr']]) }
     assert kinds.message.startsWith("${LAYOUT}: Unknown argument --kinds")
     def outside = shouldFail(IllegalArgumentException) { cook(kitchen, LAYOUT, ['skills-root': ['../skills']]) }
@@ -111,12 +111,13 @@ class DocsLayoutCookTest {
   @Test void theSkillNamesEveryArgumentAndMeetsTheSkillSpec() {
     def text = new File(SKILL, 'SKILL.md').text
     def front = text.split('---\n')[1]
-    def description = front.readLines().find { it.startsWith('description: ') }.substring(13)
+    def frontLines = front.readLines()
+    def description = frontLines.find { it.startsWith('description: ') }.substring(13)
 
     ['`map`', '`<kind> [title]`', '`term <term>`', '`review`', '`review --fix`', '`adopt`'].each {
       assert text.contains("| ${it} |")
     }
-    assert front.readLines().contains('name: docs-layout')
+    assert frontLines.contains('name: docs-layout')
     assert description.length() <= 1024
     assert text.readLines().size() < 500
     assert !text.contains('[[fill')
