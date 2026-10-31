@@ -109,8 +109,7 @@ class Docs {
    * the page exists, a directory by its guide; a page not yet written stays plain, so the map holds no dead link.
    */
   private String linkExisting(String text) {
-    text.replaceAll(/(?m)^(## [^\n]*, |Terms live in )`([a-z]+)(\/|\.md)`/) { String all, String lead, String name,
-      String end ->
+    text.replaceAll(/(?m)^(## [^\n]*, |Terms live in )`([a-z]+)(\/|\.md)`/) { all, lead, name, end ->
       def target = end == '/' ? "${name}/README.md" : "${name}.md"
       current("docs/${target}") == null ? all : "${lead}[`${name}${end}`](${target})".toString()
     }
