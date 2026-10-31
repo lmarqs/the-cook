@@ -163,9 +163,17 @@ docs.on = true
   @Test void thePrinciplesTheSkillIsBuiltFromLiveBesideItAndAreNotShipped() {
     def principles = new File(COOKBOOK, 'docs/principles.md')
     assert principles.exists()
-    ['## A fact carries its story', '## One owner per fact', '## The kind is the question a reader brings',
-     '## Teach by criteria and one example', '## The team owns its map', '## Shape follows the readers',
-     '## A page never holds a placeholder', '## Choices', '| Choice | Reason | Source |']
+    [
+      '## A fact carries its story',
+      '## One owner per fact',
+      '## The kind is the question a reader brings',
+      '## Teach by criteria and one example',
+      '## The team owns its map',
+      '## Shape follows the readers',
+      '## A page never holds a placeholder',
+      '## Choices',
+      '| Choice | Reason | Source |'
+    ]
     .each { assert principles.text.contains(it): "principles.md lacks ${it}" }
     assert !SKILL.listFiles().any { it.name == 'principles.md' }
     assert !new File(SKILL, 'references/design.md').exists()
