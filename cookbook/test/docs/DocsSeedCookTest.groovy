@@ -159,6 +159,23 @@ class DocsSeedCookTest {
     (KINDS + ['map', 'glossary', 'adopt', 'design']).each { assert text.contains("references/${it}.md") }
   }
 
+  @Test void theReferencesTeachEachKindWithinTheBudget() {
+    def references = new File(SKILL, 'references')
+    KINDS.each { kind ->
+      def text = new File(references, "${kind}.md").text
+      ['Diátaxis type', 'A fact belongs here when', 'What makes a good', '## Example', 'one good page, not the page']
+      .each { assert text.contains(it): "${kind}.md lacks ${it}" }
+      assert !text.contains('[[fill')
+      assert !(text =~ /(?m)^- (Gives|Names|Lists|Describes|Shows), in `[A-Z]/)
+    }
+    def map = new File(references, 'map.md').text
+    ['one owner', '## The lead', '## Misfilings', '## A new kind', 'what happened'].each { assert map.contains(it) }
+    assert !new File(COOKBOOK, 'docs/kinds').exists()
+    def words = ([new File(SKILL, 'SKILL.md')] + references.listFiles().findAll { it.name != 'design.md' })
+    .sum { it.text.split(/\s+/).size() }
+    assert words < 3450: "the skill holds ${words} words"
+  }
+
   private File kitchen() {
     def kitchen = folder.newFolder('kitchen')
     publishDirectory(kitchen, 'docs')

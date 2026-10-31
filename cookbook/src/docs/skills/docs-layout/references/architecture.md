@@ -1,34 +1,26 @@
 # Architecture
 
-The page shows the shape no single file shows: which parts the system has, what each is responsible for, and how they
-depend on each other. It takes arc42's building block and runtime views; arc42's decisions and glossary already live
-in `adr/` and `glossary.md`.
+Holds how the parts of the system fit together: the shape across its directories that no single file shows. One
+page, `docs/architecture.md`. Diátaxis type: explanation.
 
-- A part is named as the repository names it, with the directory it lives in, so a reader goes from the page to the
-  code.
-- A structural choice links its record; the reasons stay there. Requirements, practices and behavior belong to
-  their own kinds, and the page links them.
+A fact belongs here when it is about the whole: the parts, what each does, how they depend on each other. Why a
+part is shaped so is a decision, which this page links.
 
-## Example, in the made-up project `acme`
+What makes a good architecture page:
 
-`docs/architecture.md`:
+- It names each part as the repository names it, with the directory it lives in, so a reader goes from the page to
+  the code.
+- It shows the dependencies and main flows as they are, with a diagram where one helps.
+
+## Example
+
+This shows one good page, not the page. `docs/architecture.md` in the made-up `acme`:
 
 ```markdown
 # Architecture
 
-For whoever joins the team or changes how the parts connect. `acme` is a web shop: a browser app, an API and a
-worker, over one Postgres database. Payment and mail are external services. Written when newcomers spent their first
-week finding where an order is settled.
-
-## Parts
-
-- **Web**, in `web/`: renders the shop and calls the API.
-- **API**, in `api/`: serves orders and accounts, and queues slow work.
-- **Worker**, in `worker/`: sends mail and settles payments from the queue.
-
-## How they connect
-
-The web calls the API over HTTP and keeps sessions in Redis, which every web replica reads
-([a shared session store](adr/0007-keep-sessions-in-a-shared-store.md)). The API writes orders to Postgres and puts
-jobs on a Redis queue, which the worker reads.
+For whoever joins the team or changes how the parts connect. Written when newcomers spent their first week finding
+where an order is settled. `acme` is a web shop: **web**, in `web/`, renders the shop and calls the **API**, in
+`api/`, which writes orders to Postgres and queues slow work on Redis for the **worker**, in `worker/`, which sends
+mail and settles payments. Sessions sit in a [shared store](adr/0007-keep-sessions-in-a-shared-store.md).
 ```
