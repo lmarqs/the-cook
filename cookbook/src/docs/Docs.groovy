@@ -2,8 +2,8 @@ package io.github.lmarqs.cookbook.docs
 
 /**
  * Models a repository's `docs/` tree as the single source of truth for people and coding agents: a map that says
- * which page owns each fact, the kinds of page and their criteria, and the `docs-layout` skill that writes and
- * reviews the pages.
+ * which page owns each fact, the kinds of page and what a good page of each achieves, and the `docs-layout` skill
+ * that writes and reviews the pages.
  *
  * ## Writes for
  *
@@ -35,7 +35,16 @@ class Docs {
    * The kinds of page the map can offer: each a directory under `docs/`, except `architecture` and `philosophy`, one
    * page each.
    */
-  static final List<String> KINDS = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
+  static final List<String> KINDS = [
+    'adr',
+    'api',
+    'architecture',
+    'features',
+    'observability',
+    'philosophy',
+    'runbooks',
+    'standards'
+  ]
 
   /** The name of the skill, the directory it is written to under each skills root. */
   static final String SKILL = 'docs-layout'
@@ -82,8 +91,8 @@ class Docs {
 
   /**
    * The `kinds` section of `docs/README.md`: the recipe and its arguments as an HTML comment, then each kind offered
-   * with what it holds, its Diátaxis type and its criteria, then where a fact goes, what a page holds, terms, guides
-   * and the skill.
+   * with what it holds, its Diátaxis type and what a good page of it achieves, then where a fact goes, what a page
+   * holds, terms, guides and the skill.
    */
   @Section(path = 'docs/README.md', id = 'kinds', comment = '<!--')
   List<String> kindsSection() {
@@ -91,7 +100,7 @@ class Docs {
       return null
     }
 
-    def text = (kinds.collect { resource("kinds/${it}.md") } + resource('kinds/rules.md')).join('\n')
+    def text = (kinds.collect { resource("kinds/${it}.md") } + resource('kinds/common.md')).join('\n')
     ["<!-- ${cookedWith} -->".toString()] + text.readLines()
   }
 

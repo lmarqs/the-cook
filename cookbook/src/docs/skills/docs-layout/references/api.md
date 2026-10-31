@@ -1,8 +1,9 @@
 # Interface pages
 
 An interface's contract lives in its definition file: an OpenAPI document, a proto file or a schema, from which the
-reference is built. The interface page holds what that file leaves out, and links the file for everything else, so
-the two stay in agreement.
+reference is built. An event stream, a queue or the analytics events a product team reads is an interface too, and
+its schema is its definition file. The interface page holds what that file leaves out, and links the file for
+everything else, so the two stay in agreement.
 
 Sections after `Contract` hold what the interface has of authentication, versioning, deprecation policy and limits.
 

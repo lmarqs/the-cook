@@ -8,13 +8,13 @@ owns it. The person reviews the result as one change.
 2. List the documentation: every Markdown file under `docs/`, and the files elsewhere that hold the same kinds of fact,
    such as `ARCHITECTURE.md`, `doc/adr/` or a wiki export. Show the list to the person and agree which files are in
    scope.
-3. Sort each file by the map's criteria into one kind, or split it when its sections meet different kinds. Ask the
-   person where a file meets no kind's criteria; it may belong in the root README, in `AGENTS.md`, in an issue, in a
-   kind the team declares by the map's tests, or nowhere.
+3. Sort each file by the map's descriptions into one kind, or split it when its sections meet different kinds. Ask the
+   person where a file fits no kind's description; it may belong in the root README, in `AGENTS.md`, in an issue, in
+   a kind the team declares after the map's questions, or nowhere.
 4. Move each page into its kind with the version control's move command, so history follows it, and rename it by
-   the kind's file name rule.
+   the kind's file name.
    Existing decision records keep their numbers.
-5. Fit each page to its kind's template: the sections the map requires, a lead, the reasoning. Gather missing facts
+5. Fit each page to its kind's template: the sections the map describes, a lead, the reasoning. Gather missing facts
    from the code and the person, and fill blanks with what they say; leave the person a list of what is still open.
 6. Remove what other pages already state: keep the statement on the owning page and link it from the rest. Remove
    status, author, date and version fields; version history records who changed a page and when.

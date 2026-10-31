@@ -1,21 +1,23 @@
-## Decisions, `adr/`
+## Architecture decisions, `adr/`
 
-Holds why the system is built as it is: each decision, the options weighed and why the choice won. Diátaxis type:
-explanation.
+Holds why the system is built as it is: each foundation decision, the options weighed and why the choice won.
+Diátaxis type: explanation.
 
-- A record holds one foundation decision: other work is built on it, so reversing it changes more than one feature or
-  module. It shapes structure, qualities, dependencies or interfaces, is hard to reverse, surprising to a reader new
-  to its context and the result of a real trade-off.
-- Not a record: how one feature is implemented, which its feature page or the code holds; a choice one change can
-  reverse; a convention that static checking, such as linting, enforces, since its configuration already states it.
-- The file is `NNNN-<slug>.md`, numbered in sequence; a deleted record's number is best left unused, since an old
-  reference may still name it. The title names the decision taken.
-- The lead says whom the decision concerns, the decision, and in a clause what moved it.
-- Sections, in order: `Context`, what happened: the situation that raised the decision, what it cost and what was
-  tried, then the forces the options are judged by; `Options`, each alternative and why it lost; `Decision`, the
-  choice and why it won, with the product that implements it, if any, and why that one; `Consequences`, what becomes
-  easier and what it costs.
-- A record fits on about one page.
-- A decision that changes is edited in place: it keeps its number, its title and slug follow the new choice, and
-  `Options` keeps the previous choice and why it changed. A record is deleted when its decision is reversed outright,
-  or when it fails the bar above, its facts moved to the page that owns them; version history keeps it.
+What makes a good decision record:
+
+- Holds one decision other work is built on, so that reversing it changes more than one feature or module. Such a
+  decision shapes structure, qualities, dependencies or interfaces, is hard to reverse, surprises a reader new to its
+  context and comes from a real trade-off. How one feature is implemented, a choice one change can reverse and a
+  convention a check such as a linter enforces are not decisions of this kind: every record present reads as
+  binding, and a record of a detail freezes what should stay easy to change.
+- Is named `NNNN-<slug>.md`, numbered in sequence, with the decision taken as its title. A number is used once,
+  since an old reference may still name it.
+- Opens with a lead that says whom the decision concerns, the decision, and in a clause what moved it.
+- Tells, in `Context`, what happened: the situation that raised the decision, what it cost and what was tried, then the
+  forces the options are judged by. A reader tests whether the decision still holds against that story.
+- Gives, in `Options`, each alternative at its best and why it lost; in `Decision`, the choice and why it won, with the
+  product that implements it, if any, and why that one; in `Consequences`, what becomes easier and what it costs.
+- Fits on about one page.
+- Stays current. A decision that changes is edited in place: it keeps its number, its title and slug follow the new
+  choice, and `Options` keeps the previous choice and why it changed. A decision reversed outright leaves with its
+  record; version history keeps it.

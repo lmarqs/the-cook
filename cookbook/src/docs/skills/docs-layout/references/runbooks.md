@@ -3,6 +3,16 @@
 A runbook says what to do when one trigger fires: an alert, a request or a symptom. It is written for someone under
 pressure, so each step is one action with the output that shows it worked.
 
+A runbook for a symptom names the symptom, its likely causes and the remedy for each, as a troubleshooting topic does
+in DITA. When the cause isn't obvious, the first steps are checks that tell the causes apart, as for "users cannot
+log in":
+
+```markdown
+1. Check the API's error rate: `make api-errors`.
+
+   Expected: below 1%. Above it, the API is failing; go to step 4. Below it, the login page is at fault; go to step 2.
+```
+
 Each time the trigger fires, the responder adds what they learned: a step that was missing, an output that differed.
 
 ## Example, in the made-up project `acme`
@@ -12,8 +22,8 @@ Each time the trigger fires, the responder adds what they learned: a step that w
 ```markdown
 # Redis down
 
-For the on-call engineer when the Redis alert fires. Brings the session store back; while it is down, every user is
-logged out. Written after the March outage, when finding the restart took 40 minutes. Owner: platform team.
+For whoever answers the Redis alert. Brings the session store back; while it is down, every user is
+logged out. Written after the March outage, when finding the restart took 40 minutes.
 
 ## Before you begin
 
@@ -30,5 +40,6 @@ logged out. Written after the March outage, when finding the restart took 40 min
 
 ## If it fails
 
-Page the platform on-call. [Sessions](../features/sessions.md) explains what depends on Redis.
+Restore the store from the last snapshot with `make redis-restore`. [Sessions](../features/sessions.md) explains
+what depends on Redis.
 ```

@@ -1,7 +1,7 @@
 @help('''
 Gives the repository a `docs/` tree that people and coding agents share as the source of truth: a map at
-`docs/README.md` that says which page owns each fact, the kinds of page with their criteria, and the `docs-layout`
-skill that writes and reviews pages.
+`docs/README.md` that says which page owns each fact, the kinds of page with what a good page of each achieves, and
+the `docs-layout` skill that writes and reviews pages.
 
 ## API
 
@@ -19,9 +19,9 @@ other recipes:
 
 | Name | What it is |
 | --- | --- |
-| `docs/README.md` | The map: each kind offered, what it holds, its criteria, where a fact goes, and how a team \
-declares a kind of its own |
-| `docs/<kind>/` | The pages of one kind, `adr`, `api`, `features`, `runbooks` or `ux`, \
+| `docs/README.md` | The map: each kind offered, what it holds, what a good page of it achieves, where a fact \
+goes, and how a team declares a kind of its own |
+| `docs/<kind>/` | The pages of one kind, `adr`, `api`, `features`, `observability`, `runbooks` or `standards`, \
 with a guide `README.md` listing them; created with the kind's first page |
 | `docs/architecture.md`, `docs/philosophy.md` | The kinds of one page: how the parts fit together, and the tenets \
 that guide decisions; created with their content |
@@ -34,7 +34,7 @@ that guide decisions; created with their content |
 | --- | --- | --- | --- |
 | `docs/README.md` | The title and an introduction the team edits | Always | seed |
 | `docs/README.md` | The section `kinds`: the argument line as an HTML comment, each kind offered with its \
-criteria, where a fact goes, what a page holds, terms, guides and the skill | Always | owned |
+description, where a fact goes, what a page holds, terms, guides and the skill | Always | owned |
 | `<skills-root>/docs-layout/`, for each `--skills-root` | `SKILL.md`, `references/` and `templates/` | Always | owned |
 
 The kind directories, their guides, the one-page kinds and the glossary appear with their first
@@ -65,9 +65,9 @@ Write the first page with the skill, such as `/docs-layout adr <title>` in Claud
 import io.github.lmarqs.cookbook.docs.Docs
 
 @param(value = ['kinds'], many = true, sorted = true,
-    default = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
-    choices = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux'],
-    doc = 'A kind of page the map offers; all seven by default')
+    default = ['adr', 'api', 'architecture', 'features', 'observability', 'philosophy', 'runbooks', 'standards'],
+    choices = ['adr', 'api', 'architecture', 'features', 'observability', 'philosophy', 'runbooks', 'standards'],
+    doc = 'A kind of page the map offers; all eight by default')
     String[] kinds
 @param(value = ['skills-root'], many = true, sorted = true, path = true,
     doc = 'A directory, from the repository root, the docs-layout skill is written under, such as .agents/skills')
