@@ -143,18 +143,20 @@ class DocsSeedCookTest {
   @Test void theSkillNamesEveryArgumentAndMeetsTheSkillSpec() {
     def text = new File(SKILL, 'SKILL.md').text
     def front = text.split('---\n')[1]
-    def frontLines = front.readLines()
-    def description = frontLines.find { it.startsWith('description: ') }.substring(13)
+    def description = front.readLines().find { it.startsWith('description: ') }.substring(13)
 
-    ['`<kind> [title]`', '`term <term>`', '`kind <name>`', '`review`', '`review --fix`', '`adopt`']
-    .each {
+    ['`map`', '`<kind> [title]`', '`term <term>`', '`review`', '`review --fix`', '`adopt`'].each {
       assert text.contains("| ${it} |")
     }
     assert front.readLines().contains('name: docs-layout')
     assert description.length() <= 1024
     assert text.readLines().size() < 500
-    def pageTemplates = new File(SKILL, 'templates').listFiles()*.name.findAll { it != 'map.template.md' }
-    pageTemplates.each { assert text.contains(it) }
+    assert !text.contains('[[fill')
+    ['the map wins', 'never holds a placeholder', 'edited for its facts', 'no kind fits', 'changed no fact'].each {
+      assert text.contains(it)
+    }
+    assert !new File(SKILL, 'templates').exists()
+    (KINDS + ['map', 'glossary', 'adopt', 'design']).each { assert text.contains("references/${it}.md") }
   }
 
   private File kitchen() {
