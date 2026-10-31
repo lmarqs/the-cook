@@ -59,7 +59,8 @@ goes where.
    [architecture](references/architecture.md), [philosophy](references/philosophy.md).
 7. For a kind of many pages, add the page to its guide's list: `- [Title](file.md): one sentence on it.`
 8. Connect it: where another page states this page's fact, replace the statement with a link. Use the glossary's
-   terms.
+   terms. When the page is its kind's first, or the one page of its kind, run
+   `./cook replicate io.github.lmarqs.cookbook:docs#seed` so the map links it.
 9. Report the files written and each blank the person still has to supply.
 
 ## Change a decision
@@ -73,7 +74,8 @@ facts that still hold to the page they fit, remove the file and its guide line, 
 
 ## Add a term
 
-1. When `docs/glossary.md` is absent, create it from `templates/glossary.template.md`.
+1. When `docs/glossary.md` is absent, create it from `templates/glossary.template.md`, then run
+   `./cook replicate io.github.lmarqs.cookbook:docs#seed` so the map links it.
 2. Add the entry in the map's format; [references/glossary.md](references/glossary.md) has an example.
 3. Replace the rejected synonyms in the pages with the term.
 
@@ -92,6 +94,7 @@ Compare every page under `docs/` with the map and with these signs of a page tha
 
 - It sits in a kind the map declares, or is the map or the glossary.
 - Each kind of many pages has its guide, listing every page of the kind.
+- The map links each guide, each page of a kind of one page and the glossary.
 - Each link resolves, to a file and a heading that exist.
 - It has what the map describes for its kind; each decision record is named `NNNN-<slug>.md`, its number used once.
 - It uses the glossary's terms, not their rejected synonyms.

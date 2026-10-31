@@ -44,6 +44,11 @@ A kind's directory appears with its first page, together with its guide, `README
 such as `# Architecture decisions`, then a list linking each page with one sentence on it. A kind of one page appears
 with its content. Empty structure tells a reader something exists that doesn't.
 
+This map links each guide, each page of a kind of one page and `glossary.md` once it exists, so every page under
+`docs/` is reached from here. Cooking `io.github.lmarqs.cookbook:docs#seed` again, as
+`./cook replicate io.github.lmarqs.cookbook:docs#seed`, adds the link for a page written since; until then,
+`./cook check` reports the difference.
+
 ## A new kind
 
 A team declares a kind of its own on this page, outside the section the recipe writes, with a heading in the shape of

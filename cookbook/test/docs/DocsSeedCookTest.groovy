@@ -35,6 +35,7 @@ class DocsSeedCookTest {
     assert map.contains('<!-- cook:begin io.github.lmarqs.cookbook:docs#seed/kinds -->\n' +
     '<!-- io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills -->\n')
     KINDS.each { assert map.contains("`${it}/`") || map.contains("`${it}.md`") }
+    (KINDS.collectMany { ["${it}/README.md", "${it}.md"] } + 'glossary.md').each { assert !map.contains("](${it})") }
     assert map.contains('The `docs-layout` skill writes pages')
     (KINDS.collectMany { ["docs/${it}", "docs/${it}.md"] } + 'docs/glossary.md').each {
       assert !new File(kitchen, it).exists()
@@ -55,6 +56,28 @@ class DocsSeedCookTest {
 
     assert map.text.startsWith('# Our docs\n\nStart here.\n')
     assert map.text.contains('`standards/`')
+  }
+
+  @Test void theMapLinksEachKindPageAndTheGlossaryOnceTheyExist() {
+    def kitchen = kitchen()
+    cook(kitchen, SEED, ['skills-root': ['.agents/skills']]).commit()
+    def map = new File(kitchen, 'docs/README.md')
+    ['docs/adr/README.md', 'docs/architecture.md', 'docs/glossary.md'].each {
+      def page = new File(kitchen, it)
+      page.parentFile.mkdirs()
+      page.text = '# Page\n'
+    }
+
+    def cooked = cook(kitchen, SEED, ['skills-root': ['.agents/skills']])
+    assert cooked.actions.keySet() == ['docs/README.md'] as Set
+    cooked.commit()
+
+    assert map.text.contains('## Architecture decisions, [`adr/`](adr/README.md)\n')
+    assert map.text.contains('## Architecture, [`architecture.md`](architecture.md)\n')
+    assert map.text.contains('Terms live in [`glossary.md`](glossary.md):')
+    assert map.text.contains('## Interfaces, `api/`\n')
+    assert map.text.contains('## Philosophy, `philosophy.md`\n')
+    assert cook(kitchen, SEED, ['skills-root': ['.agents/skills']]).actions == [:]
   }
 
   @Test void refusesWithoutSkillsOutsideTheRepositoryAndAnUnknownKind() {
