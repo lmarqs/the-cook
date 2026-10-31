@@ -2,10 +2,12 @@
 
 Holds what the system does, one page per unit of behavior. Diátaxis type: reference.
 
-- The lead says what the unit is and why it exists, or why it is as it is: what went wrong, or could not be done,
-  without it.
-- Sections follow the unit's own structure, and examples are welcome.
-- The page describes. The options weighed for a foundation decision live in `adr/` and the steps to operate the unit
-  in `runbooks/`; the page links the records and runbooks that shaped it.
-- A `Known limits` section, when the unit has any, lists what it doesn't handle, handles only partly or handles in a
-  way that catches a reader out, each with its workaround. A limit is removed in the change that lifts it.
+Good feature pages:
+
+- Open with a lead that says what the unit is and why it exists, or why it is as it is: what went wrong, or could not
+  be done, without it.
+- Follow the unit's own structure, its inputs, states and outputs as it has them, so a reader finds a fact where the
+  product puts it. Examples help.
+- Describe. The options weighed for a foundation decision and the steps to operate the unit are facts of other kinds.
+- List, in `Known limits`, what the unit doesn't handle, handles only partly or handles in a way that catches a reader
+  out, each with its workaround. A limit leaves the page in the change that lifts it.

@@ -11,7 +11,16 @@ import thecook.cookbook.RecipeSource
 
 class DocsSeedCookTest {
   private static final String SEED = 'io.github.lmarqs.cookbook:docs:0.1.0#seed'
-  private static final List<String> KINDS = ['adr', 'api', 'architecture', 'features', 'philosophy', 'runbooks', 'ux']
+  private static final List<String> KINDS = [
+    'adr',
+    'api',
+    'architecture',
+    'features',
+    'observability',
+    'philosophy',
+    'runbooks',
+    'standards'
+  ]
   private static final File SKILL = new File(COOKBOOK, 'docs/skills/docs-layout')
 
   @Rule public TemporaryFolder folder = new TemporaryFolder()
@@ -27,15 +36,17 @@ class DocsSeedCookTest {
     '<!-- io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills -->\n')
     KINDS.each { assert map.contains("`${it}/`") || map.contains("`${it}.md`") }
     assert map.contains('The `docs-layout` skill writes pages')
-    assert map.contains('in the standards under `ux/` are to be interpreted as described in BCP 14\n')
+    assert map.contains('## Architecture decisions, `adr/`\n')
+    assert !map.contains('are to be interpreted as described in BCP 14')
     [
       'docs/adr',
       'docs/api',
       'docs/architecture.md',
       'docs/features',
       'docs/philosophy.md',
+      'docs/observability',
       'docs/runbooks',
-      'docs/ux',
+      'docs/standards',
       'docs/glossary.md'
     ].each {
       assert !new File(kitchen, it).exists()
@@ -49,14 +60,13 @@ class DocsSeedCookTest {
     def map = new File(kitchen, 'docs/README.md')
     assert map.text.contains('<!-- io.github.lmarqs.cookbook:docs#seed --kinds=adr --kinds=runbooks ' +
     '--skills-root=.agents/skills -->')
-    assert map.text.contains('`adr/`') && map.text.contains('`runbooks/`') && !map.text.contains('`ux/`')
-    assert !map.text.contains('BCP 14')
+    assert map.text.contains('`adr/`') && map.text.contains('`runbooks/`') && !map.text.contains('`standards/`')
 
     map.text = '# Our docs\n\nStart here.\n' + map.text.substring(map.text.indexOf('<!-- cook:begin'))
     cook(kitchen, SEED, ['skills-root': ['.agents/skills']]).commit()
 
     assert map.text.startsWith('# Our docs\n\nStart here.\n')
-    assert map.text.contains('`ux/`')
+    assert map.text.contains('`standards/`')
   }
 
   @Test void refusesWithoutSkillsOutsideTheRepositoryAndAnUnknownKind() {
@@ -66,7 +76,8 @@ class DocsSeedCookTest {
     'such as .agents/skills'
     def unknown = shouldFail(IllegalArgumentException) { cook(kitchen, SEED, ['skills-root': ['s'], kinds: ['howto']]) }
     assert unknown.message ==
-    "${SEED}: --kinds=howto is not one of: adr, api, architecture, features, philosophy, runbooks, ux"
+    "${SEED}: --kinds=howto is not one of: adr, api, architecture, features, observability, philosophy, runbooks, " +
+    'standards'
     def outside = shouldFail(IllegalArgumentException) { cook(kitchen, SEED, ['skills-root': ['../skills']]) }
     assert outside.message.startsWith("${SEED}: --skills-root=../skills is outside the repository")
   }

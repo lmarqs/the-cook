@@ -1,9 +1,11 @@
 ## Interfaces, `api/`
 
 Holds what an interface's contract file leaves out: who calls it and why, authentication, versioning, deprecation
-policy and limits. Diátaxis type: reference.
+policy and limits. An interface is any contract another system depends on: an HTTP API, an event stream, a queue, a
+webhook or the analytics events a product team reads. Diátaxis type: reference.
 
-- One page per interface. The lead says what the interface is for and who calls it.
-- A `Contract` section names the definition file, an OpenAPI document, a proto file or a schema, and how the reference
-  is built from it. The definition is the contract; the page links it.
-- Design reasons live in `adr/`, and the page links them.
+Good interface pages:
+
+- Cover one interface each, with a lead that says what it is for and who calls or consumes it.
+- Name, in `Contract`, the definition file, such as an OpenAPI document, a proto file or an event schema, and how the
+  reference is built from it. The definition is the contract; a copy of it in prose drifts from it.
