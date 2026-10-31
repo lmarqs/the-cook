@@ -1,0 +1,107 @@
+{
+  "study": "e2",
+  "case": "retry-capture",
+  "arm": "owned",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "retry-capture--owned--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:51:05.077257+00:00",
+  "duration_s": 14.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/retry.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -30"
+    }
+  ],
+  "tokens": {
+    "input": 164897,
+    "cached": 163816,
+    "output": 983,
+    "reasoning": 101
+  },
+  "cost_usd": 0.04689720000000001,
+  "turns": 6,
+  "last_message": "Tests pass. `capture()` now retries up to 3 attempts via `larder.retry.retry`, reusing the same idempotency key across retries (so a timed-out-but-actually-charged attempt doesn't double-charge), and lets `GatewayTimeout` propagate after the final attempt.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

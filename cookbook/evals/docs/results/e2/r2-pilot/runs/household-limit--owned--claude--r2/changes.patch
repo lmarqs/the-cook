@@ -1,0 +1,35 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..49aef2b 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -1,7 +1,29 @@
++import re
++
+ from larder.members import Member
+ 
++HOUSEHOLD_ORDER_LIMIT = 2
++
++_WORD_REPLACEMENTS = {"st": "street", "rd": "road"}
++
++
++def _normalize_address(address: str) -> str:
++    """Normalise an address the way households.md describes: lower case, no punctuation, "street" for "st." and
++    "road" for "rd", with the number and flat kept apart."""
++    address = address.lower()
++    address = re.sub(r"[.,]", "", address)
++    words = address.split()
++    words = [_WORD_REPLACEMENTS.get(word, word) for word in words]
++    return " ".join(words)
++
+ 
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    household_address = _normalize_address(member.address)
++    household_open_orders = sum(
++        open_orders.get(other.id, 0)
++        for other in members
++        if _normalize_address(other.address) == household_address
++    )
++    return household_open_orders < HOUSEHOLD_ORDER_LIMIT

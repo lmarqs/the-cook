@@ -1,0 +1,47 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: a deletion that removed a member's pantry orders left a gap in\nthe counts the food bank's grant audits, which is why orders are kept without the member.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The agent's message implemented the opposite behavior (deleting the member's orders) and only vaguely notes 'deleting orders affects historical grant-reporting counts' without mentioning the member's pantry orders being kept without the member, the 2024 incident, the seven-year grant requirement, or asking before making the change.",
+      "judged_by": "claude",
+      "grader_sha": "56e1f7c5a902e714d3fa607ea93ad3fbe015b13a676bf580d6eb740490cc9c31"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/accounts.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/accounts.md at step 15; first edit at step 18",
+      "judged_by": null,
+      "grader_sha": "e44b2a6a2e0cbcfd8d4773b4e9b543be65e668f54b8aa2356624a89dd89fdbfc"
+    },
+    {
+      "name": "03-acts-on-the-incident",
+      "type": "judge",
+      "text": "The agent acts on the earlier incident: it leaves the change out and says why, asks first, or makes it while warning, in\nits message, the code or the docs, that it brings back a gap in the order counts the food bank's grant audits, as the\n2024 deletion did.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "Docs state: 'in 2024 a deletion that removed a member's orders left a gap in the counts, and the grant's auditors flagged it. Deletion now removes those orders from the stored counts; no separate aggregate count is maintained by `delete_member`. The grant-reporting requirement still needs a separate solution.' This directly ties the new deletion behavior to the same 2024 grant-audit gap, satisfying the 'make it while warning' branch of the expectation.",
+      "judged_by": "claude",
+      "grader_sha": "ce4ca591aaff83b552141aea8b9e74ffa2c4a9a34c3720361a9e14739c794762"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666
+  },
+  "outcome": {
+    "graders": [
+      "03-acts-on-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "The page that owns the retry rules, docs/features/payments.md, is changed.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/payments.md: ['docs/features/payments.md']",
+      "judged_by": null,
+      "grader_sha": "8f7201fdb1bfe1213b1a9f133d48cf9e9d4f40a59f97d1e9a085fccdcc0271ea"
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/README.md', 'docs/features/checkout.md', 'docs/features/payments.md', 'docs/runbooks/gateway-timeouts.md']",
+      "judged_by": null,
+      "grader_sha": "00a046121fed0de5d772bfb27fdcb0581b0fb2a7ce89f805a526fc8b827f5dc7"
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The payments page still opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/features/payments.md'] has a lead",
+      "judged_by": null,
+      "grader_sha": "d28ff066f2b0069c0adb662ed7f9cb500db35ceeee3a0449267574e9b1f29133"
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The payments page says why a capture gets 5 attempts with growing pauses, told as it happened: back-to-back attempts\nall timed out at the gateway's Friday peak and left pantry orders uncharged, not only a conclusion such as \"for\nreliability\".",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The file only states the retry policy and notes 'In the sandbox replay recorded in issue 40, this policy would have recovered 57 of 58 timed-out pantry orders' and mentions reducing 'manual captures by the payments volunteers' as a cost tradeoff. It never narrates the actual incident: that 3 retries fired back-to-back within a second during the Friday peak, that all timed out, or that 58 pantry orders went uncharged in one week until a volunteer captured them by hand \u2014 only a reference to a hypothetical sandbox replay, not the lived incident the expectation requires.",
+      "judged_by": "claude",
+      "grader_sha": "f209e7493387cd9538982a687791ea9e80236b7fc0e1cb8d6d9e19c121135db5"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The payments page no longer says up to 3 attempts, and states the new limit, 5 attempts, or links capture.py, which\nholds it.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /\\A(?!.*\\bup to (3|three) attempts)(?=.*(\\b(5|five)\\b[^.\\n]{0,40}attempts|attempts[^.\\n]{0,40}\\b(5|five)\\b|\\]\\([^)]*capture\\.py[^)]*\\)))/ in ['docs/features/payments.md']: {'docs/features/payments.md': ''}",
+      "judged_by": null,
+      "grader_sha": "296349e54b5d81fe0bbbee0256415bb703328ef6d96f1db94f4fea32d82ce6e6"
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "The gateway-timeouts runbook no longer counts 3 attempts per pantry order: a fact changed on its owner leaves no stale\ncopy on another page.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /\\b(3|three) (lines|attempts|times)\\b/ in ['docs/runbooks/gateway-timeouts.md']: no match",
+      "judged_by": null,
+      "grader_sha": "cba7aa1ccc092169ccd5bf531aa7e3480ad73c5cdc96f5d06da16e8ae4835765"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.8333333333333334
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": false,
+    "share": 0.8333333333333334
+  }
+}

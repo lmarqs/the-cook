@@ -1,0 +1,92 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..4267e47 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,10 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Architecture](architecture.md) owns the current parts and how they connect.
++- [Architecture principles](principles.md) owns the rule for adding a service and why proposals start from it.
++- [Decisions](adr/README.md) indexes individual decisions, their alternatives and consequences.
++- [Features](features/README.md) indexes member-facing behavior and its rules.
++- [Runbooks](runbooks/README.md) indexes operational procedures for incidents.
++- [Glossary](glossary.md) owns the names used in code, pages and conversations.
+diff --git a/docs/adr/0001-keep-sessions-in-the-database.md b/docs/adr/0001-keep-sessions-in-the-database.md
+index d4ebd12..32a2295 100644
+--- a/docs/adr/0001-keep-sessions-in-the-database.md
++++ b/docs/adr/0001-keep-sessions-in-the-database.md
+@@ -26,3 +26,8 @@ Sessions live in a Postgres table every web server reads, because it survives a
+ 
+ A deploy logs no one out. Each request reads the session from Postgres, a query the database serves from memory at
+ larder's size.
++
++## Shaped by
++
++- [Keep the services volunteers operate few](../principles.md#keep-the-services-volunteers-operate-few), the
++  general rule for future service proposals.
+diff --git a/docs/adr/0002-run-background-jobs-on-postgres.md b/docs/adr/0002-run-background-jobs-on-postgres.md
+index 8b4d536..28df16b 100644
+--- a/docs/adr/0002-run-background-jobs-on-postgres.md
++++ b/docs/adr/0002-run-background-jobs-on-postgres.md
+@@ -25,3 +25,8 @@ pantry order that queues it, and Postgres is the database larder already runs an
+ ## Consequences
+ 
+ Redis is switched off. A job is saved with the pantry order that queues it, or not at all.
++
++## Shaped by
++
++- [Keep the services volunteers operate few](../principles.md#keep-the-services-volunteers-operate-few), the
++  general rule for future service proposals.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..d6ce370 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -4,6 +4,9 @@ For whoever joins larder or changes how its parts connect. Larder is one Python
+ with a worker for background jobs and an external card gateway. Written when a new volunteer spent a week finding
+ where a payment is captured.
+ 
++Before proposing another service, read the [architecture principles](principles.md) for the capability and
++restoration requirements, their rationale and the hosted-service exception.
++
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+diff --git a/docs/principles.md b/docs/principles.md
+new file mode 100644
+index 0000000..ae03662
+--- /dev/null
++++ b/docs/principles.md
+@@ -0,0 +1,31 @@
++# Architecture principles
++
++For whoever proposes a new dependency or changes how larder's parts connect. Start a service proposal here;
++the volunteers who run larder need to be able to keep it running when its proposer is away.
++
++## Keep the services volunteers operate few
++
++Larder's baseline is one Python web app and one Postgres database, with a worker using that database. Before
++adding a service for volunteers to operate, a proposal must show both:
++
++- What it needs to do that Postgres cannot.
++- Which two volunteers can restore the new service.
++
++Being able to set a service up is not enough: it must be recoverable when one volunteer is unavailable.
++The external card gateway is part of the architecture, and a hosted service that nobody on the team has to run
++is an acceptable option. This principle limits operational burden; it is not a ban on outside services.
++
++## Why this is the starting point
++
++- In 2023, Redis for sessions would have left one volunteer operating a store just for sessions. Sessions went
++  into Postgres instead; [the session decision](adr/0001-keep-sessions-in-the-database.md) owns the alternatives
++  and the requirement that deploys preserve sessions.
++- In March 2025, Redis evicted 300 queued receipt jobs, and only one volunteer could restore it. Jobs moved to
++  Postgres; [the background-job decision](adr/0002-run-background-jobs-on-postgres.md) owns the alternatives
++  and the job durability requirements.
++- In [issue 70](../notes/issue-70.md), Elasticsearch was proposed for pantry item search. The discussion reported
++  that Postgres full-text search on item names reduced the "rice" search from four seconds to 40 ms and found
++  "Rice, brown". The proposer chose that approach, so the proposal did not establish a need for another service.
++
++These cases established the rule recorded above. Future proposals should begin with the unmet capability and
++the people who can restore the service, rather than repeat the argument about adding one.

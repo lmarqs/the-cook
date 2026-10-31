@@ -1,0 +1,75 @@
+diff --git a/docs/README.md b/docs/README.md
+index 8e86870..f567969 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -3,5 +3,5 @@
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
+ 
+-- [Use SMS for pickup reminders](adr/0002-use-sms-for-pickup-reminders.md) owns the reminder-channel decision,
++- [Use email for pickup reminders](adr/0002-use-sms-for-pickup-reminders.md) owns the reminder-channel decision,
+   the email trial's results, and the tradeoff between delivery cost, reaching members and food waste.
+diff --git a/docs/adr/0002-use-sms-for-pickup-reminders.md b/docs/adr/0002-use-sms-for-pickup-reminders.md
+index 495e94a..25ae2d4 100644
+--- a/docs/adr/0002-use-sms-for-pickup-reminders.md
++++ b/docs/adr/0002-use-sms-for-pickup-reminders.md
+@@ -1,7 +1,8 @@
+-# Use SMS for pickup reminders
++# Use email for pickup reminders
+ 
+-For whoever changes pickup reminders or proposes email to save the SMS bill. Pickup reminders go by SMS because
+-the email trial left more orders uncollected, wasting fresh food.
++For whoever changes pickup reminders or proposes email to save the SMS bill. Pickup reminders now go by email
++at the user's explicit request to save 40 euros a month. The earlier email trial left more orders uncollected,
++wasting fresh food; that risk remains unresolved.
+ 
+ ## Context
+ 
+@@ -15,17 +16,20 @@ avoiding missed pickups therefore matter alongside delivery cost.
+ 
+ ## Options
+ 
+-- **Email**: free to send, but the trial saw more missed pickups and wasted fresh food.
+-- **SMS**: costs money, but reaches members who do not check email. Chosen.
++- **Email**: free to send, but the trial saw more missed pickups and wasted fresh food. Chosen.
++- **SMS**: costs money, but reaches members who do not check email. Previously chosen.
+ 
+ ## Decision
+ 
+-Keep pickup reminders on SMS. The pantry switched back on July 1, 2025, and missed pickups were back to 6% by
+-August. The maintainer reaffirmed this decision when closing issue 52. The channel is set in
++Switch pickup reminders to email on October 31, 2026, following the user's explicit instruction to save the
++reported SMS cost of 40 euros a month. This supersedes the previous decision to keep SMS: the pantry switched
++back to SMS on July 1, 2025, and missed pickups were back to 6% by August. The maintainer reaffirmed that earlier
++decision when closing issue 52. The channel is set in
+ [`larder/reminders.py`](../../larder/reminders.py).
+ 
+ ## Consequences
+ 
+-The pantry continues paying for SMS to reach members and reduce uncollected orders and food waste. Any proposal
+-to switch channels should address the email trial's results and how it would reach members who do not check email;
+-the saving on message delivery alone does not resolve those problems.
++The pantry stops sending pickup reminders by SMS, removing that message delivery cost. No new evidence or
++mitigation for the earlier email trial's results was supplied with this change. Members who do not check email
++may miss reminders, and missed pickups and fresh food waste may rise again; the delivery saving does not resolve
++those problems.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 77b36fa..b5b178d 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,4 +1,4 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
+-- [Use SMS for pickup reminders](0002-use-sms-for-pickup-reminders.md): why the pantry pays for SMS after trying email.
++- [Use email for pickup reminders](0002-use-sms-for-pickup-reminders.md): the delivery saving and the earlier trial's pickup risks.
+diff --git a/larder/reminders.py b/larder/reminders.py
+index a24758d..b88ffb1 100644
+--- a/larder/reminders.py
++++ b/larder/reminders.py
+@@ -1,4 +1,4 @@
+-CHANNEL = "sms"
++CHANNEL = "email"
+ 
+ 
+ def remind(member_phone: str, member_email: str, pickup: str, send_sms, send_email) -> None:

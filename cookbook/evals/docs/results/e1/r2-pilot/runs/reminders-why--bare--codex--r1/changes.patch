@@ -1,0 +1,56 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..33e4479 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,6 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Keep pickup reminders on SMS](adr/0002-keep-pickup-reminders-on-sms.md) owns the reminder-channel decision,
++  the email trial evidence and the cost tradeoff. Browse [decisions](adr/README.md) for other decision records.
+diff --git a/docs/adr/0002-keep-pickup-reminders-on-sms.md b/docs/adr/0002-keep-pickup-reminders-on-sms.md
+new file mode 100644
+index 0000000..4df8784
+--- /dev/null
++++ b/docs/adr/0002-keep-pickup-reminders-on-sms.md
+@@ -0,0 +1,29 @@
++# Keep pickup reminders on SMS
++
++For whoever changes pickup reminders or proposes email to save the SMS cost. Pickup reminders go by SMS because
++the email trial saw more missed pickups and wasted fresh food.
++
++## Context
++
++SMS reminders cost €40 a month; email was proposed as a free alternative. In the April–June 2025 email trial,
++the provider reported that 34% of reminder emails were never opened. Missed pickups rose from 6% to 13% of pantry
++orders. Each missed pickup leaves a packed bag, whose fresh food goes in the bin by closing time.
++
++Many members share one phone in the family and do not check email, but they see SMS. After SMS resumed on
++July 1, missed pickups returned to 6% by August.
++
++## Options
++
++- **Email**: saves the SMS cost, but the trial saw more missed pickups and wasted fresh food.
++- **SMS**: costs €40 a month, but reaches members who do not check email; chosen.
++
++## Decision
++
++Keep pickup reminders on SMS. Reaching members and avoiding missed pickups and food waste outweigh the monthly
++SMS cost. The maintainer reaffirmed this decision when closing [issue 52](../../notes/issue-52.md), the source of
++the trial results and member-access observations above.
++
++## Consequences
++
++The pantry continues to pay for SMS reminders. A proposal to switch to email needs to address the trial's missed
++pickups and members' access to reminders, as well as the messaging cost.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 9c61e9b..90a03f3 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep pickup reminders on SMS](0002-keep-pickup-reminders-on-sms.md): why email savings do not outweigh missed
++  pickups and food waste.

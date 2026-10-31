@@ -1,0 +1,184 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "codex",
+  "run": 3,
+  "source": "",
+  "id": "sessions-in-memory--false-leads--codex--r3",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:35:19.090377+00:00",
+  "duration_s": 53.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adr/0001-keep-sessions-in-the-database.md",
+    "docs/adr/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md",
+    "larder/session_store.py",
+    "tests/test_session_store.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*session*' -g 'README.md' -g 'pyproject.toml' -g '*web*' -g '*test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *session* -g README.md -g pyproject.toml -g *web* -g *test*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|session_store|Sessions larder"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder docs"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i session|postgres|deploy docs larder tests"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat /work/.agents/skills/docs-layout/SKILL.md; cat docs/architecture.md docs/adr/README.md README.md conftest.py; rg -n -i 'session|postgres|deploy' docs larder tests; git status --short; ls -la"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_session_store.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n 'PostgresSessions|0001-keep-sessions' ."
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n 'PostgresSessions|0001-keep-sessions' ."
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|0001-keep-sessions ."
+    }
+  ],
+  "tokens": {
+    "input": 96410,
+    "cached": 84480,
+    "output": 1748,
+    "reasoning": 124
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Replaced `PostgresSessions` with `MemorySessions` and a shared process-wide `sessions` instance. Updated the docs and added tests; all 5 tests pass.\n\nSessions now disappear on restart and aren\u2019t shared across workers. No web app wiring exists in this repository to update.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

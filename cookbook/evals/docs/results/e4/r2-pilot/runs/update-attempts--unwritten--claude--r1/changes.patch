@@ -1,0 +1,23 @@
+diff --git a/larder/capture.py b/larder/capture.py
+index 36ba4b5..fe2bcf1 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,11 +1,9 @@
+-import time
+ import uuid
+ 
+ from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
+-ATTEMPTS = 5
+-BACKOFF_SECONDS = 2
++ATTEMPTS = 3
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+@@ -17,5 +15,4 @@ def capture(order: Order, gateway: Gateway) -> str:
+         except GatewayTimeout:
+             if attempt == ATTEMPTS:
+                 raise
+-            time.sleep(BACKOFF_SECONDS * attempt)
+     raise AssertionError("unreachable")

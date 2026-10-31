@@ -1,0 +1,111 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 56da4d2..7b744cd 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -11,16 +11,23 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 5 attempts in all, with pauses of 2, 4, 6 and 8 seconds between
+-attempts. A successful capture returns immediately; a timeout on the final attempt is raised to the caller.
+-The pauses can add up to 20 seconds to the member's wait on the confirmation page, in addition to gateway response
+-time.
++A capture that times out is tried again, up to 3 attempts in all, with no pause between attempts. A successful
++capture returns immediately; a timeout on the final attempt is raised to the caller. Gateway response time still
++contributes to the member's wait on the confirmation page.
+ 
+ During the gateway's Friday peak, 17:00 to 19:00, the previous three attempts ran within a second and hit the same
+ slow period. One Friday left 58 confirmed pantry orders needing manual capture the next morning. Replaying those
+-timeouts in the sandbox with the longer retry schedule would have captured 57 of the 58. The team accepted the
+-longer confirmation wait to reduce that manual work; switching gateways was ruled out while the contract ran to
+-December 2026. [Issue 40](../../notes/issue-40.md) records the discussion.
++timeouts in the sandbox with five attempts and pauses of 2, 4, 6 and 8 seconds would have captured 57 of the 58.
++The team initially accepted the longer confirmation wait to reduce that manual work; switching gateways was ruled
++out while the contract ran to December 2026. Members subsequently complained of confirmation hanging for up to
++20 seconds on Fridays, so three immediate attempts were restored to remove the retry pauses.
++
++## Known limits
++
++Immediate retries can all hit the same Friday slow period, leaving captures needing manual follow-up. Follow the
++[gateway timeout runbook](../runbooks/gateway-timeouts.md) to investigate exhausted retries.
++
++## Idempotency
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+diff --git a/larder/capture.py b/larder/capture.py
+index 36ba4b5..fe2bcf1 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,11 +1,9 @@
+-import time
+ import uuid
+ 
+ from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
+-ATTEMPTS = 5
+-BACKOFF_SECONDS = 2
++ATTEMPTS = 3
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+@@ -17,5 +15,4 @@ def capture(order: Order, gateway: Gateway) -> str:
+         except GatewayTimeout:
+             if attempt == ATTEMPTS:
+                 raise
+-            time.sleep(BACKOFF_SECONDS * attempt)
+     raise AssertionError("unreachable")
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..6d07d2f 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,9 @@
++import time
++
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +21,38 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++class TimeoutGateway(FakeGateway):
++    def __init__(self, timeouts):
++        super().__init__()
++        self.timeouts = timeouts
++        self.error = GatewayTimeout("gateway did not answer")
++
++    def capture(self, order_id, amount_cents, idempotency_key):
++        charge_id = super().capture(order_id, amount_cents, idempotency_key)
++        if len(self.calls) <= self.timeouts:
++            raise self.error
++        return charge_id
++
++
++@pytest.mark.parametrize("timeouts", [2, 3])
++def test_capture_retries_immediately_with_the_same_key(monkeypatch, timeouts):
++    def unexpected_sleep(seconds):
++        pytest.fail("capture must not pause between attempts")
++
++    monkeypatch.setattr(time, "sleep", unexpected_sleep)
++    gateway = TimeoutGateway(timeouts)
++
++    if timeouts == 3:
++        with pytest.raises(GatewayTimeout) as exc:
++            capture(Order("o1", 1250), gateway)
++        assert exc.value is gateway.error
++    else:
++        assert capture(Order("o1", 1250), gateway) == "ch_1"
++
++    assert len(gateway.calls) == 3
++    assert all(call[:2] == ("o1", 1250) for call in gateway.calls)
++    keys = {call[2] for call in gateway.calls}
++    assert len(keys) == 1
++    assert all(keys)

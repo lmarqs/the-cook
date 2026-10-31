@@ -1,0 +1,50 @@
+diff --git a/docs/adr/0002-keep-pickup-reminders-on-sms.md b/docs/adr/0002-keep-pickup-reminders-on-sms.md
+new file mode 100644
+index 0000000..0f1c8d4
+--- /dev/null
++++ b/docs/adr/0002-keep-pickup-reminders-on-sms.md
+@@ -0,0 +1,34 @@
++# Keep pickup reminders on SMS
++
++For whoever runs payments, pantry operations or proposes cutting costs. Pickup reminders go out by SMS, not email,
++because email reminders nearly doubled missed pickups the one time larder tried them.
++
++## Context
++
++SMS reminders cost larder about 40 euros a month, and that bill draws a volunteer to propose email, free to send, in
++its place every so often. larder tried it once: from April to June 2025, pickup reminders went out by email instead
++of SMS. The provider's own report showed 34% of those emails were never opened, and missed pickups rose from 6% to
++13% of pantry orders. A missed pickup is a bag already packed for a member who didn't come; by closing time the fresh
++food in it goes in the bin. Many members share one household phone and rarely check email on it, but see a text.
++larder switched back to SMS on July 1, 2025, and missed pickups were back down to 6% by August. Two forces judge the
++options: the reminder must reach a member who shares a household phone, and it must hold the missed-pickup rate at
++6%, not drift toward 13%.
++
++## Options
++
++- **Email**: free to send; lost because a third of reminders went unopened and missed pickups nearly doubled while it
++  ran.
++- **SMS**: chosen.
++
++## Decision
++
++Pickup reminders go out by SMS. It is the one option a member sees on a shared household phone, and the only one
++tried that has held missed pickups at 6% of pantry orders. The 40 euros a month it costs is the price of that
++reliability, not an oversight.
++
++## Consequences
++
++Missed pickups, and the food thrown out with them, stay at 6% of pantry orders instead of drifting toward 13%. larder
++carries the SMS bill, about 40 euros a month, as the cost of that. This is the third time a volunteer has proposed
++switching back to email to save that cost; a future proposal needs a new reason, not the cost alone, since the cost
++was already weighed here.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 9c61e9b..06a2c08 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Keep pickup reminders on SMS](0002-keep-pickup-reminders-on-sms.md): email reminders nearly doubled missed
++  pickups when larder tried them.

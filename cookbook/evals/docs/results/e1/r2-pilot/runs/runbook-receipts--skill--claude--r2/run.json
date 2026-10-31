@@ -1,0 +1,262 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "runbook-receipts--skill--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:17:40.052503+00:00",
+  "duration_s": 52.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -not -path ./.git* -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -not -path './.git*' -type f | sort"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat larder/receipts.py; echo ---; cat larder/orders.py | head -50; echo ---; grep -rn \"procrastinate\\|systemctl\\|larder-worker\\|deploy\" --include=*.py --include=*.md --include=*.sh --include=*.cfg --include=*.toml -i . | grep -v node_modules"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat larder/receipts.py; echo ---; cat larder/orders.py | head -50; echo ---; grep -rn \"procrastinate\\|systemctl\\|larder-worker\\|deploy\" --include=*.py --include=*.md --include=*.sh --include=*.cfg --include=*.toml -i . | grep -v node_modules"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn procrastinate\\|systemctl\\|larder-worker\\|deploy --include=*.py --include=*.md --include=*.sh --include=*.cfg --include=*.toml -i ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v node_modules"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rln procrastinate\\|systemctl\\|larder-worker\\|deploy . --include=*"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v ^\\./\\.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/adr/0001-keep-sessions-in-the-database.md; echo ===FEATURES-PAYMENTS===; cat docs/features/payments.md; echo ===CHECKOUT===; cat docs/features/checkout.md; echo ===ARCH===; cat docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/adr/0001-keep-sessions-in-the-database.md; echo ===FEATURES-PAYMENTS===; cat docs/features/payments.md; echo ===CHECKOUT===; cat docs/features/checkout.md; echo ===ARCH===; cat docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/adr/0001-keep-sessions-in-the-database.md; echo ===FEATURES-PAYMENTS===; cat docs/features/payments.md; echo ===CHECKOUT===; cat docs/features/checkout.md; echo ===ARCH===; cat docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Write a new runbook at docs/runbooks/ for \"receipts stopped\" \u2014 the trigger is members not receiving pantry order receipts (reported twice now: Sept 14 and before). Source material is notes/chat-receipts.md (Tom\u00e1s's chat log working out the fix) and docs/architecture.md (worker runs background jobs, such as receipt emails, from the queue in Postgres; larder/receipts.py). Facts to capture, from the chat: the worker is a systemd service `larder-worker`; the deploy script restarts only the web app, not the worker, which is why the worker dies and receipts stop after a deploy; check status with `systemctl status larder-worker` (look for inactive/dead); check the backlog with `psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"`; fix is `sudo systemctl start larder-worker`; confirm by re-running the count query and watching `todo` drop to 0 (about 40/minute); a few `failed` jobs for bounced emails with no valid address are expected and not a problem; if the worker dies again right away, run `journalctl -u larder-worker -n 50` and escalate to the payments volunteers (per the existing gateway-timeouts runbook's escalation path) instead of Tom\u00e1s personally, since the whole point is the next on-call volunteer should not need to page a specific person. Follow the runbook kind's required structure (lead with outcome/impact/owner, Before you begin, Steps with expected output each, If it fails) as used in docs/runbooks/gateway-timeouts.md. Also update docs/runbooks/README.md to list the new page, and link it from docs/architecture.md's worker description if appropriate. Do not invent facts beyond what's given or already in the repo."
+      }
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/runbook.template.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/runbooks.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -20"
+    }
+  ],
+  "tokens": {
+    "input": 590078,
+    "cached": 566753,
+    "output": 4172,
+    "reasoning": 751
+  },
+  "cost_usd": 0.24831460000000002,
+  "turns": 24,
+  "last_message": "I added a runbook so the next on-call volunteer doesn't need to page Tom\u00e1s:\n\n- **`docs/runbooks/receipts-stopped.md`** \u2014 new runbook: check `systemctl status larder-worker`, count the `procrastinate_jobs` backlog, start the worker, watch `todo` drain (~40/min), with the bounced-email `failed` jobs called out as expected. Escalation goes to the payments volunteers via the existing gateway-timeouts path rather than one person.\n- **`docs/runbooks/README.md`** \u2014 listed the new runbook.\n- **`docs/architecture.md`** \u2014 noted next to the worker that a deploy doesn't restart it, linking the runbook, so a reader finds it before the symptom recurs.\n\nTests still pass. `notes/chat-receipts.md` is left in place as the historical source; the durable fact now lives in `docs/`.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

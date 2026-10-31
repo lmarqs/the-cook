@@ -1,0 +1,135 @@
+{
+  "study": "e3",
+  "case": "reminders-email",
+  "arm": "no-leads",
+  "harness": "codex",
+  "run": 1,
+  "source": "",
+  "id": "reminders-email--no-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:39:00.339241+00:00",
+  "duration_s": 33.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/reminders.md",
+    "larder/reminders.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*remind*' -g '*email*' -g 'README.md' -g 'pyproject.toml' -g 'test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *remind* -g *email* -g README.md -g pyproject.toml -g test*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/reminders.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md docs/README.md docs/features/reminders.md larder/reminders.py && rg --files larder tests && git status --short"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i remind|sms|email docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/feature.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/features.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-send-sms-through-one-provider.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/sms-provider-down.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/reminders.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/reminders.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom unittest.mock import Mock\nfrom larder.reminders import remind\n\nsend_sms, send_email = Mock(), Mock()\nremind('+351123456789', 'member@example.com', 'tomorrow at 11:00', send_sms, send_email)\nsend_email.assert_called_once_with('member@example.com', 'Your pantry order is ready for pickup tomorrow at 11:00.')\nsend_sms.assert_not_called()\nprint('Verified: pickup reminder sent by email; no SMS sent.')\nPY\n"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 131376,
+    "cached": 123008,
+    "output": 849,
+    "reasoning": 41
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Switched pickup reminders to email in [larder/reminders.py](/work/larder/reminders.py:1) and updated the docs.\n\nVerified email delivery with no SMS call; all 2 tests pass.\n\nThe docs retain the earlier email trial\u2019s finding: missed pickups rose from 6% to 13%.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

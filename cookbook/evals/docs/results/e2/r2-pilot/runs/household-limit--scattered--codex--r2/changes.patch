@@ -1,0 +1,45 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..a75e0f6 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -4,4 +4,9 @@ from larder.members import Member
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    household_orders = sum(
++        open_orders.get(registered_member.id, 0)
++        for registered_member in members
++        if registered_member.address == member.address
++    )
++    return household_orders < 2
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+new file mode 100644
+index 0000000..ab3f1d2
+--- /dev/null
++++ b/tests/test_limits.py
+@@ -0,0 +1,24 @@
++import pytest
++
++from larder.limits import can_place_order
++from larder.members import Member
++
++
++@pytest.mark.parametrize(
++    ("open_orders", "expected"),
++    [
++        ({}, True),
++        ({"m1": 1}, True),
++        ({"m1": 2}, False),
++        ({"m1": 3}, False),
++        ({"m1": 1, "m2": 1}, False),
++        ({"m2": 2}, False),
++        ({"m3": 2}, True),
++    ],
++)
++def test_household_may_order_only_below_two_open_orders(open_orders, expected):
++    member = Member("m1", "Alice", "1 Main Street")
++    housemate = Member("m2", "Bob", "1 Main Street")
++    neighbor = Member("m3", "Carol", "2 Main Street")
++
++    assert can_place_order(member, [member, housemate, neighbor], open_orders) is expected

@@ -1,0 +1,142 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "reminders-why--bare--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:20:41.251934+00:00",
+  "duration_s": 28.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adr/0002-keep-sms-for-pickup-reminders.md",
+    "docs/adr/README.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -not -path ./.git*"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -not -path './.git*' | sort"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0002-keep-sms-for-pickup-reminders.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 205297,
+    "cached": 193784,
+    "output": 2165,
+    "reasoning": 659
+  },
+  "cost_usd": 0.10643480000000001,
+  "turns": 12,
+  "last_message": "Added `docs/adr/0002-keep-sms-for-pickup-reminders.md`, following the same ADR format as 0001, capturing the facts from `notes/issue-52.md`: the April\u2013June 2025 email trial, the 34% unopened rate, missed pickups rising 6%\u219213% then back to 6% after reverting to SMS on July 1, and the household-phone-sharing reason email doesn't reach members. Linked it from `docs/adr/README.md`.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,109 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "fresh-key--leads--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:28:56.978266+00:00",
+  "duration_s": 12.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 130485,
+    "cached": 122227,
+    "output": 598,
+    "reasoning": 171
+  },
+  "cost_usd": 0.06344140000000001,
+  "turns": 4,
+  "last_message": "Tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring",
+      "anthropic-skills:wayfinder",
+      "anthropic-skills:research",
+      "anthropic-skills:grilling",
+      "anthropic-skills:domain-modeling",
+      "anthropic-skills:humanizer",
+      "anthropic-skills:docs",
+      "anthropic-skills:google-workspace",
+      "anthropic-skills:import-memory",
+      "anthropic-skills:morning",
+      "anthropic-skills:skill-creator",
+      "anthropic-skills:xlsx",
+      "anthropic-skills:pptx",
+      "anthropic-skills:pdf",
+      "anthropic-skills:docx",
+      "anthropic-skills:handoff"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

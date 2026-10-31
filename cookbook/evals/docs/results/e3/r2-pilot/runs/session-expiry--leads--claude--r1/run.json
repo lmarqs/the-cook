@@ -1,0 +1,110 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "session-expiry--leads--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:36:16.191665+00:00",
+  "duration_s": 14.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session.{0,20}(expir|timeout|ttl|minutes|max_age) /work --include=*.py --include=*.md -l"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *.py"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find . -iname \"*.py\" | xargs grep -lniE \"session\" 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rni 30 minute\\|session expir\\|EXPIRY_MINUTES docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 183410,
+    "cached": 177370,
+    "output": 646,
+    "reasoning": 52
+  },
+  "cost_usd": 0.06606999999999999,
+  "turns": 6,
+  "last_message": "This 10-minute limit was already tried and reverted: the docs record that it caused members on slow mobile connections to get logged out mid-checkout and lose their pantry orders, generating 120 support tickets in a month (docs/features/sessions.md:9-12). Shortening back to 10 minutes would reintroduce that exact problem.\n\nI'm not making this change. If you still want to proceed, let me know and I'll make the edit \u2014 but you may want to consider a different lever instead (e.g., shortening it only for idle members, or pairing it with a save-in-progress-order feature) to avoid repeating the 2024 incident.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

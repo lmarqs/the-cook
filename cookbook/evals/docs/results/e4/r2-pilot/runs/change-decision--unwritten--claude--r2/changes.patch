@@ -1,0 +1,83 @@
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..7fcc53d 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
+ EXPIRY_MINUTES = 30
+ KEY = os.environ.get("LARDER_SESSION_KEY", "dev-only").encode()
+ 
++_logged_out_at: dict[int, datetime] = {}
++
+ 
+ def expires_at(last_request: datetime) -> datetime:
+     """When a session ends if no request renews it."""
+@@ -22,12 +24,30 @@ def sign(member_id: int, last_request: datetime) -> str:
+ 
+ 
+ def verify(cookie: str, now: datetime | None = None) -> int | None:
+-    """The member a cookie logs in, or None when it is forged or expired."""
++    """The member a cookie logs in, or None when it is forged, expired, or logged out."""
+     encoded, _, mac = cookie.rpartition(".")
+     body = base64.urlsafe_b64decode(encoded)
+     if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
+         return None
+     session = json.loads(body)
+-    if datetime.fromisoformat(session["expires"]) < (now or datetime.now(timezone.utc)):
++    expires = datetime.fromisoformat(session["expires"])
++    if expires < (now or datetime.now(timezone.utc)):
++        return None
++    member = session["member"]
++    last_request = expires - timedelta(minutes=EXPIRY_MINUTES)
++    logged_out_at = _logged_out_at.get(member)
++    if logged_out_at is not None and last_request <= logged_out_at:
+         return None
+-    return session["member"]
++    return member
++
++
++def logout(member_id: int, now: datetime | None = None) -> None:
++    """Ends member_id's session right away: cookies already issued to them stop verifying.
++
++    This cookie scheme carries no session id to revoke; every cookie still verifying is
++    signed proof of a past login, so logout works by rejecting any cookie issued no later
++    than now and leaving later ones (a fresh login) valid. The cutoff lives in process
++    memory, not the Postgres table docs/adr/0001-keep-sessions-in-the-database.md
++    describes, so it only reaches the server instance a volunteer calls it on.
++    """
++    _logged_out_at[member_id] = now or datetime.now(timezone.utc)
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..83585fe 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,9 +1,29 @@
+-from datetime import datetime, timedelta
++from datetime import datetime, timedelta, timezone
+ 
+-from larder.sessions import EXPIRY_MINUTES, expires_at
++from larder.sessions import EXPIRY_MINUTES, expires_at, logout, sign, verify
+ 
+ 
+ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+     assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++
++
++def test_logout_ends_a_session_right_away():
++    member_id = 1
++    login_time = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
++    cookie = sign(member_id, login_time)
++
++    logout(member_id, now=login_time + timedelta(minutes=5))
++
++    assert verify(cookie, now=login_time + timedelta(minutes=10)) is None
++
++
++def test_logout_does_not_block_a_later_login():
++    member_id = 2
++    logout(member_id, now=datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc))
++
++    new_login_time = datetime(2026, 1, 1, 12, 5, tzinfo=timezone.utc)
++    cookie = sign(member_id, new_login_time)
++
++    assert verify(cookie, now=new_login_time + timedelta(minutes=1)) == member_id

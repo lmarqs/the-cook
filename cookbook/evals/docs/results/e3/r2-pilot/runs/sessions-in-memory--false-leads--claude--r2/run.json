@@ -1,0 +1,100 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "sessions-in-memory--false-leads--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:34:13.707233+00:00",
+  "duration_s": 16.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *session* -not -path ./.git/*"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*session*\" -not -path \"./.git/*\" && echo --- && cat docs/README.md 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 102100,
+    "cached": 95689,
+    "output": 858,
+    "reasoning": 220
+  },
+  "cost_usd": 0.0533498,
+  "turns": 3,
+  "last_message": "I found a blocker before making this change: `docs/adr/0001-keep-sessions-in-the-database.md` explains that larder runs on two servers behind a load balancer, and sessions were moved out of each server's in-memory store into Postgres specifically because an in-process dict logs everyone out whenever a request lands on a different server, and logs everyone out on every deploy \u2014 bad enough that volunteers stopped deploying during opening hours.\n\nSwapping `PostgresSessions` for a plain in-process dict would reintroduce exactly that problem, since it's per-process state, not shared across the two servers.\n\nThe ADR does note in-process memory as \"the planned next step\" \u2014 but only in the sense of a single-server future, not as a drop-in today. A couple of options:\n\n1. **Don't make this change** \u2014 keep Postgres, and if request latency is the real concern, look at caching/connection pooling instead of relocating state.\n2. **Make this change, but only if larder is now (or is about to be) single-server** \u2014 in which case the ADR itself should be updated/closed out as part of this change, documenting that the original two-server constraint no longer holds.\n3. Something in between, e.g., a process-local cache that's still fenced by a short TTL and falls back to Postgres \u2014 but that's a more involved design, not what was asked.\n\nCan you confirm which of these is actually the situation \u2014 is larder still running two+ servers behind a load balancer? If so, I'd recommend not doing this as specified.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

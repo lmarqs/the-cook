@@ -1,0 +1,103 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..04ef54f 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Slow pantry search](slow-pantry-search.md): measure Saturday search latency and add a matching Postgres index.
+diff --git a/docs/runbooks/slow-pantry-search.md b/docs/runbooks/slow-pantry-search.md
+new file mode 100644
+index 0000000..92cb5e0
+--- /dev/null
++++ b/docs/runbooks/slow-pantry-search.md
+@@ -0,0 +1,78 @@
++# Slow pantry search
++
++For the server operator investigating slow pantry searches on Saturday mornings. Measure the query and add a
++matching search index when needed, to reduce the time members wait for items. The Saturday slowdown prompted this
++procedure. Owner: the server operator.
++
++## Before you begin
++
++- Access to Postgres with `psql`, permission to create indexes on `pantry_items`, and the repository checkout.
++- A search term from an affected request and its observed response time. The examples use `rice`; substitute the
++  affected term when investigating.
++- Follow the [conditions for services volunteers operate](../philosophy.md#tenets). The repository does not establish
++  that Postgres cannot meet this need or name two Redis restorers; Tom's availability alone does not meet those
++  conditions. Search remains in Postgres with current stock returned by the [item query](../../larder/catalog.py).
++
++## Steps
++
++1. Inspect the existing indexes and their validity:
++
++   ```sql
++   SELECT c.relname, i.indisvalid, pg_get_indexdef(i.indexrelid)
++   FROM pg_index AS i
++   JOIN pg_class AS c ON c.oid = i.indexrelid
++   WHERE i.indrelid = 'pantry_items'::regclass;
++   ```
++
++   Expected: index definitions and validity flags. Check for a valid GIN index on `to_tsvector('simple', name)`.
++   If an equivalent index already exists under any name, skip the build in step 3.
++
++2. Measure the existing query on the affected database; `ANALYZE` executes this read, so account for its load during
++   busy opening hours:
++
++   ```sql
++   EXPLAIN (ANALYZE, BUFFERS)
++   SELECT id, name, stock FROM pantry_items
++   WHERE to_tsvector('simple', name) @@ plainto_tsquery('simple', 'rice')
++   ORDER BY name;
++   ```
++
++   Expected: a query plan with execution time, row counts and buffer usage. Save this output alongside the request
++   time; a fast query with a slow request requires investigating the rest of the request path.
++
++3. If the query is slow and lacks an equivalent valid index, run the
++   [index script](../../sql/pantry-items-search-index.sql) from the repository root with the normal database
++   connection configured for `psql`:
++
++   ```sh
++   psql -X -v ON_ERROR_STOP=1 -f sql/pantry-items-search-index.sql
++   ```
++
++   Expected: `CREATE INDEX`. Run without `--single-transaction` or an enclosing transaction. The concurrent build
++   allows writes but still consumes database resources; schedule it when that load is acceptable. A notice that
++   the name already exists does not prove that the index is valid or has the required definition; check step 1.
++
++4. Refresh planner statistics:
++
++   ```sql
++   ANALYZE pantry_items;
++   ```
++
++   Expected: `ANALYZE`.
++
++5. Repeat steps 1 and 2 and measure the item page with the same search term.
++
++   Expected: a valid matching index and measurements to compare with the baseline. A selective search can use a
++   bitmap index scan; a small table or broad search may still favor a sequential scan. Confirm the returned items,
++   name ordering and stock remain correct. An index alone does not establish that the Saturday slowdown is fixed.
++
++## If it fails
++
++A failed concurrent build can leave an invalid index. Check step 1 before retrying: `IF NOT EXISTS` does not repair
++an invalid index. If the index from this script is invalid, drop it outside a transaction with
++`DROP INDEX CONCURRENTLY pantry_items_name_search_idx;`, then rerun step 3. The same command rolls back this index
++if its storage or write overhead is unacceptable; first confirm its definition and that this procedure created it.
++
++If requests remain slow, give the server operator the before/after plans and request timings to investigate database
++waits and the remaining request path. Before proposing Redis again, establish what Postgres cannot meet and identify
++two volunteers who can restore Redis, as required by the linked service conditions.
+diff --git a/sql/pantry-items-search-index.sql b/sql/pantry-items-search-index.sql
+new file mode 100644
+index 0000000..9453c47
+--- /dev/null
++++ b/sql/pantry-items-search-index.sql
+@@ -0,0 +1,4 @@
++-- Run outside a transaction: concurrent index builds allow pantry writes.
++-- This expression matches the full-text predicate in larder/catalog.py.
++CREATE INDEX CONCURRENTLY IF NOT EXISTS pantry_items_name_search_idx
++    ON pantry_items USING gin (to_tsvector('simple', name));

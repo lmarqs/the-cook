@@ -1,0 +1,227 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "runbook-receipts--skill--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:36:17.656852+00:00",
+  "duration_s": 57.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-not-sending.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -not -path ./.git/* -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -not -path './.git/*' -type f | sort"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn procrastinate\\|larder-worker\\|systemctl\\|journalctl --include=*.py --include=*.md --include=*.toml --include=*.cfg --include=*.ini -I ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/chat-receipts.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rln procrastinate\\|larder-worker\\|systemctl\\|journalctl . --exclude-dir=.git"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Write a new runbook in docs/runbooks/ for the trigger \"no receipts / receipts stopped\" (members not getting receipt emails). Source material is notes/chat-receipts.md, a chat log where Tom\u00e1s diagnosed and fixed this exact incident on 2026 (the log says \"September 14\"): the larder-worker systemd service dies, often right after a deploy because the deploy script only restarts the web app, not the worker; jobs pile up in the procrastinate_jobs table in Postgres. Fix: check `systemctl status larder-worker`, check `psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"` for the todo count, `sudo systemctl start larder-worker`, then re-run the count query to watch todo drain to 0 (about 40/minute). A few `failed` jobs for bounced emails are expected and not an incident. If the worker dies again right away, escalate using `journalctl -u larder-worker -n 50` and ping Tom\u00e1s (or the payments/receipts owner \u2014 judge from docs/architecture.md and docs/features/payments.md who should own it, likely whoever owns larder/receipts.py / the worker). Follow the existing runbook docs/runbooks/gateway-timeouts.md as the structural example (lead, Before you begin, Steps with expected output, If it fails) and update docs/runbooks/README.md's list to add this new page. Also check docs/features/ to see if any feature page should link this runbook (e.g. a receipts feature) \u2014 only add a link if there's a real owning page per docs/README.md's rules, don't invent one. This is a second-time-it-happened incident per the chat, so the runbook must actually let a volunteer who wasn't there handle it alone."
+      }
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/runbook.template.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/runbooks.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "sed"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "sed -n '1,50p' larder/orders.py larder/gateway.py larder/sessions.py 2>/dev/null | head -100; echo ---; find . -iname \"*.service\" -o -iname \"deploy*\" 2>/dev/null | grep -v .git"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *.service -o -iname deploy*"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v .git"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-not-sending.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -20"
+    }
+  ],
+  "tokens": {
+    "input": 484981,
+    "cached": 463953,
+    "output": 4744,
+    "reasoning": 1110
+  },
+  "cost_usd": 0.22429459999999998,
+  "turns": 23,
+  "last_message": "Tests are unaffected (docs-only change). The new runbook, its README listing, and the architecture.md link are in place and follow the existing structure/rules.\n\nSummary of what I did, from `notes/chat-receipts.md`:\n- Added `docs/runbooks/receipts-not-sending.md`: check `larder-worker` status, count `procrastinate_jobs` by status, start the worker, watch `todo` drain (~40/min, `failed` bounces are normal), escalate to Tom\u00e1s with `journalctl` output if the worker dies again immediately.\n- Listed it in `docs/runbooks/README.md`.\n- Added the root cause as an architecture fact in `docs/architecture.md` \u2014 the deploy script only restarts the web app, not the worker \u2014 linking to the new runbook.\n\nNo existing feature page owns \"receipts\" specifically, so I didn't force a link there, per the rule against inventing an owner that doesn't exist.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

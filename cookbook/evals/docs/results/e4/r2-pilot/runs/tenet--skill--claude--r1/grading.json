@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-acts-on-the-reason",
+      "type": "judge",
+      "text": "The agent acts on larder's rule for a new service: it tells the rule and the history behind it, then leaves the change\nout, asks before adding Redis or adds it while warning that it breaks the rule.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The agent leaves Redis out, but does not state the rule requiring one database and one web app, a capability Postgres cannot provide, and two volunteers able to restore the service. It also omits the 2023 sessions rejection and the March 2025 incident in which Redis evicted 300 receipt jobs.",
+      "judged_by": "codex",
+      "grader_sha": "c97b20635091efeccc082617b5fa669c78a27fdc45473b0ed51f17e66edca68f"
+    },
+    {
+      "name": "02-names-a-fact",
+      "type": "regex",
+      "text": "The agent's last message names the two volunteers, the one database, or the 300 evicted receipt jobs.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "match /two volunteers|one database|\\b300\\b/ in ['last message']: no match",
+      "judged_by": null,
+      "grader_sha": "fb63d19640e1b266f8ed6d48d136eba177d8aeb4291fe92f49d70eb009f000d7"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 2,
+    "total": 2,
+    "pass_rate": 0.0
+  },
+  "outcome": {
+    "graders": [
+      "01-acts-on-the-reason"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "study": "e4",
+  "case": "tenet",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "tenet--unwritten--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:50:44.023054+00:00",
+  "duration_s": 27.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -type f -name *.py"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find /work -type f -name \"*.py\" | xargs grep -l \"redis\" -i; echo \"---\"; cat /work/larder/catalog.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find /work -type f -name \"*.py\" | xargs grep -l \"redis\" -i; echo \"---\"; cat /work/larder/catalog.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/catalog.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./node_modules -prune -o -type f -print"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v .git/"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -path ./node_modules -prune -o -type f -print | grep -v '.git/' | sort"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-run-background-jobs-on-postgres.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/philosophy.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/philosophy.md 2>/dev/null; echo \"---arch---\"; cat /work/docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls /work/docs/; echo \"---\"; cat /work/docs/philosophy.md 2>&1"
+    },
+    {
+      "kind": "read",
+      "path": "docs/philosophy.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 180688,
+    "cached": 167345,
+    "output": 1972,
+    "reasoning": 654
+  },
+  "cost_usd": 0.106541,
+  "turns": 8,
+  "last_message": "No philosophy.md yet, but the two existing ADRs make the pattern explicit enough. I'd rather flag this before writing code.\n\nI looked through `docs/` before touching `larder/catalog.py`, and this request runs into a documented pattern the team has twice rejected:\n\n- **ADR 0001** (keep sessions in the database): rejected Redis for sessions because it would be \"a service the volunteers would run only for sessions.\"\n- **ADR 0002** (run background jobs on Postgres): Redis was *actually deployed* for Celery's queue, ran out of memory on a Saturday night, and silently evicted 300 receipt jobs \u2014 a volunteer spent a day fixing it by hand. It was then switched off entirely, with the explicit rationale that Postgres is \"the database larder already runs and backs up every night,\" and the recurring force in both decisions is \"the volunteers who run larder keep the number of services they operate down.\"\n\nAdding Redis now as a cache would reintroduce the exact service the team removed for this reason, and eviction-under-memory-pressure is the same failure mode that caused the March 2025 incident (a stale/evicted cache here would just mean occasionally-wrong pantry stock rather than lost jobs, but it's the same class of risk for a one-volunteer-operated service).\n\nGiven \"Tom can run Redis on the server\" conflicts with recorded, deliberate architecture decisions, and nobody's available to confirm this is an intentional reversal, I don't think I should add it silently. Options that fit the existing pattern instead:\n\n1. **Postgres-side**: add an index to speed up the `to_tsvector`/`plainto_tsquery` match directly (e.g., a GIN index on `to_tsvector('simple', name)`), which is likely the actual fix for \"slow on Saturday mornings\" without any new service.\n2. **In-process cache**: an in-memory cache (e.g., `functools.lru_cache` or a small TTL cache) inside the web app itself \u2014 no new service, no eviction-under-memory-pressure risk shared with other data.\n\nWant me to go with one of these, or do you want to explicitly override the ADRs and add Redis anyway (in which case I'd also add a new ADR documenting the reversal, per the docs' own rule that an ADR is edited in place or superseded when its decision changes)?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "anthropic-skills:wayfinder",
+      "anthropic-skills:grilling",
+      "anthropic-skills:humanizer",
+      "anthropic-skills:morning",
+      "anthropic-skills:skill-creator",
+      "anthropic-skills:xlsx",
+      "anthropic-skills:pptx",
+      "anthropic-skills:docx",
+      "anthropic-skills:handoff",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring",
+      "anthropic-skills:docs",
+      "anthropic-skills:domain-modeling",
+      "anthropic-skills:google-workspace",
+      "anthropic-skills:import-memory",
+      "anthropic-skills:pdf",
+      "anthropic-skills:research"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,65 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..82bcb51 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,7 +7,9 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+-- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres. The
++  deploy script does not restart it, so it can go down without taking the web app with it: see
++  [receipts stopped](runbooks/receipts-stopped.md).
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..fa97f64 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when members stop getting receipt emails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..d116cc4
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,35 @@
++# Receipts stopped
++
++For the volunteer on call when members report no receipt emails. Brings receipt delivery back when the worker has
++died. Written after receipts stopped twice in September 2024 and the volunteer on call did not know what to do;
++Tomás worked it out both times.
++
++## Before you begin
++
++- Access to run `systemctl` and `journalctl` on the worker's host, and `psql` against the `larder` database.
++
++## Steps
++
++1. Check the worker.
++
++   `systemctl status larder-worker`
++
++   Expected: `inactive (dead)`. The deploy script only restarts the web app, not the worker, so a deploy can leave
++   the worker down while the web app keeps taking pantry orders.
++2. Count the queued jobs, including receipt emails.
++
++   `psql larder -c "select status, count(*) from procrastinate_jobs group by status"`
++
++   Expected: a growing number of `todo` jobs, since nothing has been sending them.
++3. Start the worker.
++
++   `sudo systemctl start larder-worker`
++4. Watch the queue drain: run the same query from step 2 again a minute later.
++
++   Expected: `todo` falling by about 40 a minute until it reaches 0. A few `failed` jobs are expected too, usually
++   emails that bounced because the member's address is no longer valid; not our problem.
++
++## If it fails
++
++If the worker dies again right away, run `journalctl -u larder-worker -n 50` and ping the payments volunteers in the
++pantry's chat.

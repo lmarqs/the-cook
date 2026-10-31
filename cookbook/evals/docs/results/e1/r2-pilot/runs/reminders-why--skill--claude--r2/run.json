@@ -1,0 +1,186 @@
+{
+  "study": "e1",
+  "case": "reminders-why",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "reminders-why--skill--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:16:55.581297+00:00",
+  "duration_s": 37.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adr/0002-send-pickup-reminders-by-sms.md",
+    "docs/adr/README.md"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/notes/issue-52.md; echo ---; cat /work/docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work/docs -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find /work/docs -type f | sort"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/adr/0001-keep-sessions-in-the-database.md; echo ---README---; cat /work/docs/adr/README.md; echo ---glossary---; cat /work/docs/glossary.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/adr/0001-keep-sessions-in-the-database.md; echo ---README---; cat /work/docs/adr/README.md; echo ---glossary---; cat /work/docs/glossary.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Add a new ADR in docs/adr/ recording the decision to keep pickup reminders on SMS rather than switching to email. Source material is notes/issue-52.md (a thread of three proposals to switch, the latest from Leo on 2026, Marta/pantry lead opposing, and Nadia/payments volunteer citing a real trial: SMS cost 40 euros/month, SMS was switched to email April-June 2025, 34% of reminder emails were never opened, missed pickups rose from 6% to 13% of pantry orders during that trial, switched back to SMS on July 1 and missed pickups returned to 6% by August). Maintainer Ana closed the issue keeping SMS. The reason a missed pickup matters: a packed bag of fresh food goes in the bin by closing time if not picked up. Marta also noted many members share one household phone and don't check email, but SMS they see. Follow the ADR kind's rules exactly (lead, Context/Options/Decision/Consequences sections, one page). Number it correctly after checking docs/adr/ for existing records, and update docs/adr/README.md's index. Do not invent facts beyond what's in notes/issue-52.md."
+      }
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adr.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/.claude/skills/docs-layout/references/adr.md; echo ---TEMPLATE---; find /work/.claude/skills/docs-layout -iname \"*adr*\""
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work/.claude/skills/docs-layout -iname *adr*"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/adr.template.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril reminder\\|pickup\\|sms /work/docs"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -ril \"reminder\\|pickup\\|sms\" /work/docs 2>/dev/null; echo done"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -in reminder\\|pickup\\|sms /work/docs/glossary.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0002-send-pickup-reminders-by-sms.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 437918,
+    "cached": 414128,
+    "output": 2425,
+    "reasoning": 199
+  },
+  "cost_usd": 0.20219160000000003,
+  "turns": 12,
+  "last_message": "I've added `docs/adr/0002-send-pickup-reminders-by-sms.md`, recording the decision (and the 2025 trial data from `notes/issue-52.md`) to keep SMS, and listed it in `docs/adr/README.md`. Now anyone proposing email reminders again has the trial result on file: email reminders raised missed pickups from 6% to 13%, SMS brought it back to 6%.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

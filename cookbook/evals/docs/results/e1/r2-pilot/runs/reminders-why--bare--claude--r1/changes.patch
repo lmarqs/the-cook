@@ -1,0 +1,45 @@
+diff --git a/docs/adr/0002-send-pickup-reminders-by-sms.md b/docs/adr/0002-send-pickup-reminders-by-sms.md
+new file mode 100644
+index 0000000..f06da95
+--- /dev/null
++++ b/docs/adr/0002-send-pickup-reminders-by-sms.md
+@@ -0,0 +1,29 @@
++# Send pickup reminders by SMS
++
++For whoever is next asked to switch pickup reminders to email to save the SMS cost. Reminders stay on SMS because
++email reminders raised missed pickups, and every missed pickup is a packed bag whose fresh food goes in the bin by
++closing time.
++
++## Context
++
++SMS reminders cost larder about 40 euros a month. Pickup reminders went out by email instead from April to June
++2025 to save that cost. The email provider's own report found 34% of the reminder emails were never opened, and
++missed pickups rose from 6% of pantry orders to 13% over that period. Many members share one phone in the family and
++rarely check email, but they do see an SMS. Larder switched back to SMS on July 1, 2025, and missed pickups returned
++to 6% by August.
++
++## Options
++
++- **Email**: free; tried April-June 2025 and lost, missed pickups roughly doubled because over a third of reminders
++  went unopened.
++- **SMS**: costs about 40 euros a month; chosen, because members who share a phone in the family still see a text.
++
++## Decision
++
++Pickup reminders stay on SMS. The 40 euros a month is cheaper than the fresh food lost to missed pickups.
++
++## Consequences
++
++Switching reminders to email repeats the April-June 2025 regression: expect missed pickups to climb back from 6%
++toward 13% as emails go unopened. Any future proposal to drop SMS needs a way to reach members who share a phone and
++do not check email, not just a cheaper channel.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 9c61e9b..a5d4f75 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Send pickup reminders by SMS](0002-send-pickup-reminders-by-sms.md): email reminders raised missed pickups, so SMS
++  stays despite the cost.

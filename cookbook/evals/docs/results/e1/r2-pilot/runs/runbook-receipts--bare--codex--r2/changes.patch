@@ -1,0 +1,119 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..e797e1a 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,15 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Architecture](architecture.md) owns the system's parts and how they connect.
++- [Features](features/README.md) indexes the behavior pages: [checkout](features/checkout.md) owns confirmation,
++  [payments](features/payments.md) owns capture and retry rules, and [sessions](features/sessions.md) owns login lifetime
++  and storage.
++- [Runbooks](runbooks/README.md) indexes operational procedures: [gateway timeouts](runbooks/gateway-timeouts.md)
++  owns timeout response, and [receipts stopped](runbooks/receipts-stopped.md) owns receipt-outage diagnosis, recovery,
++  verification and escalation.
++- [Decisions](adr/README.md) indexes architectural decisions and their rationale.
++- [Glossary](glossary.md) owns the shared names for domain concepts.
++
++Incident chats under `notes/` are historical evidence; use the runbooks for current recovery instructions.
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..7b65828 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): check the worker, drain the queue and verify receipt delivery.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..b32ec18
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,84 @@
++# Receipts stopped
++
++For the volunteer on call when members report missing receipt emails. Use this to check the background worker,
++restore processing and verify recovery. Written after repeated overnight outages left volunteers waiting for Tomás.
++
++## Before you begin
++
++- Shell access to the host running `larder-worker`, with permission to run `sudo systemctl start larder-worker`.
++- Access to the production `larder` Postgres database through `psql`, and to the worker's journal.
++- Confirm you are on the intended production host and database before starting the service.
++
++Receipt emails are background jobs run by the [worker](../architecture.md#parts); the receipt task is
++`send_receipt` in `larder/receipts.py`. A missing email alone does not show that a card capture failed.
++
++## Check and recover
++
++1. Check the worker:
++
++   ```sh
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If it says `inactive (dead)` or `failed`, note when it stopped and continue below.
++   If it is already active, still check the queue; do not restart it just because emails are missing.
++
++2. Record the queue counts before making a change:
++
++   ```sh
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   `todo` jobs are waiting, `doing` jobs are in progress and `failed` jobs need investigation. A status with no
++   jobs may have no row in the output. This query counts all background jobs, not only receipts.
++
++3. If the worker is stopped, start it:
++
++   ```sh
++   sudo systemctl start larder-worker
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If the start fails or the worker immediately stops again, follow **If it fails**.
++
++4. After about a minute, run the queue query again. Repeat at roughly one-minute intervals while it drains.
++
++   Expected: `todo` decreases as the worker processes jobs. In Tomás's incident, 212 waiting jobs drained at
++   roughly 40 per minute; this is a historical observation, not a required rate. Check whether `failed` is growing
++   as well: a falling `todo` count alone does not prove receipt delivery.
++
++5. Confirm recovery: the worker remains active, the backlog reaches zero (or stays low if new jobs keep arriving),
++   and members report receiving receipts. If delivery cannot yet be confirmed, record that verification is pending.
++
++   Record any remaining failed jobs separately. Tomás's three failed jobs were bounced emails with invalid
++   addresses; do not assume today's failures have the same cause or retry them in bulk without checking.
++
++## If it fails
++
++- If the worker fails to start, stops again, stays active without queue progress across repeated checks, or failures
++  increase, collect its recent logs:
++
++  ```sh
++  journalctl -u larder-worker -n 50
++  ```
++
++- If there is no backlog but receipts are still missing, collect the same logs and investigate delivery failures;
++  starting an already running worker does not resolve a bounce.
++- Report the incident in the pantry's ops chat and tag Tomás, as he requested in the original incident. Include
++  when receipts stopped, any recent deploy, worker status and stop time, queue counts before and after the start,
++  the start result, relevant log errors and whether delivery has been confirmed. Keep member details out of a
++  broadly shared incident report.
++- If nobody is available, leave that handoff with the unresolved symptoms and evidence. The repository does not
++  document a further recovery procedure; do not repeatedly restart a crashing worker, change queue rows, bulk
++  replay failed jobs or recapture pantry orders to try to send receipts.
++
++## Known recurrence and follow-up
++
++In the September 14 incident, the worker had been inactive since 23:02 after the previous night's deploy. Tomás
++reported that the deploy script restarted only the web app. Starting `larder-worker` restored receipts. The deploy
++script and service configuration are not in this repository, so its current behavior cannot be verified here.
++Follow up with whoever maintains deployment to ensure the worker starts after deploys, and verify worker health
++and queue progress after each deploy.
++
++Source: [Tomás's incident chat](../../notes/chat-receipts.md). This runbook owns the receipt-outage recovery procedure;
++the chat is historical evidence.

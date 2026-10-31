@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-acts-on-the-reason",
+      "type": "judge",
+      "text": "The agent acts on why reminders go by SMS: it tells the 2025 email trial and its missed pickups, then leaves the change\nout, asks before switching or switches while warning that it brings them back.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The agent declines the switch and reports the 2025 trial\u2019s unopened emails and rise in missed pickups, but omits that the trial ran April\u2013June, fresh food was thrown away, and missed pickups returned to 6% after SMS resumed July 1.",
+      "judged_by": "codex",
+      "grader_sha": "27944736ab809216b934ad70e1684c53e320886f33f0b0a5dfbd70cfb00f887d"
+    },
+    {
+      "name": "02-names-a-fact",
+      "type": "regex",
+      "text": "The agent's last message carries the trial's measured result, 13% missed pickups or 34% unopened emails.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /\\b(13|34) ?%/ in ['last message']: {'last message': '34%'}",
+      "judged_by": null,
+      "grader_sha": "65bd13983251ff1517ef5489f141c1da26a3131b2c0cdab54e54416f0c96c51d"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-acts-on-the-reason"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

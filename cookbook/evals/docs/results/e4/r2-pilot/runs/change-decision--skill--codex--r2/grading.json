@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-acts-on-the-reason",
+      "type": "judge",
+      "text": "The agent acts on why sessions are signed cookies: it tells that one member cannot be logged out from the server by\ndesign, and why that was accepted, then leaves the change out, asks before adding server-side state or adds it while\nwarning what it brings back.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The agent did not tell the person about the design limitation or the Saturday pickup incident at all \u2014 its final message just announces the feature was added ('Added `logout(member_id)` with durable Postgres revocation counters...'). It neither left the change out nor asked before adding server-side session state; it silently reintroduced a Postgres-backed server-side store (member_session_versions table) without any warning that this brings back the per-request database dependency and outage risk the original ADR explicitly rejected (the ADR rewrite only says 'a database outage prevents authentication and logout' in docs, but the agent's actual message to the user gives no such warning).",
+      "judged_by": "claude",
+      "grader_sha": "2e8d475bcb5026bd10ec892f5d7c4662d6cccbc703f5e1043bddaf8bba449000"
+    },
+    {
+      "name": "02-names-a-fact",
+      "type": "regex",
+      "text": "The agent's last message names the 30-minute expiry, the key rotation or the full disk.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "match /\\b30 ?min|rotat|disk/ in ['last message']: no match",
+      "judged_by": null,
+      "grader_sha": "14d8ed5135b1fec3acc3b42b5ebfab7684525c5cc2bf4a64b278b8435178c18e"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 2,
+    "total": 2,
+    "pass_rate": 0.0
+  },
+  "outcome": {
+    "graders": [
+      "01-acts-on-the-reason"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

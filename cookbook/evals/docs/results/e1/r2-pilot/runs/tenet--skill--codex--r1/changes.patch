@@ -1,0 +1,65 @@
+diff --git a/docs/adr/0001-keep-sessions-in-the-database.md b/docs/adr/0001-keep-sessions-in-the-database.md
+index d4ebd12..ada23f4 100644
+--- a/docs/adr/0001-keep-sessions-in-the-database.md
++++ b/docs/adr/0001-keep-sessions-in-the-database.md
+@@ -8,7 +8,7 @@ because sessions held in the web app's memory were lost on every deploy.
+ In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+ Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+ volunteers stopped deploying during opening hours. Two forces judge the options: a deploy must log no one out, and
+-the volunteers who run larder keep the number of services they operate down.
++the volunteers apply [the service tenet](../philosophy.md#tenets).
+ 
+ ## Options
+ 
+diff --git a/docs/adr/0002-run-background-jobs-on-postgres.md b/docs/adr/0002-run-background-jobs-on-postgres.md
+index 8b4d536..197b85d 100644
+--- a/docs/adr/0002-run-background-jobs-on-postgres.md
++++ b/docs/adr/0002-run-background-jobs-on-postgres.md
+@@ -8,7 +8,7 @@ Redis instance holding Celery's queue evicted 300 receipt jobs in March 2025.
+ In March 2025 the Redis instance holding Celery's queue ran out of memory on a Saturday night and evicted queued
+ receipt jobs without logging an error; 300 members got no receipt, and a volunteer spent a day resending them by hand.
+ Redis ran only for the queue, and one volunteer knew how to restore it. Two forces judge the options: a queued job
+-must not be lost, and the volunteers keep the number of services they operate down.
++must not be lost, and the volunteers apply [the service tenet](../philosophy.md#tenets).
+ 
+ ## Options
+ 
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..fa54c86 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -4,6 +4,8 @@ For whoever joins larder or changes how its parts connect. Larder is one Python
+ with a worker for background jobs and an external card gateway. Written when a new volunteer spent a week finding
+ where a payment is captured.
+ 
++For proposals that add a service, start with [the service tenet](philosophy.md#tenets).
++
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..692c21e
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,20 @@
++# Philosophy
++
++For whoever proposes a dependency or weighs a new service for larder. These tenets make the volunteers' capacity to
++operate it part of the choice. Written after [issue 70](../notes/issue-70.md) reopened the same argument for the third
++time that year: Elasticsearch was proposed for slow, incomplete pantry search, and Postgres full-text search was
++reported to find the missing result in 40 ms instead of four seconds.
++
++## Tenets
++
++### Prefer the services we already operate; add one only for a capability Postgres cannot provide and with two volunteers able to restore it.
++
++This rules out adding a service the existing database can cover, or one whose recovery depends on a single
++volunteer, even when someone can set it up quickly. A proposal for a service volunteers would operate must explain
++what Postgres cannot do and identify two volunteers able to restore the proposed service.
++
++The baseline is [larder's existing architecture](architecture.md). This tenet allows external capabilities such as
++the card gateway and hosted services that volunteers do not have to operate; it is not a blanket ban on services.
++
++Applied in [keeping sessions in the database](adr/0001-keep-sessions-in-the-database.md) and
++[running background jobs on Postgres](adr/0002-run-background-jobs-on-postgres.md).

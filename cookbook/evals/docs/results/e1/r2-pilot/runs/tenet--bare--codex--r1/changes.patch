@@ -1,0 +1,39 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..11195b5 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,7 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Architecture](architecture.md) owns the system's parts, their connections and the rule for proposing another
++  service. Start there before proposing new infrastructure.
++- [Decisions](adr/README.md) records the context, alternatives and consequences of individual architecture decisions.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..8d19db4 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -15,3 +15,22 @@ where a payment is captured.
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
++
++## Before proposing another service
++
++For whoever proposes a new service: start with the web app and Postgres that larder already operates. A new service
++must do something Postgres cannot, and two volunteers must be able to restore it. A proposal should explain the
++capability Postgres cannot provide and identify those two volunteers.
++
++This rule comes from the volunteers' limited capacity to run and recover services:
++
++- [Sessions](adr/0001-keep-sessions-in-the-database.md) went into Postgres in 2023 because it survived deploys without
++  adding Redis for the volunteers to run.
++- [Background jobs](adr/0002-run-background-jobs-on-postgres.md) moved to Postgres after Redis evicted 300 receipt
++  jobs in March 2025, when only one volunteer knew how to restore it.
++- In [issue 70](../notes/issue-70.md), Elasticsearch was proposed for slow, incomplete pantry item search. Testing
++  Postgres full-text search on item names brought the reported search from four seconds to 40 ms and found
++  "Rice, brown" when searching for "rice". The proposer chose that approach instead.
++
++External services are allowed: larder already uses a card gateway, and a hosted service that no volunteer has to
++operate is an option. The rule limits the operational burden volunteers take on; it is not a ban on services.

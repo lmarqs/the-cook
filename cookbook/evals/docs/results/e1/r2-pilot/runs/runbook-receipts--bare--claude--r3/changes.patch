@@ -1,0 +1,62 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..a147394 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,7 +7,8 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+-- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
++- **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres. A
++  deploy does not restart it; see [receipts stopped](runbooks/receipts-stopped.md) if it dies.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+ ## How they connect
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..fa97f64 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts stopped](receipts-stopped.md): what to do when members stop getting receipt emails.
+diff --git a/docs/runbooks/receipts-stopped.md b/docs/runbooks/receipts-stopped.md
+new file mode 100644
+index 0000000..4d581c5
+--- /dev/null
++++ b/docs/runbooks/receipts-stopped.md
+@@ -0,0 +1,33 @@
++# Receipts stopped
++
++For the volunteer on call when members report no receipt emails. Gets the worker sending receipts again. Written
++after members went without receipts twice in September 2024 because the deploy script does not restart the worker,
++and the second time a volunteer with no background waited until noon. Owner: whoever is on call.
++
++## Before you begin
++
++- SSH access to the host running `larder-worker`, and `psql` access to the `larder` database.
++
++## Steps
++
++1. Check the worker.
++
++       systemctl status larder-worker
++
++   Expected: `active (running)`. If it says `inactive (dead)`, that is the cause: a deploy restarts the web app but
++   not the worker, so the worker stays dead until someone starts it.
++2. Count the queued jobs.
++
++       psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++
++   Expected: a non-zero `todo` count (the backlog built up while the worker was down) and little or nothing `doing`.
++3. Start the worker.
++
++       sudo systemctl start larder-worker
++4. Run the same query from step 2 every minute or so and watch `todo` fall to 0. A few `failed` rows are normal and
++   not the problem here: those are typically bounced emails for members with no valid address.
++
++## If it fails
++
++If the worker goes back to `inactive (dead)` right after starting, it is crashing on something other than the deploy
++not restarting it: run `journalctl -u larder-worker -n 50` to see why, and ask in the pantry's chat (#larder-ops).

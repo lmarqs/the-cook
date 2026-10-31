@@ -1,0 +1,82 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "Record 0001, the session-store decision, is changed: the map edits a changed decision in place, keeping its number.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/adr/0001-*.md: ['docs/adr/0001-keep-sessions-in-the-database.md']",
+      "judged_by": null,
+      "grader_sha": "456c37d5f0fbd55a38305813b5c6a14ebaae954dcb735eba07253291f9765972"
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/README.md', 'docs/adr/0001-keep-sessions-in-the-database.md', 'docs/adr/0002-use-signed-cookies-for-sessions.md', 'docs/adr/README.md', 'docs/architecture.md', 'docs/features/sessions.md']",
+      "judged_by": null,
+      "grader_sha": "00a046121fed0de5d772bfb27fdcb0581b0fb2a7ce89f805a526fc8b827f5dc7"
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The record opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/adr/0001-keep-sessions-in-the-database.md'] has a lead",
+      "judged_by": null,
+      "grader_sha": "f9241a5c770600ef37e4faa11d24d737c38a6c404bd1e546996dab87f43131be"
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The record's Context tells what happened, the sessions table filling the database disk during Saturday pickup and\nwhat it cost, before it states a conclusion such as \"the session store did not scale\".",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The Context section only describes the 2023 move to two servers and deploy logout issue; it contains no mention of the sessions table filling the database disk during Saturday pickup, the outage from 09:40 to 12:50, volunteers using a paper list, eleven members leaving, or 2.1 million rows \u2014 the material shown is the superseded ADR's original context, not a record concluding 'the session store did not scale'.",
+      "judged_by": "claude",
+      "grader_sha": "b7634a59b0c57e258eb2722ac2883a17ebfc0278a8043d22a11d2570869a691a"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The record keeps the previous choice, Postgres, under Options, and its Decision names signed cookies.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "match /## Options\\s.*Postgres.*## Decision\\s.*cookie/ in ['docs/adr/0001-keep-sessions-in-the-database.md']: no match",
+      "judged_by": null,
+      "grader_sha": "3ed2fc95eb3eb24dd1c0419a75570f886b71f41af97f2e435308340f51050bc1"
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No second decision record is added: the map edits a changed decision in place instead of superseding it with a new\nrecord.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "no_match /^--- /dev/null\\n\\+\\+\\+ b/docs/adr/(?!0001-)\\d{4}-/ in ['diff']: {'diff': '--- /dev/null\\n+++ b/docs/adr/0002-'}",
+      "judged_by": null,
+      "grader_sha": "a7f9cd1abc4694685e90e984848604e8a79d4db8edcd7c2d46e6d8b2479eb795"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 3,
+    "total": 6,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": false,
+    "share": 0.5
+  }
+}

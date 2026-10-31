@@ -1,0 +1,73 @@
+diff --git a/docs/features/accounts.md b/docs/features/accounts.md
+index 26fe491..048ddae 100644
+--- a/docs/features/accounts.md
++++ b/docs/features/accounts.md
+@@ -1,5 +1,8 @@
+ # Accounts
+ 
++For maintainers handling registration and erasure requests, this page describes what accounts hold and what deletion
++removes. Members can ask for their account and pantry orders to be erased.
++
+ ## Registration
+ 
+ A member registers with a name, an email and an address, `Member` in `larder/members.py`. The address decides which
+@@ -7,7 +10,11 @@ pantry serves them.
+ 
+ ## Deletion
+ 
+-Deleting a member's account removes the member, and keeps each of their pantry orders with its member set to none.
++Deleting a member's account removes the member and all pantry orders linked to them through
++[`delete_member`](../../larder/members.py).
++
++## Known limits
++
+ The food bank's grant requires seven years of order counts per pantry; in 2024 a deletion that removed a member's
+-orders left a gap in the counts, and the grant's auditors flagged it. An order without a member holds an id and an
+-amount, and identifies no one.
++orders left a gap in the counts, and the grant's auditors flagged it. Deletion now removes those orders again, so
++the remaining orders cannot provide complete historical counts. No replacement for those counts is implemented.
+diff --git a/larder/members.py b/larder/members.py
+index a15e6b7..ac93bd3 100644
+--- a/larder/members.py
++++ b/larder/members.py
+@@ -25,8 +25,6 @@ class Store:
+ 
+ 
+ def delete_member(member_id: str, store: Store) -> None:
+-    """Deletes a member's account when they ask for it."""
++    """Deletes a member's account and pantry orders when they ask for it."""
+     del store.members[member_id]
+-    for order in store.orders:
+-        if order.member_id == member_id:
+-            order.member_id = None
++    store.orders[:] = [order for order in store.orders if order.member_id != member_id]
+diff --git a/tests/test_members.py b/tests/test_members.py
+new file mode 100644
+index 0000000..1b352d2
+--- /dev/null
++++ b/tests/test_members.py
+@@ -0,0 +1,24 @@
++from larder.members import Member, Store, StoredOrder, delete_member
++
++
++def test_delete_member_removes_their_orders_and_preserves_other_records():
++    member = Member("member", "Member", "member@example.com", "1 Main Street")
++    other = Member("other", "Other", "other@example.com", "2 Main Street")
++    other_order = StoredOrder("other-order", other.id, 300)
++    anonymous_order = StoredOrder("anonymous-order", None, 400)
++    store = Store(
++        members={member.id: member, other.id: other},
++        orders=[
++            StoredOrder("first", member.id, 100),
++            StoredOrder("second", member.id, 200),
++            other_order,
++            anonymous_order,
++            StoredOrder("third", member.id, 500),
++        ],
++    )
++
++    delete_member(member.id, store)
++
++    assert store.members == {other.id: other}
++    assert store.orders == [other_order, anonymous_order]
++    assert other_order.member_id == other.id

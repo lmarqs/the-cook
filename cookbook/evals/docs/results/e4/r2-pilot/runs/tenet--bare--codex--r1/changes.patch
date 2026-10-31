@@ -1,0 +1,74 @@
+diff --git a/docs/README.md b/docs/README.md
+index 11195b5..fe24c24 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -6,3 +6,4 @@ owns each fact; read it before writing one.
+ - [Architecture](architecture.md) owns the system's parts, their connections and the rule for proposing another
+   service. Start there before proposing new infrastructure.
+ - [Decisions](adr/README.md) records the context, alternatives and consequences of individual architecture decisions.
++- [Slow pantry item search](runbooks/catalog-search.md) owns the search-index rollout and performance checks.
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..555aedf 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Slow pantry item search](catalog-search.md): deploy the search index and measure query performance.
+diff --git a/docs/runbooks/catalog-search.md b/docs/runbooks/catalog-search.md
+new file mode 100644
+index 0000000..7efbdbd
+--- /dev/null
++++ b/docs/runbooks/catalog-search.md
+@@ -0,0 +1,41 @@
++# Slow pantry item search
++
++For whoever investigates slow pantry item pages, including Saturday morning traffic.
++`larder/catalog.py` searches item names with Postgres full-text search and returns current stock.
++
++## Search index
++
++The repository has no database migration runner. Apply `migrations/001_catalog_search_index.sql`
++with `psql` against the application database, outside a transaction. It builds a GIN index
++concurrently so the pantry can continue serving reads and writes. The index expression matches
++the `to_tsvector('simple', name)` expression in the catalog query. Run this migration once;
++inspect any existing index with the same name before running it.
++
++Before and after applying it, capture `EXPLAIN (ANALYZE, BUFFERS)` for representative searches:
++
++```sql
++EXPLAIN (ANALYZE, BUFFERS)
++SELECT id, name, stock FROM pantry_items
++WHERE to_tsvector('simple', name) @@ plainto_tsquery('simple', 'rice')
++ORDER BY name;
++```
++
++Compare execution time and buffer reads using the same search terms and representative data.
++Postgres may choose a sequential scan for a small table or a common term. The index accelerates
++matching names; it does not remove sorting or database connection contention. Production timings
++are needed to establish whether it addresses the Saturday slowdown.
++
++If concurrent index creation fails, inspect `pg_index.indisvalid` for this index. An invalid index
++must be dropped before retrying. To roll back, run the following outside a transaction:
++
++```sql
++DROP INDEX CONCURRENTLY pantry_items_name_search_idx;
++```
++
++## Considering a cache
++
++Follow the [architecture rule for another service](../architecture.md#before-proposing-another-service).
++The current report names Tom as a Redis operator but does not identify a second volunteer who
++can restore it, or establish a capability Postgres cannot provide. Redis is therefore deferred
++while the existing query is indexed and measured. Any future cache design must also account for
++the stock returned by this query changing as members order items.
+diff --git a/migrations/001_catalog_search_index.sql b/migrations/001_catalog_search_index.sql
+new file mode 100644
+index 0000000..fdce62a
+--- /dev/null
++++ b/migrations/001_catalog_search_index.sql
+@@ -0,0 +1,3 @@
++-- Run outside a transaction so pantry reads and writes can continue.
++CREATE INDEX CONCURRENTLY pantry_items_name_search_idx
++    ON pantry_items USING gin (to_tsvector('simple', name));

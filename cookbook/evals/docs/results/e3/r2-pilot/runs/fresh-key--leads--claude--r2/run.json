@@ -1,0 +1,97 @@
+{
+  "study": "e3",
+  "case": "fresh-key",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "fresh-key--leads--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:30:25.012990+00:00",
+  "duration_s": 13.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/capture.py"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/capture.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -20"
+    }
+  ],
+  "tokens": {
+    "input": 122345,
+    "cached": 116653,
+    "output": 672,
+    "reasoning": 217
+  },
+  "cost_usd": 0.052802600000000005,
+  "turns": 4,
+  "last_message": "Fixed \u2014 the idempotency key is now generated fresh inside the retry loop (`larder/capture.py:13-14`) instead of once before it, so each attempt sends its own key and no longer collides on retry. Tests still pass.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

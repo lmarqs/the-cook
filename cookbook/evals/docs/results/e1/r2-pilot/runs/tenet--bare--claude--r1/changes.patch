@@ -1,0 +1,21 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..a456291 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -15,3 +15,16 @@ where a payment is captured.
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
++
++## Adding a service
++
++larder runs one database and one web app. A proposal to add a service (cache, search engine, queue, anything with its
++own process to operate) has to show what it does that Postgres cannot, and name two volunteers able to restore it.
++That is not never: the card gateway is outside the repository, because it is a hosted service nobody here has to run.
++
++This came up three times before it was written down. Redis for sessions in 2023 was turned down because only one
++volunteer would have run it ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md)). Redis for
++Celery, adopted, evicted 300 receipt jobs one Saturday night in March 2025 and only one volunteer could restore it
++([run background jobs on Postgres](adr/0002-run-background-jobs-on-postgres.md)). In October 2025 a proposal to add
++Elasticsearch for pantry item search was replaced with Postgres full-text search once the rule was applied; see
++`notes/issue-70.md`.

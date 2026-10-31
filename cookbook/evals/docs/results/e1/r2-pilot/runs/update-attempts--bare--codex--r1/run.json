@@ -1,0 +1,167 @@
+{
+  "study": "e1",
+  "case": "update-attempts",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 1,
+  "source": "",
+  "id": "update-attempts--bare--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T00:54:47.144436+00:00",
+  "duration_s": 37.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/features/checkout.md",
+    "docs/features/payments.md",
+    "docs/runbooks/gateway-timeouts.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*capture*' -g '*issue-40*' -g 'README.md' -g '*.md'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *capture* -g *issue-40* -g README.md -g *.md"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-40.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i captur|attempt|retry|retries|three|\\b3\\b|\\bfive\\b docs README.md CLAUDE.md tests/test_capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "CLAUDE.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/payments.md docs/features/checkout.md docs/runbooks/gateway-timeouts.md docs/architecture.md README.md CLAUDE.md; rg --files larder tests; git status --short; cat docs/glossary.md docs/features/README.md docs/runbooks/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/checkout.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/payments.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n '3 attempts|three lines|three attempts|one after the other' docs"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; rg -n '3 attempts|three lines|three attempts|one after the other' docs"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n 3 attempts|three lines|three attempts|one after the other docs"
+    }
+  ],
+  "tokens": {
+    "input": 98572,
+    "cached": 87040,
+    "output": 1348,
+    "reasoning": 185
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Updated payments, checkout, the timeout runbook, and the docs ownership map.\n\nDocs now cover five attempts, 2/4/6/8-second pauses, the added confirmation wait, and the issue-40 rationale. Also clarified idempotency scope and removed the unsupported log-count expectation.\n\nValidation: 2 tests passed; `git diff --check` passed.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

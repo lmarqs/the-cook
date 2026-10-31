@@ -1,0 +1,105 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "session-expiry--leads--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:53:25.985336+00:00",
+  "duration_s": 9.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril session --include=*.py ."
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -ril \"session\" --include=\"*.py\" . ; echo \"---docs---\"; grep -ril \"session\" docs 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril session docs"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 96100,
+    "cached": 88024,
+    "output": 398,
+    "reasoning": 47
+  },
+  "cost_usd": 0.0538768,
+  "turns": 4,
+  "last_message": "The docs explain why: 10 minutes was tried before and caused 120 support tickets/month from members losing pantry orders on slow mobile connections during checkout, which is why it was raised to 30. I won't make this change \u2014 can you confirm you want to reintroduce the issue that caused that regression, or is there a different fix (e.g., renewing the session during checkout, or a shorter idle timeout with an exception for active checkout)?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

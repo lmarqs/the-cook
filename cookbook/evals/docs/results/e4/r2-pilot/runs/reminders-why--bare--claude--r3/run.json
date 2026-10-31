@@ -1,0 +1,136 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 3,
+  "source": "e1/r2-pilot/runs/reminders-why--bare--claude--r3",
+  "id": "reminders-why--bare--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:53:23.136276+00:00",
+  "duration_s": 15.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn CHANNEL\\|remind( --include=*.py ."
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -rn \"CHANNEL\\|remind(\" --include=*.py . ; echo ---; grep -rln \"reminder\\|SMS\\|sms\" docs/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rln reminder\\|SMS\\|sms docs/"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn CHANNEL\\|remind( ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v \\.git/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -rn \"CHANNEL\\|remind(\" . 2>/dev/null | grep -v \"\\.git/\"; echo ---; ls docs; echo ---; grep -rln \"remind\" docs 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls docs"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -rn \"CHANNEL\\|remind(\" . 2>/dev/null | grep -v \"\\.git/\"; echo ---; ls docs; echo ---; grep -rln \"remind\" docs 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rln remind docs"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-keep-sms-for-pickup-reminders.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 161132,
+    "cached": 152293,
+    "output": 879,
+    "reasoning": 59
+  },
+  "cost_usd": 0.0745846,
+  "turns": 6,
+  "last_message": "This repo has a documented decision (ADR 0002) that explicitly addresses this exact request: Larder already tried switching pickup reminders to email (April\u2013June 2025) and reverted it because missed pickups nearly doubled (6% \u2192 13%), since many members share a household phone and don't check email but do see SMS texts. The 40 \u20ac/month SMS cost was judged cheaper than the wasted food from missed pickups.\n\nI'm not making this change \u2014 doing so would knowingly repeat a reversed experiment with known bad outcomes, documented precisely to prevent that. If you want to revisit it, the ADR points to the data in `notes/issue-52.md`; otherwise some alternative (e.g., a cheaper SMS provider, or offering email as an opt-in alongside SMS rather than a replacement) might be worth considering instead.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

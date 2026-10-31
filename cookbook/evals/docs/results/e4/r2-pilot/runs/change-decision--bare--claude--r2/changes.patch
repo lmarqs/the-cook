@@ -1,0 +1,111 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index d95c6fa..b5d4f31 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -17,8 +17,15 @@ Sessions live in a signed cookie, not a database table
+ ([sign sessions into the cookie](../adr/0002-signed-cookie-sessions.md)). `larder/sessions.py` signs the member id
+ and expiry into the cookie with HMAC-SHA256, keyed by `LARDER_SESSION_KEY`; any web server can check it without a
+ query. Rotating `LARDER_SESSION_KEY` logs everyone out at once, so it is rotated only between pickups. A deploy logs
+-no one out, since every server holds the same key. The server can no longer log out one member before their session
+-expires.
++no one out, since every server holds the same key.
++
++## Logging out one member
++
++`logout(member_id)` in `larder/sessions.py` ends a member's current session right away, for a volunteer handling a
++lost or stolen phone. It is kept in memory on the server that handles the call, not in the cookie, so it is lost on
++restart and, if larder is running on more than one web server, only logs the member out of the one that saw the
++call - rotate `LARDER_SESSION_KEY` instead to be certain, at the cost of logging everyone out. A member who logs in
++again after being logged out gets a new, valid session.
+ 
+ ## Shaped by
+ 
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..efca478 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -8,12 +8,28 @@ from datetime import datetime, timedelta, timezone
+ EXPIRY_MINUTES = 30
+ KEY = os.environ.get("LARDER_SESSION_KEY", "dev-only").encode()
+ 
++# Member id -> the moment a volunteer logged them out. The cookie carries no issue time, so a
++# session is treated as logged out when it was last renewed (expiry minus EXPIRY_MINUTES) at or
++# before this moment. Renewing after logout starts a fresh, valid session, as intended.
++#
++# This lives in process memory, which is exactly what ADR 0002 moved sessions away from: it is
++# lost on restart and, on more than one web server (ADR 0001), only logs the member out of the
++# server that handled the volunteer's request. It does not give the full "server can log out one
++# member" ability that ADR 0002 gave up - it gives the best a stateless cookie allows for the
++# one server that saw the call.
++_logged_out: dict[int, datetime] = {}
++
+ 
+ def expires_at(last_request: datetime) -> datetime:
+     """When a session ends if no request renews it."""
+     return last_request + timedelta(minutes=EXPIRY_MINUTES)
+ 
+ 
++def logout(member_id: int) -> None:
++    """End member_id's current session right away, on this server (see the caveat above)."""
++    _logged_out[member_id] = datetime.now(timezone.utc)
++
++
+ def sign(member_id: int, last_request: datetime) -> str:
+     """The cookie value: the member and the session's expiry, signed with the shared key."""
+     body = json.dumps({"member": member_id, "expires": expires_at(last_request).isoformat()}).encode()
+@@ -28,6 +44,11 @@ def verify(cookie: str, now: datetime | None = None) -> int | None:
+     if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
+         return None
+     session = json.loads(body)
+-    if datetime.fromisoformat(session["expires"]) < (now or datetime.now(timezone.utc)):
++    expires = datetime.fromisoformat(session["expires"])
++    if expires < (now or datetime.now(timezone.utc)):
++        return None
++    member = session["member"]
++    logged_out_at = _logged_out.get(member)
++    if logged_out_at is not None and (expires - timedelta(minutes=EXPIRY_MINUTES)) <= logged_out_at:
+         return None
+-    return session["member"]
++    return member
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..c13ac31 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,9 +1,35 @@
+-from datetime import datetime, timedelta
++from datetime import datetime, timedelta, timezone
+ 
+-from larder.sessions import EXPIRY_MINUTES, expires_at
++from larder.sessions import EXPIRY_MINUTES, expires_at, logout, sign, verify
+ 
+ 
+ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+     assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++
++
++def test_logout_ends_the_members_current_session():
++    member_id = 42
++    cookie = sign(member_id, datetime.now(timezone.utc))
++
++    logout(member_id)
++
++    assert verify(cookie) is None
++
++
++def test_logout_does_not_block_a_session_started_after_it():
++    member_id = 43
++    logout(member_id)
++
++    cookie = sign(member_id, datetime.now(timezone.utc))
++
++    assert verify(cookie) == member_id
++
++
++def test_logout_does_not_affect_other_members():
++    logout(44)
++
++    cookie = sign(45, datetime.now(timezone.utc))
++
++    assert verify(cookie) == 45

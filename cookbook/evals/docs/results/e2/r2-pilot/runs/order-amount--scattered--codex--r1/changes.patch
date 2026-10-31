@@ -1,0 +1,36 @@
+diff --git a/larder/pantry.py b/larder/pantry.py
+index 117cb02..3d12340 100644
+--- a/larder/pantry.py
++++ b/larder/pantry.py
+@@ -20,4 +20,4 @@ Catalog = dict[str, int]
+ 
+ def amount_cents(order: PantryOrder, catalog: Catalog) -> int:
+     """The amount larder captures for a confirmed pantry order."""
+-    raise NotImplementedError
++    return sum(line.quantity * line.price_cents for line in order.lines)
+diff --git a/tests/test_pantry.py b/tests/test_pantry.py
+new file mode 100644
+index 0000000..863fca2
+--- /dev/null
++++ b/tests/test_pantry.py
+@@ -0,0 +1,20 @@
++from larder.pantry import Line, PantryOrder, amount_cents
++
++
++def test_amount_uses_confirmed_line_prices_and_quantities():
++    order = PantryOrder(
++        "o1",
++        (Line("rice", 2, 350), Line("beans", 3, 200)),
++    )
++
++    assert amount_cents(order, {"rice": 500, "beans": 150}) == 1300
++
++
++def test_amount_includes_items_removed_from_catalog():
++    order = PantryOrder("o1", (Line("rice", 2, 350),))
++
++    assert amount_cents(order, {}) == 700
++
++
++def test_empty_order_amount_is_zero():
++    assert amount_cents(PantryOrder("o1", ()), {"rice": 350}) == 0

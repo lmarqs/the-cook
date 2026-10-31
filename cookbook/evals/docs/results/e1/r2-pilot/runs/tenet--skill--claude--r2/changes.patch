@@ -1,0 +1,24 @@
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..a842bbf
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,18 @@
++# Philosophy
++
++For whoever proposes adding a service to larder, or reviews that proposal. It holds what the team favors when a new
++piece of infrastructure is on the table. Written after the same argument was made from scratch three times in a year:
++for a session store in 2023, for a job queue in March 2025, and for a search engine in October, each time costing a
++round of debate before the team remembered Postgres had already done the job twice.
++
++## Tenets
++
++### A new service earns its place only when Postgres cannot do the job and two volunteers can restore it
++
++Rules out running a service for convenience, speed to set up, or because one volunteer is excited to operate it, when
++Postgres can do the same job and already runs backed up every night. Also rules out a service only one volunteer
++knows how to restore, found out the hard way when a Redis queue evicted 300 receipt jobs on a Saturday night and only
++one person could bring it back. Does not rule out a hosted service that nobody on the team has to run, such as the
++card gateway. Applied in [keep sessions in the database](adr/0001-keep-sessions-in-the-database.md) and
++[run background jobs on Postgres](adr/0002-run-background-jobs-on-postgres.md); raised again, and declined again, when
++Elasticsearch was proposed for pantry item search, which Postgres full-text search settled at 40ms per query instead.

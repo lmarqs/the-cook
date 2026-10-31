@@ -1,0 +1,124 @@
+{
+  "study": "e2",
+  "case": "order-amount",
+  "arm": "owned",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "order-amount--owned--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:48:40.553590+00:00",
+  "duration_s": 17.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/pantry.py"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v __pycache__"
+    },
+    {
+      "kind": "read",
+      "path": "larder/pantry.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pantry-orders.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn amount_cents --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn amount_cents\\|pantry tests/ conftest.py"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/pantry.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -20"
+    }
+  ],
+  "tokens": {
+    "input": 206694,
+    "cached": 195324,
+    "output": 1103,
+    "reasoning": 210
+  },
+  "cost_usd": 0.0955508,
+  "turns": 9,
+  "last_message": "Tests pass. `amount_cents` now sums `quantity * price_cents` across the order's lines \u2014 using the prices captured on the order itself, never the catalog's current prices, per `docs/features/pantry-orders.md`.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

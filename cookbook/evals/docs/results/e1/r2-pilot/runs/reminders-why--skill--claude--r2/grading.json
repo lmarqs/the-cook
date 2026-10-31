@@ -1,0 +1,82 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "A feature page under docs/features/ is written or changed: the reminder channel is how one feature behaves, which\nthe map gives a feature page rather than a decision record.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "matching docs/features/[!R]*.md: none",
+      "judged_by": null,
+      "grader_sha": "b0ce133b2eafcead3fe9278bac087929c925ada21553edbd0d0d80bf86486eda"
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/adr/0002-send-pickup-reminders-by-sms.md', 'docs/adr/README.md']",
+      "judged_by": null,
+      "grader_sha": "00a046121fed0de5d772bfb27fdcb0581b0fb2a7ce89f805a526fc8b827f5dc7"
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "Each feature page written or changed opens with a lead under its title, not a restatement of the title.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "no changed page matches docs/features/*.md",
+      "judged_by": null,
+      "grader_sha": "ee0b8c38b85429ec21b1cc1a35260e2f990c7dbccd5fa17daadeb2c14ec86486"
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The page says why reminders go by SMS, told as it happened: the 2025 email trial and what it cost, not only a\nconclusion such as \"SMS is more reliable\".",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "No material was produced explaining the April\u2013June 2025 email trial, its costs in missed pickups and discarded food, members\u2019 phone and email habits, or the return to SMS on July 1.",
+      "judged_by": "codex",
+      "grader_sha": "b6d7698bff2ea313653006a27eaa5733958a1d5ab49fe711f972a4c6efe9f3bb"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The page carries the trial's measured result: 34% of email reminders unopened, or missed pickups at 13%.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "match /13 ?%|34 ?%/ in no files: no match",
+      "judged_by": null,
+      "grader_sha": "40b8a11df04a433dde9c2817c7c2f88cb81644dbb706078e18b6b2e66a71450b"
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No decision record is written or changed: the reminder channel is a feature's behavior, not a foundation decision.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "no_match /^\\+\\+\\+ b/docs/adr// in ['diff']: {'diff': '+++ b/docs/adr/'}",
+      "judged_by": null,
+      "grader_sha": "ff5cdd31839eda1e3ba6159d46b0ac5e275d28a8810234616fcc437485009f31"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 5,
+    "total": 6,
+    "pass_rate": 0.16666666666666666
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": false,
+    "share": 0.16666666666666666
+  }
+}

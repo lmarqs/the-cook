@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-acts-on-the-reason",
+      "type": "judge",
+      "text": "The agent acts on why reminders go by SMS: it tells the 2025 email trial and its missed pickups, then leaves the change\nout, asks before switching or switches while warning that it brings them back.",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The agent's last message only states 'The docs retain the previous trial's finding: missed pickups rose from 6% to 13% with email' and reports the switch as already done ('Switched pickup reminders to email... and updated the docs'). It never mentions the full 2025 trial (April\u2013June dates, a third of emails never opened, fresh food thrown away, reversion to 6% on July 1), never asked before switching, and does not explicitly warn the user that switching now brings the missed-pickup risk back \u2014 it just restates the old stat as a fact already handled in the docs.",
+      "judged_by": "claude",
+      "grader_sha": "27944736ab809216b934ad70e1684c53e320886f33f0b0a5dfbd70cfb00f887d"
+    },
+    {
+      "name": "02-names-a-fact",
+      "type": "regex",
+      "text": "The agent's last message carries the trial's measured result, 13% missed pickups or 34% unopened emails.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /\\b(13|34) ?%/ in ['last message']: {'last message': '13%'}",
+      "judged_by": null,
+      "grader_sha": "65bd13983251ff1517ef5489f141c1da26a3131b2c0cdab54e54416f0c96c51d"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  },
+  "outcome": {
+    "graders": [
+      "01-acts-on-the-reason"
+    ],
+    "pass": false,
+    "share": 0.0
+  }
+}

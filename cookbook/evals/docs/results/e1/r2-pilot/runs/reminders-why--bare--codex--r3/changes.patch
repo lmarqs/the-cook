@@ -1,0 +1,57 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..8e86870 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,6 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Use SMS for pickup reminders](adr/0002-use-sms-for-pickup-reminders.md) owns the reminder-channel decision,
++  the email trial's results, and the tradeoff between delivery cost, reaching members and food waste.
+diff --git a/docs/adr/0002-use-sms-for-pickup-reminders.md b/docs/adr/0002-use-sms-for-pickup-reminders.md
+new file mode 100644
+index 0000000..495e94a
+--- /dev/null
++++ b/docs/adr/0002-use-sms-for-pickup-reminders.md
+@@ -0,0 +1,31 @@
++# Use SMS for pickup reminders
++
++For whoever changes pickup reminders or proposes email to save the SMS bill. Pickup reminders go by SMS because
++the email trial left more orders uncollected, wasting fresh food.
++
++## Context
++
++Volunteers have repeatedly proposed switching to email to save the reported SMS cost of 40 euros a month. Email
++was tried from April to June 2025. As recorded in [issue 52](../../notes/issue-52.md), the provider reported that
++34% of reminder emails were never opened, and missed pickups rose from 6% of pantry orders to 13%.
++
++Many members share one phone in the family and do not check email; the pantry lead reports that they see SMS.
++Each missed pickup leaves a packed bag, whose fresh food goes in the bin at closing time. Reminder reach and
++avoiding missed pickups therefore matter alongside delivery cost.
++
++## Options
++
++- **Email**: free to send, but the trial saw more missed pickups and wasted fresh food.
++- **SMS**: costs money, but reaches members who do not check email. Chosen.
++
++## Decision
++
++Keep pickup reminders on SMS. The pantry switched back on July 1, 2025, and missed pickups were back to 6% by
++August. The maintainer reaffirmed this decision when closing issue 52. The channel is set in
++[`larder/reminders.py`](../../larder/reminders.py).
++
++## Consequences
++
++The pantry continues paying for SMS to reach members and reduce uncollected orders and food waste. Any proposal
++to switch channels should address the email trial's results and how it would reach members who do not check email;
++the saving on message delivery alone does not resolve those problems.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 9c61e9b..77b36fa 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,3 +1,4 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Use SMS for pickup reminders](0002-use-sms-for-pickup-reminders.md): why the pantry pays for SMS after trying email.

@@ -1,0 +1,470 @@
+diff --git a/docs/adr/0001-keep-sessions-in-signed-cookies.md b/docs/adr/0001-keep-sessions-in-signed-cookies.md
+deleted file mode 100644
+index 3872895..0000000
+--- a/docs/adr/0001-keep-sessions-in-signed-cookies.md
++++ /dev/null
+@@ -1,45 +0,0 @@
+-# Keep sessions in signed cookies
+-
+-For whoever changes login, deploys or session storage. Sessions live in signed cookies because expired sessions
+-accumulated in Postgres until the disk filled and stopped Saturday pickup.
+-
+-## Context
+-
+-In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
+-Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
+-volunteers stopped deploying during opening hours. Moving sessions to Postgres let every server read the same
+-session and preserved logins across deploys without adding a service.
+-
+-On August 3, the database disk filled: the session table held 2.1 million rows because nothing deleted expired
+-sessions. Larder was down from 09:40 to 12:50 during Saturday pickup. Volunteers used a paper list, and eleven
+-members left without their pantry orders because volunteers could not find them. Deleting expired rows restored
+-service, but did not prevent a recurrence. [Issue 63](../../notes/issue-63.md) records the incident and discussion;
+-the signed-cookie change shipped on August 9 and dropped the session table.
+-
+-The choice must preserve logins across servers and deploys, prevent session storage from filling the database
+-again, and keep the services and maintenance jobs the volunteers operate down. Losing individual server-side
+-revocation is acceptable for the pantry at the [session lifetime](../features/sessions.md#lifetime).
+-
+-## Options
+-
+-- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
+-  restarted server.
+-- **Redis as a session store**: fast and common; lost on the second force, a service the volunteers would run only
+-  for sessions.
+-- **Postgres**: chosen first because it survived deploys and added no service. Keeping it with a nightly job to delete
+-  expired sessions would prevent the buildup, but adds a job to watch and keeps a database read on every request.
+-- **Signed cookies**: chosen; remove session storage and its per-request query without adding a service or cleanup
+-  job, at the cost of individual server-side revocation.
+-
+-## Decision
+-
+-Keep the member and expiry in a signed cookie that every web server can verify with a shared key. This preserves
+-logins across servers and deploys while removing the session table, its query and the need for a cleanup job.
+-The [session implementation](../../larder/sessions.py) uses HMAC-SHA256 with Python's standard library, so this adds
+-no service to operate. [Sessions](../features/sessions.md) owns the lifetime and key requirements.
+-
+-## Consequences
+-
+-Session rows can no longer fill the database disk, and requests no longer query a session table. Deploys preserve
+-logins under the [shared-key requirements](../features/sessions.md#storage-and-deploys). The cost is the
+-[revocation limit and disruption from key rotation](../features/sessions.md#known-limits).
+diff --git a/docs/adr/0001-keep-signed-cookies-with-member-revocation.md b/docs/adr/0001-keep-signed-cookies-with-member-revocation.md
+new file mode 100644
+index 0000000..d8b6974
+--- /dev/null
++++ b/docs/adr/0001-keep-signed-cookies-with-member-revocation.md
+@@ -0,0 +1,58 @@
++# Keep signed cookies with member revocation
++
++For whoever changes login, deploys or session storage. Keep signed cookies with a shared Postgres generation per
++logged-out member: a stolen phone required immediate revocation, while the earlier session table had filled the
++disk and stopped Saturday pickup.
++
++## Context
++
++In 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.
++Members were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry
++volunteers stopped deploying during opening hours. Moving sessions to Postgres let every server read the same
++session and preserved logins across deploys without adding a service.
++
++On August 3, the database disk filled: the session table held 2.1 million rows because nothing deleted expired
++sessions. Larder was down from 09:40 to 12:50 during Saturday pickup. Volunteers used a paper list, and eleven
++members left without their pantry orders because volunteers could not find them. Deleting expired rows restored
++service, but did not prevent a recurrence. The signed-cookie change shipped on August 9 and dropped the session
++table.
++
++A member's phone was then stolen while logged in. A volunteer needed to end that member's access immediately;
++the signed cookie could not be revoked before expiry without rotating the key and logging everyone out.
++
++The choice must preserve logins across servers and deploys, prevent session storage from filling the database
++again, and keep the services and maintenance jobs the volunteers operate down. It must now also revoke one
++member's cookies immediately without disrupting other members.
++
++## Options
++
++- **Sticky sessions at the load balancer**: no code change; lost because a deploy still logs out everyone on the
++  restarted server.
++- **Redis as a session store**: fast and common; lost on the second force, a service the volunteers would run only
++  for sessions.
++- **Postgres**: chosen first because it survived deploys and added no service. Keeping it with a nightly job to delete
++  expired sessions would prevent the buildup, but adds a job to watch and keeps a database read on every request.
++- **Signed cookies alone**: previously chosen to remove session storage and its per-request query without adding
++  a service or cleanup job. Lost because a volunteer cannot revoke a stolen phone's cookie individually.
++- **Process-local revocation**: simple, but loses revocations on restart and cannot protect requests routed to
++  another server.
++- **Signed cookies with a Postgres generation per member**: chosen; adds shared revocation without per-session
++  rows, another service or an expiry cleanup job. It costs a database read for verification and signing.
++
++## Decision
++
++Keep signed cookies and compare their generation with a counter in the existing Postgres database. Logout
++atomically increments the counter. An absent row means generation zero, so only members who have been logged out
++need a row. Storage grows with those members, rather than issued sessions, avoiding the previous accumulation of
++expired sessions. Postgres already serves the app, so it adds no service or scheduled cleanup job.
++
++The [session implementation](../../larder/sessions.py) keeps HMAC-SHA256 signing and uses Psycopg to read and update
++the shared counter. [Sessions](../features/sessions.md) owns lifetime, deployment requirements and logout behavior.
++
++## Consequences
++
++Volunteers can revoke one member's existing cookies across servers and restarts. No row is created for each
++session and no cleanup job is needed. Deploys preserve logins under the
++[shared-state requirements](../features/sessions.md#storage-and-deploys). Signing and verification now depend on
++database availability; failures deny access. Generation counters must survive deploys and restores as described
++in [individual logout](../features/sessions.md#individual-logout).
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 68ede5a..b37da63 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,4 +1,4 @@
+ # Decisions
+ 
+-- [Keep sessions in signed cookies](0001-keep-sessions-in-signed-cookies.md): why session storage moved out of Postgres,
+-  and the trade-off in revocation.
++- [Keep signed cookies with member revocation](0001-keep-signed-cookies-with-member-revocation.md): why cookies use
++  shared member generations instead of accumulating session rows.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 2587105..69eda40 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -13,7 +13,8 @@ where a payment is captured.
+ ## How they connect
+ 
+ The web app handles sessions in `larder/sessions.py`
+-([keep sessions in signed cookies](adr/0001-keep-sessions-in-signed-cookies.md));
+-the [session page](features/sessions.md#storage-and-deploys) describes their contents and shared-key requirements.
++([keep signed cookies with member revocation](adr/0001-keep-signed-cookies-with-member-revocation.md)), reading
++revocation generations from Postgres. The [session page](features/sessions.md#storage-and-deploys) describes the
++shared-state requirements.
+ The web app queues jobs in Postgres for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..b39088f 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -1,5 +1,5 @@
+ # Features
+ 
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+-- [Sessions](sessions.md): how long a member stays logged in.
++- [Sessions](sessions.md): session lifetime and immediate member logout.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index f20d4ed..4bbe49b 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -1,8 +1,8 @@
+ # Sessions
+ 
+-For whoever changes login or the session expiry, or answers a member who was logged out. A session keeps a member
+-logged in until 30 minutes pass without a request. The limit was 10 minutes until 2024, when members on slow mobile
+-connections were logged out mid-checkout and lost their pantry orders.
++For whoever changes login or session expiry, or helps a member whose phone was stolen. Sessions keep members
++logged in between requests and let volunteers revoke their cookies immediately. A stolen phone reported while
++logged in required individual revocation; waiting for expiry left the member's access exposed.
+ 
+ ## Lifetime
+ 
+@@ -14,22 +14,45 @@ minutes, the shortest that ended those tickets.
+ 
+ ## Storage and deploys
+ 
+-The browser holds the member identifier and expiry in a signed cookie; there is no server-side session store, and
+-the old Postgres session table has been dropped. The implementation above signs cookies and verifies their
+-signature and expiry before returning the member identifier. Signing protects integrity; the cookie contents are
+-not encrypted.
++The browser holds the member identifier, expiry and revocation generation in a signed cookie. Postgres holds one
++generation counter per member who has been logged out, rather than a row per session. The implementation above
++checks the signature, expiry and current generation before returning the member identifier. Signing protects
++integrity; the cookie contents are not encrypted.
+ 
+ Every web server must use the same `LARDER_SESSION_KEY` from deploy secrets. Keep that key across deploys so existing
+ cookies remain valid on every server. The implementation's `dev-only` fallback is for development; deployments
+ must supply the shared secret.
+ 
++All web servers and the volunteer's administrative process use the same Postgres database through
++`LARDER_DATABASE_URL`, with the driver in [requirements.txt](../../requirements.txt) installed and
++[the generation table migration](../../migrations/001_member_session_generations.sql) applied before deploying
++the new code. Every server must run the revocation-aware verifier before volunteers rely on logout: older servers
++would still accept revoked cookies. Existing cookies without a generation remain valid as generation zero until
++their member is logged out or they expire.
++
++## Individual logout
++
++The trusted volunteer administrative code calls `larder.sessions.logout(member_id)`. A successful return means
++the generation update committed; all cookies issued with that member's previous generation fail subsequent
++verification, on every server and across restarts. Other members keep their sessions. Repeated logout is safe,
++and the member can authenticate again to receive a cookie with the current generation. Logout cannot undo a
++request already authorized before it committed.
++
++`sign` is for authenticated login and renewal after successful verification; it must never be exposed as a way to
++renew an unverified cookie. Volunteer authorization belongs to the calling administrative interface. This module
++does not supply a public logout endpoint or authorize volunteers.
++
++Database errors propagate from signing, verification and logout. Callers must deny access if verification fails
++and must not report a successful logout if the database update fails. Generation rows must be retained: deleting
++or restoring older counters can make revoked cookies valid again. A database restore that rolls counters back
++requires signing-key rotation before accepting requests.
++
+ ## Known limits
+ 
+-- A member's session cannot be revoked individually from the server before its cookie expires. The expiry in
+-  [Lifetime](#lifetime) bounds the validity of an issued cookie; there is no immediate individual revocation
+-  mechanism.
++- Logout revokes every existing cookie for the member; it cannot target just the stolen device. The member signs
++  in again on devices they still hold.
+ - Rotating the signing key logs everyone out. Rotate it only between pickups to avoid disrupting pickup.
+ 
+ ## Shaped by
+ 
+-- [Keep sessions in signed cookies](../adr/0001-keep-sessions-in-signed-cookies.md)
++- [Keep signed cookies with member revocation](../adr/0001-keep-signed-cookies-with-member-revocation.md)
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..08afbc1 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -1,4 +1,5 @@
+ import base64
++import binascii
+ import hashlib
+ import hmac
+ import json
+@@ -9,6 +10,33 @@ EXPIRY_MINUTES = 30
+ KEY = os.environ.get("LARDER_SESSION_KEY", "dev-only").encode()
+ 
+ 
++def _connect():
++    from psycopg import connect
++
++    return connect(os.environ["LARDER_DATABASE_URL"])
++
++
++def _generation(member_id: int) -> int:
++    with _connect() as connection:
++        row = connection.execute(
++            "SELECT generation FROM member_session_generations WHERE member_id = %s",
++            (member_id,),
++        ).fetchone()
++    return row[0] if row else 0
++
++
++def logout(member_id: int) -> None:
++    """Revoke all cookies already issued to this member, across servers and deploys."""
++    with _connect() as connection:
++        connection.execute(
++            """INSERT INTO member_session_generations (member_id, generation)
++               VALUES (%s, 1)
++               ON CONFLICT (member_id) DO UPDATE
++               SET generation = member_session_generations.generation + 1""",
++            (member_id,),
++        )
++
++
+ def expires_at(last_request: datetime) -> datetime:
+     """When a session ends if no request renews it."""
+     return last_request + timedelta(minutes=EXPIRY_MINUTES)
+@@ -16,18 +44,34 @@ def expires_at(last_request: datetime) -> datetime:
+ 
+ def sign(member_id: int, last_request: datetime) -> str:
+     """The cookie value: the member and the session's expiry, signed with the shared key."""
+-    body = json.dumps({"member": member_id, "expires": expires_at(last_request).isoformat()}).encode()
++    body = json.dumps({
++        "member": member_id,
++        "expires": expires_at(last_request).isoformat(),
++        "generation": _generation(member_id),
++    }).encode()
+     mac = hmac.new(KEY, body, hashlib.sha256).hexdigest()
+     return base64.urlsafe_b64encode(body).decode() + "." + mac
+ 
+ 
+ def verify(cookie: str, now: datetime | None = None) -> int | None:
+-    """The member a cookie logs in, or None when it is forged or expired."""
+-    encoded, _, mac = cookie.rpartition(".")
+-    body = base64.urlsafe_b64decode(encoded)
+-    if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
++    """The member a cookie logs in, or None when it is forged, expired or revoked.
++
++    Database errors propagate: callers must deny access when revocation cannot be checked.
++    """
++    try:
++        encoded, _, mac = cookie.rpartition(".")
++        body = base64.b64decode(encoded, altchars=b"-_", validate=True)
++        if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
++            return None
++        session = json.loads(body)
++        member_id = session["member"]
++        generation = session.get("generation", 0)
++        if type(member_id) is not int or type(generation) is not int or generation < 0:
++            return None
++        if datetime.fromisoformat(session["expires"]) <= (now or datetime.now(timezone.utc)):
++            return None
++    except (ValueError, TypeError, KeyError, binascii.Error):
+         return None
+-    session = json.loads(body)
+-    if datetime.fromisoformat(session["expires"]) < (now or datetime.now(timezone.utc)):
++    if generation != _generation(member_id):
+         return None
+-    return session["member"]
++    return member_id
+diff --git a/migrations/001_member_session_generations.sql b/migrations/001_member_session_generations.sql
+new file mode 100644
+index 0000000..2235c30
+--- /dev/null
++++ b/migrations/001_member_session_generations.sql
+@@ -0,0 +1,6 @@
++-- One row per member who has been logged out, never one row per session.
++-- Keep rows: deleting one could make an old generation-zero cookie valid again.
++CREATE TABLE member_session_generations (
++    member_id BIGINT PRIMARY KEY,
++    generation BIGINT NOT NULL CHECK (generation > 0)
++);
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..4633182
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1 @@
++psycopg[binary]>=3.2,<4
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..ea9feeb 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,5 +1,17 @@
+-from datetime import datetime, timedelta
++import base64
++import hashlib
++import hmac
++import importlib
++import json
++import sqlite3
++from concurrent.futures import ThreadPoolExecutor
++from contextlib import contextmanager
++from datetime import datetime, timedelta, timezone
++from pathlib import Path
+ 
++import pytest
++
++from larder import sessions
+ from larder.sessions import EXPIRY_MINUTES, expires_at
+ 
+ 
+@@ -7,3 +19,118 @@ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+     assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++
++
++@pytest.fixture
++def database(tmp_path, monkeypatch):
++    # Exercise the production SQL against a durable database. Only the DB-API
++    # placeholder spelling differs between SQLite and Postgres for these queries.
++    class Connection(sqlite3.Connection):
++        def execute(self, sql, parameters=()):
++            return super().execute(sql.replace("%s", "?"), parameters)
++
++    path = tmp_path / "sessions.db"
++
++    @contextmanager
++    def connect():
++        connection = sqlite3.connect(path, factory=Connection)
++        try:
++            with connection:
++                yield connection
++        finally:
++            connection.close()
++
++    with connect() as connection:
++        migration = Path(__file__).parents[1] / "migrations/001_member_session_generations.sql"
++        connection.executescript(migration.read_text())
++    monkeypatch.setattr(sessions, "_connect", connect)
++    return connect
++
++
++NOW = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
++
++
++def test_logout_revokes_all_member_cookies_and_preserves_other_members(database):
++    cookies = [sessions.sign(1, NOW), sessions.sign(1, NOW + timedelta(minutes=1))]
++    other_member = sessions.sign(2, NOW)
++    assert sessions.verify(cookies[0], NOW) == 1
++
++    assert sessions.logout(1) is None
++
++    assert all(sessions.verify(cookie, NOW) is None for cookie in cookies)
++    assert sessions.verify(other_member, NOW) == 2
++    fresh = sessions.sign(1, NOW)
++    assert sessions.verify(fresh, NOW) == 1
++    sessions.logout(1)
++    assert sessions.verify(fresh, NOW) is None
++
++
++def test_logout_survives_module_reload(database, monkeypatch):
++    cookie = sessions.sign(1, NOW)
++    sessions.logout(1)
++
++    importlib.reload(sessions)
++    monkeypatch.setattr(sessions, "_connect", database)
++
++    assert sessions.verify(cookie, NOW) is None
++    assert sessions.verify(sessions.sign(1, NOW), NOW) == 1
++
++
++def test_concurrent_logouts_are_atomic_and_storage_is_per_member(database):
++    with ThreadPoolExecutor(max_workers=4) as executor:
++        list(executor.map(sessions.logout, [1] * 20))
++
++    for _ in range(20):
++        assert sessions.verify(sessions.sign(1, NOW), NOW) == 1
++    with database() as connection:
++        assert connection.execute(
++            "SELECT member_id, generation FROM member_session_generations"
++        ).fetchall() == [(1, 20)]
++
++
++def _signed_payload(payload):
++    body = json.dumps(payload).encode()
++    mac = hmac.new(sessions.KEY, body, hashlib.sha256).hexdigest()
++    return base64.urlsafe_b64encode(body).decode() + "." + mac
++
++
++def test_logout_also_revokes_cookies_issued_before_generation_support(database):
++    cookie = _signed_payload({"member": 1, "expires": sessions.expires_at(NOW).isoformat()})
++    assert sessions.verify(cookie, NOW) == 1
++
++    sessions.logout(1)
++
++    assert sessions.verify(cookie, NOW) is None
++
++
++def test_cookies_expire_and_cannot_be_tampered_with(database):
++    cookie = sessions.sign(1, NOW)
++    assert sessions.verify(cookie, NOW + timedelta(minutes=29)) == 1
++    assert sessions.verify(cookie, sessions.expires_at(NOW)) is None
++    assert sessions.verify(cookie, NOW + timedelta(minutes=31)) is None
++    assert sessions.verify(cookie[:-1] + ("0" if cookie[-1] != "0" else "1"), NOW) is None
++
++
++@pytest.mark.parametrize("cookie", ["", "bad", "***.abc", "a.abc", "e30=.\u00e9"])
++def test_malformed_cookies_are_rejected(cookie):
++    assert sessions.verify(cookie, NOW) is None
++
++
++@pytest.mark.parametrize("payload", [None, [], {}, {"member": 1, "expires": "bad"}])
++def test_invalid_signed_payloads_are_rejected(payload):
++    assert sessions.verify(_signed_payload(payload), NOW) is None
++
++
++def test_database_failure_does_not_accept_cookie_or_report_logout_success(database, monkeypatch):
++    cookie = sessions.sign(1, NOW)
++
++    def unavailable():
++        raise ConnectionError("database unavailable")
++
++    monkeypatch.setattr(sessions, "_connect", unavailable)
++    with pytest.raises(ConnectionError):
++        sessions.verify(cookie, NOW)
++    with pytest.raises(ConnectionError):
++        sessions.logout(1)
++    with pytest.raises(ConnectionError):
++        sessions.sign(1, NOW)

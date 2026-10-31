@@ -1,0 +1,220 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "runbook-receipts--unwritten--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T03:14:27.889098+00:00",
+  "duration_s": 54.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/runbooks/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls /work/docs/runbooks/ 2>/dev/null; echo ---; ls /work/docs/features/ 2>/dev/null; echo ---; grep -rli \"receipt\" /work/docs/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/features/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls /work/docs/runbooks/ 2>/dev/null; echo ---; ls /work/docs/features/ 2>/dev/null; echo ---; grep -rli \"receipt\" /work/docs/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rli receipt /work/docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rli receipt /work --include=*.py --include=*.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v /work/docs"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -rli \"receipt\" /work --include=*.py --include=*.md 2>/dev/null | grep -v /work/docs; echo ---; find /work -iname \"*receipt*\""
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -iname *receipt*"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git show HEAD --stat; echo ---; cat docs/features/checkout.md; echo ---; cat docs/architecture.md"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git show HEAD --stat; echo ---; cat docs/features/checkout.md; echo ---; cat docs/architecture.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git show HEAD --stat; echo ---; cat docs/features/checkout.md; echo ---; cat docs/architecture.md"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git show HEAD --stat; echo ---; cat docs/features/checkout.md; echo ---; cat docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git show HEAD --stat; echo ---; cat docs/features/checkout.md; echo ---; cat docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/larder/capture.py; echo ---orders---; cat /work/larder/orders.py; echo ---gateway---; cat /work/larder/gateway.py; echo ---tests---; cat /work/tests/test_capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/larder/capture.py; echo ---orders---; cat /work/larder/orders.py; echo ---gateway---; cat /work/larder/gateway.py; echo ---tests---; cat /work/tests/test_capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/larder/capture.py; echo ---orders---; cat /work/larder/orders.py; echo ---gateway---; cat /work/larder/gateway.py; echo ---tests---; cat /work/tests/test_capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 293316,
+    "cached": 277923,
+    "output": 4392,
+    "reasoning": 2833
+  },
+  "cost_usd": 0.1610446,
+  "turns": 10,
+  "last_message": "I checked the repo for anything owning this trigger and found no runbook for \"no receipts\" \u2014 `docs/runbooks/` only has [`gateway-timeouts.md`](docs/runbooks/gateway-timeouts.md), which is about captures, not receipts. So here's the diagnosis from what the code and `docs/architecture.md` show, in runbook form, since none exists yet.\n\n**Root cause (found in code, not a transient outage):**\n`larder/receipts.py`'s `send_receipt` \u2014 the worker job `docs/architecture.md` says emails receipts from the Postgres job queue \u2014 is an unfinished stub:\n\n```python\ndef send_receipt(order_id: str) -> None:\n    raise NotImplementedError\n```\n\nIt raises on *every* invocation, unconditionally. That's why every member has had no receipt since the deploy: the job isn't failing intermittently, it can't ever succeed as currently written.\n\n**Steps for the volunteer on call:**\n\n1. Confirm it: tail the worker's log and look for `NotImplementedError` raised from `larder/receipts.py` in `send_receipt`. Expected: one such traceback per failed receipt job, not a gateway or network error.\n2. Reassure members: this is independent of charging. `larder/capture.py` (captures) does not call `send_receipt`, so orders placed last night were still correctly authorized and captured \u2014 only the confirmation email is missing.\n3. Do **not** retry or restart the worker to fix this \u2014 it's a code defect, not a stuck job or an infra blip; retries will fail identically forever and just pile up errored jobs in the queue.\n4. Escalate to whoever can deploy code: either roll back last night's deploy to the previous version (if `send_receipt` worked before it), or ship a fix that actually implements `send_receipt`. The on-call volunteer alone can't resolve this without a code change.\n\n**If it fails:** no owner is documented in `docs/` for receipts specifically (unlike payments, which names \"the payments volunteers\" in `docs/features/payments.md`) \u2014 ask in the pantry's chat generally and flag this gap.\n\nSince `docs/runbooks/README.md` says \"a runbook is updated each time its trigger fires,\" I'd suggest adding a `receipts-stuck.md` runbook (or similar) once this is resolved, naming an owner \u2014 want me to draft that with the `docs-layout` skill?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

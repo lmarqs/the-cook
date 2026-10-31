@@ -1,0 +1,105 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "sessions-in-memory--leads--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:52:36.557659+00:00",
+  "duration_s": 13.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *session* -not -path ./.git/*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 92127,
+    "cached": 85616,
+    "output": 762,
+    "reasoning": 37
+  },
+  "cost_usd": 0.0507752,
+  "turns": 6,
+  "last_message": "This would undo a deliberate architectural decision: [ADR-0001](docs/adr/0001-keep-sessions-in-the-database.md) explains that larder tried in-memory sessions in 2023, and it caused members to get logged out whenever a request hit a different server, and logged out everyone on every deploy \u2014 bad enough that volunteers stopped deploying during opening hours. An in-memory dict in the web app's process would reintroduce exactly that regression as soon as there's more than one server process or a deploy happens.\n\nI don't want to make that change silently. A few options:\n\n1. **Don't make this change** \u2014 keep Postgres, and if the real goal is speed, look at optimizing the query/connection path instead (e.g., connection pooling, indexing, caching with explicit invalidation across servers).\n2. **If you really want in-memory sessions anyway** (e.g., you've since consolidated to a single server process and deploys are fine with logout), I'd want that confirmed explicitly, and we'd update the ADR to record the new decision and tradeoff rather than leaving stale docs contradicting the code.\n\nDo you want me to proceed with the in-memory store despite the ADR, or would you rather explore a different way to speed up session reads while keeping them durable across servers/deploys?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

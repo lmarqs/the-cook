@@ -1,0 +1,158 @@
+{
+  "study": "e1",
+  "case": "tenet",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 2,
+  "source": "",
+  "id": "tenet--bare--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T00:36:14.418015+00:00",
+  "duration_s": 42.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/adr/0001-keep-sessions-in-the-database.md",
+    "docs/adr/0002-run-background-jobs-on-postgres.md",
+    "docs/architecture.md",
+    "docs/principles.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'docs/**' -g 'notes/**'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g notes/**"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat AGENTS.md docs/README.md docs/architecture.md docs/adr/README.md docs/adr/0001-keep-sessions-in-the-database.md docs/adr/0002-run-background-jobs-on-postgres.md notes/issue-70.md"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-run-background-jobs-on-postgres.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-70.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n service|Redis|Postgres|search|restore|hosted ."
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0002-run-background-jobs-on-postgres.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/principles.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nfor page in Path('docs').rglob('*.md'):\n    for link in re.findall(r'\\]\\(([^)]+)\\)', page.read_text()):\n        if '://' not in link:\n            assert (page.parent / link.split('#')[0]).exists(), (page, link)\nprint('All documentation link targets exist.')\nPY\npython3 -m pytest -q\n git diff --check\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 102009,
+    "cached": 95232,
+    "output": 1581,
+    "reasoning": 151
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [architecture principles](/work/docs/principles.md) documenting the rule: new services must provide something Postgres cannot, with two volunteers able to restore them. Included the rationale, hosted-service exception, and search proposal outcome.\n\nLinked it from the docs map, architecture overview, and earlier decisions.\n\nValidation: documentation links and whitespace checks passed; 2 tests passed.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

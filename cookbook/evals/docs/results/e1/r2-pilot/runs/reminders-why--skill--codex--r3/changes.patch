@@ -1,0 +1,39 @@
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..007b688 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pickup reminders](pickup-reminders.md): how members are reminded of pickup and why reminders go by SMS.
+diff --git a/docs/features/pickup-reminders.md b/docs/features/pickup-reminders.md
+new file mode 100644
+index 0000000..4d78d6d
+--- /dev/null
++++ b/docs/features/pickup-reminders.md
+@@ -0,0 +1,24 @@
++# Pickup reminders
++
++For volunteers considering a different reminder channel or changing pickup reminders. Reminders help members collect
++their pantry orders; they go by SMS because an email trial increased missed pickups and wasted fresh food.
++
++## Delivery
++
++The [reminder implementation](../../larder/reminders.py) sends a reminder of the pickup slot the day before, using
++SMS to the member's phone.
++
++## Why SMS
++
++From April to June 2025, the pantry tried email reminders. The provider reported that 34% of reminder emails were
++never opened. Missed pickups rose from 6% to 13% of pantry orders. A missed pickup leaves a packed bag behind, and
++the fresh food in it goes in the bin at closing time. Many members share a family phone and do not check email;
++they see SMS messages.
++
++The pantry switched back to SMS on July 1, 2025. By August, missed pickups were back to 6%.
++
++Email's lack of sending cost prompted another proposal to replace SMS, which cost €40 per month at the time of
++the discussion. The maintainer kept SMS: reaching members and avoiding missed pickups and food waste justified
++that cost. Email had already been tried and had performed worse for these members.
++
++These trial results and the decision to keep SMS are recorded in [issue 52](../../notes/issue-52.md).

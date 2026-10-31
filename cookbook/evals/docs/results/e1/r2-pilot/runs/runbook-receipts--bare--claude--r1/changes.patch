@@ -1,0 +1,77 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..b7e67b2 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -14,4 +14,5 @@ where a payment is captured.
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+-`larder/capture.py`.
++`larder/capture.py`. The deploy script only restarts the web app, not the worker, so a worker crash during a deploy
++needs a manual restart ([receipts not sending](runbooks/receipts-not-sending.md)).
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..4e02175 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts not sending](receipts-not-sending.md): what to do when members stop getting receipt emails.
+diff --git a/docs/runbooks/receipts-not-sending.md b/docs/runbooks/receipts-not-sending.md
+new file mode 100644
+index 0000000..8a06fd0
+--- /dev/null
++++ b/docs/runbooks/receipts-not-sending.md
+@@ -0,0 +1,51 @@
++# Receipts not sending
++
++For the volunteer on call when members report no receipt emails. Gets `larder-worker` running again so queued
++receipts go out. Written after the worker silently died twice in September 2025; the second time a volunteer did not
++know what to check and members waited until noon for receipts that had been queued since the night before. Owner: the
++on-call volunteers.
++
++## Why this happens
++
++`larder/receipts.py` sends each receipt as a background job that `larder-worker` picks up from the `procrastinate_jobs`
++queue in Postgres, per [architecture](../architecture.md). The deploy script only restarts the web app, not the
++worker: if the worker crashes during a deploy, jobs pile up in the queue until someone restarts it by hand.
++
++## Before you begin
++
++- Access to the server (to run `systemctl` and `journalctl` for `larder-worker`) and to the `larder` Postgres database.
++
++## Steps
++
++1. Check whether the worker is running:
++
++   ```
++   systemctl status larder-worker
++   ```
++
++   Expected: `active (running)`. If it says `inactive (dead)`, that is why receipts stopped.
++2. Check how many receipt jobs are waiting:
++
++   ```
++   psql larder -c "select status, count(*) from procrastinate_jobs group by status"
++   ```
++
++   Expected: a large `todo` count, little or no `doing`.
++3. Start the worker:
++
++   ```
++   sudo systemctl start larder-worker
++   ```
++4. Run the query from step 2 again about a minute later. Expected: `todo` falling steadily (around 40/minute) until
++   it reaches 0.
++
++   A few `failed` jobs for members with bounced/invalid email addresses are expected and not a problem.
++
++## If it fails
++
++If the worker dies again right after starting, collect its recent logs and ask the payments volunteers in the
++pantry's chat:
++
++```
++journalctl -u larder-worker -n 50
++```

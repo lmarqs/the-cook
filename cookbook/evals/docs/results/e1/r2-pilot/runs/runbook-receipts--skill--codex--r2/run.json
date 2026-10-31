@@ -1,0 +1,171 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 2,
+  "source": "",
+  "id": "runbook-receipts--skill--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T00:19:57.376472+00:00",
+  "duration_s": 58.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'SKILL.md' -g '*receipt*' -g 'README.md' -g 'pyproject.toml' -g 'Makefile'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g SKILL.md -g *receipt* -g README.md -g pyproject.toml -g Makefile"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs larder tests scripts ops"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files docs larder tests scripts ops; cat README.md; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !\\.git/** -g !\\.agents/** -g !\\.codex/**"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n receipt|worker|procrastinate|deploy|Tom\u00e1s|on.call docs notes larder tests"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nfiles = [Path('docs/runbooks/receipts-stopped.md'), Path('docs/runbooks/README.md'), Path('docs/architecture.md')]\nfor file in files:\n    content = file.read_text()\n    for target in re.findall(r'\\]\\(([^)]+)\\)', content):\n        if '://' not in target:\n            assert (file.parent / target.split('#')[0]).is_file(), (file, target)\n    assert '[[fill:' not in content, file\npage = files[0].read_text()\nassert re.findall(r'^## (.+)$', page, re.M) == ['Before you begin', 'Steps', 'If it fails']\nprint('Changed documentation: local links, runbook sections and template placeholders checked.')\nPY\n git diff --check\n git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 123186,
+    "cached": 100096,
+    "output": 2303,
+    "reasoning": 115
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added [Receipts stopped](/work/docs/runbooks/receipts-stopped.md), linked from the runbook index and architecture.\n\nIt covers worker checks, queue counts, recovery, delivery confirmation, and escalation to Tom\u00e1s\u2014including handoff when he\u2019s unavailable. It flags missing deployment and backup-contact information without inventing procedures.\n\nDocumentation links, structure, and whitespace checks passed. No production commands were run.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

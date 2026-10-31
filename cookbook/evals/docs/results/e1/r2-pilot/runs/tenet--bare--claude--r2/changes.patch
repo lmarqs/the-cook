@@ -1,0 +1,54 @@
+diff --git a/docs/adr/0003-weigh-a-new-service-against-postgres.md b/docs/adr/0003-weigh-a-new-service-against-postgres.md
+new file mode 100644
+index 0000000..3b4ea68
+--- /dev/null
++++ b/docs/adr/0003-weigh-a-new-service-against-postgres.md
+@@ -0,0 +1,38 @@
++# Weigh a new service against Postgres
++
++For whoever proposes adding a service to larder. A new service is added only if it does something Postgres cannot,
++and at least two volunteers can run and restore it, because the rule has had to be rediscovered three times in 2025.
++
++## Context
++
++Larder runs one database and one web app ([architecture](../architecture.md)), kept on purpose to a size its
++volunteers can operate. Three proposals have tested that on the same two forces: a proposed service must do something
++Postgres cannot, and two volunteers must be able to restore it.
++
++- **2023, Redis for sessions**: rejected before it shipped, because only one volunteer would have run it
++  ([keep sessions in the database](0001-keep-sessions-in-the-database.md)).
++- **March 2025, Redis for Celery's job queue**: shipped, then evicted 300 queued receipt jobs on a Saturday night;
++  one volunteer could restore it, and spent a day resending receipts by hand
++  ([run background jobs on Postgres](0002-run-background-jobs-on-postgres.md)).
++- **October 2025, Elasticsearch for pantry item search**: proposed to fix a four-second search that missed "Rice,
++  brown"; dropped once Postgres full-text search on the item name did the same in 40ms (`notes/issue-70.md`).
++
++Each time, Postgres already did the job, or could be made to.
++
++## Decision
++
++Before proposing a service beyond larder's one database and one web app, state in the proposal:
++
++1. What the service does that Postgres cannot.
++2. Which two volunteers can run it and restore it without the person who set it up.
++
++If either answer is missing, the proposal is not ready, regardless of how well the service fits the feature.
++
++This is not a ban on outside services: a hosted service that nobody on the team has to run, such as the card
++gateway, is a different trade and is not covered by this rule.
++
++## Consequences
++
++A proposal to add a service starts from these two questions instead of rediscovering them. Sessions and background
++jobs stay on Postgres because neither answer was met; the card gateway stays outside because the rule does not apply
++to it.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 14b01ba..3b50d96 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -2,3 +2,5 @@
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
+ - [Run background jobs on Postgres](0002-run-background-jobs-on-postgres.md): jobs run on procrastinate, not Redis.
++- [Weigh a new service against Postgres](0003-weigh-a-new-service-against-postgres.md): what a proposal to add a
++  service must answer first.

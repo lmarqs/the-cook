@@ -1,0 +1,16 @@
+diff --git a/larder/pantry.py b/larder/pantry.py
+index 117cb02..75bfca5 100644
+--- a/larder/pantry.py
++++ b/larder/pantry.py
+@@ -19,5 +19,9 @@ Catalog = dict[str, int]
+ 
+ 
+ def amount_cents(order: PantryOrder, catalog: Catalog) -> int:
+-    """The amount larder captures for a confirmed pantry order."""
+-    raise NotImplementedError
++    """The amount larder captures for a confirmed pantry order.
++
++    Captured at the prices on the order's lines, the prices the member saw when confirming,
++    never at the catalog's current prices.
++    """
++    return sum(line.quantity * line.price_cents for line in order.lines)

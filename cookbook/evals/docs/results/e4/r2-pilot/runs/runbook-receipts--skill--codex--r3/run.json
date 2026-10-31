@@ -1,0 +1,122 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 3,
+  "source": "e1/r2-pilot/runs/runbook-receipts--skill--codex--r3",
+  "id": "runbook-receipts--skill--codex--r3",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:44:02.179579+00:00",
+  "duration_s": 35.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'README*' -g '*receipt*' -g '*deploy*' -g '*runbook*' -g '*mail*' -g 'pyproject.toml' -g '*requirements*' -g 'Docker*' -g '*compose*' -g '*.service' -g '*.timer' -g '*.env*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g README* -g *receipt* -g *deploy* -g *runbook* -g *mail* -g pyproject.toml -g *requirements* -g Docker* -g *compose* -g *.service -g *.timer -g *.env*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md README.md docs/README.md docs/runbooks/README.md docs/runbooks/receipts-stopped.md; rg --files; git log -8 --oneline; git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md README.md docs/README.md docs/runbooks/README.md docs/runbooks/receipts-stopped.md; rg --files; git log -8 --oneline; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n -i receipt|worker|deploy|procrastinate|smtp|mail|tom\u00e1s . --hidden -g !.git/** -g !.agents/** -g !.codex/**"
+    }
+  ],
+  "tokens": {
+    "input": 69253,
+    "cached": 61696,
+    "output": 1082,
+    "reasoning": 52
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "The repository documents a matching incident: a deploy restarted the web app but left `larder-worker` stopped. **Check for that failure first; last night\u2019s cause is still unconfirmed.** Follow the [receipt recovery runbook](/work/docs/runbooks/receipts-stopped.md).\n\n1. **Open a shell on the deployed worker host**, with `systemctl`, journal access, permission to start the service, and `psql` access to the `larder` database. The repository does not record the host address or access setup. If you cannot access it, record that blocker in the incident handoff; these commands must run on the deployed host.\n\n2. **Check the worker and save the output:**\n\n   ```sh\n   systemctl status larder-worker\n   ```\n\n   The documented failure shows `inactive (dead)`. A nonzero exit can simply mean the service is stopped. If it is `active (running)`, skip starting it. If it is missing or `failed`, go to step 7.\n\n3. **Record the queue counts before recovery:**\n\n   ```sh\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n\n   A stopped worker typically leaves `todo` jobs waiting with no `doing` jobs. A missing status row means zero jobs in that status. If there is no backlog, go to step 7.\n\n4. **If the worker is `inactive (dead)`, start it once and verify:**\n\n   ```sh\n   sudo systemctl start larder-worker\n   systemctl status larder-worker\n   ```\n\n   Expected: `active (running)`. If starting fails or it stops again, go to step 7.\n\n5. **After about one minute, repeat the queue query.** Continue checking about once a minute while it drains.\n\n   ```sh\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n\n   Expected: `todo` decreases to zero or disappears. Watch for an increase in `failed`. The previous recovery processed roughly 40 jobs/minute; that is an observation, not a required rate. If the backlog stalls or failures grow, go to step 7.\n\n6. **Verify receipt delivery using available delivery evidence.** Nobody is available to confirm receipt, so if delivery evidence is unavailable, record **\u201cworker recovered; queue drained; receipt delivery unconfirmed.\u201d** An empty queue alone does not prove delivery.\n\n7. **If recovery fails, collect evidence and leave an unresolved handoff:**\n\n   ```sh\n   journalctl -u larder-worker -n 50\n   ```\n\n   Include the symptom, deploy timing if known, service status, before/after queue counts, logs, affected order IDs, and available delivery errors. Record access failures too. Address the handoff to Tom\u00e1s in `#larder-ops`; nobody needs to answer before you preserve the evidence.\n\n   **Do not repeatedly restart a dying worker, delete queued jobs, or dismiss new failures.** The three failed jobs in the previous incident were confirmed email bounces; that does not explain today\u2019s failures. Restarting an already running worker is not the documented remedy.\n\nAfterward, update the runbook with the observed outcome. The repository contains no deploy script or further recovery procedure, so it does not provide an exact permanent deploy fix.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

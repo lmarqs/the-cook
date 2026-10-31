@@ -1,0 +1,99 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 1,
+  "source": "e1/r2-pilot/runs/reminders-why--bare--claude--r1",
+  "id": "reminders-why--bare--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:52:01.963129+00:00",
+  "duration_s": 11.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn reminders\\|CHANNEL\\|pickup /work/docs /work/tests"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -iname *remind*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-send-pickup-reminders-by-sms.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 123000,
+    "cached": 116518,
+    "output": 526,
+    "reasoning": 54
+  },
+  "cost_usd": 0.0544756,
+  "turns": 4,
+  "last_message": "This repo already tried exactly this switch (April\u2013June 2025) and reverted it: email reminders caused missed pickups to jump from 6% to 13% of orders, since a third went unopened and many members only see texts. ADR 0002 documents this explicitly and warns the next person asking for this change.\n\nI'm not making the switch \u2014 the 40\u20ac/month is the known, accepted cost of avoiding that regression, per the ADR's decision. If you still want to go ahead, that's your call to make explicitly (and ideally it'd need a new ADR superseding 0002, plus a plan for members who share a phone and don't check email), but I won't do it silently given the documented history.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

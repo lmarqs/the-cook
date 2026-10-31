@@ -1,0 +1,110 @@
+{
+  "study": "e2",
+  "case": "order-amount",
+  "arm": "scattered",
+  "harness": "codex",
+  "run": 1,
+  "source": "",
+  "id": "order-amount--scattered--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T01:47:35.789651+00:00",
+  "duration_s": 36.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/pantry.py",
+    "tests/test_pantry.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*pantry*' -g '*payment*' -g 'README.md' -g 'pyproject.toml' -g 'test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *pantry* -g *payment* -g README.md -g pyproject.toml -g test*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/pantry.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pantry-orders.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/pantry-orders.md docs/features/payments.md tests/test_capture.py; rg --files larder; git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/pantry.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_pantry.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 65654,
+    "cached": 57088,
+    "output": 685,
+    "reasoning": 38
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Implemented `amount_cents` using each confirmed line\u2019s quantity \u00d7 price, independent of current catalog prices.\n\nAdded tests for changed prices, removed items, and empty orders. All 5 tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

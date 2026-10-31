@@ -1,0 +1,62 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index 1e9c80c..ed20d1d 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -15,6 +15,21 @@ minutes, the shortest that ended those tickets.
+ 
+ Sessions live in Postgres ([keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)).
+ 
++## Logout
++
++A volunteer can end a member's session right away with `logout(member_id)` in `larder/sessions.py`, for cases such as
++a stolen phone that was left logged in. A cookie is self-verifying rather than looked up, so logout does not delete a
++row; it records the moment and `verify` rejects any cookie issued before it, by comparing the logout time to the
++cookie's expiry minus `EXPIRY_MINUTES`. A member can log back in immediately after.
++
++## Known limits
++
++- Logout is held in the web server's memory, not in Postgres, so it only stops cookies verified by the server that
++  received the call. [Sessions were moved out of server memory](../adr/0001-keep-sessions-in-the-database.md)
++  because that split sessions across servers behind the load balancer; the same split applies to logout until it is
++  backed by the same Postgres table. Workaround: also change the member's password, which invalidates login on every
++  server.
++
+ ## Shaped by
+ 
+ - [Keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..19ea892 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -8,6 +8,17 @@ from datetime import datetime, timedelta, timezone
+ EXPIRY_MINUTES = 30
+ KEY = os.environ.get("LARDER_SESSION_KEY", "dev-only").encode()
+ 
++# Cookies are self-verifying (signed, not looked up), so there is no row to delete on logout.
++# Instead we remember when a member was logged out and reject any cookie issued before that
++# moment: a cookie's issue time is recoverable as its expiry minus EXPIRY_MINUTES, since sign()
++# always sets expiry to issue time + EXPIRY_MINUTES.
++_logged_out_at: dict[int, datetime] = {}
++
++
++def logout(member_id: int) -> None:
++    """Ends member_id's session right away: every cookie already issued for them stops verifying."""
++    _logged_out_at[member_id] = datetime.now(timezone.utc)
++
+ 
+ def expires_at(last_request: datetime) -> datetime:
+     """When a session ends if no request renews it."""
+@@ -28,6 +39,11 @@ def verify(cookie: str, now: datetime | None = None) -> int | None:
+     if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
+         return None
+     session = json.loads(body)
+-    if datetime.fromisoformat(session["expires"]) < (now or datetime.now(timezone.utc)):
++    expires = datetime.fromisoformat(session["expires"])
++    if expires < (now or datetime.now(timezone.utc)):
++        return None
++    member = session["member"]
++    logged_out_at = _logged_out_at.get(member)
++    if logged_out_at is not None and expires - timedelta(minutes=EXPIRY_MINUTES) <= logged_out_at:
+         return None
+-    return session["member"]
++    return member

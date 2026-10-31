@@ -1,0 +1,168 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "runbook-receipts--bare--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:47:58.458591+00:00",
+  "duration_s": 32.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -not -path ./.git* -type f"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn receipt docs/ larder/ tests/"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 320482,
+    "cached": 311506,
+    "output": 2713,
+    "reasoning": 269
+  },
+  "cost_usd": 0.1252992,
+  "turns": 14,
+  "last_message": "I added a runbook so the next on-call volunteer doesn't need Tom\u00e1s:\n\n- `docs/runbooks/receipts-stopped.md` \u2014 new runbook, same shape as `gateway-timeouts.md`: check the worker (deploy script doesn't restart it), count `procrastinate_jobs` by status, start the worker, watch `todo` drain to 0, and what to do (and that failed/bounced-email jobs are expected and not a problem) if it doesn't resolve.\n- `docs/runbooks/README.md` \u2014 linked the new runbook.\n- `docs/architecture.md` \u2014 noted the worker isn't restarted by the deploy script and linked to the runbook, since that's the root cause and wasn't documented anywhere.\n\n`notes/chat-receipts.md` is now encoded as a durable runbook rather than a one-off chat log that only Tom\u00e1s could point people to.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

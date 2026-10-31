@@ -1,0 +1,45 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..7705122 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -4,4 +4,9 @@ from larder.members import Member
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    household_orders = sum(
++        open_orders.get(registered.id, 0)
++        for registered in members
++        if registered.address == member.address
++    )
++    return household_orders < 2
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+new file mode 100644
+index 0000000..e75a597
+--- /dev/null
++++ b/tests/test_limits.py
+@@ -0,0 +1,24 @@
++import pytest
++
++from larder.limits import can_place_order
++from larder.members import Member
++
++
++@pytest.mark.parametrize(
++    "open_orders, allowed",
++    [
++        ({}, True),
++        ({"alice": 1}, True),
++        ({"bob": 1}, True),
++        ({"alice": 2}, False),
++        ({"alice": 1, "bob": 1}, False),
++        ({"bob": 3}, False),
++        ({"carol": 5}, True),
++    ],
++)
++def test_order_limit_applies_to_all_members_at_the_same_address(open_orders, allowed):
++    alice = Member("alice", "Alice", "1 Pantry Street")
++    bob = Member("bob", "Bob", "1 Pantry Street")
++    carol = Member("carol", "Carol", "2 Pantry Street")
++
++    assert can_place_order(alice, [alice, bob, carol], open_orders) is allowed

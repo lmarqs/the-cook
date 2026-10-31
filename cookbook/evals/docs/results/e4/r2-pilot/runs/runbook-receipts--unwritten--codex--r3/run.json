@@ -1,0 +1,172 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "unwritten",
+  "harness": "codex",
+  "run": 3,
+  "source": "",
+  "id": "runbook-receipts--unwritten--codex--r3",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:53:40.846999+00:00",
+  "duration_s": 40.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*receipt*' -g '*deploy*' -g '*runbook*' -g 'README*' -g 'pyproject.toml' -g '*requirements*' -g '*compose*' -g '*.service' -g '*.timer'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *receipt* -g *deploy* -g *runbook* -g README* -g pyproject.toml -g *requirements* -g *compose* -g *.service -g *.timer"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs larder tests ops scripts .github"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !docs/README.md -g !*.pyc -g ! .git"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/runbooks/gateway-timeouts.md docs/features/payments.md docs/features/checkout.md docs/architecture.md larder/receipts.py larder/capture.py larder/gateway.py larder/orders.py tests/test_capture.py && rg --files -g '!docs/README.md' -g '!*.pyc' -g '! .git' && git log -6 --oneline && git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/runbooks/gateway-timeouts.md docs/features/payments.md docs/features/checkout.md docs/architecture.md larder/receipts.py larder/capture.py larder/gateway.py larder/orders.py tests/test_capture.py && rg --files -g '!docs/README.md' -g '!*.pyc' -g '! .git' && git log -6 --oneline && git status --short"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "CLAUDE.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n --hidden -g !.git/** receipt|procrastinate|worker|deploy|queue|smtp|mail|DATABASE|systemctl|docker ."
+    }
+  ],
+  "tokens": {
+    "input": 95203,
+    "cached": 81024,
+    "output": 1132,
+    "reasoning": 218
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "The repository does **not** contain enough information for an exact, verified recovery procedure. It has no deployment commands, worker service name, queue administration commands, mail configuration, or receipt replay procedure. Last night\u2019s deploy is a suspected cause, not a confirmed diagnosis.\n\nGive the on-call volunteer this sequence:\n\n1. **Inspect the receipt worker\u2019s logs around the deploy.** Look for startup failures, database connection errors, receipt exceptions, and `NotImplementedError`. Receipts run through a worker using a Postgres queue, according to [the architecture](/work/docs/architecture.md).\n\n2. **Check the receipt implementation in the deployed worker\u2019s Python environment:**\n   ```sh\n   python3 -c 'import inspect, larder.receipts; print(larder.receipts.__file__); print(inspect.getsource(larder.receipts.send_receipt))'\n   ```\n   In this checkout, [send_receipt](/work/larder/receipts.py:1) unconditionally raises `NotImplementedError`. If the deployed worker uses this implementation, it cannot send receipts. The repository contains no working replacement.\n\n3. **Compare the deployed release with the last release known to send receipts.** If the deploy introduced the failing implementation or worker configuration, restore the working release through the server\u2019s existing deployment mechanism, after checking database compatibility. This repository supplies neither that mechanism nor compatibility information; do not invent rollback commands.\n\n4. **Verify delivery before replaying the backlog.** Confirm that the worker processes a receipt for an already captured pantry order and that the email arrives. A running worker alone does not establish recovery.\n\n5. **Recover missed receipts only through a verified receipt-only retry mechanism.** First inspect queued/failed jobs and delivery history to avoid duplicate mail. The repository does not document retry behavior, deduplication, or commands, so it cannot establish a safe bulk replay procedure.\n\n**Do not rerun checkout or payment capture to regenerate receipts.** [The capture implementation](/work/larder/capture.py:8) generates a fresh idempotency key on every call, contrary to [the documented retry rule](/work/docs/features/payments.md). Repeating capture could charge members again.\n\nIf the server provides no established deployment or receipt recovery tooling, stop before rollback or replay. The missing operational details cannot be recovered from this checkout; claiming exact repair commands would be guessing.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

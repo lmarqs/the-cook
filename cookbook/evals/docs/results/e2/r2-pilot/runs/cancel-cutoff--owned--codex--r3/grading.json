@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-tests",
+      "type": "tests_pass",
+      "text": "The repository's tests and the hidden tests pass: a member can cancel until 2 hours before the pickup slot starts.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "exit 0: .......                                                                  [100%] / 7 passed in 0.02s",
+      "judged_by": null,
+      "grader_sha": "e9288894dff6274e5e470f37a56c4d76fb0aba72c5224665766a206634c4ace8"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/cancellation.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/cancellation.md at step 4; first edit at step 13",
+      "judged_by": null,
+      "grader_sha": "c844d383585ac7d4adf59610306293a0d9ddc85c64c89260d3e048cf5e6e82ae"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-tests"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

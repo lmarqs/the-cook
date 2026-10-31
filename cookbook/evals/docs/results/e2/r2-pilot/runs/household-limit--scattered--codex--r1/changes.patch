@@ -1,0 +1,44 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..43bebe7 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -4,4 +4,8 @@ from larder.members import Member
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    return sum(
++        open_orders.get(housemate.id, 0)
++        for housemate in members
++        if housemate.address == member.address
++    ) < 2
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+new file mode 100644
+index 0000000..ca199f2
+--- /dev/null
++++ b/tests/test_limits.py
+@@ -0,0 +1,24 @@
++import pytest
++
++from larder.limits import can_place_order
++from larder.members import Member
++
++
++@pytest.mark.parametrize("household_orders, allowed", [(0, True), (1, True), (2, False), (3, False)])
++def test_household_may_hold_at_most_two_open_orders(household_orders, allowed):
++    member = Member("alice", "Alice", "1 Pantry Lane")
++    housemate = Member("bob", "Bob", "1 Pantry Lane")
++    neighbor = Member("carol", "Carol", "2 Pantry Lane")
++
++    assert can_place_order(
++        member,
++        [member, housemate, neighbor],
++        {housemate.id: household_orders, neighbor.id: 10},
++    ) is allowed
++
++
++def test_orders_are_counted_across_household_members():
++    member = Member("alice", "Alice", "1 Pantry Lane")
++    housemate = Member("bob", "Bob", "1 Pantry Lane")
++
++    assert not can_place_order(member, [member, housemate], {member.id: 1, housemate.id: 1})

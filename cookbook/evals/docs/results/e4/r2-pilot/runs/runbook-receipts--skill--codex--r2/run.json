@@ -1,0 +1,122 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 2,
+  "source": "e1/r2-pilot/runs/runbook-receipts--skill--codex--r2",
+  "id": "runbook-receipts--skill--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:50:01.106781+00:00",
+  "duration_s": 23.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'README*' -g '*receipt*' -g '*deploy*' -g '*runbook*' -g 'SKILL.md' -g 'pyproject.toml' -g '*migration*' -g '*env*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g README* -g *receipt* -g *deploy* -g *runbook* -g SKILL.md -g pyproject.toml -g *migration* -g *env*"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls -la"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/architecture.md docs/features/checkout.md docs/features/payments.md larder/receipts.py larder/capture.py docs/runbooks/gateway-timeouts.md && ls -la && git status --short && git log -5 --oneline && rg --files --hidden -g '!.git/**' -g '!.agents/**' -g '!.claude/**' -g '!.codex/**'"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/architecture.md docs/features/checkout.md docs/features/payments.md larder/receipts.py larder/capture.py docs/runbooks/gateway-timeouts.md && ls -la && git status --short && git log -5 --oneline && rg --files --hidden -g '!.git/**' -g '!.agents/**' -g '!.claude/**' -g '!.codex/**'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden -g !.git/** -g !.agents/** -g !.claude/** -g !.codex/**"
+    }
+  ],
+  "tokens": {
+    "input": 73896,
+    "cached": 65792,
+    "output": 912,
+    "reasoning": 66
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Follow the repository\u2019s [Receipts stopped runbook](/work/docs/runbooks/receipts-stopped.md). A previous deploy left the receipt worker stopped; check whether that happened again.\n\n1. On the host running `larder-worker`, check its state:\n\n   ```sh\n   systemctl status larder-worker\n   ```\n\n   Healthy means `active (running)`. If `inactive (dead)`, record when it stopped. If already running, leave it running and continue.\n\n2. Save the queue counts before making changes:\n\n   ```sh\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n\n   Expect counts grouped by status; a missing status row means zero jobs.\n\n3. **Only if the worker is stopped**, start it:\n\n   ```sh\n   sudo systemctl start larder-worker\n   ```\n\n   Then verify:\n\n   ```sh\n   systemctl status larder-worker\n   ```\n\n   Expect `active (running)`. If it stops again, use the failure steps below instead of repeatedly starting it.\n\n4. Wait about one minute, then check the queue again:\n\n   ```sh\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n\n   Repeat about every minute. Expect `todo` to decrease; continue until both `todo` and `doing` are zero or absent. Compare `failed` against the initial count.\n\n5. Check the service once more:\n\n   ```sh\n   systemctl status larder-worker\n   ```\n\n   Expect it to remain `active (running)`. Record the initial and final queue counts. With nobody available to confirm receipt emails, record **delivery unverified**; a drained queue alone does not establish delivery.\n\nIf the worker stops again, counts stall across successive checks, `failed` increases, or receipts remain missing, collect:\n\n```sh\njournalctl -u larder-worker -n 50\n```\n\nLeave the relevant errors, service state, stop time, queue counts, and commands run in the pantry\u2019s chat for Tom\u00e1s\u2019s handoff. If access fails or the service is missing, include the exact failed command and error. The repository provides no alternative access procedure, backup contact, or failed-job retry procedure; do not blindly retry failed jobs.\n\nThe repository contains no deploy script to repair or verify, so this procedure can restore the worker but cannot establish that the deployment defect is fixed. Check the worker after subsequent deploys until that fix is confirmed.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,54 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index fcb7cb3..4060951 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -1,11 +1,17 @@
+ # Sessions
+ 
++Members stay logged in between requests so they can put together a pantry order. Sessions now expire sooner at
++the team's request to log members out after less inactivity.
++
+ ## Lifetime
+ 
+-Each request renews the session for 30 minutes, `EXPIRY_MINUTES` in `larder/sessions.py`. Until March 2024 the limit
+-was 10 minutes: members packing a pantry order on a slow mobile connection were logged out before they confirmed it
+-and lost what they had picked, and support logged 120 tickets about it that month. The limit was raised to 30
+-minutes, the shortest that ended those tickets.
++Each request renews the session for 10 minutes, controlled by
++[`EXPIRY_MINUTES`](../../larder/sessions.py).
++
++Until March 2024 the limit was also 10 minutes: members packing a pantry order on a slow mobile connection were
++logged out before they confirmed it and lost what they had picked, and support logged 120 tickets about it that
++month. The limit was raised to 30 minutes, the shortest that ended those tickets. The current 10-minute limit
++prioritizes logging members out sooner; the earlier problem may recur.
+ 
+ ## Storage
+ 
+diff --git a/larder/sessions.py b/larder/sessions.py
+index 24e909d..d04b011 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -1,6 +1,6 @@
+ from datetime import datetime, timedelta
+ 
+-EXPIRY_MINUTES = 30
++EXPIRY_MINUTES = 10
+ 
+ 
+ def expires_at(last_request: datetime) -> datetime:
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..c8317b2 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,9 +1,9 @@
+ from datetime import datetime, timedelta
+ 
+-from larder.sessions import EXPIRY_MINUTES, expires_at
++from larder.sessions import expires_at
+ 
+ 
+ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+-    assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++    assert expires_at(start) == start + timedelta(minutes=10)

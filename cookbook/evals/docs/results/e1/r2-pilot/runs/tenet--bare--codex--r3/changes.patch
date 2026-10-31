@@ -1,0 +1,59 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..a6e529c 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,10 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++- [Architecture](architecture.md) owns the system's parts, how they connect, and the
++  [rule for adding a service](architecture.md#before-adding-a-service). Start service proposals there.
++- [Decisions](adr/README.md) records the context, options and consequences of individual architecture decisions.
++- [Features](features/README.md) owns member-facing behavior and feature rules.
++- [Runbooks](runbooks/README.md) owns operational recovery procedures.
++- [Glossary](glossary.md) owns the names used in code, documentation and conversations.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 14b01ba..5c5c133 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,4 +1,7 @@
+ # Decisions
+ 
++Before proposing another service, read the [rule for adding a service](../architecture.md#before-adding-a-service).
++It applies across the individual decisions below.
++
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
+ - [Run background jobs on Postgres](0002-run-background-jobs-on-postgres.md): jobs run on procrastinate, not Redis.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..4757531 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -15,3 +15,27 @@ where a payment is captured.
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
++
++## Before adding a service
++
++For whoever proposes another database, queue, search engine or other service. Start a proposal from this rule:
++larder runs one database and one web app. A new service we operate must do something Postgres cannot, and at least
++two volunteers must be able to restore it. A proposal needs to explain both the capability Postgres cannot provide
++and who those two volunteers are.
++
++Every service adds work for the volunteers who run larder. If only one person can restore it, an outage depends on
++that person's availability. Keeping sessions and jobs in Postgres reuses the database we already run and back up.
++
++The decisions behind this rule are:
++
++- In 2023, Redis for sessions was rejected because only one volunteer would have run it. Sessions went into
++  Postgres; see [keep sessions in the database](adr/0001-keep-sessions-in-the-database.md).
++- In March 2025, Redis holding Celery's queue evicted 300 receipt jobs. Only one volunteer knew how to restore it.
++  Jobs moved to Postgres; see [run background jobs on Postgres](adr/0002-run-background-jobs-on-postgres.md).
++- In [issue 70](../notes/issue-70.md), Elasticsearch was proposed for slow pantry item search that missed
++  "Rice, brown" when searching for "rice". Postgres full-text search on the item name found the item and reduced
++  the reported search time from four seconds to 40 ms, so the proposal moved to Postgres instead.
++
++This rule allows outside services: the card gateway is already external, and a hosted service that no volunteer
++has to operate is an acceptable option. It does not ban a new service we operate when Postgres cannot meet the
++need and two volunteers can restore it.

@@ -1,0 +1,191 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "runbook-receipts--skill--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:23:54.101930+00:00",
+  "duration_s": 62.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -not -path ./.git* -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -not -path './.git*' -type f | sort"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "for",
+      "command": "for f in larder/__init__.py larder/orders.py larder/capture.py larder/gateway.py larder/sessions.py; do echo \"== $f ==\"; cat \"$f\"; echo; done"
+    },
+    {
+      "kind": "other",
+      "tool": "do",
+      "command": "for f in larder/__init__.py larder/orders.py larder/capture.py larder/gateway.py larder/sessions.py; do echo \"== $f ==\"; cat \"$f\"; echo; done"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "for f in larder/__init__.py larder/orders.py larder/capture.py larder/gateway.py larder/sessions.py; do echo \"== $f ==\"; cat \"$f\"; echo; done"
+    },
+    {
+      "kind": "other",
+      "tool": "done",
+      "command": "for f in larder/__init__.py larder/orders.py larder/capture.py larder/gateway.py larder/sessions.py; do echo \"== $f ==\"; cat \"$f\"; echo; done"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/runbook.template.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/runbooks.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Write a new runbook at docs/runbooks/receipts-stopped.md for the trigger \"no receipts sent since last night\" / receipts stopped going out. Source material is notes/chat-receipts.md (a chat export where Tom\u00e1s diagnosed and fixed this twice). Facts to capture: the worker process is a systemd service named larder-worker; jobs queue in the procrastinate_jobs table in the larder postgres database (send_receipt in larder/receipts.py is the procrastinate job that emails the receipt); the deploy script only restarts the web app, not the worker, so a deploy can leave the worker dead (inactive/dead) while jobs pile up as 'todo'; the fix is to check `systemctl status larder-worker`, count todo jobs with `psql larder -c \\\"select status, count(*) from procrastinate_jobs group by status\\\"`, start the worker with `sudo systemctl start larder-worker`, and re-run the query to watch todo drain to 0 (about 40/minute last time); failed jobs for bounced/invalid emails are expected and not an incident; if the worker dies again immediately, pull `journalctl -u larder-worker -n 50` and escalate to Tom\u00e1s (or whoever owns receipts/payments now) in the pantry's ops chat. This is the second time this has happened and the on-call volunteer didn't know what to do, so the runbook needs to let the next volunteer self-serve instead of waiting for Tom\u00e1s. Also add this runbook to docs/runbooks/README.md's list, consistent with the existing Gateway timeouts entry. Follow the kind's criteria in docs/README.md exactly (lead order, Before you begin/Steps/If it fails sections, one action per step with its expected output). Write the file for real with the Write tool, don't just describe it."
+      }
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -20"
+    }
+  ],
+  "tokens": {
+    "input": 415647,
+    "cached": 396780,
+    "output": 5218,
+    "reasoning": 2520
+  },
+  "cost_usd": 0.20696399999999998,
+  "turns": 19,
+  "last_message": "Added `docs/runbooks/receipts-stopped.md`, listed in `docs/runbooks/README.md`, covering what Tom\u00e1s worked out in `notes/chat-receipts.md`: check `systemctl status larder-worker`, count queued `procrastinate_jobs`, start the worker, watch `todo` drain (~40/min), treat lingering `failed` bounces as normal, and escalate via `journalctl` + the ops chat if it won't stay up \u2014 so the next on-call volunteer can self-serve instead of waiting for Tom\u00e1s.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

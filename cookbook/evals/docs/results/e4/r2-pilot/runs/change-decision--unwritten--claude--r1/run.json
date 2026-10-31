@@ -1,0 +1,288 @@
+{
+  "study": "e4",
+  "case": "change-decision",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "change-decision--unwritten--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T03:09:26.939221+00:00",
+  "duration_s": 138.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/sessions.md",
+    "larder/sessions.py"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/README.md 2>/dev/null; echo ---; ls /work/docs; echo ---; grep -rl -i \"session\\|logout\\|revoc\" /work/docs 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/README.md 2>/dev/null; echo ---; ls /work/docs; echo ---; grep -rl -i \"session\\|logout\\|revoc\" /work/docs 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rl -i session\\|logout\\|revoc /work/docs"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/adr/0001-keep-sessions-in-the-database.md; echo ====; cat /work/docs/features/sessions.md; echo ====; cat /work/docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/adr/0001-keep-sessions-in-the-database.md; echo ====; cat /work/docs/features/sessions.md; echo ====; cat /work/docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/features/sessions.md; echo ===ARCH===; cat /work/docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *.py"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find . -iname \"*.py\" | xargs grep -l \"session\" -i; echo ---; find . -iname \"*.sql\" -o -iname \"*migration*\" | head -50; echo ---; ls larder; echo ---; find . -path ./node_modules -prune -o -iname \"*.py\" -print | xargs grep -l \"Postgres\\|psycopg\\|sqlalchemy\" -i 2>/dev/null"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*.py\" | xargs grep -l \"session\" -i; echo ---; find . -iname \"*.sql\" -o -iname \"*migration*\" | head -50; echo ---; ls larder; echo ---; find . -path ./node_modules -prune -o -iname \"*.py\" -print | xargs grep -l \"Postgres\\|psycopg\\|sqlalchemy\" -i 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *.sql -o -iname *migration*"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*.py\" | xargs grep -l \"session\" -i; echo ---; find . -iname \"*.sql\" -o -iname \"*migration*\" | head -50; echo ---; ls larder; echo ---; find . -path ./node_modules -prune -o -iname \"*.py\" -print | xargs grep -l \"Postgres\\|psycopg\\|sqlalchemy\" -i 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls larder"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*.py\" | xargs grep -l \"session\" -i; echo ---; find . -iname \"*.sql\" -o -iname \"*migration*\" | head -50; echo ---; ls larder; echo ---; find . -path ./node_modules -prune -o -iname \"*.py\" -print | xargs grep -l \"Postgres\\|psycopg\\|sqlalchemy\" -i 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./node_modules -prune -o -iname *.py -print"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find . -iname \"*.py\" | xargs grep -l \"session\" -i; echo ---; find . -iname \"*.sql\" -o -iname \"*migration*\" | head -50; echo ---; ls larder; echo ---; find . -path ./node_modules -prune -o -iname \"*.py\" -print | xargs grep -l \"Postgres\\|psycopg\\|sqlalchemy\" -i 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "wc",
+      "command": "wc -l larder/*.py; echo ---; cat larder/gateway.py; echo ---CAPTURE---; cat larder/capture.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "wc -l larder/*.py; echo ---; cat larder/gateway.py; echo ---CAPTURE---; cat larder/capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "wc -l larder/*.py; echo ---; cat larder/gateway.py; echo ---CAPTURE---; cat larder/capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/sessions.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/sessions.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -I -c \"\nfrom datetime import datetime, timezone\nfrom larder import sessions as s\n\nnow = datetime(2026,1,1,12,0, tzinfo=timezone.utc)\ncookie = s.sign(42, now)\nassert s.verify(cookie, now) == 42\ns.logout(42)\nassert s.verify(cookie, now) is None, 'old cookie should be dead'\n# fresh login after logout still works\nnew_cookie = s.sign(42, now)\nassert s.verify(new_cookie, now) == 42\nprint('ok')\n\"\n"
+    },
+    {
+      "kind": "other",
+      "tool": "work",
+      "command": "PYTHONPATH=/work python3 -I -c \"\nfrom datetime import datetime, timezone\nfrom larder import sessions as s\n\nnow = datetime(2026,1,1,12,0, tzinfo=timezone.utc)\ncookie = s.sign(42, now)\nassert s.verify(cookie, now) == 42\ns.logout(42)\nassert s.verify(cookie, now) is None, 'old cookie should be dead'\nnew_cookie = s.sign(42, now)\nassert s.verify(new_cookie, now) == 42\nprint('ok')\n\"\n"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -I -c \"\nimport sys; sys.path.insert(0, '/work')\nfrom datetime import datetime, timezone\nfrom larder import sessions as s\n\nnow = datetime(2026,1,1,12,0, tzinfo=timezone.utc)\ncookie = s.sign(42, now)\nassert s.verify(cookie, now) == 42\ns.logout(42)\nassert s.verify(cookie, now) is None, 'old cookie should be dead'\nnew_cookie = s.sign(42, now)\nassert s.verify(new_cookie, now) == 42\nprint('ok')\n\"\n"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -I -c \"\nimport sys, time; sys.path.insert(0, '/work')\nfrom datetime import datetime, timezone\nfrom larder import sessions as s\n\nnow = datetime.now(timezone.utc)\ncookie = s.sign(42, now)\nassert s.verify(cookie, now) == 42\ns.logout(42)\nassert s.verify(cookie, now) is None, 'old cookie should be dead'\ntime.sleep(0.01)\nlater = datetime.now(timezone.utc)\nnew_cookie = s.sign(42, later)\nassert s.verify(new_cookie, later) == 42\nprint('ok')\n\"\n"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "python3 -m pytest -q && git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 777894,
+    "cached": 755097,
+    "output": 11010,
+    "reasoning": 7195
+  },
+  "cost_usd": 0.3522314000000001,
+  "turns": 19,
+  "last_message": "Done. Tests pass (2/2), and I manually verified the logout flow works as intended.\n\n**What I found:** `larder/sessions.py` doesn't actually match `docs/features/sessions.md` / ADR 0001 \u2014 the docs say sessions live in Postgres, but the code is a stateless, self-verifying signed cookie (HMAC over member id + expiry) with no database access at all. So there's no session row to delete on logout.\n\n**What I did:**\n- Added `logout(member_id)` in `larder/sessions.py`. It records the logout moment in an in-process dict, and `verify()` now derives a cookie's issue time (`expires - EXPIRY_MINUTES`) and rejects any cookie issued before the member's last logout. The stolen phone's cookie dies instantly; a legitimate re-login right after still works.\n- Documented this in `docs/features/sessions.md` under new `Logout` and `Known limits` sections, per the repo's own doc conventions \u2014 specifically flagging that since this revocation lives in server memory rather than the documented Postgres table, it only takes effect on the server instance that received the call (the same multi-server problem ADR 0001 was written to avoid), with the workaround of also changing the member's password for full coverage.\n\nWorth knowing: that Postgres/code mismatch is a real discrepancy in the repo someone should resolve \u2014 if sessions are meant to genuinely live in Postgres, logout should eventually delete/mark the row there instead of using this in-memory fallback.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

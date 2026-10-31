@@ -1,0 +1,115 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "sessions-in-memory--no-leads--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:30:27.979200+00:00",
+  "duration_s": 13.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *session* -not -path */.git/*"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*session*\" -not -path \"*/.git/*\" && echo --- && cat docs/README.md 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 98077,
+    "cached": 93229,
+    "output": 799,
+    "reasoning": 93
+  },
+  "cost_usd": 0.046015799999999996,
+  "turns": 6,
+  "last_message": "This directly contradicts an existing ADR: [docs/adr/0001-keep-sessions-in-the-database.md](docs/adr/0001-keep-sessions-in-the-database.md) records that larder runs two servers behind a load balancer, and in-memory sessions caused members to get logged out whenever a request landed on the other server, plus everyone got logged out on every deploy \u2014 so the volunteers stopped deploying during opening hours. Switching to an in-process dict would reintroduce exactly that problem.\n\nI don't want to make that change without you weighing in, since it reverses a deliberate, documented decision. A couple of options if the real goal is speed:\n\n- Keep Postgres as the source of truth but add caching (e.g. a short-lived in-memory cache per server that's invalidated/short-TTL) \u2014 doesn't fully solve cross-server consistency but reduces DB load.\n- Confirm whether larder is still running multiple servers behind a load balancer \u2014 if that's no longer true, the ADR's reasoning no longer applies and we could revisit it properly (update the ADR, not silently bypass it).\n\nHow would you like to proceed?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

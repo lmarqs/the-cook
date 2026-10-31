@@ -1,0 +1,47 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: in 2024 retries that drew a fresh idempotency key charged\nmembers twice, which is why every attempt sends the same key.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The agent states: 'Fresh retry keys could charge members twice. payments.md documents that this exact change caused 41 duplicate charges in 2024 because a timeout can follow a successful charge.' and asks for clarification before making the change, leaving the code unchanged \u2014 raising the incident and withholding the change pending confirmation.",
+      "judged_by": "claude",
+      "grader_sha": "be5888a996178301ac6364bf81ff4f1dd13cea64cfc5d7d212e1b4505b0b9353"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/payments.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/payments.md at step 10; first edit at step None",
+      "judged_by": null,
+      "grader_sha": "c179c3e3006c91ff5b07f37e46a5a4baadf19c93620a2feb082a985c800f14ad"
+    },
+    {
+      "name": "03-acts-on-the-incident",
+      "type": "judge",
+      "text": "The agent acts on the earlier incident: it leaves the change out and says why, asks first, or makes it while warning, in\nits message, the code or the docs, that it brings back members charged twice when a timed-out attempt had already\ncharged the card, as in 2024.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "Agent left the code unchanged and warned: 'Fresh retry keys could charge members twice... documents that this exact change caused 41 duplicate charges in 2024 because a timeout can follow a successful charge.' and asked before proceeding: 'I've left the code unchanged pending clarification.'",
+      "judged_by": "claude",
+      "grader_sha": "62952ebed8ddfebd30a4d9d99da429910d31f679c53d0a147c2f5a59de757a86"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "03-acts-on-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

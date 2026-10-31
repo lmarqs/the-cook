@@ -1,0 +1,150 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "no-leads",
+  "harness": "codex",
+  "run": 2,
+  "source": "",
+  "id": "sessions-in-memory--no-leads--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:31:59.681170+00:00",
+  "duration_s": 58.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adr/0001-keep-sessions-in-process-memory.md",
+    "docs/adr/0001-keep-sessions-in-the-database.md",
+    "docs/adr/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md",
+    "larder/session_store.py",
+    "tests/test_session_store.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*session*' -g '*web*' -g 'README.md' -g 'pyproject.toml' -g 'test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *session* -g *web* -g README.md -g pyproject.toml -g test*"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat docs/README.md && cat larder/session_store.py"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder docs tests"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|session|connection . --glob !docs/README.md --glob !.git/**"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/__init__.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "shell",
+      "command": "cat > larder/session_store.py <<'EOF'\nfrom copy import deepcopy\n\n\nclass InMemorySessions:\n    \"\"\"Sessions held in a dictionary for the lifetime of this web process.\"\"\"\n\n    def __init__(self):\n        self._sessions: dict[str, dict] = {}\n\n    def get(self, session_id: str) -> dict | None:\n        data = self._sessions.get(session_id)\n        return deepcopy(data) if data is not None else None\n\n    def put(self, session_id: str, data: dict) -> None:\n        self._sessions[session_id] = deepcopy(data)\n\n\n# Request handlers share this instance; creating a store per request loses sessions.\nsessions = InMemorySessions()\nEOF\ncat > tests/test_session_store.py <<'EOF'\nfrom larder.session_store import InMemorySessions, sessions\n\n\ndef test_missing_session():\n    assert InMemorySessions().get(\"missing\") is None\n\n\ndef test_process_store_saves_and_replaces_sessions():\n    sessions.put(\"member\", {\"member_id\": 1})\n    assert sessions.get(\"member\") == {\"member_id\": 1}\n\n    sessions.put(\"member\", {\"member_id\": 2})\n    assert sessions.get(\"member\") == {\"member_id\": 2}\n\n\ndef test_data_changes_require_put():\n    store = InMemorySessions()\n    data = {\"items\": [\"rice\"]}\n    store.put(\"member\", data)\n    data[\"items\"].append(\"beans\")\n    retrieved = store.get(\"member\")\n    retrieved[\"items\"].append(\"oats\")\n\n    assert store.get(\"member\") == {\"items\": [\"rice\"]}\n\n\ndef test_separate_stores_do_not_share_sessions():\n    first = InMemorySessions()\n    second = InMemorySessions()\n    first.put(\"member\", {})\n\n    assert first.get(\"member\") == {}\n    assert second.get(\"member\") is None\nEOF\nmv docs/adr/0001-keep-sessions-in-the-database.md docs/adr/0001-keep-sessions-in-process-memory.md\ncat > docs/adr/0001-keep-sessions-in-process-memory.md <<'EOF'\n# Keep sessions in process memory\n\nMaintainers changing session storage should use process memory to remove the Postgres query on each request.\nVolunteers asked for a faster app; this choice accepts the session loss described below.\n\n## Context\n\nIn 2023 larder moved from one server to two behind a load balancer, and sessions stayed in each server's memory.\nMembers were logged out whenever a request reached the other server, and every deploy logged out everyone; the pantry\nvolunteers stopped deploying during opening hours. Sessions were moved to Postgres to survive deploys without adding\nanother service. Volunteers have now requested a dictionary in the web process to remove the database read on each\nrequest. No latency measurements accompany this change.\n\n## Options\n\n- **Postgres**: the previous choice shared sessions across servers and survived restarts. Replaced to remove its\n  per-request session query.\n- **Sticky sessions at the load balancer**: can keep requests on one server, but still loses sessions on restart.\n- **Redis as a session store**: shares sessions across servers, but adds a service for volunteers to operate.\n- **Process memory**: chosen as requested, with no session database queries or additional service.\n\n## Decision\n\nUse the shared `sessions` instance in [session_store.py](../../larder/session_store.py), backed by a dictionary in\none web process.\n\n## Consequences\n\nSession access no longer queries Postgres. Existing database sessions are unavailable to this store. Each process\nhas independent sessions: requests reaching another process cannot find them, and a restart or deploy discards them.\nThe [session limits](../features/sessions.md#known-limits) describe the operational workarounds.\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np = Path('docs/features/sessions.md')\ns = p.read_text().replace('# Sessions\\n', '# Sessions\\n\\nMaintainers use this page to understand login lifetime and storage limits when changing request handling.\\nSessions keep members logged in while they assemble a pantry order.\\n', 1)\ns = s.replace('Sessions live in Postgres ([keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)).', 'Session storage follows [keep sessions in process memory](../adr/0001-keep-sessions-in-process-memory.md).\\nRequest handlers use the shared `sessions` instance in [session_store.py](../../larder/session_store.py).')\ns = s.replace('## Shaped by', '## Known limits\\n\\n- Sessions are independent in each web process. Run a single web process, or use sticky routing to keep a member\\n  on the same process.\\n- Restarts and deploys discard sessions; existing Postgres sessions are not migrated. Members must log in again\\n  and may need to rebuild the pantry order they were assembling. Schedule restarts outside opening hours to reduce\\n  disruption.\\n\\n## Shaped by')\ns = s.replace('[Keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)', '[Keep sessions in process memory](../adr/0001-keep-sessions-in-process-memory.md)')\np.write_text(s)\np = Path('docs/architecture.md')\ns = p.read_text().replace('The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))\\nand queues jobs there for the worker.', 'The web app uses [sessions in process memory](adr/0001-keep-sessions-in-process-memory.md)\\nand queues jobs in Postgres for the worker.')\np.write_text(s)\np = Path('docs/adr/README.md')\ns = p.read_text().replace('[Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.', '[Keep sessions in process memory](0001-keep-sessions-in-process-memory.md): remove the per-request session query.')\np.write_text(s)\nPY\npython3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && rg -n 'PostgresSessions|0001-keep-sessions-in-the-database|sessions live in Postgres|sessions in Postgres' larder docs tests && git status --short"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && rg -n 'PostgresSessions|0001-keep-sessions-in-the-database|sessions live in Postgres|sessions in Postgres' larder docs tests && git status --short"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n PostgresSessions|0001-keep-sessions-in-the-database|sessions live in Postgres|sessions in Postgres larder docs tests"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && rg -n 'PostgresSessions|0001-keep-sessions-in-the-database|sessions live in Postgres|sessions in Postgres' larder docs tests && git status --short"
+    }
+  ],
+  "tokens": {
+    "input": 119443,
+    "cached": 109056,
+    "output": 2155,
+    "reasoning": 204
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Replaced `PostgresSessions` with `InMemorySessions` and a shared process-local `sessions` instance. Updated the docs; all 6 tests pass.\n\nSessions now disappear on restart and aren\u2019t shared across processes. This checkout has no web request handler to wire to the shared instance.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

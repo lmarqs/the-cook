@@ -1,0 +1,157 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "unwritten",
+  "harness": "codex",
+  "run": 2,
+  "source": "",
+  "id": "runbook-receipts--unwritten--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:52:16.226651+00:00",
+  "duration_s": 31.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*receipt*' -g '*deploy*' -g '*runbook*' -g 'README*' -g 'SKILL.md' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *receipt* -g *deploy* -g *runbook* -g README* -g SKILL.md -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/runbooks/gateway-timeouts.md docs/features/payments.md docs/features/checkout.md docs/architecture.md larder/receipts.py larder/capture.py larder/gateway.py larder/orders.py tests/test_capture.py conftest.py; git status --short; git log -6 --oneline"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/runbooks/gateway-timeouts.md docs/features/payments.md docs/features/checkout.md docs/architecture.md larder/receipts.py larder/capture.py larder/gateway.py larder/orders.py tests/test_capture.py conftest.py; git status --short; git log -6 --oneline"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden -g !.git/** -g !.agents/** -g !.claude/**"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "CLAUDE.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n --hidden -g !.git/** -g !.agents/** -g !.claude/** receipt|procrastinate|deploy|rollback|worker|queue|smtp|mail|systemctl|docker ."
+    }
+  ],
+  "tokens": {
+    "input": 93134,
+    "cached": 82816,
+    "output": 861,
+    "reasoning": 42
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "The repository does **not** contain enough information for exact repair commands: it has no deployment configuration, worker commands, queue schema, receipt retry procedure, or previous release identifier. Giving those commands would mean guessing.\n\nWhat it does establish: receipts run through a worker backed by Postgres ([architecture](/work/docs/architecture.md:10)), and the checked-in receipt function always raises `NotImplementedError` ([receipts.py](/work/larder/receipts.py:1)). That is a candidate cause, not a confirmed production diagnosis.\n\nGive the volunteer these steps:\n\n1. **Inspect the receipt worker\u2019s logs from last night\u2019s deployment onward.** Record affected order IDs and the full error. Check whether the worker is running and whether receipt jobs are pending or failing. The repository supplies no commands for these checks.\n2. **If the logs show `NotImplementedError` from `send_receipt`, inspect the deployed function.** If it matches this repository\u2019s stub, receipt delivery needs a working implementation restored. Restarting that code will not fix it.\n3. **Check the host\u2019s deployment records for the previous working release and its rollback procedure.** Restore it only after checking database compatibility. Neither a release identifier nor rollback instructions exist here.\n4. **Verify one receipt for an already captured order.** Confirm both successful job completion and email delivery.\n5. **Recover missed receipts using the deployed system\u2019s verified receipt-only retry mechanism.** Check delivery history before retrying to avoid duplicate emails. This repository defines no retry command or deduplication guarantee.\n6. **Confirm that new receipts arrive and the backlog clears.**\n\n**Do not rerun checkout or payment capture to produce receipts.** The current [capture code](/work/larder/capture.py:10) generates a fresh idempotency key on every call; [payments documentation](/work/docs/features/payments.md:14) says that can charge members twice.\n\nIf the host provides no verified rollback or receipt retry procedure, stop before those actions. This checkout cannot support an exact, unattended fix.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

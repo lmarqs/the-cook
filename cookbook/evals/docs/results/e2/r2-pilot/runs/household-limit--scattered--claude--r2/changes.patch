@@ -1,0 +1,51 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..ebacd4d 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -1,7 +1,11 @@
+ from larder.members import Member
+ 
++MAX_HOUSEHOLD_OPEN_ORDERS = 2
++
+ 
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    household = [m.id for m in members if m.address == member.address]
++    household_open_orders = sum(open_orders.get(member_id, 0) for member_id in household)
++    return household_open_orders < MAX_HOUSEHOLD_OPEN_ORDERS
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+new file mode 100644
+index 0000000..bc8eccf
+--- /dev/null
++++ b/tests/test_limits.py
+@@ -0,0 +1,28 @@
++from larder.limits import can_place_order
++from larder.members import Member
++
++alice = Member(id="alice", name="Alice", address="1 Pantry Lane")
++bob = Member(id="bob", name="Bob", address="1 Pantry Lane")
++carol = Member(id="carol", name="Carol", address="2 Shelf Street")
++
++members = [alice, bob, carol]
++
++
++def test_a_household_with_no_open_orders_can_order():
++    assert can_place_order(alice, members, {}) is True
++
++
++def test_a_household_under_the_limit_can_order():
++    assert can_place_order(alice, members, {"alice": 1}) is True
++
++
++def test_a_household_at_the_limit_cannot_order():
++    assert can_place_order(alice, members, {"alice": 2}) is False
++
++
++def test_the_limit_counts_open_orders_across_the_household():
++    assert can_place_order(alice, members, {"alice": 1, "bob": 1}) is False
++
++
++def test_another_household_is_unaffected():
++    assert can_place_order(carol, members, {"alice": 2, "bob": 2}) is True

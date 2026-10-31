@@ -1,0 +1,112 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 4945f30..af877eb 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -1,7 +1,7 @@
+ # Payments
+ 
+ For whoever changes how larder charges a card, or answers a member whose capture failed or charged twice. Larder
+-captures the authorized amount once a pantry order is confirmed. Its retries address Friday gateway slowdowns;
++captures the authorized amount once a pantry order is confirmed. Its retries handle gateway timeouts;
+ reusing an idempotency key prevents the duplicate charges seen in 2024.
+ 
+ ## Capture
+@@ -11,15 +11,17 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, with a growing pause between attempts. The
+-[capture loop](../../larder/capture.py) defines the attempt limit and delays.
++A capture that times out is tried again without a pause between attempts. The
++[capture loop](../../larder/capture.py) defines the attempt limit.
+ 
+ Friday gateway slowdowns from 17:00 to 19:00 left 58 confirmed pantry orders uncharged, requiring a volunteer to
+ capture them by hand the next morning. The previous three attempts ran within a second and all hit the same slow
+ period. A sandbox replay with more attempts and growing pauses would have recovered 57 of those 58 captures.
+-The team accepted up to 20 seconds of extra waiting on the confirmation page to reduce manual captures. Switching
+-gateways was ruled out because the contract runs through December 2026. These findings and the accepted trade-off
+-are recorded in [issue 40](../../notes/issue-40.md).
++The team initially accepted up to 20 seconds of extra waiting on the confirmation page to reduce manual captures.
++Members subsequently reported that the confirmation page hangs on Fridays, so capture now returns to immediate
++retries to remove the added waiting. This accepts the risk of more captures exhausting their retries during the
++same slowdown and requiring manual recovery through the [gateway-timeout runbook](../runbooks/gateway-timeouts.md).
++Switching gateways was ruled out because the contract runs through December 2026.
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+diff --git a/larder/capture.py b/larder/capture.py
+index 36ba4b5..fe2bcf1 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,11 +1,9 @@
+-import time
+ import uuid
+ 
+ from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
+-ATTEMPTS = 5
+-BACKOFF_SECONDS = 2
++ATTEMPTS = 3
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+@@ -17,5 +15,4 @@ def capture(order: Order, gateway: Gateway) -> str:
+         except GatewayTimeout:
+             if attempt == ATTEMPTS:
+                 raise
+-            time.sleep(BACKOFF_SECONDS * attempt)
+     raise AssertionError("unreachable")
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..c56fa40 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,9 @@
++import time
++
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +21,38 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++class TimingOutGateway(FakeGateway):
++    def __init__(self, failures):
++        super().__init__()
++        self.failures = failures
++        self.timeout = GatewayTimeout("gateway did not answer")
++
++    def capture(self, order_id, amount_cents, idempotency_key):
++        charge_id = super().capture(order_id, amount_cents, idempotency_key)
++        if len(self.calls) <= self.failures:
++            raise self.timeout
++        return charge_id
++
++
++@pytest.mark.parametrize("failures", [1, 2, 3])
++def test_capture_retries_immediately_with_the_same_key(monkeypatch, failures):
++    def unexpected_sleep(seconds):
++        pytest.fail("capture must not pause between attempts")
++
++    monkeypatch.setattr(time, "sleep", unexpected_sleep)
++    gateway = TimingOutGateway(failures)
++
++    if failures == 3:
++        with pytest.raises(GatewayTimeout) as error:
++            capture(Order("o1", 1250), gateway)
++        assert error.value is gateway.timeout
++    else:
++        assert capture(Order("o1", 1250), gateway) == "ch_1"
++
++    assert len(gateway.calls) == min(failures + 1, 3)
++    assert all(call[:2] == ("o1", 1250) for call in gateway.calls)
++    keys = {call[2] for call in gateway.calls}
++    assert len(keys) == 1
++    assert next(iter(keys))

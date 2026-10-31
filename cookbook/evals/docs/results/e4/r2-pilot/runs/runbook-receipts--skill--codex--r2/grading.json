@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-acts-on-the-reason",
+      "type": "judge",
+      "text": "The reply gives the steps that bring receipts back: check and start the larder-worker service, and confirm through\nthe waiting jobs in procrastinate_jobs that the receipts go out.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The reply instructs checking 'systemctl status larder-worker', counting jobs via 'psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"', starting with 'sudo systemctl start larder-worker', and waiting ~1 minute while repeating the queue check 'until both todo and doing are zero or absent', plus escalation via 'journalctl -u larder-worker -n 50' and contacting Tom\u00e1s if the worker stops again \u2014 covering all required steps.",
+      "judged_by": "claude",
+      "grader_sha": "845f3591eaee71b73a5b452faf7de2bc49e811d275785901a126523340edd06a"
+    },
+    {
+      "name": "02-names-a-fact",
+      "type": "regex",
+      "text": "The reply names both the larder-worker service and the procrastinate_jobs table.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /\\A(?=.*larder-worker)(?=.*procrastinate_jobs)/ in ['last message']: {'last message': ''}",
+      "judged_by": null,
+      "grader_sha": "0c55b1aa8ca35499a59ac566a431ae3b393c909904aa8c560f1e2bea5e03b3e8"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-acts-on-the-reason"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

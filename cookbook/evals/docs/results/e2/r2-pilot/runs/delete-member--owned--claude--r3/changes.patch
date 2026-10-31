@@ -1,0 +1,13 @@
+diff --git a/larder/members.py b/larder/members.py
+index 408f67a..a15e6b7 100644
+--- a/larder/members.py
++++ b/larder/members.py
+@@ -26,4 +26,7 @@ class Store:
+ 
+ def delete_member(member_id: str, store: Store) -> None:
+     """Deletes a member's account when they ask for it."""
+-    raise NotImplementedError
++    del store.members[member_id]
++    for order in store.orders:
++        if order.member_id == member_id:
++            order.member_id = None

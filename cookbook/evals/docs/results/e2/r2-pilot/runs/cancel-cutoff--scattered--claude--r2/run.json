@@ -1,0 +1,142 @@
+{
+  "study": "e2",
+  "case": "cancel-cutoff",
+  "arm": "scattered",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "cancel-cutoff--scattered--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:51:55.964155+00:00",
+  "duration_s": 14.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/cancellation.py"
+  ],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "larder/cancellation.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/larder/cancellation.py; echo ---; find /work -iname \"*cancel*\""
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -iname *cancel*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/cancellation.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/features/cancellation.md; echo ---TESTS---; find /work -iname \"*test*cancel*\"; grep -rl \"can_cancel\" /work --include=*.py"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -iname *test*cancel*"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rl can_cancel /work --include=*.py"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -iname *test* -path *cancel*"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work -name test_*.py -o -name *_test.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rl can_cancel /work"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/cancellation.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 184386,
+    "cached": 182884,
+    "output": 835,
+    "reasoning": 42
+  },
+  "cost_usd": 0.050910800000000006,
+  "turns": 6,
+  "last_message": "Tests pass. `can_cancel` now returns true as long as `now` is at or before 2 hours prior to pickup, matching the documented cutoff (and treating the exact cutoff moment as still cancelable, with the hard boundary at \"not after\").",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

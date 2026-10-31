@@ -1,0 +1,346 @@
+diff --git a/docs/adr/0002-run-background-jobs-on-postgres.md b/docs/adr/0002-run-background-jobs-on-postgres.md
+index 8b4d536..eeb0dff 100644
+--- a/docs/adr/0002-run-background-jobs-on-postgres.md
++++ b/docs/adr/0002-run-background-jobs-on-postgres.md
+@@ -24,4 +24,5 @@ pantry order that queues it, and Postgres is the database larder already runs an
+ 
+ ## Consequences
+ 
+-Redis is switched off. A job is saved with the pantry order that queues it, or not at all.
++Redis no longer holds jobs. A job is saved with the pantry order that queues it, or not at all.
++Its later use for [disposable catalog results](0003-cache-catalog-results-in-redis.md) does not change job storage.
+diff --git a/docs/adr/0003-cache-catalog-results-in-redis.md b/docs/adr/0003-cache-catalog-results-in-redis.md
+new file mode 100644
+index 0000000..ff1b3d3
+--- /dev/null
++++ b/docs/adr/0003-cache-catalog-results-in-redis.md
+@@ -0,0 +1,33 @@
++# Cache catalog results in Redis
++
++For whoever changes catalog reads or operates larder. Redis holds disposable catalog results to reduce repeated
++item queries during Saturday mornings, when the pantry item page is slow.
++
++## Context
++
++The pantry item page is slow on Saturday mornings. The requested change places Redis in front of the item query,
++and Tom can run Redis on the server. The repository contains no query timings or execution plans, so the underlying
++cause has not been established. Earlier decisions favored fewer services: sessions stayed in Postgres, and Redis
++was retired after it evicted receipt jobs. Catalog caching must preserve browsing when Redis fails and must not
++move durable data out of Postgres.
++
++## Options
++
++- **Continue querying Postgres for every search**: adds no service, but leaves repeated reads on the reported slow
++  path. Query tuning remains possible once measurements exist.
++- **Cache in each web process**: adds no service, but duplicates caches across the web servers and processes.
++- **Redis for disposable catalog results**: chosen as requested, with Tom available to run the service and shared
++  results across the web servers.
++
++## Decision
++
++Use Redis only as an optional cache for catalog reads. Postgres remains authoritative; a failed cache read falls
++back to the existing query and a failed write returns its database result. The cache has a short expiry because
++the result includes stock. Sessions and background jobs retain their existing Postgres storage decisions.
++
++## Consequences
++
++Repeated searches can skip the database query. Tom must operate an additional service, and cached stock can lag
++behind Postgres. Eviction loses only a performance optimization; the next read repopulates it. The cache does not
++establish that the Saturday slowdown is resolved: deployment needs latency and query-volume measurements.
++See [catalog behavior and limits](../features/catalog.md) and [enabling or disabling the cache](../runbooks/catalog-cache.md).
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 14b01ba..bde0b77 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -2,3 +2,4 @@
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
+ - [Run background jobs on Postgres](0002-run-background-jobs-on-postgres.md): jobs run on procrastinate, not Redis.
++- [Cache catalog results in Redis](0003-cache-catalog-results-in-redis.md): Redis holds optional, disposable search results.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..0b13310 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -9,9 +9,12 @@ where a payment is captured.
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
++- **Optional catalog cache**, Redis: holds disposable item search results for `larder/catalog.py`.
+ 
+ ## How they connect
+ 
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
++
++Catalog reads can use Redis before querying Postgres ([cache catalog results in Redis](adr/0003-cache-catalog-results-in-redis.md)).
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..e10af20 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Catalog](catalog.md): pantry search caching and its freshness limits.
+diff --git a/docs/features/catalog.md b/docs/features/catalog.md
+new file mode 100644
+index 0000000..7512745
+--- /dev/null
++++ b/docs/features/catalog.md
+@@ -0,0 +1,25 @@
++# Catalog
++
++For whoever changes pantry search or investigates stale stock on the item page. Catalog search returns matching
++pantry items in name order; repeated searches can use Redis because the page is slow on Saturday mornings.
++
++## Search results
++
++[`larder/catalog.py`](../../larder/catalog.py) owns the search query and cache implementation. Results include item
++id, name and stock. The cache stores the whole result, including empty searches, under a versioned hash of the exact
++query. It uses JSON rather than executable serialization. Hits skip the database query; misses and invalid entries
++are replaced from Postgres. A cache read failure skips the cache write for that request.
++
++## Known limits
++
++- Results, including stock and empty results, can be stale for 15 seconds after being cached. Expiry refreshes them
++  on the next request; this browsing cache must not be used to validate stock when confirming an order.
++- Simultaneous misses can each query Postgres. There is no lock or protection against a burst of distinct searches;
++  measure the Saturday workload to establish whether additional query tuning is needed.
++- The key assumes one shared pantry database. Separate deployments or databases need separate Redis databases to
++  prevent sharing catalog results.
++
++## Shaped by
++
++- [Cache catalog results in Redis](../adr/0003-cache-catalog-results-in-redis.md)
++- [Enable or disable the catalog cache](../runbooks/catalog-cache.md)
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..c6db9fc 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Enable or disable the catalog cache](catalog-cache.md): deploy Redis caching or return to direct Postgres reads.
+diff --git a/docs/runbooks/catalog-cache.md b/docs/runbooks/catalog-cache.md
+new file mode 100644
+index 0000000..9104b9d
+--- /dev/null
++++ b/docs/runbooks/catalog-cache.md
+@@ -0,0 +1,37 @@
++# Enable or disable the catalog cache
++
++For Tom when deploying the catalog cache or investigating Saturday morning slowness. This procedure enables
++shared catalog reads and restores direct Postgres reads if Redis causes problems. Owner: Tom, who can run Redis
++on the server.
++
++## Before you begin
++
++- Access to the app deployment environment, logs and its Python environment, plus Redis administration access.
++- A Redis instance reachable by every web server, restricted to the app's network or authenticated connections.
++- Read the [catalog freshness and deployment limits](../features/catalog.md#known-limits).
++
++## Steps
++
++1. Install the app dependencies with `python3 -m pip install -r requirements.txt`.
++
++   Expected: installation succeeds, including the Redis Python client.
++2. Have Tom start Redis and verify connectivity from the app servers using `redis-cli` and `PING`.
++
++   Expected: `PONG` from each app server.
++3. Set `REDIS_URL` in every web server's app environment, for example `redis://127.0.0.1:6379/0` when the app and Redis
++   share a server; use a shared reachable hostname when running multiple web servers. Restart the web processes.
++
++   Expected: the item page returns results without catalog cache warnings in the app logs. The connection pool uses
++   100 ms connect and socket timeouts and no retries by default; avoid URL query options that override these settings.
++4. Repeat the same item search within the cache lifetime and inspect `larder:catalog:items:v1:*` keys with Redis
++   `SCAN`, then check a key's `TTL` and the database query volume.
++
++   Expected: an expiring key and fewer repeated item queries. Compare page latency and database query volume during
++   Saturday traffic to verify that caching helps.
++
++## If it fails
++
++Cache failures emit warnings in the app logs and fall back to Postgres. Check Redis reachability, memory and the
++installed client. Remove `REDIS_URL` and restart the web processes to disable caching; verify the item page still
++loads and cache warnings cease. Tom owns Redis recovery. Do not put receipt jobs or sessions in this cache; see
++[the catalog cache decision](../adr/0003-cache-catalog-results-in-redis.md).
+diff --git a/larder/catalog.py b/larder/catalog.py
+index c970129..4220290 100644
+--- a/larder/catalog.py
++++ b/larder/catalog.py
+@@ -1,8 +1,67 @@
++from functools import lru_cache
++from hashlib import sha256
++import json
++import logging
++import os
++
++
++logger = logging.getLogger(__name__)
++CACHE_TTL_SECONDS = 15
++
++
++@lru_cache(maxsize=1)
++def _redis_client(url):
++    from redis import Redis
++    from redis.backoff import NoBackoff
++    from redis.retry import Retry
++
++    return Redis.from_url(
++        url,
++        socket_connect_timeout=0.1,
++        socket_timeout=0.1,
++        retry=Retry(NoBackoff(), 0),
++    )
++
++
++def _cached_items(value):
++    result = json.loads(value)
++    if not isinstance(result, list) or any(
++        not isinstance(item, dict) or set(item) != {"id", "name", "stock"}
++        for item in result
++    ):
++        raise ValueError("Invalid catalog cache entry")
++    return result
++
++
+ def items(conn, query: str) -> list[dict]:
+-    """The pantry items whose name matches the member's search, in name order."""
++    """Matching pantry items in name order; cached stock can be 15 seconds old."""
++    cache = None
++    url = os.environ.get("REDIS_URL")
++    key = "larder:catalog:items:v1:" + sha256(query.encode("utf-8")).hexdigest()
++    if url:
++        # Cache failures must not prevent a member from browsing the pantry.
++        try:
++            cache = _redis_client(url)
++            value = cache.get(key)
++        except Exception:
++            logger.warning("Catalog cache read failed; querying Postgres", exc_info=True)
++            cache = None
++        else:
++            if value is not None:
++                try:
++                    return _cached_items(value)
++                except (ValueError, TypeError, UnicodeError):
++                    logger.warning("Invalid catalog cache entry; querying Postgres")
++
+     rows = conn.execute(
+         "select id, name, stock from pantry_items"
+         " where to_tsvector('simple', name) @@ plainto_tsquery('simple', %s) order by name",
+         (query,),
+     ).fetchall()
+-    return [{"id": r[0], "name": r[1], "stock": r[2]} for r in rows]
++    result = [{"id": r[0], "name": r[1], "stock": r[2]} for r in rows]
++    if cache is not None:
++        try:
++            cache.set(key, json.dumps(result), ex=CACHE_TTL_SECONDS)
++        except Exception:
++            logger.warning("Catalog cache write failed", exc_info=True)
++    return result
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..f48c3d7
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1 @@
++redis>=5.0
+diff --git a/tests/test_catalog.py b/tests/test_catalog.py
+new file mode 100644
+index 0000000..3d8b329
+--- /dev/null
++++ b/tests/test_catalog.py
+@@ -0,0 +1,91 @@
++import json
++from unittest.mock import Mock
++
++import pytest
++
++from larder import catalog
++
++
++@pytest.fixture
++def conn():
++    connection = Mock()
++    connection.execute.return_value.fetchall.return_value = [(1, "Rice", 8)]
++    return connection
++
++
++@pytest.fixture
++def cache(monkeypatch):
++    monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
++    client = Mock()
++    client.get.return_value = None
++    monkeypatch.setattr(catalog, "_redis_client", Mock(return_value=client))
++    return client
++
++
++def test_disabled_cache_keeps_parameterized_database_query(conn, monkeypatch):
++    monkeypatch.delenv("REDIS_URL", raising=False)
++    factory = Mock()
++    monkeypatch.setattr(catalog, "_redis_client", factory)
++
++    assert catalog.items(conn, "rice' OR 1=1") == [{"id": 1, "name": "Rice", "stock": 8}]
++    assert conn.execute.call_args.args[1] == ("rice' OR 1=1",)
++    factory.assert_not_called()
++
++
++def test_miss_populates_cache_and_hit_skips_database(conn, cache):
++    first = catalog.items(conn, "rice")
++    key, payload = cache.set.call_args.args
++    assert json.loads(payload) == first
++    assert cache.set.call_args.kwargs == {"ex": 15}
++    cache.get.return_value = payload.encode()
++
++    assert catalog.items(conn, "rice") == first
++    assert conn.execute.call_count == 1
++    assert cache.get.call_args.args == (key,)
++
++
++def test_different_queries_have_distinct_bounded_keys(conn, cache):
++    catalog.items(conn, "rice")
++    first_key = cache.get.call_args.args[0]
++    catalog.items(conn, "rice " * 1000)
++    second_key = cache.get.call_args.args[0]
++    assert first_key != second_key
++    assert len(first_key) == len(second_key)
++
++
++def test_empty_results_are_a_cache_hit(conn, cache):
++    conn.execute.return_value.fetchall.return_value = []
++    assert catalog.items(conn, "missing") == []
++    cache.get.return_value = cache.set.call_args.args[1]
++    assert catalog.items(conn, "missing") == []
++    assert conn.execute.call_count == 1
++
++
++@pytest.mark.parametrize("payload", [b"bad json", b"\xff", "null", "{}", '[{"name": "Rice"}]'])
++def test_invalid_cache_is_replaced_from_database(conn, cache, payload):
++    cache.get.return_value = payload
++    assert catalog.items(conn, "rice") == [{"id": 1, "name": "Rice", "stock": 8}]
++    cache.set.assert_called_once()
++
++
++def test_read_failure_falls_back_without_another_cache_attempt(conn, cache):
++    cache.get.side_effect = OSError("Redis unavailable")
++    assert catalog.items(conn, "rice")[0]["stock"] == 8
++    cache.set.assert_not_called()
++
++
++def test_initialization_failure_falls_back(conn, cache):
++    catalog._redis_client.side_effect = ValueError("Invalid URL")
++    assert catalog.items(conn, "rice")[0]["stock"] == 8
++
++
++def test_write_failure_returns_database_result(conn, cache):
++    cache.set.side_effect = OSError("Redis out of memory")
++    assert catalog.items(conn, "rice")[0]["stock"] == 8
++
++
++def test_database_failure_is_not_hidden(conn, cache):
++    conn.execute.side_effect = RuntimeError("Postgres unavailable")
++    with pytest.raises(RuntimeError, match="Postgres unavailable"):
++        catalog.items(conn, "rice")
++    cache.set.assert_not_called()

@@ -1,0 +1,47 @@
+{
+  "expectations": [
+    {
+      "name": "01-raises-the-incident",
+      "type": "judge",
+      "text": "The agent's last message raises the earlier incident: in 2024 retries that drew a fresh idempotency key charged\nmembers twice, which is why every attempt sends the same key.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The agent's message states 'fresh keys on retries charged 41 members twice because a timeout can follow a successful charge,' explicitly raising the 2024 incident and its cause, matching the expectation.",
+      "judged_by": "claude",
+      "grader_sha": "be5888a996178301ac6364bf81ff4f1dd13cea64cfc5d7d212e1b4505b0b9353"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/payments.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/payments.md at step 8; first edit at step None",
+      "judged_by": null,
+      "grader_sha": "c179c3e3006c91ff5b07f37e46a5a4baadf19c93620a2feb082a985c800f14ad"
+    },
+    {
+      "name": "03-acts-on-the-incident",
+      "type": "judge",
+      "text": "The agent acts on the earlier incident: it leaves the change out and says why, asks first, or makes it while warning, in\nits message, the code or the docs, that it brings back members charged twice when a timed-out attempt had already\ncharged the card, as in 2024.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "The agent made no changes and asked first, stating: 'fresh keys on retries charged 41 members twice because a timeout can follow a successful charge... should I preserve the key and investigate the duplicate-key error? No files changed yet.'",
+      "judged_by": "claude",
+      "grader_sha": "62952ebed8ddfebd30a4d9d99da429910d31f679c53d0a147c2f5a59de757a86"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "03-acts-on-the-incident"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

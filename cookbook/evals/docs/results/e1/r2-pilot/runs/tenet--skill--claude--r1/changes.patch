@@ -1,0 +1,77 @@
+diff --git a/docs/adr/0003-search-pantry-items-in-postgres.md b/docs/adr/0003-search-pantry-items-in-postgres.md
+new file mode 100644
+index 0000000..398040a
+--- /dev/null
++++ b/docs/adr/0003-search-pantry-items-in-postgres.md
+@@ -0,0 +1,38 @@
++# Search pantry items in Postgres
++
++For whoever changes item search or proposes a search service. Pantry item search runs on Postgres full-text search,
++not Elasticsearch, because a third service in a year would need a volunteer to run it, and Postgres already does the
++job.
++
++## Context
++
++In October 2025 a volunteer reported that searching the pantry for "rice" took four seconds and missed "Rice,
++brown"; another volunteer agreed it was painful on the phone. Elasticsearch was proposed to fix both, with a
++volunteer ready to set it up that weekend.
++
++An ops volunteer raised the operating question before adding it: who runs the service when that volunteer is away.
++Larder had been here twice. In 2023, Redis proposed as a session store was turned down because only one volunteer
++would have run it ([keep sessions in the database](0001-keep-sessions-in-the-database.md)). In March 2025, Redis
++holding the Celery job queue evicted 300 receipt jobs one Saturday night, and the one volunteer who could restore it
++spent a day resending them by hand ([run background jobs on Postgres](0002-run-background-jobs-on-postgres.md)). Both
++times Postgres, the database larder already runs, did the job instead. This was the third time in the year the same
++argument for a new service came up, which is why it is now written down as a tenet: [larder runs one database and one
++web app](../philosophy.md#larder-runs-one-database-and-one-web-app). Two forces judge the options: search must be
++fast and find near-matches such as "Rice, brown" for a search on "rice", and the volunteers keep the number of
++services they operate down.
++
++## Options
++
++- **Elasticsearch**: fast relevance ranking and fuzzy matching; lost because it is a new service to run, and nobody
++  could name a second volunteer able to restore it, the same objection that turned down Redis twice before.
++- **Postgres full-text search**: chosen.
++
++## Decision
++
++Pantry item search uses Postgres full-text search on the item name, because it brings a search for "rice" down to
++40 ms and finds "Rice, brown", without adding a service to run.
++
++## Consequences
++
++Search stays inside the database already backed up nightly, with no new service to operate. Matching is limited to
++what Postgres's text-search dictionaries cover, which may need tuning as the pantry's item names grow.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 14b01ba..854a44e 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -2,3 +2,5 @@
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
+ - [Run background jobs on Postgres](0002-run-background-jobs-on-postgres.md): jobs run on procrastinate, not Redis.
++- [Search pantry items in Postgres](0003-search-pantry-items-in-postgres.md): item search uses Postgres full-text
++  search, not Elasticsearch.
+diff --git a/docs/philosophy.md b/docs/philosophy.md
+new file mode 100644
+index 0000000..7488add
+--- /dev/null
++++ b/docs/philosophy.md
+@@ -0,0 +1,17 @@
++# Philosophy
++
++For whoever proposes adding a service, a dependency or a store to larder. It holds the tenets that guide the
++decisions: what the team favors when options conflict. Written after the same argument for a new service came up a
++third time in 2025 and Nadia asked for it to be written down so a proposal starts from it instead of rediscovering it.
++
++## Tenets
++
++### Larder runs one database and one web app
++
++A new service is rejected unless it does something Postgres cannot, and at least two volunteers can restore it; a
++hosted service nobody has to run, such as the card gateway, is not a new service under this tenet. It rules out
++adding a service for speed or convenience alone when Postgres can be made to do the job, and it rules out a service
++only one volunteer knows how to run. Applied in
++[keep sessions in the database](adr/0001-keep-sessions-in-the-database.md),
++[run background jobs on Postgres](adr/0002-run-background-jobs-on-postgres.md) and
++[search pantry items in Postgres](adr/0003-search-pantry-items-in-postgres.md).

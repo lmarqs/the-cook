@@ -1,0 +1,142 @@
+{
+  "study": "e2",
+  "case": "order-amount",
+  "arm": "scattered",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "order-amount--scattered--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:49:25.771352+00:00",
+  "duration_s": 19.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/pantry.py"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -i pantry"
+    },
+    {
+      "kind": "read",
+      "path": "larder/pantry.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pantry-orders.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *test*pantry* -o -iname *pantry*test*"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v .git"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rl amount_cents --include=*.py ."
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/pantry.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 268169,
+    "cached": 258430,
+    "output": 1215,
+    "reasoning": 225
+  },
+  "cost_usd": 0.10276,
+  "turns": 11,
+  "last_message": "Tests pass. `amount_cents` now sums `quantity * price_cents` across the order's lines \u2014 the prices the member saw when confirming \u2014 and deliberately ignores `catalog`, per `docs/features/pantry-orders.md`'s rule that capture must never use the catalog's current prices.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

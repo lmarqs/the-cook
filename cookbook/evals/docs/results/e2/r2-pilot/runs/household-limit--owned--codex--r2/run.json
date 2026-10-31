@@ -1,0 +1,145 @@
+{
+  "study": "e2",
+  "case": "household-limit",
+  "arm": "owned",
+  "harness": "codex",
+  "run": 2,
+  "source": "",
+  "id": "household-limit--owned--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T01:42:28.360146+00:00",
+  "duration_s": 30.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/limits.py",
+    "tests/test_limits.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*limits*' -g 'README.md' -g '*.py' -g '*.md'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *limits* -g README.md -g *.py -g *.md"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/limits.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/members.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/ordering-limits.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md docs/README.md larder/limits.py larder/orders.py larder/members.py docs/features/ordering-limits.md; git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/households.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "conftest.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n address|can_place_order|household|limits larder tests README.md docs/features/checkout.md"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g pyproject.toml -g pytest.ini -g setup.cfg"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/limits.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_limits.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/limits.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 105308,
+    "cached": 96128,
+    "output": 1225,
+    "reasoning": 103
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Implemented `can_place_order` with normalized household address matching and a two-open-order limit. Added tests for limits, address normalization, and separate households.\n\n`python3 -m pytest -q`: all 12 tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

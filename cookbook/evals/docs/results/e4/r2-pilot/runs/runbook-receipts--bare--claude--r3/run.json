@@ -1,0 +1,94 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 3,
+  "source": "e1/r2-pilot/runs/runbook-receipts--bare--claude--r3",
+  "id": "runbook-receipts--bare--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T03:03:21.144190+00:00",
+  "duration_s": 9.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *.md"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find . -iname \"*.md\" | xargs grep -liE \"receipt|deploy|runbook|on.?call\" 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 95728,
+    "cached": 87810,
+    "output": 575,
+    "reasoning": 26
+  },
+  "cost_usd": 0.054972,
+  "turns": 3,
+  "last_message": "Here's the exact runbook (`docs/runbooks/receipts-stopped.md`) \u2014 this symptom matches it precisely, since a deploy restarts the web app but not `larder-worker`:\n\n1. **Check the worker:**\n   ```\n   systemctl status larder-worker\n   ```\n   Expect `active (running)`. If it shows `inactive (dead)`, that's the cause.\n\n2. **Confirm a backlog built up:**\n   ```\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Expect a non-zero `todo` count and little/no `doing`.\n\n3. **Start the worker:**\n   ```\n   sudo systemctl start larder-worker\n   ```\n\n4. **Watch it drain:** re-run the step-2 query every minute or so until `todo` hits 0. A few `failed` rows are fine (usually bounced emails for members with bad addresses) \u2014 not the problem.\n\n**If it fails:** if the worker goes back to `inactive (dead)` right after starting, something else is crashing it. Run `journalctl -u larder-worker -n 50` to see why, and ask in `#larder-ops`.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

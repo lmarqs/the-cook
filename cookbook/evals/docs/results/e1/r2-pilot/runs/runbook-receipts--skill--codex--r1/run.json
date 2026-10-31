@@ -1,0 +1,171 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "codex",
+  "run": 1,
+  "source": "",
+  "id": "runbook-receipts--skill--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T00:21:58.599139+00:00",
+  "duration_s": 57.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "README.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'README.md' -g '*receipt*' -g '*on*call*' -g '*runbook*' -g 'SKILL.md'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g README.md -g *receipt* -g *on*call* -g *runbook* -g SKILL.md"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs larder tests"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/templates/runbook.template.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/references/runbooks.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !\\.git/** -g !\\.agents/**"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n receipt|worker|deploy|procrastinate|Tom\u00e1s|on.call docs larder tests notes"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "rg --files -g '!\\.git/**' -g '!\\.agents/**'; rg -n 'receipt|worker|deploy|procrastinate|Tom\u00e1s|on.call' docs larder tests notes; cat docs/runbooks/gateway-timeouts.md docs/features/payments.md docs/features/checkout.md docs/architecture.md docs/glossary.md; git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nimport re\nfrom pathlib import Path\npaths = [Path('README.md'), Path('docs/runbooks/README.md'), Path('docs/runbooks/receipts-stopped.md')]\nfor path in paths:\n    for target in re.findall(r'\\[[^\\]]+\\]\\(([^)]+)\\)', path.read_text()):\n        if '://' not in target:\n            assert (path.parent / target.split('#')[0]).exists(), (path, target)\nprint('All links in changed pages resolve.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat; python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check; git diff --stat; python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 122455,
+    "cached": 111616,
+    "output": 2245,
+    "reasoning": 226
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added the [receipts recovery runbook](/work/docs/runbooks/receipts-stopped.md), linked from the README and runbook index.\n\nIt covers worker recovery, queue monitoring, delivery confirmation, and escalation to Tom\u00e1s. Missing host access details and backup contact are explicitly flagged.\n\nValidation: links resolve, whitespace checks pass, and both tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

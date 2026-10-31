@@ -1,0 +1,114 @@
+{
+  "study": "e2",
+  "case": "cancel-cutoff",
+  "arm": "owned",
+  "harness": "codex",
+  "run": 1,
+  "source": "",
+  "id": "cancel-cutoff--owned--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T01:50:21.073099+00:00",
+  "duration_s": 23.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/cancellation.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*cancellation*' -g 'README.md' -g 'pyproject.toml' -g 'test*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *cancellation* -g README.md -g pyproject.toml -g test*"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat AGENTS.md larder/cancellation.py docs/README.md docs/features/cancellation.md && rg --files larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/cancellation.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/cancellation.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files larder tests"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g *toml -g *cfg -g *ini"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/cancellation.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && python3 - <<'PY'\nfrom datetime import datetime, timedelta\nfrom larder.cancellation import can_cancel\n\npickup = datetime(2026, 10, 30, 12)\ncutoff = pickup - timedelta(hours=2)\nassert can_cancel(pickup, cutoff - timedelta(microseconds=1))\nassert can_cancel(pickup, cutoff)\nassert not can_cancel(pickup, cutoff + timedelta(microseconds=1))\nprint('Cancellation cutoff checks passed.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && python3 - <<'PY'\nfrom datetime import datetime, timedelta\nfrom larder.cancellation import can_cancel\n\npickup = datetime(2026, 10, 30, 12)\ncutoff = pickup - timedelta(hours=2)\nassert can_cancel(pickup, cutoff - timedelta(microseconds=1))\nassert can_cancel(pickup, cutoff)\nassert not can_cancel(pickup, cutoff + timedelta(microseconds=1))\nprint('Cancellation cutoff checks passed.')\nPY"
+    }
+  ],
+  "tokens": {
+    "input": 82281,
+    "cached": 76032,
+    "output": 493,
+    "reasoning": 24
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Implemented `can_cancel` with the documented two-hour cutoff, allowing cancellation exactly at the cutoff.\n\nValidation: all 2 tests pass; checks immediately before, at, and after the cutoff also pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

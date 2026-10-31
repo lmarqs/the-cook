@@ -1,0 +1,161 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 3,
+  "source": "",
+  "id": "runbook-receipts--bare--codex--r3",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T00:46:13.177084+00:00",
+  "duration_s": 47.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-stopped.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*receipt*' -g 'README.md' -g '*oncall*' -g '*runbook*' -g '*incident*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *receipt* -g README.md -g *oncall* -g *runbook* -g *incident*"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short && cat AGENTS.md && cat docs/README.md && cat docs/runbooks/README.md && cat notes/chat-receipts.md && rg --files docs larder tests notes"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs larder tests notes"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !\\.git/** -g !docs/** -g !notes/** -g !larder/** -g !tests/**"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/README.md'), Path('docs/runbooks/README.md'), Path('docs/runbooks/receipts-stopped.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        assert (path.parent / target).exists(), (path, target)\nprint('All links in changed documentation resolve.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check && git diff --stat && python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/README.md'), Path('docs/runbooks/README.md'), Path('docs/runbooks/receipts-stopped.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        assert (path.parent / target).exists(), (path, target)\nprint('All links in changed documentation resolve.')\nPY"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git diff --check && git diff --stat && python3 - <<'PY'\nfrom pathlib import Path\nimport re\npaths = [Path('docs/README.md'), Path('docs/runbooks/README.md'), Path('docs/runbooks/receipts-stopped.md')]\nfor path in paths:\n    for target in re.findall(r'\\]\\(([^)]+)\\)', path.read_text()):\n        assert (path.parent / target).exists(), (path, target)\nprint('All links in changed documentation resolve.')\nPY"
+    }
+  ],
+  "tokens": {
+    "input": 97665,
+    "cached": 92672,
+    "output": 2182,
+    "reasoning": 91
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Added a [receipt recovery runbook](/work/docs/runbooks/receipts-stopped.md) and linked it from the docs indexes.\n\nIt covers worker checks, queue counts, restarting, recovery verification, failure handling, and handoff when nobody is available. It also records the unresolved deploy issue behind the previous outage.\n\nValidation: documentation links resolve, diff checks pass, and both tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

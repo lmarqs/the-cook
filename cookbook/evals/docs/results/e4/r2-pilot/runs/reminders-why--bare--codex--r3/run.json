@@ -1,0 +1,142 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 3,
+  "source": "e1/r2-pilot/runs/reminders-why--bare--codex--r3",
+  "id": "reminders-why--bare--codex--r3",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T03:15:42.590160+00:00",
+  "duration_s": 36.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/adr/0002-use-sms-for-pickup-reminders.md",
+    "docs/adr/README.md",
+    "larder/reminders.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g '*reminder*' -g 'README.md' -g '*email*' -g '*notification*' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *reminder* -g README.md -g *email* -g *notification* -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files docs larder tests"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat AGENTS.md docs/README.md larder/reminders.py && rg --files docs larder tests && git status --short"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-use-sms-for-pickup-reminders.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files notes"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-52.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0002-use-sms-for-pickup-reminders.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/reminders.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && python3 - <<'PY'\nfrom unittest.mock import Mock\nfrom larder.reminders import remind\n\nsms, email = Mock(), Mock()\nremind('+351123456789', 'member@example.com', 'tomorrow at 10:00', sms, email)\nemail.assert_called_once_with('member@example.com', 'Your pantry order is ready for pickup tomorrow at 10:00.')\nsms.assert_not_called()\nprint('Reminder email delivery check passed')\nPY\n\ngit diff --check"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q && python3 - <<'PY'\nfrom unittest.mock import Mock\nfrom larder.reminders import remind\n\nsms, email = Mock(), Mock()\nremind('+351123456789', 'member@example.com', 'tomorrow at 10:00', sms, email)\nemail.assert_called_once_with('member@example.com', 'Your pantry order is ready for pickup tomorrow at 10:00.')\nsms.assert_not_called()\nprint('Reminder email delivery check passed')\nPY\n\ngit diff --check"
+    }
+  ],
+  "tokens": {
+    "input": 93109,
+    "cached": 84096,
+    "output": 1355,
+    "reasoning": 113
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Switched pickup reminders to email in [larder/reminders.py](/work/larder/reminders.py) and updated the docs.\n\nThe docs retain the previous trial\u2019s finding: missed pickups rose from 6% to 13% with email.\n\nValidation: both tests pass; a direct check confirms reminders call email and never SMS.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

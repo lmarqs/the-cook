@@ -1,0 +1,13 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..1418eb2 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -4,4 +4,7 @@ from larder.members import Member
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    household_open_orders = sum(
++        open_orders.get(other.id, 0) for other in members if other.address == member.address
++    )
++    return household_open_orders < 2

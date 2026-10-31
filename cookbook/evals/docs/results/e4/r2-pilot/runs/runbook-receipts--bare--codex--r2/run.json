@@ -1,0 +1,87 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 2,
+  "source": "e1/r2-pilot/runs/runbook-receipts--bare--codex--r2",
+  "id": "runbook-receipts--bare--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:59:21.909091+00:00",
+  "duration_s": 23.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'README.md' -g '*.md' -g '*receipt*' -g '*deploy*' -g '*mail*' -g '*env*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g README.md -g *.md -g *receipt* -g *deploy* -g *mail* -g *env*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 62104,
+    "cached": 57088,
+    "output": 772,
+    "reasoning": 0
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Follow the repository\u2019s [receipt-outage runbook](/work/docs/runbooks/receipts-stopped.md). A previous deploy left the worker stopped; that is a likely cause, but must be checked.\n\n1. On the production host, confirm you have the intended host and production `larder` database. Check the worker:\n\n   ```sh\n   systemctl status larder-worker\n   ```\n\n   Expected: `active (running)`. If stopped or failed, record its stop time. If active, leave it running.\n\n2. Record the queue counts before changing anything:\n\n   ```sh\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n\n   `todo` means waiting, `doing` means processing, and `failed` needs investigation. Missing statuses may have zero jobs. These counts include all background jobs.\n\n3. **Only if the worker is stopped**, start it and check again:\n\n   ```sh\n   sudo systemctl start larder-worker\n   systemctl status larder-worker\n   ```\n\n   Expected: `active (running)`.\n\n4. After about one minute, repeat the queue query. Continue at roughly one-minute intervals while the backlog drains. Check that `todo` decreases and `failed` does not grow; falling queue counts alone do not prove delivery.\n\n5. Verify that the worker stays active, the backlog reaches zero or stays low with incoming work, and members receive receipts. Since nobody is available to confirm delivery, record **delivery verification pending** until receipt reports arrive. Record remaining failed jobs separately; investigate their causes before retrying.\n\n6. If startup fails, the worker stops again, the queue makes no progress across repeated checks, failures increase, or receipts remain missing despite no backlog, collect logs:\n\n   ```sh\n   journalctl -u larder-worker -n 50\n   ```\n\n   Leave a report in the pantry\u2019s ops chat and tag Tom\u00e1s. Include when receipts stopped, last night\u2019s deploy, worker status and stop time, before/after queue counts, startup result, relevant log errors, and delivery-verification status. Exclude member details.\n\n**If this does not restore processing, the repository documents no further recovery procedure.** Leave the evidence and unresolved symptoms for handoff. Do not repeatedly restart a crashing worker, edit queue rows, bulk replay failed jobs, or recapture orders. A missing receipt does not establish a failed card charge.\n\nFor recurrence prevention, ask the deployment maintainer to ensure the worker starts after deploys and verify worker health and queue progress afterward. The deploy script and service configuration are absent from this repository, so an exact deployment fix cannot be supplied here.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

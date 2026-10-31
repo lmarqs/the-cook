@@ -1,0 +1,108 @@
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..042e360 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Slow pantry search](pantry-search.md): inspect the item query and deploy its Postgres search index.
+diff --git a/docs/runbooks/pantry-search.md b/docs/runbooks/pantry-search.md
+new file mode 100644
+index 0000000..f42bac5
+--- /dev/null
++++ b/docs/runbooks/pantry-search.md
+@@ -0,0 +1,70 @@
++# Slow pantry search
++
++For the volunteer investigating slow item searches, including Saturday morning load.
++The repository has no production query plans or schema history, so a missing index is a hypothesis,
++not a confirmed cause. The query in `larder/catalog.py` already uses Postgres full-text search.
++
++## Inspect before changing
++
++Connect to the app's Postgres database with `psql`. Inspect the existing indexes:
++
++```sql
++SELECT indexrelid::regclass AS index_name, indisvalid, pg_get_indexdef(indexrelid)
++FROM pg_index
++WHERE indrelid = 'pantry_items'::regclass;
++```
++
++Record the following plan and execution time with representative member searches and during representative
++load. Replace `'rice'` with those terms. `EXPLAIN ANALYZE` executes the read query.
++
++```sql
++EXPLAIN (ANALYZE, BUFFERS)
++SELECT id, name, stock FROM pantry_items
++WHERE to_tsvector('simple', name) @@ plainto_tsquery('simple', 'rice')
++ORDER BY name;
++```
++
++## Apply the index if missing
++
++If a valid GIN index on `to_tsvector('simple', name)` already exists, skip the migration and investigate
++the plan, database load and lock waits. Do not create another equivalent index with a different name.
++Otherwise, from the repository root, using the normal database connection environment:
++
++```sh
++psql -X -v ON_ERROR_STOP=1 -f migrations/001_pantry_items_name_search.sql
++```
++
++Run outside a transaction; do not use `psql --single-transaction`. Schedule the build outside pantry
++opening hours because it adds database work. The concurrent build allows item writes to continue.
++There is no migration runner in this repository; this script is applied manually once.
++
++The expression matches the existing query exactly, as required by
++[Postgres expression-index matching](https://www.postgresql.org/docs/current/textsearch-tables.html).
++Search results, name ordering and reads of current stock keep their existing behavior.
++
++## Verify and recover
++
++Repeat the index inspection and the same query plans after the build. Expect a valid index and compare
++execution time and buffers against the baseline. Postgres may still choose a sequential scan for a small
++table or a common term. Do not force index use or claim a speedup without representative measurements.
++If the page remains slow, use those measurements to investigate further before adding a service.
++
++A failed concurrent build can leave an invalid index. Check `indisvalid` before retrying; a name
++collision must not silently skip a failed build. To remove this migration's index for recovery or rollback:
++
++```sql
++DROP INDEX CONCURRENTLY pantry_items_name_search_idx;
++```
++
++Run that outside a transaction, then rerun the migration if appropriate. See
++[Postgres concurrent index builds](https://www.postgresql.org/docs/current/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY)
++for build limitations and failure recovery.
++
++## Why this change uses Postgres
++
++The [service rule](../architecture.md#before-adding-a-service) requires both a capability Postgres cannot
++provide and two volunteers able to restore a new service. The Redis request names only Tom and supplies
++no evidence that Postgres cannot meet this need. Previous pantry search work in the architecture page
++also succeeded with Postgres. This change prepares an index for the existing query without introducing
++a cache of stock values or another service to operate. Redis would need a proposal satisfying both
++conditions before adoption.
+diff --git a/larder/catalog.py b/larder/catalog.py
+index c970129..f87bd2c 100644
+--- a/larder/catalog.py
++++ b/larder/catalog.py
+@@ -1,5 +1,6 @@
+ def items(conn, query: str) -> list[dict]:
+     """The pantry items whose name matches the member's search, in name order."""
++    # Keep this expression aligned with migrations/001_pantry_items_name_search.sql.
+     rows = conn.execute(
+         "select id, name, stock from pantry_items"
+         " where to_tsvector('simple', name) @@ plainto_tsquery('simple', %s) order by name",
+diff --git a/migrations/001_pantry_items_name_search.sql b/migrations/001_pantry_items_name_search.sql
+new file mode 100644
+index 0000000..e8b308c
+--- /dev/null
++++ b/migrations/001_pantry_items_name_search.sql
+@@ -0,0 +1,6 @@
++-- Run with psql in autocommit mode; CONCURRENTLY cannot run in a transaction.
++-- See docs/runbooks/pantry-search.md before applying to an existing database.
++CREATE INDEX CONCURRENTLY pantry_items_name_search_idx
++    ON pantry_items USING gin (to_tsvector('simple', name));
++
++ANALYZE pantry_items;

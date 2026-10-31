@@ -1,0 +1,21 @@
+diff --git a/larder/capture.py b/larder/capture.py
+index 56cfa9b..719b501 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,7 +1,8 @@
+ import uuid
+ 
+-from larder.gateway import Gateway
++from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
++from larder.retry import retry
+ 
+ 
+ def new_key() -> str:
+@@ -10,4 +11,5 @@ def new_key() -> str:
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+     """Captures the order's authorized amount and returns the gateway's charge id."""
+-    return gateway.capture(order.id, order.amount_cents, idempotency_key=new_key())
++    key = new_key()
++    return retry(lambda: gateway.capture(order.id, order.amount_cents, idempotency_key=key), 3, GatewayTimeout)

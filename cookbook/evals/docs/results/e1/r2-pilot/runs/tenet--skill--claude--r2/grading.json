@@ -1,0 +1,82 @@
+{
+  "expectations": [
+    {
+      "name": "01-page-written",
+      "type": "file_exists",
+      "text": "docs/philosophy.md is written or changed: a rule that guides many decisions is a tenet, which the map gives the\nphilosophy page.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "matching docs/philosophy.md: ['docs/philosophy.md']",
+      "judged_by": null,
+      "grader_sha": "6a18ce8b0df86b5fd3e48d65e85609fd7e4af4f7ebe43dbec0572b96077cc0bd"
+    },
+    {
+      "name": "02-structure",
+      "type": "docs_structure",
+      "text": "Each page the agent wrote or changed meets the map's structural rules: a declared kind, listed in its guide, links\nand anchors that resolve, the kind's sections in order, a record named NNNN-<slug>.md, no rejected synonym.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no findings in ['docs/philosophy.md']",
+      "judged_by": null,
+      "grader_sha": "00a046121fed0de5d772bfb27fdcb0581b0fb2a7ce89f805a526fc8b827f5dc7"
+    },
+    {
+      "name": "03-lead",
+      "type": "lead_present",
+      "text": "The philosophy page opens with a lead under its title, not a restatement of the title.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "each of ['docs/philosophy.md'] has a lead",
+      "judged_by": null,
+      "grader_sha": "f31c346cf79732ff2da7fef291cb8e0fc14c9d0d4ca920533e4c69dc48ff8472"
+    },
+    {
+      "name": "04-reason-told",
+      "type": "judge",
+      "text": "The page states the tenet, what it rules out, and why, told as it happened: the Redis queue that lost receipt jobs\nand only one volunteer could restore, not only a conclusion such as \"fewer services are simpler\".",
+      "passed": false,
+      "verdict_missing": false,
+      "evidence": "The page recounts Redis evicting 300 receipt jobs on a Saturday night with only one person able to restore it, but does not say Redis for sessions was rejected in 2023 because only one volunteer would run it, or identify the failed queue as Redis for Celery in March 2025.",
+      "judged_by": "codex",
+      "grader_sha": "ed9e6b913a4b756b4a3c889f752ccda3077add105cfd8f1f51c67a90f36d55be"
+    },
+    {
+      "name": "05-fact-stated",
+      "type": "regex",
+      "text": "The tenet links the two records that apply it: sessions in the database and background jobs on Postgres.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "match /adr/0001-.*adr/0002-|adr/0002-.*adr/0001-/ in ['docs/philosophy.md']: {'docs/philosophy.md': 'adr/0001-keep-sessions-in-the-database.md) and\\n[run background jobs on Postgres](adr/0002-'}",
+      "judged_by": null,
+      "grader_sha": "6d4268b71e8ed3560b862be226732edb1da53fd7abe10b0e1ff315a38adca611"
+    },
+    {
+      "name": "06-trap",
+      "type": "regex",
+      "text": "No decision record is added: the map gives a rule that guides many decisions to the philosophy page, and one decision\napplying it to a record.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "no_match /^--- /dev/null\\n\\+\\+\\+ b/docs/adr/\\d{4}-/ in ['diff']: no match",
+      "judged_by": null,
+      "grader_sha": "b256b7f928431eb36c2976a3fa7172709ac76b1c8c027324c9d063f636eef4a5"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.8333333333333334
+  },
+  "outcome": {
+    "graders": [
+      "01-page-written",
+      "02-structure",
+      "03-lead",
+      "04-reason-told",
+      "05-fact-stated",
+      "06-trap"
+    ],
+    "pass": false,
+    "share": 0.8333333333333334
+  }
+}

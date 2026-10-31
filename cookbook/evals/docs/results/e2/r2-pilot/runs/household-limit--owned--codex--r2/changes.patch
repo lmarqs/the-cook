@@ -1,0 +1,67 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..3477001 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -1,7 +1,22 @@
++import string
++
+ from larder.members import Member
+ 
+ 
++def _household_address(address: str) -> tuple[str, ...]:
++    address = address.lower().translate(str.maketrans("", "", string.punctuation))
++    abbreviations = {"st": "street", "rd": "road"}
++    return tuple(abbreviations.get(part, part) for part in address.split())
++
++
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    address = _household_address(member.address)
++    household_ids = {
++        registered.id
++        for registered in members
++        if _household_address(registered.address) == address
++    }
++    household_ids.add(member.id)
++    return sum(open_orders.get(member_id, 0) for member_id in household_ids) < 2
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+new file mode 100644
+index 0000000..ca56bcb
+--- /dev/null
++++ b/tests/test_limits.py
+@@ -0,0 +1,33 @@
++import pytest
++
++from larder.limits import can_place_order
++from larder.members import Member
++
++
++@pytest.mark.parametrize("count, allowed", [(0, True), (1, True), (2, False), (3, False)])
++def test_household_open_order_limit(count, allowed):
++    member = Member("m1", "Alex", "12 Main Street")
++
++    assert can_place_order(member, [member], {member.id: count}) is allowed
++
++
++@pytest.mark.parametrize("street, abbreviation", [("Street", "St."), ("Road", "Rd")])
++def test_orders_are_combined_across_normalized_household_addresses(street, abbreviation):
++    member = Member("m1", "Alex", f"12 Main {street}, Flat 1")
++    housemate = Member("m2", "Sam", f"  12 MAIN {abbreviation}  FLAT 1  ")
++
++    assert not can_place_order(member, [member, housemate], {"m1": 1, "m2": 1})
++
++
++@pytest.mark.parametrize("address", ["12 Main Street Flat 2", "13 Main Street Flat 1", "12 Other Street Flat 1"])
++def test_other_households_do_not_count_even_with_the_same_name(address):
++    member = Member("m1", "Alex", "12 Main Street Flat 1")
++    neighbour = Member("m2", "Alex", address)
++
++    assert can_place_order(member, [member, neighbour], {"m2": 2})
++
++
++def test_missing_order_counts_default_to_zero():
++    member = Member("m1", "Alex", "12 Main Street")
++
++    assert can_place_order(member, [member], {})

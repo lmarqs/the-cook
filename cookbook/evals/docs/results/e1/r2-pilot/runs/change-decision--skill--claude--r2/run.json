@@ -1,0 +1,239 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "change-decision--skill--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:47:01.212109+00:00",
+  "duration_s": 85.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adr/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adr/0001-keep-sessions-in-the-database.md",
+    "docs/adr/README.md",
+    "docs/architecture.md",
+    "docs/features/sessions.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -path ./.git -prune -o -type f -print | sort"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn sessions\\|Postgres\\|session larder/*.py docs/*.md docs/**/*.md"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v docs/adr/0001"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v docs/features/sessions.md"
+    },
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Sessions moved out of Postgres into signed cookies (see larder/sessions.py and notes/issue-63.md: the sessions table grew to 2.1M rows, nothing deleted expired rows, the disk filled and larder went down during Saturday pickup). Update docs/ to match current reality: edit ADR 0001 in place (title/slug change to the new decision, keep the old choice in Options with why it changed), update docs/adr/README.md's link line, docs/features/sessions.md's Storage section, and docs/architecture.md's sessions references. Do not invent facts beyond what's in notes/issue-63.md and larder/sessions.py."
+      }
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/adr.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/templates/adr.template.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/architecture.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": ".claude/skills/docs-layout/references/features.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git mv docs/adr/0001-keep-sessions-in-the-database.md docs/adr/0001-keep-sessions-in-signed-cookies.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rln keep-sessions-in-the-database\\|Keep sessions in the database\\|sessions live in Postgres\\|sessions in Postgres docs/ notes/ larder/ README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status && python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "git status && python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 665270,
+    "cached": 640091,
+    "output": 7616,
+    "reasoning": 3504
+  },
+  "cost_usd": 0.3048382,
+  "turns": 28,
+  "last_message": "Docs are updated and tests still pass. Summary of changes:\n\n- Renamed and rewrote `docs/adr/0001-keep-sessions-in-the-database.md` \u2192 `docs/adr/0001-keep-sessions-in-signed-cookies.md`: kept the 2023 context, added the August disk-full incident from `notes/issue-63.md`, kept Postgres as a now-superseded option, and recorded the signed-cookie decision with its consequences (no server-side logout before expiry, key rotated only between pickups).\n- Updated `docs/adr/README.md`'s link line to match.\n- Updated `docs/features/sessions.md`'s Storage section to describe the cookie/`LARDER_SESSION_KEY` mechanism, and added a Known limits section for the logout/rotation tradeoffs.\n- Updated `docs/architecture.md` to say sessions live in a signed cookie, not Postgres (Postgres is still used for the job queue, so that part of the architecture lead stands).\n\nNo other pages referenced the old scheme. Nothing left to verify with the user since no one's available \u2014 all facts came from `larder/sessions.py` and `notes/issue-63.md`.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

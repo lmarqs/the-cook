@@ -1,0 +1,105 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "sessions-in-memory--no-leads--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:58:11.574791+00:00",
+  "duration_s": 13.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *session* -not -path ./.git/*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 91988,
+    "cached": 85627,
+    "output": 811,
+    "reasoning": 34
+  },
+  "cost_usd": 0.0506674,
+  "turns": 6,
+  "last_message": "This exact change was already tried and reverted for a documented reason \u2014 ADR 0001 explains that in-process memory sessions caused mass logouts on every deploy and when load-balanced across two servers, which was bad enough that volunteers stopped deploying during business hours. The docs explicitly chose Postgres to avoid this, and the performance cost was judged acceptable (\"the database serves from memory at larder's size\").\n\nI don't think I should implement this \u2014 it would reintroduce a known, already-rejected failure mode (logging everyone out on every deploy and on server-to-server load-balancing). Before doing anything, I want to flag this to you rather than proceed.\n\nA couple of options if speed is a real concern:\n1. **Don't make this change** \u2014 the current Postgres-backed approach is already served from memory at larder's scale per the ADR, so the \"faster\" motivation may be based on a misconception.\n2. **If there's a genuine new bottleneck**, that would warrant updating the ADR with a new decision (e.g., sticky sessions + replication, or revisiting Redis now that volunteer capacity may have changed) rather than silently reintroducing the rejected design.\n\nDo you want me to proceed with the in-memory store anyway (accepting the mass-logout-on-deploy regression), or would you rather investigate the actual performance issue first / update the ADR with a new decision?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

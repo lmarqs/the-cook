@@ -1,0 +1,102 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 3,
+  "source": "e1/r2-pilot/runs/runbook-receipts--bare--codex--r3",
+  "id": "runbook-receipts--bare--codex--r3",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T03:05:13.191537+00:00",
+  "duration_s": 19.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g 'docs/**' -g '*receipt*' -g '*deploy*' -g '*README*' -g '*compose*' -g '*systemd*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g *receipt* -g *deploy* -g *README* -g *compose* -g *systemd*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat larder/receipts.py README.md docs/features/payments.md docs/runbooks/gateway-timeouts.md; git status --short; rg --files --hidden -g '!\\.git/**' -g '*receipts*' -g '*deploy*' -g '*chat*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden -g !\\.git/** -g *receipts* -g *deploy* -g *chat*"
+    }
+  ],
+  "tokens": {
+    "input": 62647,
+    "cached": 55424,
+    "output": 830,
+    "reasoning": 0
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Follow the repository\u2019s [receipts recovery runbook](/work/docs/runbooks/receipts-stopped.md). A stopped worker after deployment is a recorded cause; today\u2019s cause still needs checking.\n\n1. Open a shell on the host running `larder-worker`. You need `sudo` service access and `psql larder` database access. The repository does not record the hostname or login setup.\n\n2. Check the worker and record the queue counts:\n   ```sh\n   systemctl status larder-worker\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Healthy service state is `active (running)`. Read the displayed state even if `systemctl` exits nonzero. Queue counts cover all jobs: `todo` is waiting, `doing` is in progress, and `failed` is failed.\n\n3. If the worker is inactive or failed, start it:\n   ```sh\n   sudo systemctl start larder-worker\n   systemctl status larder-worker\n   ```\n   If already running, leave it running. If it fails to start or stops again, proceed to step 6; do not keep restarting it.\n\n4. After about one minute, repeat:\n   ```sh\n   systemctl status larder-worker\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Repeat roughly every minute while the backlog drains. Record observation times and counts. Expect `todo` to decrease, the worker to remain active, and no accumulating failures.\n\n5. Verify that the waiting backlog reaches zero; an absent `todo` row means zero. With continuing traffic, verify that jobs keep progressing. Since nobody is available to confirm receipt delivery, record **\u201cqueue drained; email delivery unverified.\u201d** An empty queue alone does not prove delivery.\n\n6. If access fails, the worker fails, the backlog stalls across successive checks, failures increase, or receipts remain missing, capture the error and available evidence:\n   ```sh\n   journalctl -u larder-worker -n 50\n   ```\n   Do not recapture payments, delete jobs, reset job statuses, or manually replay receipts. The repository provides no verified recovery procedure for those actions.\n\n7. Leave a written handoff in the pantry\u2019s `#larder-ops` chat and flag Tom\u00e1s. Include incident/deploy timing, affected order IDs if known, service states, timestamped queue counts, errors, recent logs, actions taken, and whether recovery remains unresolved or delivery unverified.\n\nThe prior incident\u2019s deploy script restarted only the web app, leaving the worker stopped. Starting the worker recovered that incident. No deploy script exists in this repository; track the recurrence fix with the deployment maintainer and require worker-health verification after deploys.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

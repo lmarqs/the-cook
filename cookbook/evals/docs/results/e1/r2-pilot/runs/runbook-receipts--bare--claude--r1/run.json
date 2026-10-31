@@ -1,0 +1,193 @@
+{
+  "study": "e1",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "runbook-receipts--bare--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:23:05.265386+00:00",
+  "duration_s": 44.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/architecture.md",
+    "docs/runbooks/README.md",
+    "docs/runbooks/receipts-not-sending.md"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -not -path ./.git/* -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -not -path './.git/*' -type f | sort"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/gateway.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn larder-worker\\|procrastinate\\|deploy --include=*.py --include=*.md --include=*.sh --include=*.service ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -v notes/chat-receipts.md"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/receipts-not-sending.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/runbooks/README.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/architecture.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 327361,
+    "cached": 312568,
+    "output": 3846,
+    "reasoning": 1270
+  },
+  "cost_usd": 0.1601096,
+  "turns": 21,
+  "last_message": "Added a new runbook so the next on-call volunteer doesn't need Tom\u00e1s:\n\n- **`docs/runbooks/receipts-not-sending.md`** \u2014 captures what Tom\u00e1s worked out: check `systemctl status larder-worker`, count `procrastinate_jobs` by status, start the worker, confirm `todo` drains (~40/min), ignore the handful of `failed` bounced-email jobs, and escalate with `journalctl` logs if the worker dies again right away.\n- Linked it from `docs/runbooks/README.md`.\n- Added a one-line note in `docs/architecture.md` explaining *why* this happens (deploy script restarts only the web app, not the worker), linking to the new runbook.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

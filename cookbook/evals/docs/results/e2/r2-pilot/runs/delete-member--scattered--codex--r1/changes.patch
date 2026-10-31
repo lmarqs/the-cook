@@ -1,0 +1,56 @@
+diff --git a/larder/members.py b/larder/members.py
+index 408f67a..b7965c3 100644
+--- a/larder/members.py
++++ b/larder/members.py
+@@ -26,4 +26,7 @@ class Store:
+ 
+ def delete_member(member_id: str, store: Store) -> None:
+     """Deletes a member's account when they ask for it."""
+-    raise NotImplementedError
++    store.members.pop(member_id, None)
++    for order in store.orders:
++        if order.member_id == member_id:
++            order.member_id = None
+diff --git a/tests/test_members.py b/tests/test_members.py
+new file mode 100644
+index 0000000..78d8f01
+--- /dev/null
++++ b/tests/test_members.py
+@@ -0,0 +1,37 @@
++from larder.members import Member, Store, StoredOrder, delete_member
++
++
++def test_deleting_a_member_keeps_their_orders_without_their_identity():
++    member = Member("member-1", "Ana", "ana@example.com", "1 Main Street")
++    other_member = Member("member-2", "Tom", "tom@example.com", "2 Main Street")
++    orders = [
++        StoredOrder("order-1", member.id, 1000),
++        StoredOrder("order-2", other_member.id, 2000),
++        StoredOrder("order-3", member.id, 3000),
++        StoredOrder("order-4", None, 4000),
++    ]
++    store = Store(members={member.id: member, other_member.id: other_member}, orders=orders)
++
++    delete_member(member.id, store)
++
++    assert store.members == {other_member.id: other_member}
++    assert store.orders == [
++        StoredOrder("order-1", None, 1000),
++        StoredOrder("order-2", other_member.id, 2000),
++        StoredOrder("order-3", None, 3000),
++        StoredOrder("order-4", None, 4000),
++    ]
++
++
++def test_deleting_a_member_twice_is_harmless():
++    member = Member("member-1", "Ana", "ana@example.com", "1 Main Street")
++    store = Store(
++        members={member.id: member},
++        orders=[StoredOrder("order-1", member.id, 1000)],
++    )
++
++    delete_member(member.id, store)
++    delete_member(member.id, store)
++
++    assert store.members == {}
++    assert store.orders == [StoredOrder("order-1", None, 1000)]

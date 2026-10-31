@@ -1,0 +1,267 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "runbook-receipts--unwritten--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:46:26.180851+00:00",
+  "duration_s": 57.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/runbooks/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls /work/docs/runbooks/ 2>/dev/null; echo ---; grep -ril \"receipt\" /work/docs 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril receipt /work/docs"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/runbooks/gateway-timeouts.md; echo \"=====ARCH=====\"; cat /work/docs/architecture.md; echo \"=====FEATURES=====\"; ls /work/docs/features/ 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/runbooks/gateway-timeouts.md; echo \"=====ARCH=====\"; cat /work/docs/architecture.md; echo \"=====FEATURES=====\"; ls /work/docs/features/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/features/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/features/payments.md; echo \"=====CHECKOUT=====\"; cat /work/docs/features/checkout.md; echo \"=====ADR LIST=====\"; ls /work/docs/adr/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/docs/features/payments.md; echo \"=====CHECKOUT=====\"; cat /work/docs/features/checkout.md; echo \"=====ADR LIST=====\"; ls /work/docs/adr/"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/adr/"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work/larder -type f -name *.py"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find /work/larder -type f -name \"*.py\" | xargs ls; echo ---; cat /work/larder/receipts.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find /work/larder -type f -name \"*.py\" | xargs ls; echo ---; cat /work/larder/receipts.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git log -p -1 -- larder/receipts.py | head -100; echo ---CAPTURE---; cat larder/capture.py; echo ---ORDERS---; cat larder/orders.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git log -p -1 -- larder/receipts.py | head -100; echo ---CAPTURE---; cat larder/capture.py; echo ---ORDERS---; cat larder/orders.py"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git log -p -1 -- larder/receipts.py | head -100; echo ---CAPTURE---; cat larder/capture.py; echo ---ORDERS---; cat larder/orders.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git log -p -1 -- larder/receipts.py | head -100; echo ---CAPTURE---; cat larder/capture.py; echo ---ORDERS---; cat larder/orders.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py; echo ---; git log -p -1 -- larder/receipts.py | head -100; echo ---CAPTURE---; cat larder/capture.py; echo ---ORDERS---; cat larder/orders.py"
+    },
+    {
+      "kind": "read",
+      "path": "larder/orders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *procrastinate* -o -iname pyproject.toml"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*procrastinate*\" -o -iname \"pyproject.toml\" | head -20; echo ---; cat pyproject.toml 2>/dev/null; echo ---TESTS---; find . -path ./node_modules -prune -o -name \"test_*.py\" -print -o -name \"*_test.py\" -print; echo ---; grep -rn \"procrastinate\\|queue\\|retry\" --include=*.py ."
+    },
+    {
+      "kind": "read",
+      "path": "pyproject.toml",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*procrastinate*\" -o -iname \"pyproject.toml\" | head -20; echo ---; cat pyproject.toml 2>/dev/null; echo ---TESTS---; find . -path ./node_modules -prune -o -name \"test_*.py\" -print -o -name \"*_test.py\" -print; echo ---; grep -rn \"procrastinate\\|queue\\|retry\" --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./node_modules -prune -o -name test_*.py -print -o -name *_test.py -print"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*procrastinate*\" -o -iname \"pyproject.toml\" | head -20; echo ---; cat pyproject.toml 2>/dev/null; echo ---TESTS---; find . -path ./node_modules -prune -o -name \"test_*.py\" -print -o -name \"*_test.py\" -print; echo ---; grep -rn \"procrastinate\\|queue\\|retry\" --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn procrastinate\\|queue\\|retry --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -maxdepth 2 -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -maxdepth 2 -type f | sort; echo ---; grep -rln \"procrastinate\" . 2>/dev/null; echo ---; cat tests/test_capture.py"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -maxdepth 2 -type f | sort; echo ---; grep -rln \"procrastinate\" . 2>/dev/null; echo ---; cat tests/test_capture.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rln procrastinate ."
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -maxdepth 2 -type f | sort; echo ---; grep -rln \"procrastinate\" . 2>/dev/null; echo ---; cat tests/test_capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 328728,
+    "cached": 313495,
+    "output": 4477,
+    "reasoning": 2482
+  },
+  "cost_usd": 0.16836500000000001,
+  "turns": 9,
+  "last_message": "Here's what the repository actually shows, and the steps that follow from it.\n\n## Root cause (from the repo, not guesswork)\n\n`larder/receipts.py` \u2014 the entire file \u2014 is:\n\n```python\ndef send_receipt(order_id: str) -> None:\n    \"\"\"A procrastinate job: emails the member the receipt of a captured order.\"\"\"\n    raise NotImplementedError\n```\n\nPer `docs/architecture.md`, this is the worker job that runs from the queue in Postgres and emails the receipt after a captured pantry order. It unconditionally raises. Every receipt job since this was deployed will fail \u2014 that matches \"no receipt since last night's deploy\" exactly.\n\nTwo things the repo also tells you, which matter for what you say to members:\n- **Capture is unaffected.** `larder/capture.py` doesn't call or depend on `send_receipt`; it only talks to the gateway. So orders confirmed last night were charged normally \u2014 this is an email problem, not a billing problem.\n- **This isn't the gateway-timeouts runbook.** `docs/runbooks/gateway-timeouts.md` is for `GatewayTimeout` lines in the worker log and uncharged orders. That's a different symptom; don't run that runbook for this.\n- **There is nothing to roll back to.** The repo's git history has exactly one commit \u2014 `receipts.py` was never implemented, there's no earlier working version to revert to.\n\n## Steps for the on-call volunteer\n\n1. **Confirm in the worker log.** Look for `NotImplementedError` tracebacks pointing at `larder/receipts.py:send_receipt`, one per captured order since last night's deploy. This confirms the diagnosis above rather than a gateway or infra problem.\n2. **Reassure, don't refund.** Tell affected members their card was charged correctly and the pantry order is confirmed; only the receipt email is missing. Do not attempt a recapture or refund \u2014 the capture path is unaffected.\n3. **Escalate \u2014 this needs a code fix, not an operational one.** `send_receipt` was shipped unimplemented; no runbook or config change can make it send an email. Page the payments volunteers (the owners named in `docs/features/payments.md`) to implement and deploy `send_receipt`.\n4. **Stop the noise, don't drop the jobs.** If your queue tooling lets you pause the `send_receipt` job type rather than let it retry-and-fail indefinitely, do that \u2014 the failed jobs for last night's orders need to stay queued so they can be retried once the fix ships, so members get their receipts without re-ordering.\n5. **After the fix deploys, verify the backlog drains.** Confirm the queued `send_receipt` jobs from the outage window all run and that a fresh test order now gets a receipt.\n6. **Write the runbook.** No runbook currently covers \"no receipt\" as a trigger. Once resolved, add one under `docs/runbooks/` (per `docs/README.md`'s rule that \"a runbook is updated each time its trigger fires\") so the next on-call volunteer doesn't have to re-derive this from the code.\n\nIf it fails: there's no documented escalation path beyond the payments volunteers named in `docs/features/payments.md` \u2014 nobody else is listed as an owner for this.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

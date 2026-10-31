@@ -1,0 +1,115 @@
+{
+  "study": "e2",
+  "case": "order-amount",
+  "arm": "scattered",
+  "harness": "codex",
+  "run": 2,
+  "source": "",
+  "id": "order-amount--scattered--codex--r2",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T01:47:54.647921+00:00",
+  "duration_s": 34.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/pantry.py",
+    "tests/test_pantry.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'pantry.py' -g '*test*' -g 'README.md' -g '*.md'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g pantry.py -g *test* -g README.md -g *.md"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/pantry.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pantry-orders.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/price-list.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/glossary.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n amount_cents|price_cents|confirmed|round|capture larder tests docs/features"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat docs/features/pantry-orders.md docs/features/payments.md docs/features/price-list.md docs/features/checkout.md docs/glossary.md && rg -n 'amount_cents|price_cents|confirmed|round|capture' larder tests docs/features && git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/pantry.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_pantry.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    }
+  ],
+  "tokens": {
+    "input": 88040,
+    "cached": 71424,
+    "output": 639,
+    "reasoning": 27
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Implemented `amount_cents` using each order line\u2019s confirmed price \u00d7 quantity, independent of the current catalog.\n\nAdded regression coverage for changed prices, missing catalog items, and empty orders. All 5 tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

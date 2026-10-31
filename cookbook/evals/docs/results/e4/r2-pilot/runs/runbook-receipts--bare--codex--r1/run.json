@@ -1,0 +1,97 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 1,
+  "source": "e1/r2-pilot/runs/runbook-receipts--bare--codex--r1",
+  "id": "runbook-receipts--bare--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:57:07.871485+00:00",
+  "duration_s": 25.5,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd && rg --files -g 'AGENTS.md' -g 'docs/**' -g '*receipt*' -g '*deploy*' -g '*README*'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g docs/** -g *receipt* -g *deploy* -g *README*"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g !docs/** -g !.git/**"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "notes/chat-receipts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 62756,
+    "cached": 53248,
+    "output": 823,
+    "reasoning": 0
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Follow the repository\u2019s [Receipts stopped runbook](/work/docs/runbooks/receipts-stopped.md). A previous deploy left the worker stopped; that is a lead, not a confirmed diagnosis today.\n\n1. Open a shell on the host running `larder-worker`, with sudo permission and database access. The repository does not identify the hostname or access setup. If you cannot access it, follow step 6; do not guess a host.\n\n2. Check the worker and record its state, stop time, and queue counts:\n   ```sh\n   systemctl status larder-worker\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Healthy service status is `active (running)`. An inactive service may return a nonzero exit code. Queue statuses are `todo` (waiting), `doing` (in progress), and `failed`; absent rows mean no jobs in that status. Counts cover all worker jobs.\n\n3. **If the worker is stopped, start it once:**\n   ```sh\n   sudo systemctl start larder-worker\n   systemctl status larder-worker\n   ```\n   It should show `active (running)`. If already running, leave it running. If it fails to start or stops again, go to step 6.\n\n4. After about a minute, run:\n   ```sh\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   systemctl status larder-worker\n   ```\n   Repeat about once a minute while the backlog drains. Expect `todo` to decrease toward zero and `doing` eventually to clear, while the service stays running. Increasing failures or no progress across several checks require step 6.\n\n5. Receipt arrival is the final confirmation. Since nobody is available to confirm, record **\u201cworker and queue recovered; receipt delivery unverified\u201d** if those checks succeed. Queue counts alone do not prove delivery.\n\n6. If recovery fails, the queue is empty despite missing receipts, or access is unavailable, collect whatever evidence you can:\n   ```sh\n   journalctl -u larder-worker -n 50\n   ```\n   Leave a message in the pantry\u2019s chat for Tom\u00e1s and the next volunteer: incident time, worker state, queue counts before and after, actions taken, relevant errors, and unresolved status. Remove member addresses and other personal data. With nobody available, leave that handoff; the repository provides no further recovery procedure.\n\n**Do not repeat checkout or capture, repeatedly restart the worker, or delete, edit, or blindly retry jobs.** Receipts concern already captured orders.\n\nRecord a deployment follow-up: the previous incident\u2019s deploy script restarted only the web app and left the worker stopped. Starting the worker restores processing but does not repair that deploy bug; the deploy script and systemd unit are absent from this repository.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,68 @@
+diff --git a/docs/adr/0003-weigh-new-services-against-postgres.md b/docs/adr/0003-weigh-new-services-against-postgres.md
+new file mode 100644
+index 0000000..ae06f3f
+--- /dev/null
++++ b/docs/adr/0003-weigh-new-services-against-postgres.md
+@@ -0,0 +1,38 @@
++# Weigh new services against Postgres
++
++For whoever proposes adding a service to larder. A new service needs to do something Postgres cannot, and two
++volunteers able to restore it; otherwise it stays in Postgres or the one web app. Written after this argument was
++made for the third time in a year ([issue 70](../../notes/issue-70.md)), so the next proposal can start from the rule
++instead of rediscovering it.
++
++## Context
++
++Larder runs one database and one web app on volunteer time; nobody is paid to be on call. Three times a new service
++was proposed to solve a problem Postgres could also solve:
++
++- **2023, Redis for sessions**: turned down before launch, because only one volunteer would have run it. Sessions
++  stayed in Postgres ([keep sessions in the database](0001-keep-sessions-in-the-database.md)).
++- **March 2025, Redis for Celery's queue**: adopted, then evicted 300 queued receipt jobs one Saturday night with no
++  error logged; the one volunteer who understood Redis spent a day resending receipts by hand. Jobs moved to
++  procrastinate on Postgres ([run background jobs on Postgres](0002-run-background-jobs-on-postgres.md)).
++- **October 2026, Elasticsearch for pantry search**: proposed to fix slow, exact-match-only search; dropped once
++  Postgres full-text search on the item name met the same need at 40 ms.
++
++Each time, the service would have done something Postgres could also do, and only one volunteer could have restored
++it when it broke.
++
++## Decision
++
++Before adding a service, both must hold:
++
++- it does something Postgres (or the existing web app) cannot do, and
++- at least two volunteers can restore it without the person who set it up.
++
++This does not mean never: the card gateway lives outside larder because larder cannot process cards itself, and a
++hosted service that larder's volunteers never have to operate does not add an operational burden the way a
++self-run service does.
++
++## Consequences
++
++A proposal for a new service states up front what it does that Postgres cannot, and names the second volunteer who
++can restore it. A proposal that cannot answer both starts from Postgres instead.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 14b01ba..7fe0bbc 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -2,3 +2,5 @@
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
+ - [Run background jobs on Postgres](0002-run-background-jobs-on-postgres.md): jobs run on procrastinate, not Redis.
++- [Weigh new services against Postgres](0003-weigh-new-services-against-postgres.md): a new service needs something
++  Postgres cannot do, and two volunteers able to restore it.
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..1c0b804 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -15,3 +15,9 @@ where a payment is captured.
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
++
++## Adding a part
++
++Before adding a service beyond this one database and one web app, read
++[weigh new services against Postgres](adr/0003-weigh-new-services-against-postgres.md): a new service needs to do
++something Postgres cannot, with two volunteers able to restore it.

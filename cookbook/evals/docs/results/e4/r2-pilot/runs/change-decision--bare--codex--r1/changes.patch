@@ -1,0 +1,75 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index d5d3148..f9eb772 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -30,6 +30,15 @@ The server cannot revoke one member's cookie before it expires. Rotating the sha
+ existing cookies and logs them out; rotate it only between pickups, as agreed in
+ [issue 63](../../notes/issue-63.md). All web servers must load the replacement key.
+ 
++`logout(member_id)` raises `NotImplementedError`: it does not end the member's session. A volunteer cannot
++immediately log out a stolen phone with the current design. Clearing a cookie on another device does not
++invalidate the stolen copy, and requests from the stolen phone can keep renewing its session.
++
++Supporting targeted logout requires changing the signed-cookie decision to introduce persistent revocation
++state shared by every web server and checked during verification and renewal. A process-local blocklist would
++not survive a deploy or protect requests handled by another server. Any replacement must also address storage
++growth, which caused the outage behind the signed-cookie decision.
++
+ ## Shaped by
+ 
+ - [Use signed cookies for sessions](../adr/0002-use-signed-cookies-for-sessions.md), which supersedes the database-session decision.
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..b3342a9 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -14,6 +14,19 @@ def expires_at(last_request: datetime) -> datetime:
+     return last_request + timedelta(minutes=EXPIRY_MINUTES)
+ 
+ 
++def logout(member_id: int) -> None:
++    """Reject targeted logout: signed cookies have no shared revocation state.
++
++    Clearing a browser cookie would not invalidate the stolen copy. Supporting
++    this operation requires persistent revocation state shared by every server.
++    """
++    raise NotImplementedError(
++        "Cannot revoke one member's signed session cookie. "
++        "Targeted logout requires shared, persistent revocation state; "
++        "see docs/features/sessions.md."
++    )
++
++
+ def sign(member_id: int, last_request: datetime) -> str:
+     """The cookie value: the member and the session's expiry, signed with the shared key."""
+     body = json.dumps({"member": member_id, "expires": expires_at(last_request).isoformat()}).encode()
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..d935c2e 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,9 +1,24 @@
+-from datetime import datetime, timedelta
++from datetime import datetime, timedelta, timezone
+ 
+-from larder.sessions import EXPIRY_MINUTES, expires_at
++import pytest
++
++from larder.sessions import EXPIRY_MINUTES, expires_at, logout, sign, verify
+ 
+ 
+ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+     assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++
++
++def test_targeted_logout_explicitly_fails_without_revoking_any_cookies():
++    start = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
++    stolen_cookie = sign(1, start)
++    other_cookie = sign(2, start)
++
++    with pytest.raises(NotImplementedError, match="shared, persistent revocation state"):
++        logout(1)
++
++    assert verify(stolen_cookie, now=start) == 1
++    assert verify(other_cookie, now=start) == 2
++    assert verify(stolen_cookie, now=start + timedelta(minutes=31)) is None

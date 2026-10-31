@@ -1,0 +1,142 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "no-leads",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "session-expiry--no-leads--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:31:30.826415+00:00",
+  "duration_s": 17.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session.*(expir|timeout|ttl)|expir.*session /work --include=*.py -l"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -rniE \"session.*(expir|timeout|ttl)|expir.*session\" /work --include=*.py -l 2>/dev/null; echo ---; grep -rniE \"minutes|expir|timeout\" /work --include=*.py | grep -i session"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE minutes|expir|timeout /work --include=*.py"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -i session"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session --include=*.py ."
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -niE expir|timeout|ttl|minutes|hour"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./node_modules -prune -o -name sessions.py -print"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -path ./node_modules -prune -o -name \"sessions.py\" -print; echo ---; cat larder/sessions.py 2>/dev/null; echo ---docs---; grep -rniE \"session\" docs 2>/dev/null | grep -niE \"expir|minutes|timeout\""
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -path ./node_modules -prune -o -name \"sessions.py\" -print; echo ---; cat larder/sessions.py 2>/dev/null; echo ---docs---; grep -rniE \"session\" docs 2>/dev/null | grep -niE \"expir|minutes|timeout\""
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session docs"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -niE expir|minutes|timeout"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 160355,
+    "cached": 151968,
+    "output": 607,
+    "reasoning": 25
+  },
+  "cost_usd": 0.0699916,
+  "turns": 5,
+  "last_message": "Before I make this change: docs/features/sessions.md records that the 10-minute expiry was tried before and raised to 30 minutes specifically because it logged members out mid-order on slow connections, causing ~120 support tickets in a month. Reverting to 10 minutes would reintroduce that exact problem.\n\nDo you still want to shorten it to 10 minutes, or is there a different, longer value you'd prefer that still tightens security without recreating that issue?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

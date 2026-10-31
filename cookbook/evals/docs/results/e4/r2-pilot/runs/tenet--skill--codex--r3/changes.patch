@@ -1,0 +1,282 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 13e9044..43c350b 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -7,6 +7,8 @@ where a payment is captured.
+ ## Parts
+ 
+ - **Web app**, in `larder/`: serves the pantry, takes pantry orders and keeps sessions.
++- **Optional Redis cache**, accessed by `larder/catalog.py`: shares recent [pantry search results](features/catalog.md)
++  between web processes when configured.
+ - **Worker**, in `larder/receipts.py`: runs background jobs, such as receipt emails, from the queue in Postgres.
+ - **Card gateway**, outside the repository: charges cards; `larder/gateway.py` is its client.
+ 
+diff --git a/docs/features/README.md b/docs/features/README.md
+index 0679348..31de38d 100644
+--- a/docs/features/README.md
++++ b/docs/features/README.md
+@@ -3,3 +3,4 @@
+ - [Payments](payments.md): how a confirmed pantry order is charged, and its retry rules.
+ - [Sessions](sessions.md): how long a member stays logged in.
+ - [Checkout](checkout.md): how a member confirms a pantry order.
++- [Pantry search](catalog.md): optional caching, freshness and configuration for item searches.
+diff --git a/docs/features/catalog.md b/docs/features/catalog.md
+new file mode 100644
+index 0000000..793f958
+--- /dev/null
++++ b/docs/features/catalog.md
+@@ -0,0 +1,39 @@
++# Pantry search
++
++For whoever changes pantry search or enables its cache. Search can reuse recent results from Redis to reduce repeated
++item queries during slow Saturday mornings. The requested cache is optional so the app can still run on Postgres alone.
++
++## Results and freshness
++
++[The catalog query](../../larder/catalog.py) keeps the existing Postgres full-text matching and name ordering. With
++caching enabled, identical search strings share results, including empty results, for 15 seconds. Stock and item
++edits can take that long to appear; cached stock is display information, not a reservation or a checkout guarantee.
++There is no write-side invalidation in this repository. Disable the cache when immediate freshness is required.
++
++Redis failures, an unavailable Python client and malformed entries fall back to Postgres. Cache connections and
++reads have short timeouts and no automatic retries. Database errors still propagate. Cache failures are logged
++without the connection URL.
++
++## Configuration
++
++Install the Python dependency with `python3 -m pip install -r requirements.txt`. Set `LARDER_REDIS_URL` in the web
++app environment, for example `redis://localhost:6379/0`, and restart the app to enable caching. Leave it unset and
++restart to disable it. Use a separate Redis database for each deployment or pantry database: keys are shared across
++web processes and assume the repository's single pantry database. Redis must be private to trusted app processes.
++
++## Known limits
++
++The request names Tom to run Redis. This is an explicit exception to the existing
++[service operating rule](../philosophy.md#tenets): the repository supplies neither evidence that Postgres cannot
++handle this query nor a second volunteer able to restore Redis. No production measurements or database access are
++available here, so the performance improvement is unverified. Leaving `LARDER_REDIS_URL` unset preserves the existing
++deployment while those gaps are addressed.
++
++Simultaneous misses can query Postgres independently. Unique searches do not benefit from this cache; check the
++database query plan and indexes if cold searches remain slow.
++
++## Shaped by
++
++- [Keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md) and
++  [run background jobs on Postgres](../adr/0002-run-background-jobs-on-postgres.md) explain the existing operating
++  constraints; this disposable cache does not change those stores.
+diff --git a/larder/catalog.py b/larder/catalog.py
+index c970129..6625218 100644
+--- a/larder/catalog.py
++++ b/larder/catalog.py
+@@ -1,8 +1,70 @@
++import hashlib
++import json
++import logging
++import os
++from functools import lru_cache
++
++CACHE_TTL_SECONDS = 15
++logger = logging.getLogger(__name__)
++
++
++@lru_cache(maxsize=1)
++def _client(url: str):
++    # Redis is optional for deployments that leave the cache disabled.
++    from redis import Redis
++    from redis.backoff import NoBackoff
++    from redis.retry import Retry
++
++    return Redis.from_url(
++        url,
++        socket_connect_timeout=0.05,
++        socket_timeout=0.05,
++        retry=Retry(NoBackoff(), 0),
++    )
++
++
++def _cached_items(cache, key: str) -> list[dict] | None:
++    try:
++        value = cache.get(key)
++        if value is None:
++            return None
++        result = json.loads(value)
++        if isinstance(result, list) and all(
++            isinstance(item, dict)
++            and item.keys() == {"id", "name", "stock"}
++            for item in result
++        ):
++            return result
++    except Exception:
++        # Cache failures must not prevent a database read.
++        logger.warning("Catalog cache read failed; querying Postgres")
++    return None
++
++
+ def items(conn, query: str) -> list[dict]:
+     """The pantry items whose name matches the member's search, in name order."""
++    cache = None
++    url = os.environ.get("LARDER_REDIS_URL")
++    key = "larder:catalog:v1:" + hashlib.sha256(query.encode("utf-8")).hexdigest()
++    if url:
++        try:
++            cache = _client(url)
++        except Exception:
++            logger.warning("Catalog cache configuration failed; querying Postgres")
++        if cache is not None:
++            cached = _cached_items(cache, key)
++            if cached is not None:
++                return cached
++
+     rows = conn.execute(
+         "select id, name, stock from pantry_items"
+         " where to_tsvector('simple', name) @@ plainto_tsquery('simple', %s) order by name",
+         (query,),
+     ).fetchall()
+-    return [{"id": r[0], "name": r[1], "stock": r[2]} for r in rows]
++    result = [{"id": r[0], "name": r[1], "stock": r[2]} for r in rows]
++    if cache is not None:
++        try:
++            cache.set(key, json.dumps(result), ex=CACHE_TTL_SECONDS)
++        except Exception:
++            logger.warning("Catalog cache write failed; returning Postgres results")
++    return result
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..d7c1fbe
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1 @@
++redis>=8.1,<9
+diff --git a/tests/test_catalog.py b/tests/test_catalog.py
+new file mode 100644
+index 0000000..50b0ea2
+--- /dev/null
++++ b/tests/test_catalog.py
+@@ -0,0 +1,126 @@
++import json
++from decimal import Decimal
++from unittest.mock import Mock
++
++import pytest
++from larder import catalog
++
++
++@pytest.fixture
++def cache(monkeypatch):
++    cache = Mock()
++    cache.get.return_value = None
++    monkeypatch.setenv("LARDER_REDIS_URL", "redis://localhost:6379/0")
++    monkeypatch.setattr(catalog, "_client", Mock(return_value=cache))
++    return cache
++
++
++@pytest.fixture
++def conn():
++    conn = Mock()
++    conn.execute.return_value.fetchall.return_value = [(1, "Rice, brown", 12)]
++    return conn
++
++
++def test_without_configuration_queries_postgres(monkeypatch, conn):
++    monkeypatch.delenv("LARDER_REDIS_URL", raising=False)
++    client = Mock()
++    monkeypatch.setattr(catalog, "_client", client)
++
++    assert catalog.items(conn, "rice") == [{"id": 1, "name": "Rice, brown", "stock": 12}]
++    assert conn.execute.call_args.args[1] == ("rice",)
++    client.assert_not_called()
++
++
++def test_cache_miss_populates_an_expiring_entry_and_hit_skips_database(cache, conn):
++    expected = catalog.items(conn, "rice")
++    key, payload = cache.set.call_args.args
++    assert json.loads(payload) == expected
++    assert cache.set.call_args.kwargs == {"ex": catalog.CACHE_TTL_SECONDS}
++    cache.get.return_value = payload.encode()
++    conn.reset_mock()
++
++    assert catalog.items(conn, "rice") == expected
++    cache.get.assert_called_with(key)
++    conn.execute.assert_not_called()
++
++
++def test_empty_results_are_cache_hits(cache, conn):
++    cache.get.return_value = b"[]"
++
++    assert catalog.items(conn, "missing") == []
++    conn.execute.assert_not_called()
++
++
++def test_different_searches_have_different_keys(cache, conn):
++    catalog.items(conn, "rice")
++    first_key = cache.get.call_args.args[0]
++    catalog.items(conn, "Rice")
++
++    assert cache.get.call_args.args[0] != first_key
++
++
++@pytest.mark.parametrize("payload", [b"bad JSON", b"\xff", b"null", b"{}", b"[1]", b'[{}]'])
++def test_corrupt_cache_entries_fall_back_to_database(cache, conn, payload):
++    cache.get.return_value = payload
++
++    assert catalog.items(conn, "rice")[0]["stock"] == 12
++    conn.execute.assert_called_once()
++    cache.set.assert_called_once()
++
++
++@pytest.mark.parametrize("operation", ["get", "set"])
++def test_redis_failures_do_not_break_search(cache, conn, operation):
++    getattr(cache, operation).side_effect = ConnectionError("unavailable")
++
++    assert catalog.items(conn, "rice")[0]["name"] == "Rice, brown"
++    conn.execute.assert_called_once()
++
++
++@pytest.mark.parametrize("error", [ValueError("invalid URL"), ImportError("redis is not installed")])
++def test_bad_cache_configuration_falls_back_to_database(cache, conn, error):
++    catalog._client.side_effect = error
++
++    assert catalog.items(conn, "rice")[0]["stock"] == 12
++    cache.get.assert_not_called()
++
++
++def test_database_errors_propagate_and_are_not_cached(cache, conn):
++    conn.execute.side_effect = RuntimeError("database unavailable")
++
++    with pytest.raises(RuntimeError, match="database unavailable"):
++        catalog.items(conn, "rice")
++    cache.set.assert_not_called()
++
++
++def test_uncacheable_database_values_keep_their_original_types(cache, conn):
++    conn.execute.return_value.fetchall.return_value = [(1, "Rice, brown", Decimal("12.5"))]
++
++    assert catalog.items(conn, "rice")[0]["stock"] == Decimal("12.5")
++    cache.set.assert_not_called()
++
++
++def test_cache_failure_logs_do_not_include_credentials(cache, conn, caplog):
++    cache.get.side_effect = ConnectionError("redis://member:secret@localhost/0")
++
++    catalog.items(conn, "rice")
++
++    assert "Catalog cache read failed" in caplog.text
++    assert "secret" not in caplog.text
++
++
++def test_client_has_bounded_timeouts_and_no_retries(monkeypatch):
++    redis = pytest.importorskip("redis")
++    catalog._client.cache_clear()
++    factory = Mock()
++    monkeypatch.setattr(redis.Redis, "from_url", factory)
++    try:
++        client = catalog._client("redis://localhost:6379/0")
++        assert catalog._client("redis://localhost:6379/0") is client
++        factory.assert_called_once()
++        options = factory.call_args.kwargs
++        assert options["socket_connect_timeout"] == 0.05
++        assert options["socket_timeout"] == 0.05
++        assert options["retry"].get_retries() == 0
++    finally:
++        catalog._client.cache_clear()

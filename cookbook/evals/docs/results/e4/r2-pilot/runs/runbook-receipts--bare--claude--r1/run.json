@@ -1,0 +1,104 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 1,
+  "source": "e1/r2-pilot/runs/runbook-receipts--bare--claude--r1",
+  "id": "runbook-receipts--bare--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T03:16:19.331819+00:00",
+  "duration_s": 9.4,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls /work/docs/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls /work/docs/; echo ---; grep -ril \"receipt\" /work/docs/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril receipt /work/docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-not-sending.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 128657,
+    "cached": 120445,
+    "output": 618,
+    "reasoning": 25
+  },
+  "cost_usd": 0.063101,
+  "turns": 4,
+  "last_message": "This is a known issue \u2014 the runbook for exactly this is `docs/runbooks/receipts-not-sending.md`. Here are the steps for the on-call volunteer:\n\n1. **Check if the worker is running:**\n   ```\n   systemctl status larder-worker\n   ```\n   `inactive (dead)` confirms this is the cause (the deploy script only restarts the web app, not the worker, so it dies silently if it crashes during deploy).\n\n2. **Check how many receipts are queued:**\n   ```\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Expect a large `todo` count.\n\n3. **Restart the worker:**\n   ```\n   sudo systemctl start larder-worker\n   ```\n\n4. **Confirm it's draining** \u2014 rerun the query from step 2 about a minute later. `todo` should fall steadily (~40/minute) to 0. A few `failed` jobs for bounced/invalid emails are fine.\n\n**If the worker dies again right after starting:** grab its recent logs and post them to the payments volunteers in the pantry's chat:\n```\njournalctl -u larder-worker -n 50\n```",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,115 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 3,
+  "source": "e1/r2-pilot/runs/runbook-receipts--skill--claude--r3",
+  "id": "runbook-receipts--skill--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:58:41.120730+00:00",
+  "duration_s": 11.6,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls docs/runbooks/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls docs/runbooks/ 2>/dev/null; echo ---; grep -ril \"receipt\" docs/ 2>/dev/null; echo ---; ls docs/features/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril receipt docs/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "ls docs/runbooks/ 2>/dev/null; echo ---; grep -ril \"receipt\" docs/ 2>/dev/null; echo ---; ls docs/features/ 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "ls",
+      "command": "ls docs/features/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 138172,
+    "cached": 126882,
+    "output": 760,
+    "reasoning": 49
+  },
+  "cost_usd": 0.07812039999999999,
+  "turns": 4,
+  "last_message": "This matches exactly: no receipts since last night's deploy is the known symptom of the `larder-worker` not restarting with the deploy. Here's the runbook (`docs/runbooks/receipts-stopped.md`):\n\n**Before you begin:** SSH access to the app server with `sudo` for `systemctl`, and `psql` access to the `larder` database.\n\n**Steps:**\n\n1. `systemctl status larder-worker`\n   Expected `active (running)`; `inactive (dead)` confirms this is the known deploy bug (deploy restarts the web app but not the worker).\n2. `psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"`\n   Expected a large `todo` count with `doing` at 0 \u2014 that's the backlog of `send_receipt` jobs queued since the worker died.\n3. `sudo systemctl start larder-worker`\n   Expected `systemctl status larder-worker` now shows `active (running)`.\n4. Re-run the query from step 2 every minute or so.\n   Expected `todo` drains toward 0 (about 40/minute last time). A few stuck in `failed` is normal (bounced/invalid addresses) \u2014 not an incident.\n\n**If it fails:** If the worker goes back to `inactive (dead)` right after starting it, capture `journalctl -u larder-worker -n 50` and ask the payments volunteers in the pantry's ops chat.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

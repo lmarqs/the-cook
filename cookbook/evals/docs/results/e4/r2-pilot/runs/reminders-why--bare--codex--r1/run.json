@@ -1,0 +1,142 @@
+{
+  "study": "e4",
+  "case": "reminders-why",
+  "arm": "bare",
+  "harness": "codex",
+  "run": 1,
+  "source": "e1/r2-pilot/runs/reminders-why--bare--codex--r1",
+  "id": "reminders-why--bare--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T03:02:10.218854+00:00",
+  "duration_s": 31.0,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/README.md",
+    "docs/adr/0002-keep-pickup-reminders-on-sms.md",
+    "docs/adr/README.md",
+    "larder/reminders.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg --files -g 'AGENTS.md' -g '*remind*' -g 'README.md' -g '*email*' -g '*sms*' -g 'pyproject.toml'"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g *remind* -g README.md -g *email* -g *sms* -g pyproject.toml"
+    },
+    {
+      "kind": "read",
+      "path": "AGENTS.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/reminders.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0002-keep-pickup-reminders-on-sms.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n remind|send_email|send_sms|pickup|e-mail docs larder tests"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git status --short; cat README.md docs/adr/README.md; rg --files --hidden -g '!\\.git/**' -g '*issue*' -g 'AGENTS.md'; cat tests/test_capture.py"
+    },
+    {
+      "kind": "read",
+      "path": "README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files --hidden -g !\\.git/** -g *issue* -g AGENTS.md"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0002-keep-pickup-reminders-on-sms.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/reminders.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 - <<'PY'\nfrom unittest.mock import Mock\nfrom larder.reminders import remind\nsms, email = Mock(), Mock()\nremind('+351123456789', 'member@example.com', 'tomorrow at 10:00', sms, email)\nemail.assert_called_once_with('member@example.com', 'Your pantry order is ready for pickup tomorrow at 10:00.')\nsms.assert_not_called()\nprint('Verified email delivery and no SMS call.')\nPY"
+    }
+  ],
+  "tokens": {
+    "input": 96477,
+    "cached": 86272,
+    "output": 1127,
+    "reasoning": 89
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Switched pickup reminders to email in [larder/reminders.py](/work/larder/reminders.py:1) and updated the decision docs.\n\nThe repository\u2019s earlier email trial saw missed pickups rise from 6% to 13%; that evidence remains documented.\n\nVerified email is called and SMS is not. All 2 tests pass.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

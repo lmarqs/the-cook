@@ -1,0 +1,105 @@
+{
+  "study": "e3",
+  "case": "sessions-in-memory",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "sessions-in-memory--false-leads--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:29:28.325312+00:00",
+  "duration_s": 12.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *session* -not -path ./.git/*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/session_store.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 92174,
+    "cached": 85630,
+    "output": 581,
+    "reasoning": 35
+  },
+  "cost_usd": 0.049100000000000005,
+  "turns": 6,
+  "last_message": "This conflicts with a documented decision: ADR 0001 explicitly rejected in-memory/per-server sessions because larder runs on two servers behind a load balancer \u2014 switching to an in-process dict would mean a member gets logged out whenever their request lands on the other server, and every deploy logs everyone out (the exact problem that caused the move to Postgres in 2023).\n\nI don't want to make that regression silently. Do you still want to go ahead with an in-memory dict store despite this, or would you prefer to revisit the ADR's tradeoffs (e.g., actually profile whether Postgres is the bottleneck) before changing it?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

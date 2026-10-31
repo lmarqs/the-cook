@@ -1,0 +1,106 @@
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index dad8777..d131fef 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -2,7 +2,7 @@
+ 
+ For whoever changes how larder charges a card, or answers a member charged twice. Larder captures the authorized
+ amount once a pantry order is confirmed. Its retry rules address duplicate charges after gateway timeouts in 2024
+-and failed captures during the gateway's Friday peak.
++and confirmation-page waits during the gateway's Friday peak.
+ 
+ ## Capture
+ 
+@@ -11,15 +11,15 @@ A confirmed pantry order is captured for its authorized amount:
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 5 attempts in all, with pauses of 2, 4, 6 and 8 seconds before
+-successive retries. These pauses add up to 20 seconds of waiting on the confirmation page, in addition to time spent
+-calling the gateway. If the final attempt times out, the timeout is raised to the caller.
++A capture that times out is tried again, up to 3 attempts in all, with no pause between attempts. If the final
++attempt times out, the timeout is raised to the caller. Members reported confirmation-page hangs on Fridays;
++removing the previous pauses eliminates 20 seconds of added waiting, but gateway calls can still take time.
+ 
+-During the gateway's Friday 17:00–19:00 peak, the previous three attempts went out within a second and all hit the
++During the gateway's Friday 17:00–19:00 peak, three immediate attempts previously went out within a second and all hit the
+ same slow period. One Friday left 58 confirmed pantry orders for a volunteer to capture by hand the next morning.
+-A sandbox replay with the longer retry schedule would have captured 57 of those 58 orders. The team accepted the
+-added wait to reduce that manual work; switching gateways was deferred because the contract runs through December
+-2026. [Issue 40](../../notes/issue-40.md) records the discussion and replay result.
++A sandbox replay with five attempts and pauses of 2, 4, 6 and 8 seconds would have captured 57 of those 58 orders.
++Restoring immediate retries removes the added wait at the cost of that mitigation; switching gateways was deferred
++because the contract runs through December 2026.
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+diff --git a/larder/capture.py b/larder/capture.py
+index 36ba4b5..fe2bcf1 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,11 +1,9 @@
+-import time
+ import uuid
+ 
+ from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
+-ATTEMPTS = 5
+-BACKOFF_SECONDS = 2
++ATTEMPTS = 3
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+@@ -17,5 +15,4 @@ def capture(order: Order, gateway: Gateway) -> str:
+         except GatewayTimeout:
+             if attempt == ATTEMPTS:
+                 raise
+-            time.sleep(BACKOFF_SECONDS * attempt)
+     raise AssertionError("unreachable")
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..209da21 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,9 @@
++import time
++
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +21,32 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++@pytest.mark.parametrize("timeouts", [2, 3])
++def test_capture_retries_immediately_with_the_same_key(monkeypatch, timeouts):
++    def unexpected_sleep(seconds):
++        pytest.fail("capture must not pause between attempts")
++
++    monkeypatch.setattr(time, "sleep", unexpected_sleep)
++    calls = []
++    timeout = GatewayTimeout("gateway did not answer")
++
++    class TimeoutGateway:
++        def capture(self, order_id, amount_cents, idempotency_key):
++            calls.append((order_id, amount_cents, idempotency_key))
++            if len(calls) <= timeouts:
++                raise timeout
++            return "ch_1"
++
++    if timeouts == 3:
++        with pytest.raises(GatewayTimeout) as raised:
++            capture(Order("o1", 1250), TimeoutGateway())
++        assert raised.value is timeout
++    else:
++        assert capture(Order("o1", 1250), TimeoutGateway()) == "ch_1"
++
++    assert len(calls) == 3
++    assert all(call[:2] == ("o1", 1250) for call in calls)
++    assert calls[0][2]
++    assert len({call[2] for call in calls}) == 1

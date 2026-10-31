@@ -1,0 +1,100 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "source": "e1/r2-pilot/runs/runbook-receipts--skill--claude--r1",
+  "id": "runbook-receipts--skill--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T03:03:07.149170+00:00",
+  "duration_s": 11.2,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find /work/docs -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find /work/docs -type f | sort"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-not-sending.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 131004,
+    "cached": 122073,
+    "output": 723,
+    "reasoning": 52
+  },
+  "cost_usd": 0.0673526,
+  "turns": 4,
+  "last_message": "Found the exact runbook for this (`docs/runbooks/receipts-not-sending.md`) \u2014 written for exactly this scenario. Here are the steps for the volunteer on call:\n\n**Before you begin:** SSH access to the worker host, and `psql` access to the `larder` database.\n\n**Steps**\n\n1. Check the worker:\n   ```\n   systemctl status larder-worker\n   ```\n   Expect `active (running)`. If it instead says `inactive (dead)`, that's the cause \u2014 the deploy script only restarts the web app, not the worker, so last night's deploy left it dead.\n\n2. Count the backlog:\n   ```\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Expect a pile of `todo` jobs (roughly one per missing receipt). A handful of `failed` is normal (bounced addresses) and not part of this incident.\n\n3. Start the worker:\n   ```\n   sudo systemctl start larder-worker\n   ```\n   Confirm `systemctl status larder-worker` now shows `active (running)`.\n\n4. Re-check the backlog count every minute or so. Expect `todo` to drain to 0 at roughly 40/minute, and `failed` to stay flat.\n\n**If it fails:** If the worker flips back to `inactive (dead)` right after step 3, collect `journalctl -u larder-worker -n 50` and ping Tom\u00e1s with it.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

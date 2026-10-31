@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-tests",
+      "type": "tests_pass",
+      "text": "The repository's tests and the hidden tests pass: the limit of 2 open pantry orders counts every member at the\nmember's address.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "exit 0: .........                                                                [100%] / 9 passed in 0.04s",
+      "judged_by": null,
+      "grader_sha": "b5dfb1557a453b21b50c5a4ff1525faa11cc8126a2aea71565cdd8424b8a7d1a"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/ordering-limits.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/ordering-limits.md at step 3; first edit at step 18",
+      "judged_by": null,
+      "grader_sha": "1bc2ce67a2bfef4b432d87d12c8458b49a731a3f3e6efa6bafd0c414faffcd69"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-tests"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

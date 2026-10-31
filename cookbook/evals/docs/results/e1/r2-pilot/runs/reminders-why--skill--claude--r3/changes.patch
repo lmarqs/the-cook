@@ -1,0 +1,50 @@
+diff --git a/docs/adr/0002-remind-pickups-by-sms.md b/docs/adr/0002-remind-pickups-by-sms.md
+new file mode 100644
+index 0000000..297a82a
+--- /dev/null
++++ b/docs/adr/0002-remind-pickups-by-sms.md
+@@ -0,0 +1,35 @@
++# Remind pickups by SMS
++
++For whoever proposes a reminder channel, or changes `larder/reminders.py`. Pickup reminders, sent the day before a
++member's pickup slot, go by SMS and not email, because an email trial in 2025 raised missed pickups.
++
++## Context
++
++Members get a reminder the day before their pantry order is ready for pickup. SMS costs the pantry about 40 euros a
++month; email would cost nothing, and volunteers have raised switching to email three times, most recently in
++[issue 52](../../notes/issue-52.md).
++
++The team tried email once, from April to June 2025. The provider's report showed 34% of the reminder emails were
++never opened, and missed pickups rose from 6% to 13% of pantry orders over the trial. A missed pickup is a packed bag
++whose fresh food goes in the bin by closing time, so the loss lands in food, not just a volunteer's time. Many
++members share one household phone and do not check the email on it. The team switched back to SMS on July 1, 2025,
++and missed pickups returned to 6% by August. Two forces judge the options: a reminder must reach a member who does
++not check email on a shared phone, and the pantry keeps its running costs low.
++
++## Options
++
++- **Email**: free; lost because a third of reminders went unopened and missed pickups more than doubled during the
++  2025 trial.
++- **SMS**: chosen.
++
++## Decision
++
++Pickup reminders go by SMS, because it is the channel members shared across a household actually see, and the 2025
++trial measured email's lower reach directly in missed pickups. `larder/reminders.py` hard-codes `CHANNEL = "sms"`
++rather than making the channel configurable, since the email option already failed on its merits.
++
++## Consequences
++
++The pantry pays about 40 euros a month for SMS. Missed pickups stay around 6% of pantry orders instead of the 13%
++email produced. A future proposal to cut this cost should bring a channel that reaches a shared household phone, not
++plain email, or evidence that the 2025 trial's conditions no longer hold.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 9c61e9b..8f6b1a8 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,3 +1,4 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Remind pickups by SMS](0002-remind-pickups-by-sms.md): pickup reminders go by SMS, not email.

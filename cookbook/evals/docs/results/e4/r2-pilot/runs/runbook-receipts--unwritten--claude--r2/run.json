@@ -1,0 +1,195 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "unwritten",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "runbook-receipts--unwritten--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:48:47.926743+00:00",
+  "duration_s": 43.9,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find docs -type f | sort && echo --- && cat docs/README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find docs -type f | sort && echo --- && cat docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/runbooks/README.md && echo ---GATEWAY--- && cat docs/runbooks/gateway-timeouts.md && echo ---PAYMENTS--- && cat docs/features/payments.md && echo ---CHECKOUT--- && cat docs/features/checkout.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/gateway-timeouts.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/runbooks/README.md && echo ---GATEWAY--- && cat docs/runbooks/gateway-timeouts.md && echo ---PAYMENTS--- && cat docs/features/payments.md && echo ---CHECKOUT--- && cat docs/features/checkout.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/payments.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat docs/runbooks/README.md && echo ---GATEWAY--- && cat docs/runbooks/gateway-timeouts.md && echo ---PAYMENTS--- && cat docs/features/payments.md && echo ---CHECKOUT--- && cat docs/features/checkout.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril receipt . --include=*.py --include=*.md"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "grep -ril receipt . --include=*.py --include=*.md | sort"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril receipt ."
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -ril receipt . 2>/dev/null; echo ---; find . -name \"*.py\" | xargs grep -il receipt 2>/dev/null"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -name *.py"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "grep -ril receipt . 2>/dev/null; echo ---; find . -name \"*.py\" | xargs grep -il receipt 2>/dev/null"
+    },
+    {
+      "kind": "read",
+      "path": "larder/receipts.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git log --oneline -- larder/receipts.py && echo --- && cat docs/architecture.md"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "git log --oneline -- larder/receipts.py && echo --- && cat docs/architecture.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./.git -prune -o -type f -print"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find . -path ./.git -prune -o -type f -print | sort"
+    }
+  ],
+  "tokens": {
+    "input": 291350,
+    "cached": 277208,
+    "output": 3291,
+    "reasoning": 1750
+  },
+  "cost_usd": 0.1448876,
+  "turns": 8,
+  "last_message": "I checked the repo for anything receipt-related and found the root cause, plus confirmed there's no existing runbook for this trigger (only `docs/runbooks/gateway-timeouts.md` exists, which covers a different problem \u2014 timed-out captures, not missing receipts).\n\n**Root cause (in the repo):**\n\n`larder/receipts.py`:\n```python\ndef send_receipt(order_id: str) -> None:\n    \"\"\"A procrastinate job: emails the member the receipt of a captured order.\"\"\"\n    raise NotImplementedError\n```\n\nThis is the entire function \u2014 it unconditionally raises `NotImplementedError`. Per `docs/architecture.md`, this is the worker job that emails receipts for captured pantry orders, run from the Postgres-backed queue. Since the only commit in this repo's history (`135b2c3`) already contains this stub, last night's deploy shipped a worker that fails every single receipt job, every time, with no exception.\n\nNote what this is **not**: per `docs/features/payments.md`, capture happens in `larder/capture.py` when a pantry order is confirmed, independent of the receipt email. So members' cards were charged correctly \u2014 they're just not getting the email confirming it. This is not the 2024 double-charge scenario the gateway-timeouts runbook covers.\n\n**Exact steps for the volunteer on call:**\n\n1. Confirm the diagnosis without server access, by reading `larder/receipts.py` in the deployed repo \u2014 if it's the version above, that's the entire bug.\n2. Tell members in the pantry's chat: their card orders were captured correctly (confirmed orders are charged as normal); only the receipt email is missing and is being fixed. Do not ask members to recheck out or pay again.\n3. Since this is a code defect (not a config/infra issue this repo documents a fix for), it needs a code fix and redeploy: implement `send_receipt` to actually send the email, or revert last night's deploy to whatever artifact was running before it, if one still exists outside this git history (this repo only has the one commit, so there is no earlier commit to roll back to here).\n4. Once a fix is deployed, the queued `send_receipt` jobs for last night's orders should be retried from the Postgres job queue (procrastinate) rather than dropped, so affected members still get their receipt rather than silently losing it.\n5. Afterward, per `docs/README.md`'s rule that \"a runbook is updated each time its trigger fires,\" add a new `docs/runbooks/` page for \"no receipt after deploy\" so the next on-call volunteer doesn't have to rediscover this from source.\n\nIf this is more than the on-call volunteer can resolve alone (no deploy access, no prior working artifact), the repo's only escalation path documented is the same as gateway-timeouts: ask the payments volunteers in the pantry's chat.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

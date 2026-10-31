@@ -1,0 +1,111 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "false-leads",
+  "harness": "codex",
+  "run": 1,
+  "source": "",
+  "id": "session-expiry--false-leads--codex--r1",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "started": "2026-10-31T02:31:27.734918+00:00",
+  "duration_s": 27.7,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "docs/features/sessions.md",
+    "larder/sessions.py",
+    "tests/test_sessions.py"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "pwd",
+      "command": "pwd; rg -n 'session|expiry|expire' --glob '!uv.lock' --glob '!*.svg' ."
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg -n session|expiry|expire --glob !uv.lock --glob !*.svg ."
+    },
+    {
+      "kind": "read",
+      "path": ".agents/skills/docs-layout/SKILL.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "search",
+      "tool": "rg",
+      "command": "rg --files -g AGENTS.md -g pyproject.toml"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "cat /work/.agents/skills/docs-layout/SKILL.md; cat docs/README.md docs/features/sessions.md larder/sessions.py tests/test_sessions.py; rg --files -g AGENTS.md -g pyproject.toml; git status --short"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/features/sessions.md",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/sessions.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "edit",
+      "path": "tests/test_sessions.py",
+      "tool": "file_change"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git diff --check; git diff --stat"
+    }
+  ],
+  "tokens": {
+    "input": 71243,
+    "cached": 63360,
+    "output": 709,
+    "reasoning": 28
+  },
+  "cost_usd": null,
+  "turns": 1,
+  "last_message": "Changed session expiry to **10 minutes of inactivity**. Updated the docs and test; all 2 tests pass.\n\nThe docs retain the history that this limit previously caused lost selections on slow connections.",
+  "is_error": false,
+  "error": null,
+  "init": null,
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,82 @@
+diff --git a/larder/capture.py b/larder/capture.py
+index 36ba4b5..fe2bcf1 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,11 +1,9 @@
+-import time
+ import uuid
+ 
+ from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
+-ATTEMPTS = 5
+-BACKOFF_SECONDS = 2
++ATTEMPTS = 3
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+@@ -17,5 +15,4 @@ def capture(order: Order, gateway: Gateway) -> str:
+         except GatewayTimeout:
+             if attempt == ATTEMPTS:
+                 raise
+-            time.sleep(BACKOFF_SECONDS * attempt)
+     raise AssertionError("unreachable")
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..a71c827 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,13 +1,21 @@
++import time
++
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+ class FakeGateway:
+-    def __init__(self):
++    def __init__(self, timeouts=0):
+         self.calls = []
++        self.timeouts = timeouts
+ 
+     def capture(self, order_id, amount_cents, idempotency_key):
+         self.calls.append((order_id, amount_cents, idempotency_key))
++        if len(self.calls) <= self.timeouts:
++            raise GatewayTimeout
+         return "ch_1"
+ 
+ 
+@@ -16,3 +24,31 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++@pytest.fixture
++def no_sleep(monkeypatch):
++    def unexpected_sleep(seconds):
++        pytest.fail("capture must retry without pausing")
++
++    monkeypatch.setattr(time, "sleep", unexpected_sleep)
++
++
++@pytest.mark.parametrize("timeouts", [1, 2])
++def test_capture_retries_timeouts_with_the_same_key(timeouts, no_sleep):
++    gateway = FakeGateway(timeouts=timeouts)
++
++    assert capture(Order("o1", 1250), gateway) == "ch_1"
++    assert len(gateway.calls) == timeouts + 1
++    assert gateway.calls == [gateway.calls[0]] * (timeouts + 1)
++    assert gateway.calls[0][2]
++
++
++def test_capture_raises_after_three_timeouts(no_sleep):
++    gateway = FakeGateway(timeouts=3)
++
++    with pytest.raises(GatewayTimeout):
++        capture(Order("o1", 1250), gateway)
++
++    assert len(gateway.calls) == 3
++    assert gateway.calls == [gateway.calls[0]] * 3

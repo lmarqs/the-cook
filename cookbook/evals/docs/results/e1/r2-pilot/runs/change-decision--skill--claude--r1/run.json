@@ -1,0 +1,177 @@
+{
+  "study": "e1",
+  "case": "change-decision",
+  "arm": "skill",
+  "harness": "claude",
+  "run": 1,
+  "source": "",
+  "id": "change-decision--skill--claude--r1",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T00:38:37.500293+00:00",
+  "duration_s": 110.7,
+  "exit_code": 1,
+  "timed_out": false,
+  "files_changed": [
+    "docs/adr/0001-keep-sessions-in-signed-cookies.md",
+    "docs/adr/0001-keep-sessions-in-the-database.md",
+    "docs/adr/README.md"
+  ],
+  "steps": [
+    {
+      "kind": "other",
+      "tool": "Skill",
+      "input": {
+        "skill": "docs-layout",
+        "args": "Update docs to reflect that sessions moved from Postgres to signed cookies in larder/sessions.py (see notes/issue-63.md). Review docs/ for stale references to Postgres-backed sessions and bring everything current."
+      }
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "notes/issue-63.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril session docs/"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "grep -ril \"session\" docs/ ; echo ---; grep -ril \"postgres\\|redis\\|database\" docs/"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -ril postgres\\|redis\\|database docs/"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/0001-keep-sessions-in-the-database.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/architecture.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/adr/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/README.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/checkout.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "other",
+      "tool": "git",
+      "command": "git mv docs/adr/0001-keep-sessions-in-the-database.md docs/adr/0001-keep-sessions-in-signed-cookies.md"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Write"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/0001-keep-sessions-in-signed-cookies.md",
+      "tool": "Edit"
+    },
+    {
+      "kind": "edit",
+      "path": "docs/adr/README.md",
+      "tool": "Edit"
+    }
+  ],
+  "tokens": {
+    "input": 369163,
+    "cached": 348262,
+    "output": 4472,
+    "reasoning": 1825
+  },
+  "cost_usd": 0.19794040000000002,
+  "turns": 18,
+  "last_message": "Failed to authenticate: OAuth session expired and could not be refreshed",
+  "is_error": true,
+  "error": "Failed to authenticate: OAuth session expired and could not be refreshed",
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": "exit 1",
+  "attempts": 1
+}

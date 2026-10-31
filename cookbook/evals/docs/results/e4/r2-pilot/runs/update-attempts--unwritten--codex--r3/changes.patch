@@ -1,0 +1,80 @@
+diff --git a/larder/capture.py b/larder/capture.py
+index 36ba4b5..fe2bcf1 100644
+--- a/larder/capture.py
++++ b/larder/capture.py
+@@ -1,11 +1,9 @@
+-import time
+ import uuid
+ 
+ from larder.gateway import Gateway, GatewayTimeout
+ from larder.orders import Order
+ 
+-ATTEMPTS = 5
+-BACKOFF_SECONDS = 2
++ATTEMPTS = 3
+ 
+ 
+ def capture(order: Order, gateway: Gateway) -> str:
+@@ -17,5 +15,4 @@ def capture(order: Order, gateway: Gateway) -> str:
+         except GatewayTimeout:
+             if attempt == ATTEMPTS:
+                 raise
+-            time.sleep(BACKOFF_SECONDS * attempt)
+     raise AssertionError("unreachable")
+diff --git a/tests/test_capture.py b/tests/test_capture.py
+index 32c7093..089cd4f 100644
+--- a/tests/test_capture.py
++++ b/tests/test_capture.py
+@@ -1,4 +1,9 @@
++import time
++
++import pytest
++
+ from larder.capture import capture
++from larder.gateway import GatewayTimeout
+ from larder.orders import Order
+ 
+ 
+@@ -16,3 +21,42 @@ def test_capture_returns_the_charge_id():
+ 
+     assert capture(Order("o1", 1250), gateway) == "ch_1"
+     assert gateway.calls[0][:2] == ("o1", 1250)
++
++
++class TimeoutGateway(FakeGateway):
++    def __init__(self, timeouts):
++        super().__init__()
++        self.timeouts = timeouts
++
++    def capture(self, order_id, amount_cents, idempotency_key):
++        charge_id = super().capture(order_id, amount_cents, idempotency_key)
++        if len(self.calls) <= self.timeouts:
++            raise GatewayTimeout
++        return charge_id
++
++
++@pytest.fixture
++def no_pause(monkeypatch):
++    def unexpected_sleep(seconds):
++        pytest.fail("Capture retries must not pause")
++
++    monkeypatch.setattr(time, "sleep", unexpected_sleep)
++
++
++def test_capture_succeeds_on_third_attempt_with_same_key(no_pause):
++    gateway = TimeoutGateway(timeouts=2)
++
++    assert capture(Order("o1", 1250), gateway) == "ch_1"
++    assert len(gateway.calls) == 3
++    assert gateway.calls[0][2]
++    assert all(call == gateway.calls[0] for call in gateway.calls)
++
++
++def test_capture_raises_after_three_timeouts(no_pause):
++    gateway = TimeoutGateway(timeouts=3)
++
++    with pytest.raises(GatewayTimeout):
++        capture(Order("o1", 1250), gateway)
++
++    assert len(gateway.calls) == 3
++    assert all(call == gateway.calls[0] for call in gateway.calls)

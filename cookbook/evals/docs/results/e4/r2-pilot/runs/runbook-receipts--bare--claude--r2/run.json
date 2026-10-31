@@ -1,0 +1,104 @@
+{
+  "study": "e4",
+  "case": "runbook-receipts",
+  "arm": "bare",
+  "harness": "claude",
+  "run": 2,
+  "source": "e1/r2-pilot/runs/runbook-receipts--bare--claude--r2",
+  "id": "runbook-receipts--bare--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:57:36.237474+00:00",
+  "duration_s": 10.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs -type f"
+    },
+    {
+      "kind": "other",
+      "tool": "sort",
+      "command": "find docs -type f | sort && echo --- && cat docs/README.md"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find docs -type f | sort && echo --- && cat docs/README.md"
+    },
+    {
+      "kind": "read",
+      "path": "docs/README.md",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "docs/runbooks/receipts-stopped.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 95902,
+    "cached": 87901,
+    "output": 621,
+    "reasoning": 36
+  },
+  "cost_usd": 0.05578219999999999,
+  "turns": 3,
+  "last_message": "This matches a known pattern (worker not restarted by deploy). Here are the exact steps for the on-call volunteer:\n\n## Fix: receipts stopped after deploy\n\n**Cause:** the deploy script only restarts the web app, not the background worker \u2014 so a deploy can leave the worker dead while the web app keeps taking orders, and receipt emails just queue up.\n\n1. **Check the worker:**\n   ```\n   systemctl status larder-worker\n   ```\n   Expect `inactive (dead)`.\n\n2. **Confirm queued jobs are piling up:**\n   ```\n   psql larder -c \"select status, count(*) from procrastinate_jobs group by status\"\n   ```\n   Expect a growing number of `todo` jobs.\n\n3. **Start the worker:**\n   ```\n   sudo systemctl start larder-worker\n   ```\n\n4. **Watch the queue drain** \u2014 rerun the step 2 query a minute later. `todo` should fall by ~40/minute until it hits 0. A few `failed` (bounced addresses) are normal and not a problem.\n\n**If the worker dies again immediately:**\n```\njournalctl -u larder-worker -n 50\n```\nand ping the payments volunteers in the pantry's chat.\n\n(Source: `docs/runbooks/receipts-stopped.md`, written after this exact failure happened twice in September 2024.)",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

@@ -1,0 +1,69 @@
+diff --git a/docs/README.md b/docs/README.md
+index 2602644..b274b9a 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -2,3 +2,16 @@
+ 
+ The pages under `docs/` are this repository's source of truth for people and coding agents. This page says which page
+ owns each fact; read it before writing one.
++
++| Page | Owns |
++| --- | --- |
++| [Architecture](architecture.md) | App parts and how they connect. |
++| [Glossary](glossary.md) | Shared names for domain concepts. |
++| [Payments](features/payments.md) | Capture behavior, retry limits and pauses, idempotency, and the reasons for those rules. |
++| [Checkout](features/checkout.md) | The member's confirmation steps; links to payments for capture behavior. |
++| [Sessions](features/sessions.md) | Session lifetime and renewal. |
++| [Gateway timeouts](runbooks/gateway-timeouts.md) | Operational checks when captures time out; links to payments for retry rules. |
++| [Keep sessions in the database](adr/0001-keep-sessions-in-the-database.md) | The session storage decision, alternatives, and consequences. |
++
++Keep each fact on its owning page and link to it from other pages. Issue notes such as
++[issue 40](../notes/issue-40.md) preserve discussions; put current behavior and its rationale in the owning docs page.
+diff --git a/docs/features/payments.md b/docs/features/payments.md
+index 9f7ce75..be50d86 100644
+--- a/docs/features/payments.md
++++ b/docs/features/payments.md
+@@ -11,7 +11,15 @@ returns its charge id.
+ 
+ ## Retries
+ 
+-A capture that times out is tried again, up to 3 attempts in all, one after the other.
++A capture that raises `GatewayTimeout` is tried again, up to 5 attempts in all (the initial call and 4 retries).
++`ATTEMPTS` and `BACKOFF_SECONDS` in `larder/capture.py` set the limit and the growing pauses: 2, 4, 6 and 8 seconds
++before the successive retries. A successful attempt returns immediately; a fifth timeout is raised to the caller.
++The pauses add up to 20 seconds of waiting on the confirmation page, in addition to time spent in gateway calls.
++
++Previously, 3 attempts ran back to back and could all hit the gateway's Friday 17:00–19:00 slowdown. One Friday left
++58 confirmed pantry orders for a volunteer to capture by hand. A sandbox replay with the new spacing would have
++captured 57 of those 58. The longer confirmation wait was accepted to reduce that manual work; switching gateways
++was ruled out because the contract runs to December 2026. See [issue 40](../../notes/issue-40.md) for the discussion.
+ 
+ Every attempt to capture one pantry order sends the same idempotency key, the one its first attempt used. The gateway
+ can report a timeout after it has already charged the card, and it charges again for a new key: in 2024 retries that
+diff --git a/docs/runbooks/gateway-timeouts.md b/docs/runbooks/gateway-timeouts.md
+index 119293a..8718e2e 100644
+--- a/docs/runbooks/gateway-timeouts.md
++++ b/docs/runbooks/gateway-timeouts.md
+@@ -1,7 +1,7 @@
+ # Gateway timeouts
+ 
+ For the volunteer on call when the gateway-timeout alert fires. Brings captures back once the card gateway answers
+-again; while it times out, confirmed pantry orders stay uncharged. Written after the 2024 outage, when nobody knew
++again; a timed-out capture may already have charged the card. Written after the 2024 outage, when nobody knew
+ whether a timed-out capture had charged the card. Owner: the payments volunteers.
+ 
+ ## Before you begin
+@@ -15,7 +15,12 @@ whether a timed-out capture had charged the card. Owner: the payments volunteers
+    Expected: an incident is listed, or the status is green.
+ 2. Once it is green, find the timed-out captures in the worker's log: lines with `GatewayTimeout`.
+ 
+-   Expected: three lines per pantry order that gave up, one for each attempt, with its order id.
++   Expected: identify affected pantry orders by their order ids. Do not infer the number of attempts from the number
++   of log lines: `larder/capture.py` does not log individual attempts, and the production gateway client lives outside
++   this repository. The attempt limit and pauses are described in [payments](../features/payments.md#retries).
++3. Check each affected pantry order in the gateway's dashboard before arranging a manual capture with the payments
++   volunteers. A timeout alone does not show whether the card was charged; see [payments](../features/payments.md#retries)
++   for the idempotency rule.
+ 
+ ## If it fails
+ 

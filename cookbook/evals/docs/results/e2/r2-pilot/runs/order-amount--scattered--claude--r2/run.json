@@ -1,0 +1,152 @@
+{
+  "study": "e2",
+  "case": "order-amount",
+  "arm": "scattered",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "order-amount--scattered--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:51:32.639574+00:00",
+  "duration_s": 19.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [
+    "larder/pantry.py"
+  ],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -path ./node_modules -prune -o -name *.py -print"
+    },
+    {
+      "kind": "other",
+      "tool": "xargs",
+      "command": "find . -path ./node_modules -prune -o -name '*.py' -print | xargs grep -l \"amount_cents\" "
+    },
+    {
+      "kind": "read",
+      "path": "larder/pantry.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_capture.py",
+      "tool": "Read"
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find . -iname *pantry*"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*pantry*\" ; echo \"---\"; grep -rn \"amount_cents\\|price_cents\\|Catalog\\|PantryOrder\" --include=\"*.py\" -r . ; echo \"---docs---\"; find docs -iname \"*pantry*\" -o -iname \"*pric*\" -o -iname \"*order*\""
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn amount_cents\\|price_cents\\|Catalog\\|PantryOrder --include=*.py -r ."
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "find . -iname \"*pantry*\" ; echo \"---\"; grep -rn \"amount_cents\\|price_cents\\|Catalog\\|PantryOrder\" --include=\"*.py\" -r . ; echo \"---docs---\"; find docs -iname \"*pantry*\" -o -iname \"*pric*\" -o -iname \"*order*\""
+    },
+    {
+      "kind": "search",
+      "tool": "find",
+      "command": "find docs -iname *pantry* -o -iname *pric* -o -iname *order*"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pantry-orders.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/price-list.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/pantry-items.md",
+      "tool": "Read"
+    },
+    {
+      "kind": "edit",
+      "path": "larder/pantry.py",
+      "tool": "Edit"
+    },
+    {
+      "kind": "other",
+      "tool": "python3",
+      "command": "python3 -m pytest -q 2>&1 | tail -20"
+    }
+  ],
+  "tokens": {
+    "input": 237919,
+    "cached": 231612,
+    "output": 1229,
+    "reasoning": 77
+  },
+  "cost_usd": 0.0838124,
+  "turns": 10,
+  "last_message": "Tests pass. `amount_cents` now sums `quantity * price_cents` across the order's lines \u2014 the prices locked in at confirmation, never the catalog's current prices, matching `docs/features/pantry-orders.md`.",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

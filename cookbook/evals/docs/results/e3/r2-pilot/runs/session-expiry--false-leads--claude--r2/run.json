@@ -1,0 +1,110 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "false-leads",
+  "harness": "claude",
+  "run": 2,
+  "source": "",
+  "id": "session-expiry--false-leads--claude--r2",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T01:58:58.112400+00:00",
+  "duration_s": 12.3,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session.*expir|expir.*session|SESSION_TIMEOUT|session_ttl|session.*minute|session.*lifetime /work --include=*.py -l"
+    },
+    {
+      "kind": "read",
+      "path": "tests/test_sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "read",
+      "path": "larder/sessions.py",
+      "tool": "cat"
+    },
+    {
+      "kind": "other",
+      "tool": "echo",
+      "command": "cat /work/larder/sessions.py; echo ---; grep -rn \"EXPIRY_MINUTES\\|session\" /work/docs -il"
+    },
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rn EXPIRY_MINUTES\\|session /work/docs -il"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "cat"
+    }
+  ],
+  "tokens": {
+    "input": 162351,
+    "cached": 158621,
+    "output": 552,
+    "reasoning": 51
+  },
+  "cost_usd": 0.05214420000000001,
+  "turns": 5,
+  "last_message": "This doc flags a real conflict: the 30-minute limit was deliberately raised from 10 in March 2024 because 10 minutes was logging out members mid-order on slow connections (120 support tickets that month). Lowering it back to 10 would likely reintroduce that exact problem.\n\nI'd like to confirm before making this change \u2014 do you still want to drop it to 10 minutes given that history, or would a different value (or a different mechanism, like only expiring idle sessions outside an active checkout) avoid repeating the 2024 issue?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

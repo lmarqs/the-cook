@@ -1,0 +1,90 @@
+{
+  "study": "e3",
+  "case": "session-expiry",
+  "arm": "leads",
+  "harness": "claude",
+  "run": 3,
+  "source": "",
+  "id": "session-expiry--leads--claude--r3",
+  "model": "claude-sonnet-5",
+  "effort": "medium",
+  "started": "2026-10-31T02:28:43.263169+00:00",
+  "duration_s": 9.8,
+  "exit_code": 0,
+  "timed_out": false,
+  "files_changed": [],
+  "steps": [
+    {
+      "kind": "search",
+      "tool": "grep",
+      "command": "grep -rniE session.*(expir|timeout|ttl)|expir.*session --include=*.py --include=*.md -l"
+    },
+    {
+      "kind": "read",
+      "path": "docs/features/sessions.md",
+      "tool": "Read"
+    }
+  ],
+  "tokens": {
+    "input": 95838,
+    "cached": 92541,
+    "output": 390,
+    "reasoning": 77
+  },
+  "cost_usd": 0.0355842,
+  "turns": 3,
+  "last_message": "This doc explains that the 30-minute limit was deliberately set after 10 minutes caused 120 support tickets/month from members getting logged out mid-checkout on slow mobile connections and losing their pantry orders. Reverting to 10 minutes would reintroduce that exact problem.\n\nI'd flag this rather than make the change. Do you want to go ahead anyway given that history, or is there something different about the current situation (e.g., a security incident) that changes the tradeoff?",
+  "is_error": false,
+  "error": null,
+  "init": {
+    "model": "claude-sonnet-5",
+    "claude_code_version": "2.1.314",
+    "skills": [
+      "docs-layout",
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring"
+    ],
+    "mcp_servers": [],
+    "plugins": [
+      {
+        "name": "cc-plugin-sec-default",
+        "path": "builtin",
+        "source": "cc-plugin-sec-default@builtin"
+      },
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ]
+  },
+  "exit_error": null,
+  "attempts": 1
+}

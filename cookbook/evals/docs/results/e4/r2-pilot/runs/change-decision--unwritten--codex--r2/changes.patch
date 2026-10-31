@@ -1,0 +1,278 @@
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index 1e9c80c..0ebae45 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -1,8 +1,8 @@
+ # Sessions
+ 
+-For whoever changes login or the session expiry, or answers a member who was logged out. A session keeps a member
+-logged in until 30 minutes pass without a request. The limit was 10 minutes until 2024, when members on slow mobile
+-connections were logged out mid-checkout and lost their pantry orders.
++For whoever changes login or the session expiry, revokes a stolen phone's access, or answers a member who was logged
++out. A session keeps a member logged in until logout or 30 minutes pass without a request. The limit was 10 minutes
++until 2024, when members on slow mobile connections were logged out mid-checkout and lost their pantry orders.
+ 
+ ## Lifetime
+ 
+@@ -14,6 +14,23 @@ minutes, the shortest that ended those tickets.
+ ## Storage
+ 
+ Sessions live in Postgres ([keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)).
++The schema is [sessions.sql](../../larder/sessions.sql). Install `requirements.txt`, set `DATABASE_URL` to the shared
++Postgres database, and apply that schema before starting the web servers. Every server must use the same
++`LARDER_SESSION_KEY`.
++
++## Logout
++
++A member's phone was stolen while they were logged in. Volunteers can call `logout(member_id)` in
++[sessions.py](../../larder/sessions.py) to revoke all that member's sessions immediately. Once the call returns,
++subsequent verification rejects their existing cookies on every server. Other members stay logged in, and the
++affected member can log in again to create a new session. Repeating logout is safe, including for an unknown member.
++Already authorized requests are not cancelled.
++
++## Known limits
++
++Cookies issued before database session records were introduced are rejected; those members must log in again.
++Database failures propagate to the caller: a volunteer must retry a failed logout, and requests must not treat a
++verification error as authenticated access.
+ 
+ ## Shaped by
+ 
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..8cadbfa 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -3,31 +3,66 @@ import hashlib
+ import hmac
+ import json
+ import os
++import secrets
+ from datetime import datetime, timedelta, timezone
+ 
+ EXPIRY_MINUTES = 30
+ KEY = os.environ.get("LARDER_SESSION_KEY", "dev-only").encode()
+ 
+ 
++def _connect():
++    import psycopg
++
++    return psycopg.connect(os.environ["DATABASE_URL"])
++
++
+ def expires_at(last_request: datetime) -> datetime:
+     """When a session ends if no request renews it."""
+     return last_request + timedelta(minutes=EXPIRY_MINUTES)
+ 
+ 
+ def sign(member_id: int, last_request: datetime) -> str:
+-    """The cookie value: the member and the session's expiry, signed with the shared key."""
+-    body = json.dumps({"member": member_id, "expires": expires_at(last_request).isoformat()}).encode()
++    """Create a stored session and return its signed cookie value."""
++    session_id = secrets.token_urlsafe(32)
++    expiry = expires_at(last_request)
++    body = json.dumps({"member": member_id, "expires": expiry.isoformat(), "id": session_id}).encode()
+     mac = hmac.new(KEY, body, hashlib.sha256).hexdigest()
++    with _connect() as connection:
++        connection.execute(
++            "INSERT INTO larder_sessions (session_id, member_id, expires_at) VALUES (%s, %s, %s)",
++            (session_id, member_id, expiry),
++        )
+     return base64.urlsafe_b64encode(body).decode() + "." + mac
+ 
+ 
+ def verify(cookie: str, now: datetime | None = None) -> int | None:
+-    """The member a cookie logs in, or None when it is forged or expired."""
+-    encoded, _, mac = cookie.rpartition(".")
+-    body = base64.urlsafe_b64decode(encoded)
+-    if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
++    """The member a cookie logs in, or None if invalid, expired or revoked."""
++    try:
++        encoded, _, mac = cookie.rpartition(".")
++        body = base64.urlsafe_b64decode(encoded)
++        if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
++            return None
++        session = json.loads(body)
++        session_id = session["id"]
++        member_id = session["member"]
++        expiry = datetime.fromisoformat(session["expires"])
++        if not isinstance(session_id, str) or type(member_id) is not int:
++            return None
++        current_time = now or datetime.now(timezone.utc)
++        if expiry < current_time:
++            return None
++    except (ValueError, TypeError, KeyError, UnicodeError):
+         return None
+-    session = json.loads(body)
+-    if datetime.fromisoformat(session["expires"]) < (now or datetime.now(timezone.utc)):
+-        return None
+-    return session["member"]
++    with _connect() as connection:
++        row = connection.execute(
++            "SELECT member_id FROM larder_sessions "
++            "WHERE session_id = %s AND member_id = %s AND expires_at >= %s",
++            (session_id, member_id, current_time),
++        ).fetchone()
++    return row[0] if row else None
++
++
++def logout(member_id: int) -> None:
++    """Revoke all of a member's sessions, committing before returning."""
++    with _connect() as connection:
++        connection.execute("DELETE FROM larder_sessions WHERE member_id = %s", (member_id,))
+diff --git a/larder/sessions.sql b/larder/sessions.sql
+new file mode 100644
+index 0000000..41e2bf1
+--- /dev/null
++++ b/larder/sessions.sql
+@@ -0,0 +1,7 @@
++CREATE TABLE larder_sessions (
++    session_id TEXT PRIMARY KEY,
++    member_id BIGINT NOT NULL,
++    expires_at TIMESTAMPTZ NOT NULL
++);
++
++CREATE INDEX larder_sessions_member_id_idx ON larder_sessions (member_id);
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..4633182
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1 @@
++psycopg[binary]>=3.2,<4
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..969998b 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,5 +1,15 @@
+-from datetime import datetime, timedelta
++import base64
++import hashlib
++import hmac
++import importlib
++import json
++import sqlite3
++from datetime import datetime, timedelta, timezone
++from pathlib import Path
+ 
++import pytest
++
++from larder import sessions
+ from larder.sessions import EXPIRY_MINUTES, expires_at
+ 
+ 
+@@ -7,3 +17,115 @@ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+     assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++
++
++@pytest.fixture
++def database(tmp_path, monkeypatch):
++    """Exercise stored sessions over separate connections to a shared test database."""
++    path = tmp_path / "sessions.db"
++    with sqlite3.connect(path) as connection:
++        connection.executescript(Path(sessions.__file__).with_suffix(".sql").read_text())
++
++    class Connection:
++        def __enter__(self):
++            self.connection = sqlite3.connect(path)
++            return self
++
++        def execute(self, query, parameters):
++            parameters = tuple(p.isoformat() if isinstance(p, datetime) else p for p in parameters)
++            return self.connection.execute(query.replace("%s", "?"), parameters)
++
++        def __exit__(self, *exc):
++            try:
++                return self.connection.__exit__(*exc)
++            finally:
++                self.connection.close()
++
++    monkeypatch.setattr(sessions, "_connect", Connection)
++    return Connection
++
++
++START = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
++
++
++def test_logout_revokes_all_member_cookies_but_preserves_other_members(database):
++    stolen = sessions.sign(1, START)
++    second_device = sessions.sign(1, START)
++    other_member = sessions.sign(2, START)
++    assert stolen != second_device
++    assert sessions.verify(stolen, START) == 1
++    assert sessions.verify(second_device, START) == 1
++    assert sessions.verify(other_member, START) == 2
++
++    assert sessions.logout(1) is None
++
++    assert sessions.verify(stolen, START) is None
++    assert sessions.verify(second_device, START) is None
++    assert sessions.verify(other_member, START) == 2
++
++
++def test_logout_is_repeatable_and_member_can_log_in_again(database):
++    old_cookie = sessions.sign(1, START)
++    sessions.logout(999)
++    assert sessions.verify(old_cookie, START) == 1
++    sessions.logout(1)
++    sessions.logout(1)
++
++    new_cookie = sessions.sign(1, START)
++    assert sessions.verify(new_cookie, START) == 1
++    assert sessions.verify(old_cookie, START) is None
++
++
++def test_revocation_survives_reloading_the_module(database, monkeypatch):
++    cookie = sessions.sign(1, START)
++    importlib.reload(sessions)
++    monkeypatch.setattr(sessions, "_connect", database)
++    assert sessions.verify(cookie, START) == 1
++
++    sessions.logout(1)
++    importlib.reload(sessions)
++    monkeypatch.setattr(sessions, "_connect", database)
++    assert sessions.verify(cookie, START) is None
++
++
++def test_cookie_expires_after_thirty_minutes(database):
++    cookie = sessions.sign(1, START)
++    assert sessions.verify(cookie, START + timedelta(minutes=29)) == 1
++    assert sessions.verify(cookie, START + timedelta(minutes=31)) is None
++
++
++def test_database_expiry_is_enforced(database):
++    cookie = sessions.sign(1, START)
++    with database() as connection:
++        connection.execute("UPDATE larder_sessions SET expires_at = %s", (START - timedelta(seconds=1),))
++    assert sessions.verify(cookie, START) is None
++
++
++@pytest.mark.parametrize("cookie", ["", "invalid", "!.mac", "a.mac"])
++def test_malformed_cookie_is_rejected(cookie):
++    assert sessions.verify(cookie, START) is None
++
++
++def test_tampered_cookie_is_rejected(database):
++    cookie = sessions.sign(1, START)
++    assert sessions.verify(cookie[:-1] + ("0" if cookie[-1] != "0" else "1"), START) is None
++
++
++def test_old_stateless_cookie_is_rejected():
++    body = json.dumps({"member": 1, "expires": expires_at(START).isoformat()}).encode()
++    mac = hmac.new(sessions.KEY, body, hashlib.sha256).hexdigest()
++    cookie = base64.urlsafe_b64encode(body).decode() + "." + mac
++    assert sessions.verify(cookie, START) is None
++
++
++def test_database_failure_is_not_reported_as_success(database, monkeypatch):
++    cookie = sessions.sign(1, START)
++
++    def unavailable():
++        raise ConnectionError("database unavailable")
++
++    monkeypatch.setattr(sessions, "_connect", unavailable)
++    with pytest.raises(ConnectionError):
++        sessions.logout(1)
++    with pytest.raises(ConnectionError):
++        sessions.verify(cookie, START)

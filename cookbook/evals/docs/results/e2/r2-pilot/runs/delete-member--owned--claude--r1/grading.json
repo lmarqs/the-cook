@@ -1,0 +1,37 @@
+{
+  "expectations": [
+    {
+      "name": "01-tests",
+      "type": "tests_pass",
+      "text": "The repository's tests and the hidden tests pass: the member is removed and each of their pantry orders stays,\nwith no member.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "exit 0: ...                                                                      [100%] / 3 passed in 0.02s",
+      "judged_by": null,
+      "grader_sha": "8e98284f220a24995d616166c447308a2744076d01cd25c29a6cb358a4b35859"
+    },
+    {
+      "name": "02-read-the-owning-page",
+      "type": "read_before_edit",
+      "text": "The agent reads docs/features/accounts.md before its first edit.",
+      "passed": true,
+      "verdict_missing": false,
+      "evidence": "first read of docs/features/accounts.md at step 14; first edit at step 15",
+      "judged_by": null,
+      "grader_sha": "e44b2a6a2e0cbcfd8d4773b4e9b543be65e668f54b8aa2356624a89dd89fdbfc"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "outcome": {
+    "graders": [
+      "01-tests"
+    ],
+    "pass": true,
+    "share": 1.0
+  }
+}

@@ -1,0 +1,81 @@
+diff --git a/docs/features/accounts.md b/docs/features/accounts.md
+index 26fe491..32012e7 100644
+--- a/docs/features/accounts.md
++++ b/docs/features/accounts.md
+@@ -7,7 +7,10 @@ pantry serves them.
+ 
+ ## Deletion
+ 
+-Deleting a member's account removes the member, and keeps each of their pantry orders with its member set to none.
++Deleting a member's account removes the member and all pantry orders linked to them, as implemented by
++[`delete_member`](../../larder/members.py), to fulfill their erasure request. Orders already detached from a member
++cannot be identified as theirs by this operation.
++
+ The food bank's grant requires seven years of order counts per pantry; in 2024 a deletion that removed a member's
+-orders left a gap in the counts, and the grant's auditors flagged it. An order without a member holds an id and an
+-amount, and identifies no one.
++orders left a gap in the counts, and the grant's auditors flagged it. Deleting pantry orders reduces the retained
++counts; this operation does not preserve separate aggregate counts for the grant.
+diff --git a/larder/members.py b/larder/members.py
+index a15e6b7..3b57264 100644
+--- a/larder/members.py
++++ b/larder/members.py
+@@ -27,6 +27,4 @@ class Store:
+ def delete_member(member_id: str, store: Store) -> None:
+     """Deletes a member's account when they ask for it."""
+     del store.members[member_id]
+-    for order in store.orders:
+-        if order.member_id == member_id:
+-            order.member_id = None
++    store.orders[:] = [order for order in store.orders if order.member_id != member_id]
+diff --git a/tests/test_members.py b/tests/test_members.py
+new file mode 100644
+index 0000000..5f63f53
+--- /dev/null
++++ b/tests/test_members.py
+@@ -0,0 +1,45 @@
++import pytest
++
++from larder.members import Member, Store, StoredOrder, delete_member
++
++
++def test_delete_member_removes_their_orders_and_preserves_unrelated_records():
++    member = Member("member", "Alex", "alex@example.com", "1 Main St")
++    other = Member("other", "Sam", "sam@example.com", "2 Main St")
++    other_order = StoredOrder("other-order", other.id, 500)
++    detached_order = StoredOrder("detached-order", None, 200)
++    store = Store(
++        members={member.id: member, other.id: other},
++        orders=[
++            StoredOrder("first", member.id, 100),
++            StoredOrder("second", member.id, 300),
++            other_order,
++            detached_order,
++            StoredOrder("third", member.id, 400),
++        ],
++    )
++
++    delete_member(member.id, store)
++
++    assert store.members == {other.id: other}
++    assert store.orders == [other_order, detached_order]
++
++
++def test_delete_member_without_orders():
++    member = Member("member", "Alex", "alex@example.com", "1 Main St")
++    store = Store(members={member.id: member})
++
++    delete_member(member.id, store)
++
++    assert store.members == {}
++    assert store.orders == []
++
++
++def test_delete_missing_member_leaves_orders_unchanged():
++    order = StoredOrder("order", "missing", 100)
++    store = Store(orders=[order])
++
++    with pytest.raises(KeyError):
++        delete_member("missing", store)
++
++    assert store.orders == [order]

@@ -1,0 +1,60 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index aad6908..e359956 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -15,3 +15,6 @@ where a payment is captured.
+ The web app keeps sessions in Postgres ([keep sessions in the database](adr/0001-keep-sessions-in-the-database.md))
+ and queues jobs there for the worker. A confirmed pantry order is captured through the card gateway by
+ `larder/capture.py`.
++
++The deploy script restarts the web app only, not the worker: a deploy can leave the worker dead while the rest of the
++site looks fine. [Receipts not sending](runbooks/receipts-not-sending.md) is the runbook for that symptom.
+diff --git a/docs/runbooks/README.md b/docs/runbooks/README.md
+index 7f34605..0a9783a 100644
+--- a/docs/runbooks/README.md
++++ b/docs/runbooks/README.md
+@@ -1,3 +1,4 @@
+ # Runbooks
+ 
+ - [Gateway timeouts](gateway-timeouts.md): what to do when captures time out.
++- [Receipts not sending](receipts-not-sending.md): what to do when the worker dies and receipt emails stop.
+diff --git a/docs/runbooks/receipts-not-sending.md b/docs/runbooks/receipts-not-sending.md
+new file mode 100644
+index 0000000..71b05c8
+--- /dev/null
++++ b/docs/runbooks/receipts-not-sending.md
+@@ -0,0 +1,34 @@
++# Receipts not sending
++
++For the volunteer on call when members report no receipt emails. Drains the backlog and gets receipts flowing again;
++while it is down, captured pantry orders sit unreceipted and members ask why. Written after the second time it
++happened, in September 2026, when the volunteer on call did not know what to do and Tomás had to be woken up. Owner:
++the payments volunteers.
++
++## Before you begin
++
++- SSH access to the worker host, to run `systemctl` and `journalctl`.
++- `psql` access to the `larder` database.
++
++## Steps
++
++1. Check the worker: `systemctl status larder-worker`.
++
++   Expected: `active (running)`. If it says `inactive (dead)`, that is the cause: the deploy script only restarts the
++   web app, not the worker, so a deploy can leave it dead.
++2. Count the backlog: `psql larder -c "select status, count(*) from procrastinate_jobs group by status"`.
++
++   Expected: a number of `todo` jobs, roughly one per receipt that hasn't gone out. A handful of `failed` jobs is
++   normal and not part of this incident: they are bounced addresses the member needs to fix, not something the worker
++   can retry.
++3. Start the worker: `sudo systemctl start larder-worker`.
++
++   Expected: `systemctl status larder-worker` now says `active (running)`.
++4. Re-run the count query from step 2 every minute or so.
++
++   Expected: `todo` drains to 0, at roughly 40 a minute. `failed` does not grow past what it was in step 2.
++
++## If it fails
++
++If the worker goes back to `inactive (dead)` right after step 3, collect `journalctl -u larder-worker -n 50` and ping
++Tomás with it.

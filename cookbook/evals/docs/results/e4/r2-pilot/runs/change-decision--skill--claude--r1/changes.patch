@@ -1,0 +1,126 @@
+diff --git a/docs/adr/0001-keep-sessions-in-signed-cookies.md b/docs/adr/0001-keep-sessions-in-signed-cookies.md
+index 05fb2c1..1e1a14c 100644
+--- a/docs/adr/0001-keep-sessions-in-signed-cookies.md
++++ b/docs/adr/0001-keep-sessions-in-signed-cookies.md
+@@ -32,6 +32,11 @@ holds so any of them can check it (`larder/sessions.py`); no server-side store r
+ 
+ ## Consequences
+ 
+-A deploy still logs no one out, since every server holds the same key. Larder can no longer log out one member from
+-the server before their session expires; at the 30-minute expiry this is acceptable for a pantry. Rotating the key
+-logs out every member at once, so the key is rotated only between pickups.
++A deploy still logs no one out, since every server holds the same key. Rotating the key logs out every member at
++once, so the key is rotated only between pickups.
++
++`logout(member_id)` ([sessions](../features/sessions.md#logout)) ends a member's session on the server a volunteer
++calls it on, for a stolen phone or a similar emergency. Since no store is shared between the two servers behind the
++load balancer, a request the stolen phone makes to the other server is still accepted until the session's own
++30-minute expiry; a volunteer who needs both servers covered right away should rotate the key instead, logging out
++every member.
+diff --git a/docs/features/sessions.md b/docs/features/sessions.md
+index 1e9c80c..23e5f16 100644
+--- a/docs/features/sessions.md
++++ b/docs/features/sessions.md
+@@ -13,8 +13,17 @@ minutes, the shortest that ended those tickets.
+ 
+ ## Storage
+ 
+-Sessions live in Postgres ([keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)).
++Sessions live in a signed cookie, not a server-side store
++([keep sessions in signed cookies](../adr/0001-keep-sessions-in-signed-cookies.md)).
++
++## Logout
++
++`logout(member_id)` in `larder/sessions.py` lets a volunteer end a member's session right away, for a stolen phone or
++similar emergency, instead of waiting out the 30-minute expiry. It only takes effect on the server a volunteer calls
++it on; since the two servers behind the load balancer share no store, the member stays logged in on the other server
++until their session there expires on its own. Rotating `LARDER_SESSION_KEY` logs out every member on every server at
++once ([keep sessions in signed cookies](../adr/0001-keep-sessions-in-signed-cookies.md)).
+ 
+ ## Shaped by
+ 
+-- [Keep sessions in the database](../adr/0001-keep-sessions-in-the-database.md)
++- [Keep sessions in signed cookies](../adr/0001-keep-sessions-in-signed-cookies.md)
+diff --git a/larder/sessions.py b/larder/sessions.py
+index c4058e5..591d674 100644
+--- a/larder/sessions.py
++++ b/larder/sessions.py
+@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
+ EXPIRY_MINUTES = 30
+ KEY = os.environ.get("LARDER_SESSION_KEY", "dev-only").encode()
+ 
++_logged_out_at: dict[int, datetime] = {}
++
+ 
+ def expires_at(last_request: datetime) -> datetime:
+     """When a session ends if no request renews it."""
+@@ -22,12 +24,23 @@ def sign(member_id: int, last_request: datetime) -> str:
+ 
+ 
+ def verify(cookie: str, now: datetime | None = None) -> int | None:
+-    """The member a cookie logs in, or None when it is forged or expired."""
++    """The member a cookie logs in, or None when it is forged, expired, or logged out."""
+     encoded, _, mac = cookie.rpartition(".")
+     body = base64.urlsafe_b64decode(encoded)
+     if not hmac.compare_digest(mac, hmac.new(KEY, body, hashlib.sha256).hexdigest()):
+         return None
+     session = json.loads(body)
+-    if datetime.fromisoformat(session["expires"]) < (now or datetime.now(timezone.utc)):
++    expires = datetime.fromisoformat(session["expires"])
++    if expires < (now or datetime.now(timezone.utc)):
++        return None
++    member = session["member"]
++    last_request = expires - timedelta(minutes=EXPIRY_MINUTES)
++    logged_out_at = _logged_out_at.get(member)
++    if logged_out_at is not None and last_request <= logged_out_at:
+         return None
+-    return session["member"]
++    return member
++
++
++def logout(member_id: int) -> None:
++    """End member_id's session on this server right away, without waiting for it to expire."""
++    _logged_out_at[member_id] = datetime.now(timezone.utc)
+diff --git a/tests/test_sessions.py b/tests/test_sessions.py
+index 56d5389..24d9c52 100644
+--- a/tests/test_sessions.py
++++ b/tests/test_sessions.py
+@@ -1,9 +1,36 @@
+-from datetime import datetime, timedelta
++from datetime import datetime, timedelta, timezone
+ 
+-from larder.sessions import EXPIRY_MINUTES, expires_at
++from larder.sessions import EXPIRY_MINUTES, expires_at, logout, sign, verify
+ 
+ 
+ def test_a_session_ends_after_the_expiry_without_a_request():
+     start = datetime(2026, 1, 1, 12, 0)
+ 
+     assert expires_at(start) == start + timedelta(minutes=EXPIRY_MINUTES)
++
++
++def test_logout_ends_the_member_s_session_before_it_expires():
++    member_id = 42
++    cookie = sign(member_id, datetime.now(timezone.utc))
++
++    logout(member_id)
++
++    assert verify(cookie) is None
++
++
++def test_logout_does_not_end_another_member_s_session():
++    member_id, other_id = 42, 43
++    cookie = sign(other_id, datetime.now(timezone.utc))
++
++    logout(member_id)
++
++    assert verify(cookie) == other_id
++
++
++def test_logging_in_again_after_logout_works():
++    member_id = 42
++
++    logout(member_id)
++    cookie = sign(member_id, datetime.now(timezone.utc))
++
++    assert verify(cookie) == member_id

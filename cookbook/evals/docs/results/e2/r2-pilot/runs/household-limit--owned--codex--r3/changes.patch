@@ -1,0 +1,51 @@
+diff --git a/larder/limits.py b/larder/limits.py
+index a5807f9..f1d1642 100644
+--- a/larder/limits.py
++++ b/larder/limits.py
+@@ -4,4 +4,9 @@ from larder.members import Member
+ def can_place_order(member: Member, members: list[Member], open_orders: dict[str, int]) -> bool:
+     """Whether `member` may place another pantry order. `members` are every registered member, and `open_orders`
+     counts each member's pantry orders not yet picked up or cancelled, by member id."""
+-    raise NotImplementedError
++    household_orders = sum(
++        open_orders.get(other.id, 0)
++        for other in members
++        if other.address == member.address
++    )
++    return household_orders < 2
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+new file mode 100644
+index 0000000..60817a8
+--- /dev/null
++++ b/tests/test_limits.py
+@@ -0,0 +1,30 @@
++import pytest
++
++from larder.limits import can_place_order
++from larder.members import Member
++
++
++@pytest.mark.parametrize(
++    ("open_orders", "allowed"),
++    [
++        ({}, True),
++        ({"m1": 1}, True),
++        ({"m2": 1}, True),
++        ({"m1": 2}, False),
++        ({"m2": 2}, False),
++        ({"m1": 1, "m2": 1}, False),
++        ({"m1": 3}, False),
++    ],
++)
++def test_open_order_limit_is_shared_by_household(open_orders, allowed):
++    member = Member("m1", "Ana Silva", "10 main street flat 1")
++    housemate = Member("m2", "Jo Costa", member.address)
++
++    assert can_place_order(member, [member, housemate], open_orders) is allowed
++
++
++def test_orders_at_another_address_do_not_count():
++    member = Member("m1", "Ana Silva", "10 main street flat 1")
++    neighbour = Member("m2", "Leo Silva", "10 main street flat 2")
++
++    assert can_place_order(member, [member, neighbour], {"m1": 1, "m2": 2})

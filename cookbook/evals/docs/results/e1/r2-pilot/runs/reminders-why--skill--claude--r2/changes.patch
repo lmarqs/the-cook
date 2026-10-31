@@ -1,0 +1,47 @@
+diff --git a/docs/adr/0002-send-pickup-reminders-by-sms.md b/docs/adr/0002-send-pickup-reminders-by-sms.md
+new file mode 100644
+index 0000000..9f55067
+--- /dev/null
++++ b/docs/adr/0002-send-pickup-reminders-by-sms.md
+@@ -0,0 +1,31 @@
++# Send pickup reminders by SMS
++
++For whoever proposes or changes how larder reminds members to pick up an order. Pickup reminders go by SMS, not
++email, because a trial of email reminders in 2025 raised missed pickups and a missed pickup throws out food.
++
++## Context
++
++A missed pickup leaves a packed bag of fresh food that goes in the bin by closing time, so the channel a reminder
++goes by is judged by whether members see it in time. Between April and June 2025, larder sent pickup reminders by
++email instead of SMS: 34% of the reminder emails were never opened, and missed pickups rose from 6% to 13% of pantry
++orders. Many members share one phone in the family and rarely check email, but see an SMS. Larder switched back to
++SMS on July 1, 2025, and missed pickups were back to 6% by August. The question has come up three times since: two
++forces judge the options, the fraction of members who see the reminder in time, and its cost to larder.
++
++## Options
++
++- **Email**: free; lost because during the trial it was never opened by 34% of recipients, and missed pickups nearly
++  doubled.
++- **SMS**: costs larder 40 euros a month; chosen because it reaches members who share a phone and don't check email,
++  and measurably kept missed pickups at 6% rather than 13%.
++
++## Decision
++
++Pickup reminders go by SMS. The 2025 trial is the test any future proposal to change the channel must pass: it
++already ran email, under real conditions, and email cost missed pickups more than it saved.
++
++## Consequences
++
++Larder pays 40 euros a month for SMS instead of sending reminders for free. Missed pickups, and the food thrown out
++with them, stay at the lower rate SMS holds. A future proposal to drop SMS should account for the 2025 trial's result
++before larder repeats it.
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+index 9c61e9b..b882b00 100644
+--- a/docs/adr/README.md
++++ b/docs/adr/README.md
+@@ -1,3 +1,5 @@
+ # Decisions
+ 
+ - [Keep sessions in the database](0001-keep-sessions-in-the-database.md): sessions live in Postgres, not in memory.
++- [Send pickup reminders by SMS](0002-send-pickup-reminders-by-sms.md): SMS, not email, after a 2025 trial raised
++  missed pickups.
