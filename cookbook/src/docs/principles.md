@@ -22,9 +22,9 @@ repository shows nowhere else.
 
 ## The kind is the question a reader brings, never the subject
 
-A subject feeds several kinds: a cart's rules are a feature, keeping the cart server-side is a decision, resetting
-one is a runbook. An agent that sorts by subject or by wording files the storage decision under the uploads feature
-and the cart's design under the decisions. Diátaxis names the same symptom in human authors: kinds "bleed into each
+A subject feeds several kinds: the session timeout is a feature rule, the shared session store is a decision,
+clearing sessions is a runbook. An agent that sorts by subject or by wording files the store decision under the
+sessions feature and the timeout rule under the decisions. Diátaxis names the same symptom in human authors: kinds "bleed into each
 other" when sorted by form rather than by the reader's need, and its fix is a question put to each fact. The skill
 therefore describes each kind by when a fact belongs there and by the misfilings with their giveaways, never by a
 sorting rule.
