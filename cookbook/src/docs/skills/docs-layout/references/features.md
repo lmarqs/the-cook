@@ -4,8 +4,8 @@ A feature page answers "what does it do?" for one unit of behavior, as reference
 the thing itself, so a reader finds a fact where the product puts it.
 
 The lead says why the unit exists, or why it is as it is, as it happened: a reason below the bar for a decision
-record has no other owner. Sections follow the unit: its inputs, its states, its rules, its outputs, as the unit has
-them. `Shaped by` links the decision records behind the behavior.
+record has no other owner. Sections follow the unit: its inputs, its states, its conditions, its outputs, as the
+unit has them. `Shaped by` links the decision records behind the behavior.
 
 ## Example, in the made-up project `acme`
 

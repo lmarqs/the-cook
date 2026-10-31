@@ -6,7 +6,7 @@ in `adr/` and `glossary.md`.
 
 - A part is named as the repository names it, with the directory it lives in, so a reader goes from the page to the
   code.
-- A structural choice links its record; the reasons stay there. Requirements, interface rules and behavior belong to
+- A structural choice links its record; the reasons stay there. Requirements, practices and behavior belong to
   their own kinds, and the page links them.
 
 ## Example, in the made-up project `acme`
