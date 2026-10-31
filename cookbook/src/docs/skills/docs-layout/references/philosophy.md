@@ -20,6 +20,6 @@ This shows one good page, not the page. `docs/philosophy.md` in the made-up `acm
 For whoever weighs two good options that no record settles. Written after two reviews in a row argued the same
 trade-off from the start.
 
-**Fewer features, each finished.** Rules out shipping a feature without its page, its runbook and its tests. Applied
-in [a shared session store](adr/0007-keep-sessions-in-a-shared-store.md).
+**Run fewer things.** Rules out a new service when one already run meets the need. Applied in
+[a shared session store](adr/0007-keep-sessions-in-a-shared-store.md), kept in the Redis already run for jobs.
 ```

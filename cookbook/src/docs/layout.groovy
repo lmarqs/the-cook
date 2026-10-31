@@ -18,8 +18,6 @@ other recipes:
 | --- | --- |
 | `<skills-root>/docs-layout/SKILL.md` | The skill: `map`, `<kind> [title]`, `term`, `review`, `review --fix` and \
 `adopt` |
-| `docs/README.md` | The map, written by the skill with the team and kept by the team: the kinds of page this \
-repository keeps, when a fact belongs to each and what a good page of each achieves |
 
 ## Produces
 
@@ -46,7 +44,9 @@ artifact |
 Repeat `--skills-root`. A newer version updates the skill and nothing under `docs/`. A repository cooked with the
 `seed` recipe of an earlier version cooks `#layout` with the same `--skills-root`, then runs
 `./cook discard io.github.lmarqs.cookbook:docs#seed`, which removes the old skill files and the `kinds` section the
-old recipe wrote into `docs/README.md`; `/docs-layout map` then writes the kinds back in the team's words.
+old recipe wrote into `docs/README.md`, edits inside it included; text to keep moves outside its markers first. Until
+the discard, `./cook check` stops at `#seed`, which the newer version no longer has. `/docs-layout map` then writes
+the kinds back in the team's words.
 ''')
 @yield('''
 Write the map with the skill, such as `/docs-layout map` in Claude Code.

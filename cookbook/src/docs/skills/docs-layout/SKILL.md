@@ -27,7 +27,7 @@ when its shape fails a reader, and say how.
 | --- | --- |
 | `map` | [Write the map](#map), or add or remove a kind on it |
 | `<kind> [title]` | [Write a page](#write-a-page) of that kind |
-| `term <term>` | Add the entry to `docs/glossary.md`, as [references/glossary.md](references/glossary.md) shows, and replace its rejected synonyms in the pages |
+| `term <term>` | Add the entry to `docs/glossary.md` in its existing form, or as [references/glossary.md](references/glossary.md) shows, and replace its rejected synonyms where they name this concept |
 | `review` | [Review](#review) and report; files stay as they are |
 | `review --fix` | Review, ask the person about each difference that needs their decision, and fix what they agree to |
 | `adopt` | Follow [references/adopt.md](references/adopt.md) |
@@ -35,14 +35,14 @@ when its shape fails a reader, and say how.
 
 ## Map
 
-Ask the person what the repository holds that its code and history show nowhere else, and what went wrong for want
+When `docs/README.md` is absent or names no kind, ask the person what the repository holds that its code and history show nowhere else, and what went wrong for want
 of it: a decision argued again, behavior nobody could state, a procedure found by trial. Pick the kinds those facts
 need: [adr](references/adr.md), [features](references/features.md), [api](references/api.md),
 [standards](references/standards.md), [observability](references/observability.md),
 [runbooks](references/runbooks.md), [architecture](references/architecture.md),
 [philosophy](references/philosophy.md). Fewer kinds read better; one with no facts yet waits. Write the map by
-[references/map.md](references/map.md), in the team's language, with a worked example from this repository. On an
-existing map, add or remove a kind in its own words.
+[references/map.md](references/map.md), in the team's language, with a worked example from this repository. On a map
+with kinds, add or remove one in its own words.
 
 ## Write a page
 
@@ -52,8 +52,8 @@ existing map, add or remove a kind in its own words.
 3. Gather facts from the code, the contract, the history, the issue and the person. Ask first what went wrong, what
    it cost and what was tried: only the person may know it.
 4. Write the body, then the lead. Take the shape from the kind's existing pages, else from the map and the reference.
-5. List the page in its kind's guide, `docs/<kind>/README.md`, created with the first page, and link a new guide or
-   one-page kind from the map. Replace other pages' copies of its facts with links.
+5. When the kind keeps a directory, list the page in its guide, `docs/<kind>/README.md`, created with the first page.
+   Link a new guide or one-page kind from the map, and replace other pages' copies of its facts with links.
 6. Report the files written and the open questions.
 
 ## Review

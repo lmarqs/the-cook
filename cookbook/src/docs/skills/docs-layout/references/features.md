@@ -3,8 +3,9 @@
 Holds what the system does, one page per unit of behavior. Diátaxis type: reference. A page answers "what does it
 do, and why is it so?"
 
-A fact belongs here when it states what a unit owes its users and the code cannot be read for it: a rate, a limit,
-who may do what. Why the codebase is built so is a decision; how to operate the unit, a runbook.
+A fact belongs here when it states what a unit owes its users and the code cannot be read for it: a threshold, a
+rule, who may do what. A limit an interface's callers rely on is the interface's; a reason that meets the decision
+bar is a record, and one below it stays here; operating the unit is a runbook.
 
 What makes a good feature page:
 
@@ -21,8 +22,7 @@ This shows one good page, not the page. `docs/features/sessions.md` in the made-
 ```markdown
 # Sessions
 
-For whoever changes login, or answers a user who was logged out. A session keeps a user logged in until logout or 30
-minutes without a request. The limit was 10 minutes until 2023, when shoppers paying on slow connections lost their
+For whoever changes login. A session keeps a user logged in until logout or 30 minutes without a request. The limit was 10 minutes until 2023, when shoppers paying on slow connections lost their
 carts mid-checkout.
 
 Each request renews the session for 30 minutes; logout deletes it at once. Every replica reads the same

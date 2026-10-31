@@ -6,7 +6,7 @@ A fact belongs here when someone acts on it under pressure. Why goes to the page
 
 What makes a good runbook:
 
-- It covers one trigger, is named after it, and its lead states the outcome and the impact in a line.
+- It covers one trigger, is named after it, and its lead states the outcome and impact.
 - Each step is one action with the output that shows it worked, so the responder verifies as they go.
 - For a symptom, it names the likely causes and a remedy for each, and when the cause isn't obvious, it starts with
   checks that tell them apart.

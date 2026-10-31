@@ -9,6 +9,7 @@ reviews the result as one change.
 3. Place each file by the map's questions, or split it when its parts fit different kinds. Ask where none fits; the
    answer may be outside `docs/`, a kind the team declares, or nowhere.
 4. Move each page with the version control's move command, so history follows it. Records keep their numbers.
-5. Edit for facts and owners: keep a statement on its owner and link it from the rest; drop status, author and date
-   fields. Leave a page's shape alone unless it fails a reader.
-6. Write each kind's guide, fix the links to moved files, and report the moves, splits and open questions.
+5. Edit for facts and owners: keep a statement on its owner and link it from the rest. Ask before dropping a field
+   kept by hand; keep any a program reads. Leave a page's shape alone unless it fails a reader.
+6. Write a guide for each kind kept as a directory, fix the links to moved files, and report the moves, splits and
+   open questions.

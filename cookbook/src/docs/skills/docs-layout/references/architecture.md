@@ -4,7 +4,7 @@ Holds how the parts of the system fit together: the shape across its directories
 page, `docs/architecture.md`. Diátaxis type: explanation.
 
 A fact belongs here when it is about the whole: the parts, what each does, how they depend on each other. Why a
-part is shaped so is a decision, which this page links.
+part is shaped so is a record when it meets that bar, linked here, and a sentence here otherwise.
 
 What makes a good architecture page:
 

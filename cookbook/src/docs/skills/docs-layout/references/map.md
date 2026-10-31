@@ -5,8 +5,7 @@ belongs to each, and what a good page of each achieves. It is the team's page, i
 
 ## Where a fact goes
 
-Each fact has one owner: the page of the kind whose description the fact fits. Other pages link it, since a copy
-drifts. The link text names the fact, as in `wait out [the rate limit](api/orders.md#limits)`, so the sentence reads
+Each fact has one owner, the page of the kind it fits; other pages link it, since a copy drifts. The link text names the fact, as in `wait out [the rate limit](api/orders.md#limits)`, so the sentence reads
 without the hop. A reader gets what they need at the first level they open, and follows links for depth.
 
 ## What a page holds
@@ -46,13 +45,10 @@ Ask first: which part of each kind's description do the facts miss? Do they have
 belong to the features they explain? Are they true now, and shown nowhere else? Can a good page of the kind be
 described, so a review can compare a page with it?
 
-## The shape of a map
+## A good map
 
-1. A title, and a paragraph saying this page tells which page owns each fact.
-2. A section per kind the team keeps, from its reference: what it holds, when a fact belongs there, what a good page
-   achieves. No section a page must have. It links the kind's guide or page once one exists.
-3. Where a fact goes, what a page holds, and the lead, in the team's words.
-4. One worked example: a subject of this repository supplying one sentence to each of three kinds, and why each lands
-   where it does.
-5. The misfilings this team meets, with their giveaways.
-6. Terms, guides, declaring a kind, and a line naming the `docs-layout` skill.
+It says, for each kind the team keeps, in the team's words and not a reference's,
+when a fact belongs there and what a good page achieves, and links the kind's pages once they exist. It names no
+section a page must have. A worked example, one subject of this repository whose facts land in different kinds, shows
+why each lands where it does. It names the misfilings this team meets. Its language, headings and order are the
+team's.
