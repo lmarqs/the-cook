@@ -3,7 +3,7 @@
 For whoever runs or reviews round 2 of the docs studies. It fixes, before any round-2 data exists, what each study
 tests, which runs count, and how the result is read, so the outcome cannot be fitted to the data. Written after the
 round-1 pilots: 330 runs in which no control separated, because on a 12-page repository every agent read the owning
-page within a median of 5–6 steps whatever the arm.
+page within a median of 2 to 8 steps whatever the arm.
 
 ## Question
 
