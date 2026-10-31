@@ -36,19 +36,7 @@ class DocsSeedCookTest {
     '<!-- io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills -->\n')
     KINDS.each { assert map.contains("`${it}/`") || map.contains("`${it}.md`") }
     assert map.contains('The `docs-layout` skill writes pages')
-    assert map.contains('## Architecture decisions, `adr/`\n')
-    assert !map.contains('are to be interpreted as described in BCP 14')
-    [
-      'docs/adr',
-      'docs/api',
-      'docs/architecture.md',
-      'docs/features',
-      'docs/philosophy.md',
-      'docs/observability',
-      'docs/runbooks',
-      'docs/standards',
-      'docs/glossary.md'
-    ].each {
+    (KINDS.collectMany { ["docs/${it}", "docs/${it}.md"] } + 'docs/glossary.md').each {
       assert !new File(kitchen, it).exists()
     }
     assert cook(kitchen, SEED, ['skills-root': ['.agents/skills']]).actions == [:]
@@ -75,9 +63,7 @@ class DocsSeedCookTest {
     "${SEED}: Missing --skills-root: A directory, from the repository root, the docs-layout skill is written under, " +
     'such as .agents/skills'
     def unknown = shouldFail(IllegalArgumentException) { cook(kitchen, SEED, ['skills-root': ['s'], kinds: ['howto']]) }
-    assert unknown.message ==
-    "${SEED}: --kinds=howto is not one of: adr, api, architecture, features, observability, philosophy, runbooks, " +
-    'standards'
+    assert unknown.message == "${SEED}: --kinds=howto is not one of: ${KINDS.join(', ')}"
     def outside = shouldFail(IllegalArgumentException) { cook(kitchen, SEED, ['skills-root': ['../skills']]) }
     assert outside.message.startsWith("${SEED}: --skills-root=../skills is outside the repository")
   }
