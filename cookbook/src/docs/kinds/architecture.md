@@ -3,7 +3,7 @@
 Holds how the parts of the system fit together: the shape across its directories that no single file shows. Diátaxis
 type: explanation.
 
-A good architecture page:
+What makes a good architecture page:
 
 - Is one page, with a lead that says what the system is and where its boundary is.
 - Names, in `Parts`, each part with its responsibility and where it lives in the repository, so a reader goes from
