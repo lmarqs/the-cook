@@ -43,8 +43,9 @@ Needs `uv`, `bwrap`, the Claude Code and Codex CLIs logged in, and the built Coo
    writer's `skill` repository before any writing.
 2. The agent runs in `bwrap`: the system read-only, the repository at `/work`, and a HOME that holds only the two
    login files, bound rather than copied so a token refresh writes the real file. Claude runs with no MCP servers;
-   jobs are shuffled with a recorded seed so arms interleave in time. A run the provider turns away before it changes
-   a file (capacity, rate limit, overload) runs again, up to three tries, recorded as `attempts`.
+   jobs are shuffled with a recorded seed so arms interleave in time. A run turned away before it changes a file, by
+   the provider (capacity, rate limit, overload), the login or the network, runs again, up to three tries, recorded as
+   `attempts`. A Codex turn that reconnects and completes is not an error.
 3. `run.json` records the steps in order (reads, searches, edits), tokens, Claude's cost, duration and the files
    changed; `changes.patch` holds the diff.
 4. `grading.json` holds each grader's verdict, its evidence and the sha256 of the grader file that gave it, and the
@@ -107,8 +108,9 @@ from the reference (Holm-corrected p ≥ 0.05 on the study's primary outcome: Mc
 the steps before the owning page is read, counting every step of a run that never reads it), a case's reference
 passes outside 10–90% of its runs or, for effort, reads the owning page first in every run, a
 grader passes or fails every run, the judge is unvalidated or below kappa 0.61, a run saw MCP servers or plugins,
-the provider refused a run on every attempt. Such a run, and the run it pairs with, are left out of the contrasts;
-the arms table still counts it as failed.
+a run was turned away on every attempt, or the login or the network ended it after it changed files. Such a run, and
+the run it pairs with, are left out of the contrasts; the arms table still counts it as failed. E4 gives such a
+writer's run no reader.
 Then each arm's pass rate with its Wilson interval, pass^k, tokens, cost, duration and steps before the owning page
 was read; each contrast's McNemar, Wilcoxon on tokens and TOST against `study.yaml`'s margins, ending as better,
 worse, equivalent or inconclusive; and a mixed-effects logistic model with a random intercept per case.

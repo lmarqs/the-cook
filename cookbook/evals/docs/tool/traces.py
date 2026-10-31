@@ -77,12 +77,14 @@ def claude(lines: list[str]) -> dict:
             record["turns"] = event.get("num_turns")
             record["last_message"] = event.get("result") or ""
             record["is_error"] = bool(event.get("is_error"))
-            record["error"] = event.get("api_error") or (event.get("subtype") if event.get("is_error") else None)
+            cause = event.get("result") if event.get("subtype") == "success" else event.get("subtype")
+            record["error"] = event.get("api_error") or (cause if event.get("is_error") else None)
     return record
 
 
 def codex(lines: list[str]) -> dict:
     record = empty()
+    reconnecting = False
     for line in lines:
         event = json.loads(line)
         kind = event.get("type")
@@ -103,9 +105,12 @@ def codex(lines: list[str]) -> dict:
             record["tokens"]["output"] += usage.get("output_tokens", 0)
             record["tokens"]["reasoning"] += usage.get("reasoning_output_tokens", 0)
             record["turns"] = (record["turns"] or 0) + 1
+            if reconnecting:
+                record["is_error"], record["error"], reconnecting = False, None, False
         elif kind in ("turn.failed", "error"):
             record["is_error"] = True
             record["error"] = json.dumps(event.get("error") or event.get("message"))
+            reconnecting = kind == "error"
     return record
 
 

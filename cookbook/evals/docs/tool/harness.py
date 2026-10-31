@@ -17,6 +17,8 @@ from tool.cases import RESULTS, Case, Study
 
 TRIES = 3
 PROVIDER_REFUSAL = re.compile(r"capacity|rate.?limit|overloaded|too many requests|\b(429|500|502|503|529)\b", re.I)
+LOST_CONNECTION = re.compile(r"failed to authenticate|oauth|stream disconnected|failed to lookup address|"
+                             r"connection (reset|refused)", re.I)
 
 
 @dataclass(frozen=True)
@@ -90,7 +92,7 @@ def handoff_jobs(study: Study, source_batch: Path | None) -> list[Job]:
         if record["case"] not in case_ids or record["harness"] not in study.harnesses:
             continue
         slots.add((record["case"], record["harness"], record["run"]))
-        if record["arm"] in study.arms and not refused(record):
+        if record["arm"] in study.arms and not refused(record) and not lost(record):
             source = directory.relative_to(RESULTS) if directory.is_relative_to(RESULTS) else directory
             selected.append(Job(record["case"], record["arm"], record["harness"], record["run"], str(source)))
     selected += [Job(case, fixtures.UNWRITTEN, harness, run) for case, harness, run in sorted(slots)
@@ -99,9 +101,15 @@ def handoff_jobs(study: Study, source_batch: Path | None) -> list[Job]:
 
 
 def refused(result: dict) -> bool:
-    """The provider turned the run away before it changed a file: its capacity, not the arm, decided the outcome."""
-    return bool(result.get("error")) and not result["files_changed"] \
-        and bool(PROVIDER_REFUSAL.search(str(result["error"])))
+    """The provider, the login or the network turned the run away before it changed a file: not the arm."""
+    error = str(result.get("error") or "")
+    return bool(error) and not result["files_changed"] \
+        and bool(PROVIDER_REFUSAL.search(error) or LOST_CONNECTION.search(error))
+
+
+def lost(result: dict) -> bool:
+    """The login or the network ended the run after it changed files, so the arm did not decide where it stopped."""
+    return bool(result.get("files_changed")) and bool(LOST_CONNECTION.search(str(result.get("error") or "")))
 
 
 def process_error(exit_code: int, timed_out: bool, stderr: str) -> str | None:

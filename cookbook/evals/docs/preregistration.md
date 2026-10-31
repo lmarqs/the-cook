@@ -32,9 +32,9 @@ question. E4 reads the E1 batch of the same round: each E1 run is a writer, and 
 - Pairing: by case and run number within a harness. Superiority: exact McNemar for pass, Wilcoxon signed-rank for
   effort and tokens, Holm-corrected across each study's contrasts on its primary outcome. Equivalence: TOST within
   ±10 points of success and ±15% of tokens.
-- Exclusion: a run the provider refuses on all 3 attempts, before it changes a file, measures the provider's
-  capacity and not the arm. It is left out of every contrast together with the run it pairs with, and `report.md`
-  names it.
+- Exclusion: a run the provider, the login or the network turns away on all 3 attempts, before it changes a file,
+  and a run the login or the network ends after it changed files, measure the infrastructure and not the arm. Each is
+  left out of every contrast together with the run it pairs with, and `report.md` names it.
 - Validity, as `report.md` flags it: the control separates from the reference (Holm p < 0.05, in the expected
   direction); the reference passes 10–90% of runs on each case (pass outcomes) or reads the owning page after at
   least one other step (effort); no grader passes or fails every run; the judge's kappa against the owner's labels is

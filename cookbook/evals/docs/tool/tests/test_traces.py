@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from tool import traces
@@ -62,3 +63,23 @@ def test_redirecting_a_descriptor_or_to_dev_null_is_not_an_edit():
 
     assert [s for s in steps if s["kind"] == "edit"] == [{"kind": "edit", "path": "log.txt", "tool": "shell"}]
     assert steps[0] == {"kind": "search", "tool": "ls", "command": "ls -R docs larder"}
+
+
+def test_a_claude_error_reported_as_success_records_its_message():
+    result = {"type": "result", "subtype": "success", "is_error": True, "num_turns": 8,
+              "result": "Failed to authenticate: OAuth session expired and could not be refreshed"}
+
+    record = traces.claude([json.dumps(result)])
+
+    assert record["error"] == "Failed to authenticate: OAuth session expired and could not be refreshed"
+
+
+def test_a_codex_turn_that_completes_after_a_reconnect_has_no_error():
+    events = [{"type": "turn.started"},
+              {"type": "error", "message": "Reconnecting... 2/5 (stream disconnected before completion)"},
+              {"type": "turn.completed", "usage": {"input_tokens": 10, "output_tokens": 2}}]
+
+    record = traces.codex([json.dumps(e) for e in events])
+
+    assert record["error"] is None
+    assert not record["is_error"]

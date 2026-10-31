@@ -7,7 +7,7 @@ from pathlib import Path
 
 from tool import stats
 from tool.cases import Study
-from tool.harness import refused
+from tool.harness import lost, refused
 from tool.traces import first_index
 
 HEADROOM = (0.10, 0.90)
@@ -44,11 +44,11 @@ def median_mean(values: list[float]) -> str:
 
 
 def paired(rows_: list[dict], reference: str, arm: str, harness: str) -> list[tuple[dict, dict]]:
-    """Runs of the two arms on the same batch, case and run, leaving out a pair with a run the provider refused."""
+    """Runs of the two arms on the same batch, case and run, leaving out a pair with a run refused or lost."""
     index = {(r["batch"], r["case"], r["run"]): r for r in rows_ if r["arm"] == reference and r["harness"] == harness}
     pairs = [(index[(r["batch"], r["case"], r["run"])], r) for r in rows_
              if r["arm"] == arm and r["harness"] == harness and (r["batch"], r["case"], r["run"]) in index]
-    return [(a, b) for a, b in pairs if not refused(a) and not refused(b)]
+    return [(a, b) for a, b in pairs if not any(refused(r) or lost(r) for r in (a, b))]
 
 
 def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> Path:
@@ -131,8 +131,12 @@ def write(study: Study, batch_dirs: list[Path], labels: Path | None = None) -> P
         flags.append(f"Runs that loaded MCP servers or non-builtin plugins, so saw more than the fixture: {leaky}.")
     turned_away = [r["id"] for r in data if refused(r)]
     if turned_away:
-        flags.append(f"Runs the provider refused on every attempt, left out of the contrasts with their pair: "
-                     f"{turned_away}.")
+        flags.append(f"Runs the provider, the login or the network turned away on every attempt, left out of the "
+                     f"contrasts with their pair: {turned_away}.")
+    ended = [r["id"] for r in data if lost(r)]
+    if ended:
+        flags.append(f"Runs the login or the network ended after they changed files, left out of the contrasts with "
+                     f"their pair: {ended}.")
     missing = sum(e["verdict_missing"] for r in data for e in r["grading"]["expectations"])
     if missing:
         flags.append(f"{missing} judge calls returned no verdict and count as failed.")

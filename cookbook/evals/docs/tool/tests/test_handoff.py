@@ -13,7 +13,8 @@ PAGE = "docs/features/reminders.md"
 
 @pytest.fixture(scope="module")
 def source_batch(tmp_path_factory) -> Path:
-    """A stage-A batch: one run that wrote a reminders page, one the provider refused, one that wrote nothing."""
+    """A stage-A batch: one run that wrote a reminders page, one the provider refused, one that wrote nothing, and
+    one the login ended after it wrote."""
     batch = tmp_path_factory.mktemp("e1") / "pilot"
     writer = load_study("e1").case("reminders-why")
     repo = fixtures.build(writer, "bare", tmp_path_factory.mktemp("a") / "repo")
@@ -24,6 +25,7 @@ def source_batch(tmp_path_factory) -> Path:
         "reminders-why--skill--claude--r1": ("", [], "Selected model is at capacity."),
         "reminders-why--no-skill--claude--r1": ("", [], None),
         "tenet--bare--codex--r2": ("", [], None),
+        "tenet--skill--claude--r1": ("", [PAGE], "Failed to authenticate: OAuth session expired"),
     }
     (batch / "runs" / "change-decision--bare--claude--r1").mkdir(parents=True)
     for run_id, (patch, changed, error) in runs.items():
@@ -75,8 +77,9 @@ def test_reader_jobs_follow_the_writers_runs_and_add_the_control(source_batch):
     assert by_id["reminders-why--bare--claude--r1"].source == str(source_batch / "runs" / "reminders-why--bare--claude--r1")
     assert "reminders-why--no-skill--claude--r1" in by_id
     assert "reminders-why--skill--claude--r1" not in by_id, "the provider refused the writer's run"
+    assert "tenet--skill--claude--r1" not in by_id, "the login ended the writer's run"
     assert by_id["reminders-why--unwritten--claude--r1"].source == ""
     assert by_id["tenet--unwritten--codex--r2"].source == ""
     assert sorted(by_id) == sorted(["reminders-why--bare--claude--r1", "reminders-why--no-skill--claude--r1",
                                     "tenet--bare--codex--r2", "reminders-why--unwritten--claude--r1",
-                                    "tenet--unwritten--codex--r2"])
+                                    "tenet--unwritten--claude--r1", "tenet--unwritten--codex--r2"])

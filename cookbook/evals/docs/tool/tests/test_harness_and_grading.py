@@ -175,7 +175,7 @@ def test_a_run_refused_on_every_attempt_is_flagged(tmp_path):
 
     text = report.write(effort_study(), [batch]).read_text()
 
-    assert "refused on every attempt, left out of the contrasts with their pair: ['c1--ctl--claude--r1']" in text
+    assert "turned away on every attempt, left out of the contrasts with their pair: ['c1--ctl--claude--r1']" in text
     assert "| claude: ctl vs ref | 7 |" in text
 
 
@@ -196,3 +196,30 @@ def test_each_harness_runs_at_the_effort_its_study_names(monkeypatch):
 
     assert claude[claude.index("--effort") + 1] == "medium"
     assert "model_reasoning_effort=medium" in codex
+
+
+def test_a_lost_login_or_network_before_any_change_is_run_again():
+    outcomes = iter([result("Failed to authenticate: OAuth session expired and could not be refreshed"),
+                     result("failed to lookup address information: Try again"), result(None, ["docs/a.md"])])
+
+    assert harness.with_retries(lambda: next(outcomes))["attempts"] == 3
+
+
+def test_a_run_the_login_or_network_ended_after_it_changed_files_is_lost():
+    ended = result("Failed to authenticate: OAuth session expired", ["docs/a.md"])
+
+    assert harness.lost(ended)
+    assert not harness.lost(result("error_max_turns", ["docs/a.md"]))
+
+
+def test_a_pair_with_a_run_the_login_ended_is_not_compared_and_is_flagged(tmp_path):
+    batch = effort_batch(tmp_path, control_steps=6)
+    run = batch / "runs" / "c2--ref--claude--r1" / "run.json"
+    run.write_text(json.dumps({**json.loads(run.read_text()), "error": "Failed to authenticate: OAuth session expired",
+                               "files_changed": ["docs/a.md"]}))
+
+    text = report.write(effort_study(), [batch]).read_text()
+
+    assert "the login or the network ended after they changed files, left out of the contrasts with their pair: " \
+           "['c2--ref--claude--r1']" in text
+    assert "| claude: ctl vs ref | 7 |" in text
