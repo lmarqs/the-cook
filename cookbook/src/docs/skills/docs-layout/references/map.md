@@ -1,12 +1,14 @@
 # The map
 
 `docs/README.md` is the page a reader or an agent opens first: the kinds of page this repository keeps, when a fact
-belongs to each, and what a good page of each achieves. It is the team's page, in its language and headings.
+belongs to each, and what a good page of each achieves.
 
 ## Where a fact goes
 
-Each fact has one owner, the page of the kind it fits; other pages link it, since a copy drifts. The link text names the fact, as in `wait out [the rate limit](api/orders.md#limits)`, so the sentence reads
-without the hop. A reader gets what they need at the first level they open, and follows links for depth.
+The kind is the question a reader brings to a fact, never the fact's subject: one subject feeds several kinds. In
+the made-up `acme`, the session timeout is a feature rule, the shared session store is a decision, and clearing
+sessions is a runbook. Each fact has one owner; other pages link it, since a copy drifts, with link text that names
+the fact, as `wait out [the rate limit](api/orders.md#limits)`.
 
 ## What a page holds
 
@@ -33,6 +35,8 @@ Both appear with their first content: empty structure says something exists that
 Most misplaced facts are one of these:
 
 - A feature rule written as a decision. Giveaway: its options had to be invented.
+- A decision filed under the feature it touches. Giveaway: a product or technology name with the reason it beat
+  another.
 - A screen or output convention written into a feature page. Giveaway: it names a component, a color or a position.
 - A feature's behavior written as a standard. Giveaway: it applies to one unit only.
 - A procedure written as a feature. Giveaway: numbered steps a responder follows.
@@ -41,14 +45,13 @@ Most misplaced facts are one of these:
 
 ## A new kind
 
-Ask first: which part of each kind's description do the facts miss? Do they have another owner, as an FAQ's answers
+Which part of each kind's description do the facts miss? Do they have another owner, as an FAQ's answers
 belong to the features they explain? Are they true now, and shown nowhere else? Can a good page of the kind be
 described, so a review can compare a page with it?
 
 ## A good map
 
-It says, for each kind the team keeps, in the team's words and not a reference's,
-when a fact belongs there and what a good page achieves, and links the kind's pages once they exist. It names no
-section a page must have. A worked example, one subject of this repository whose facts land in different kinds, shows
-why each lands where it does. It names the misfilings this team meets. Its language, headings and order are the
-team's.
+It says, for each kind the team keeps, when a fact belongs there and what a good page achieves, and links the
+kind's pages once they exist. It names no section a page must have. A worked example, one subject of this repository
+whose facts land in different kinds, shows why each lands where it does. It names the misfilings this team meets.
+Its language, headings and order are the team's.

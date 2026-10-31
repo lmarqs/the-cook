@@ -47,8 +47,9 @@ with kinds, add or remove one in its own words.
 ## Write a page
 
 1. Search `docs/` for the subject, by its term and synonyms. When a page owns it, edit that page.
-2. Place a new page by the map. When **no kind fits**, say so and offer: outside `docs/`, a kind the team declares,
-   or nowhere. A forced kind misleads every reader who trusts the map.
+2. Place a new page by the map, by the question its facts answer and never by their subject.
+   When **no kind fits**, say so and offer: outside `docs/`, a kind the team declares, or nowhere. A forced kind
+   misleads every reader who trusts the map.
 3. Gather facts from the code, the contract, the history, the issue and the person. Ask first what went wrong, what
    it cost and what was tried: only the person may know it.
 4. Write the body, then the lead. Take the shape from the kind's existing pages, else from the map and the reference.
