@@ -35,12 +35,13 @@ class Job:
 def agent_command(harness: str, config: dict, case: Case) -> list[str]:
     found = sandbox.binaries()
     if harness == "claude":
-        return [
+        command = [
             str(found["claude"]), "-p", "--output-format", "stream-json", "--verbose",
             "--permission-mode", "acceptEdits", "--allowedTools", "Bash", "--permission-prompts", "none",
             "--strict-mcp-config", "--mcp-config", f"{sandbox.EVAL_DIR}/mcp.json", "--no-session-persistence",
             "--model", config["model"], "--max-turns", str(case.max_turns),
         ]
+        return command + (["--effort", config["effort"]] if config.get("effort") else [])
     if harness == "codex":
         command = [
             str(found["codex"]), "exec", "--json", "--skip-git-repo-check", "-s", "workspace-write",
@@ -154,7 +155,7 @@ def run_job(study: Study, job: Job, batch_dir: Path) -> dict:
         exit_error = process_error(process.returncode, timed_out, (directory / "stderr.txt").read_text())
         return {
             "study": study.id, **asdict(job), "id": job.id,
-            "model": study.harnesses[job.harness]["model"],
+            "model": study.harnesses[job.harness]["model"], "effort": study.harnesses[job.harness].get("effort"),
             "started": started.isoformat(), "duration_s": round(duration, 1),
             "exit_code": process.returncode, "timed_out": timed_out,
             "files_changed": changed, **record, "exit_error": exit_error, "error": record["error"] or exit_error,

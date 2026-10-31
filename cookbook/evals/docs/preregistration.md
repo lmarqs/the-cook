@@ -25,7 +25,7 @@ question. E4 reads the E1 batch of the same round: each E1 run is a writer, and 
 
 ## Design
 
-- Harnesses: Claude Code (`claude-opus-5-5`) and Codex (`gpt-6.1-sol`, medium effort), analysed separately. A
+- Harnesses: Claude Code (`claude-sonnet-5`, medium effort) and Codex (`gpt-6.1-sol`, medium effort), analysed separately. A
   harness's result does not stand in for the other's.
 - Cases: the five in each study's `cases/`, as committed when the round-2 pilot starts. E2 and E3 run with the
   haystack, 33 extra pages shared by every arm.
@@ -61,8 +61,9 @@ than 20 points are out of reach at this budget, and a tie is then reported as in
 | 80% / 50% | 0.017 | 0.11 | 0.40 | 0.64 | 0.81 | 0.97 |
 | 70% / 50% | 0.017 | 0.04 | 0.13 | 0.24 | 0.35 | 0.57 |
 
-Claude's cost, estimated from round 1's means per run (writers $0.28, readers $0.13–0.20): about $30 for the pilot's
-150 Claude runs and $70–130 for the confirmatory batch's 450; Codex reports none.
+Claude's cost per run is measured by the pilot, capped at $30 for its 150 Claude runs; round 1 measured it on
+`claude-opus-5-5` (writers $0.28, readers $0.13–0.20), at which the confirmatory batch's 450 runs cost $70–130.
+Codex reports none.
 
 ## What may change, and what may not
 

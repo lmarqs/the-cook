@@ -185,3 +185,14 @@ def test_a_pair_with_a_run_the_provider_refused_is_not_compared():
             for arm in ("ref", "ctl")]
 
     assert report.paired(rows, "ref", "ctl", "claude") == []
+
+
+def test_each_harness_runs_at_the_effort_its_study_names(monkeypatch):
+    monkeypatch.setattr(harness.sandbox, "binaries", lambda: {"claude": Path("claude"), "codex": Path("codex")})
+    case = load_study("e1").case("tenet")
+
+    claude = harness.agent_command("claude", {"model": "claude-sonnet-5", "effort": "medium"}, case)
+    codex = harness.agent_command("codex", {"model": "gpt-6.1-sol", "effort": "medium"}, case)
+
+    assert claude[claude.index("--effort") + 1] == "medium"
+    assert "model_reasoning_effort=medium" in codex
