@@ -1,32 +1,30 @@
-# Feature pages
+# Features
 
-A feature page answers "what does it do?" for one unit of behavior, as reference: it describes, in the structure of
-the thing itself, so a reader finds a fact where the product puts it.
+Holds what the system does, one page per unit of behavior. Diátaxis type: reference. A page answers "what does it
+do, and why is it so?"
 
-The lead says why the unit exists, or why it is as it is, as it happened: a reason below the bar for a decision
-record has no other owner. Sections follow the unit: its inputs, its states, its conditions, its outputs, as the
-unit has them. `Shaped by` links the decision records behind the behavior.
+A fact belongs here when it states what a unit owes its users and the code cannot be read for it: a threshold, a
+rule, who may do what. A limit an interface's callers rely on is the interface's; a reason that meets the decision
+bar is a record, and one below it stays here; operating the unit is a runbook.
 
-## Example, in the made-up project `acme`
+What makes a good feature page:
 
-`docs/features/sessions.md`:
+- The lead says what the unit is and why it is so, as it happened: a reason too small for a record has no other
+  owner.
+- It follows the unit's own structure, its inputs, states and outputs, so a reader finds a fact where the product
+  puts it. A rule that is arithmetic over state carries a worked example.
+- It names what the unit does not handle, each with its workaround, and links the decisions behind it.
+
+## Example
+
+This shows one good page, not the page. `docs/features/sessions.md` in the made-up `acme`:
 
 ```markdown
 # Sessions
 
-For whoever changes login, or answers a user who was logged out. A session keeps a user logged in across requests,
-from login until logout or 30 minutes without a request. The limit was 10 minutes until 2023, when shoppers paying
-on slow mobile connections lost their carts mid-checkout.
+For whoever changes login. A session keeps a user logged in until logout or 30 minutes without a request. The limit
+was 10 minutes until 2023, when shoppers paying on slow connections lost their carts mid-checkout.
 
-## Lifetime
-
-Each request renews the session for another 30 minutes. Logout deletes it at once.
-
-## Across replicas
-
-Every web replica reads the same session store, so a user stays logged in whichever replica answers.
-
-## Shaped by
-
-- [Keep sessions in a shared store](../adr/0007-keep-sessions-in-a-shared-store.md)
+Each request renews the session for 30 minutes; logout deletes it at once. Every replica reads the same
+[session store](../adr/0007-keep-sessions-in-a-shared-store.md), so a user stays logged in whichever one answers.
 ```

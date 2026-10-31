@@ -1,14 +1,13 @@
 package io.github.lmarqs.cookbook.docs
 
 /**
- * Models a repository's `docs/` tree as the single source of truth for people and coding agents: a map that says
- * which page owns each fact, the kinds of page and what a good page of each achieves, and the `docs-layout` skill
- * that writes and reviews the pages.
+ * Gives a repository the `docs-layout` skill, which teaches where a fact goes in `docs/` and why, writes the map at
+ * `docs/README.md` with the team, and writes and reviews pages by it. The model writes nothing under `docs/`: the map
+ * and the pages are the team's.
  *
  * ## Writes for
  *
- * Markdown in `docs/README.md`; an Agent Skill, `SKILL.md` with its references and templates, under the skills
- * directory named.
+ * An Agent Skill, `SKILL.md` with its references, under the skills directory named.
  *
  * ## Instances
  *
@@ -21,7 +20,7 @@ package io.github.lmarqs.cookbook.docs
  *
  * @ingredient(Docs) def docs
  *
- * docs.layout('io.github.lmarqs.cookbook:docs#seed --skills-root=.agents/skills', ['.agents/skills'], Docs.KINDS)
+ * docs.layout(['.agents/skills'])
  * ```
  *
  * ## With other models
@@ -31,94 +30,27 @@ package io.github.lmarqs.cookbook.docs
  */
 @Ingredient
 class Docs {
-  /**
-   * The kinds of page the map can offer: each a directory under `docs/`, except `architecture` and `philosophy`, one
-   * page each.
-   */
-  static final List<String> KINDS = [
-    'adr',
-    'api',
-    'architecture',
-    'features',
-    'observability',
-    'philosophy',
-    'runbooks',
-    'standards'
-  ]
-
   /** The name of the skill, the directory it is written to under each skills root. */
   static final String SKILL = 'docs-layout'
 
-  private String cookedWith
   private List<String> skillsRoots = []
-  private List<String> kinds = []
 
   /**
-   * Requests the layout: the map at `docs/README.md` offering `kinds`, and the `docs-layout` skill under each of
-   * `skillsRoots`, directories by their paths from the repository root. `cookedWith` names the recipe and its
-   * arguments, which the map's section opens with. Rejects a blank `cookedWith`, no skills root or a blank one, an
-   * empty `kinds` and a kind outside `KINDS`.
+   * Requests the `docs-layout` skill under each of `skillsRoots`, directories by their paths from the repository root.
+   * Rejects no skills root or a blank one.
    */
-  void layout(String cookedWith, List<String> skillsRoots, List<String> kinds) {
-    if (!cookedWith?.trim()) {
-      throw new IllegalArgumentException('layout needs the recipe it is cooked with')
-    }
-
+  void layout(List<String> skillsRoots) {
     if (!skillsRoots || skillsRoots.any { !it?.trim() }) {
       throw new IllegalArgumentException('layout needs the directories the skill is written under')
     }
 
-    if (!kinds) {
-      throw new IllegalArgumentException("layout needs at least one kind of ${KINDS.join(', ')}")
-    }
-
-    def unknown = kinds - KINDS
-
-    if (unknown) {
-      throw new IllegalArgumentException("${unknown.join(', ')} is not a kind of page: ${KINDS.join(', ')}")
-    }
-
-    this.cookedWith = cookedWith
     this.skillsRoots = skillsRoots.unique(false)
-    this.kinds = KINDS.findAll { it in kinds }
-  }
-
-  /** `docs/README.md`, seeded when absent and never owned: the map's title and introduction, which the team edits. */
-  @Seed(path = 'docs/README.md')
-  String mapSeed() {
-    cookedWith ? resource("skills/${SKILL}/templates/map.template.md") : null
-  }
-
-  /**
-   * The `kinds` section of `docs/README.md`: the recipe and its arguments as an HTML comment, then each kind offered
-   * with what it holds, its Diátaxis type and what a good page of it achieves, then where a fact goes, what a page
-   * holds, terms, guides and the skill.
-   */
-  @Section(path = 'docs/README.md', id = 'kinds', comment = '<!--')
-  List<String> kindsSection() {
-    if (!cookedWith) {
-      return null
-    }
-
-    def text = (kinds.collect { resource("kinds/${it}.md") } + resource('kinds/common.md')).join('\n')
-    ["<!-- ${cookedWith} -->".toString()] + linkExisting(text).readLines()
-  }
-
-  /**
-   * `text` with each kind's `directory/` or `page.md` in its heading, and `glossary.md` in the terms, made a link when
-   * the page exists, a directory by its guide; a page not yet written stays plain, so the map holds no dead link.
-   */
-  private String linkExisting(String text) {
-    text.replaceAll(/(?m)^(## [^\n]*, |Terms live in )`([a-z]+)(\/|\.md)`/) { all, lead, name, end ->
-      def target = end == '/' ? "${name}/README.md" : "${name}.md"
-      current("docs/${target}") == null ? all : "${lead}[`${name}${end}`](${target})".toString()
-    }
   }
 
   /** Whole files under each skills root, `docs-layout/` and everything in it, when the layout is requested. */
   @Files(path = '.')
   Map<String, String> skillFiles() {
-    if (!cookedWith) {
+    if (!skillsRoots) {
       return null
     }
 

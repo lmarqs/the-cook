@@ -1,31 +1,27 @@
-# Interface pages
+# Interfaces
 
-An interface's contract lives in its definition file: an OpenAPI document, a proto file or a schema, from which the
-reference is built. An event stream, a queue or the analytics events a product team reads is an interface too, and
-its schema is its definition file. The interface page holds what that file leaves out, and links the file for
-everything else, so the two stay in agreement.
+Holds what an interface's contract file leaves out: who calls it and why, authentication, versioning, deprecation and
+limits. An interface is any contract another system depends on: an HTTP API, an event stream, a queue, a
+webhook. Diátaxis type: reference.
 
-Sections after `Contract` hold what the interface has of authentication, versioning, deprecation policy and limits.
+A fact belongs here when a caller needs it and the definition file, an OpenAPI document, a proto or a schema, does
+not hold it. The definition is the contract; a copy of it in prose drifts.
 
-## Example, in the made-up project `acme`
+What makes a good interface page:
 
-`docs/api/orders.md`:
+- It covers one interface, and its lead says what it is for and who calls it.
+- It links the definition file and how the reference is built from it.
+
+## Example
+
+This shows one good page, not the page. `docs/api/orders.md` in the made-up `acme`:
 
 ```markdown
 # Orders API
 
-For whoever integrates a partner or changes the API. The Orders API lets the mobile app and partner shops place and
-track orders. Partners asked for it in 2024, when they were keying 200 emailed orders a day into acme by hand.
+For whoever integrates a partner or changes the API. Partners asked for it in 2024, when they were keying 200
+emailed orders a day into acme by hand. [openapi/orders.yaml](../../openapi/orders.yaml) is the contract;
+`make api-docs` builds the reference.
 
-## Contract
-
-[openapi/orders.yaml](../../openapi/orders.yaml) is the contract; `make api-docs` builds the reference from it.
-
-## Authentication
-
-Partners send an API key in `X-Acme-Key`; the mobile app sends the user's session token.
-
-## Limits
-
-A partner key allows 600 requests a minute; a 429 carries `Retry-After`.
+Partners send an API key in `X-Acme-Key`. A key allows 600 requests a minute; a 429 carries `Retry-After`.
 ```

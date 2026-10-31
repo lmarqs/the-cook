@@ -1,45 +1,30 @@
 # Runbooks
 
-A runbook says what to do when one trigger fires: an alert, a request or a symptom. It is written for someone under
-pressure, so each step is one action with the output that shows it worked.
+Holds what to do when a trigger fires: an alert, a request, a symptom. Diátaxis type: how-to.
 
-A runbook for a symptom names the symptom, its likely causes and the remedy for each, as a troubleshooting topic does
-in DITA. When the cause isn't obvious, the first steps are checks that tell the causes apart, as for "users cannot
-log in":
+A fact belongs here when someone acts on it under pressure. Why goes to the pages that explain.
 
-```markdown
-1. Check the API's error rate: `make api-errors`.
+What makes a good runbook:
 
-   Expected: below 1%. Above it, the API is failing; go to step 4. Below it, the login page is at fault; go to step 2.
-```
+- It covers one trigger, is named after it, and its lead states the outcome and impact.
+- Each step is one action with the output that shows it worked, so the responder verifies as they go.
+- For a symptom, it names the likely causes and a remedy for each, and when the cause isn't obvious, it starts with
+  checks that tell them apart.
+- It gains what the responder learned each time the trigger fires.
 
-Each time the trigger fires, the responder adds what they learned: a step that was missing, an output that differed.
+## Example
 
-## Example, in the made-up project `acme`
-
-`docs/runbooks/redis-down.md`:
+This shows one good page, not the page. `docs/runbooks/redis-down.md` in the made-up `acme`:
 
 ```markdown
 # Redis down
 
-For whoever answers the Redis alert. Brings the session store back; while it is down, every user is
-logged out. Written after the March outage, when finding the restart took 40 minutes.
+For whoever answers the Redis alert. While it is down every user is logged out. Written after the March outage, when
+finding the restart took 40 minutes. Needs `kubectl` access to `acme-prod`.
 
-## Before you begin
+1. Check the pod: `kubectl -n acme get pod -l app=redis`. Expected: one pod, `Running`.
+2. If it is in `CrashLoopBackOff`, restart it: `kubectl -n acme rollout restart statefulset/redis`. Expected:
+   `Running` within two minutes.
 
-- `kubectl` access to the `acme-prod` cluster.
-
-## Steps
-
-1. Check the pod: `kubectl -n acme get pod -l app=redis`.
-
-   Expected: one pod, `Running`, `1/1`.
-2. Restart it if it is in `CrashLoopBackOff`: `kubectl -n acme rollout restart statefulset/redis`.
-
-   Expected: the pod is `Running` again within two minutes.
-
-## If it fails
-
-Restore the store from the last snapshot with `make redis-restore`. [Sessions](../features/sessions.md) explains
-what depends on Redis.
+If it stays down, restore the last snapshot with `make redis-restore`.
 ```

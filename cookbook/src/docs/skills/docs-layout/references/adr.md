@@ -1,63 +1,40 @@
-# Decision records
+# Architecture decisions
 
-A record answers "why is it built this way?" for one decision, so that a reader months later can tell whether the
-reasons still hold before changing it. The reasoning is the content: the options weighed and why each lost carry as
-much knowledge as the choice.
+Holds why the system is built as it is: each foundation decision, the options weighed and why the choice won.
+Diátaxis type: explanation. A record answers "why is it built this way?", so a reader months later can tell whether
+the reasons still hold before changing it.
 
-- A choice below the map's bar lives in the code and its review. Test the decision, not the product that implements
-  it: "keep sessions in a store every replica shares" is a foundation; "use Redis for it" is one change to reverse.
-  `Decision` still names the product and why that one, in a sentence: its reason has no other owner.
-- The title is the decision taken, as a sentence: "Keep sessions in a shared store".
-- The lead tells a reader whether the record concerns them: whom it concerns, the decision, and what moved it.
-- `Context` tells what happened before it names a force: the situation as it was met, what it cost, what was tried.
-  A reader tests the reasons against that story. Each option that loses, loses on one of the forces.
-- Each option is stated at its best: what it offers, then the force it fails.
-- `Decision` states the choice and why it won, in a sentence or two; detail lives in the pages the record links.
+A fact belongs here when reversing it changes more than one feature or module, it is hard to reverse, it surprises a
+reader new to it, and it came from a real trade-off. How one feature works, a choice one change can reverse and a
+convention a linter enforces are not: every record reads as binding, and a record of a detail freezes it.
 
-## Example, in the made-up project `acme`
+What makes a good record:
 
-`docs/adr/0007-keep-sessions-in-a-shared-store.md`:
+- The title is the decision taken, as a sentence, and the file is `NNNN-<slug>.md`, numbered once and never reused,
+  since old references name it.
+- It tells what happened first: the situation, what it cost, what was tried. Then the forces the options are judged
+  by. A reader tests the decision against that story.
+- Each option appears at its best, with the force it fails. Options that had to be invented mean no decision.
+- It names the product chosen and why that one, in a sentence: that reason has no other owner.
+- A changed decision is edited in place and keeps its number; one reversed outright leaves, and its facts that still
+  hold move to the page they fit.
+
+## Example
+
+This shows one good page, not the page. `docs/adr/0007-keep-sessions-in-a-shared-store.md` in the made-up `acme`:
 
 ```markdown
 # Keep sessions in a shared store
 
-For whoever changes login, deploys or the session store. Sessions live in one store every web replica reads, Redis
-today, because logins held in a replica's memory were lost on every deploy.
+For whoever changes login or deploys. Sessions live in one store every replica reads.
 
-## Context
+In 2023 the web tier went to four replicas, and each deploy logged out everyone on the restarted one: 300
+"logged out mid-checkout" tickets the first month. Sticky sessions, the stopgap, did not survive a deploy. A session
+must survive deploys, end at once on logout, and hold a 20 KB cart.
 
-In 2023 the web tier went from one server to four replicas behind a round-robin balancer, and sessions stayed in each
-replica's memory. A user was logged out whenever a request reached another replica, and each deploy, several a day,
-logged out everyone on the restarted one; support logged 300 "logged out mid-checkout" tickets the first month.
-Sticky sessions went on as a stopgap and ended the first kind of logout, not the second. Three forces judge the
-options: a deploy restarts every replica several times a day and must log no one out; logout and an admin's block
-must end a session at once; a session holds the user's cart, up to 20 KB.
+Signed cookies keep no server state, but cannot be ended early and a cart exceeds the 4 KB a cookie holds. Sticky
+sessions need nothing new, and lose every user of a restarted replica. A store every replica reads meets all three.
+It is Redis, already run for the job queue.
 
-## Options
-
-- **Sticky sessions at the balancer**: needs no new service and no code, and runs as the stopgap; lost because a
-  deploy's restart logs out every user of the restarted replica.
-- **Signed cookies**: keep no state on the server, so there is nothing to run; lost because a cookie cannot be ended
-  before it expires, and a 20 KB cart exceeds the 4 KB a browser keeps per cookie.
-- **A store every replica reads**: chosen.
-
-## Decision
-
-Sessions live in one store that every replica reads, keyed by session id, with a 30-minute expiry each request
-renews. It is the one option that survives a deploy and ends a session by deleting its key. The store is Redis,
-already run for the job queue, so no new service joined the deploy; any store with expiring keys meets the forces.
-The [architecture](../architecture.md#how-they-connect) shows where it sits.
-
-## Consequences
-
-Any replica serves any request, and a deploy logs no one out. The store joins the services a deploy depends on, and
-the [Redis down runbook](../runbooks/redis-down.md) covers its failure.
+Any replica serves any request; the store joins what a deploy depends on.
 ```
-
-## When the decision changes
-
-When the carts move to the database and a session fits in a cookie, the team may choose signed cookies and accept
-that a blocked user stays logged in until a short expiry. The record keeps its number and becomes
-`0007-keep-sessions-in-signed-cookies.md`, titled after the new choice, and the links to it follow.
-`Context` gains what moved the change, `Options` gains "**A store every replica reads**: chosen first; left once
-sessions fit in a cookie", and the lead and `Decision` state signed cookies and why.

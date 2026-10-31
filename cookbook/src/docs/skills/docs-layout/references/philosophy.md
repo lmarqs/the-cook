@@ -1,26 +1,25 @@
 # Philosophy
 
-A tenet says what the team favors when two good options conflict, so a decision nobody has recorded yet still goes
-the way the team would take it.
+Holds the tenets that guide decisions: what the team favors when two good options conflict. One page,
+`docs/philosophy.md`. Diátaxis type: explanation.
 
-- A tenet rules something out. "Quality matters" rules out nothing; "Fewer features, each finished" rules out
-  shipping half a feature.
-- Each tenet links the records that apply it, so a reader sees it at work and can judge whether it still holds.
+A fact belongs here when it guides many decisions and rules something out.
 
-## Example, in the made-up project `acme`
+What makes a good philosophy page:
 
-`docs/philosophy.md`:
+- Each tenet is one sentence, then what it rules out. "Quality matters" rules out nothing.
+- Each tenet links the records that apply it, so a reader can judge whether it still holds.
+
+## Example
+
+This shows one good page, not the page. `docs/philosophy.md` in the made-up `acme`:
 
 ```markdown
 # Philosophy
 
-For whoever weighs two good options that no record settles. It holds what the team favors. Written after two reviews
-in a row argued the same trade-off from the start.
+For whoever weighs two good options that no record settles. Written after two reviews in a row argued the same
+trade-off from the start.
 
-## Tenets
-
-### Fewer features, each finished
-
-Rules out shipping a feature without its page, its runbook and its tests. Applied in
-[a shared session store](adr/0007-keep-sessions-in-a-shared-store.md).
+**Run fewer things.** Rules out a new service when one already run meets the need. Applied in
+[a shared session store](adr/0007-keep-sessions-in-a-shared-store.md), kept in the Redis already run for jobs.
 ```
