@@ -135,18 +135,8 @@ in Markdown.
 
 ## Documentation structure
 
-| Part | Purpose |
-| --- | --- |
-| `docs/architecture.md` | Intended responsibilities, operations, boundaries and distribution; supporting design pages follow it |
-| `docs/philosophy.md` | Problems, goals and tenets motivating the design |
-| `docs/features/` | Index and reading path, glossary, CLI grammar, cooking and discard semantics, the wrapper, pitfalls and this repository's agent setup |
-| `docs/adrs/` | Architectural decisions and their reasons within the architecture |
-| `docs/ux/` | Interaction and documentation standards within the architecture |
-| Root and core usage guides | Truthful instructions and limitations for current implementation |
-| Cookbook units under `cookbook/` | Recipes document themselves in `@help`, models in doc comments; a directory README is the artifact's front page |
-
-When a standard or ADR conflicts with the architecture, correct the supporting document. Track a missing implementation
-in issues. See the [UX authority](README.md#authority) and [ADR index](../adrs/README.md).
+The [map of the docs](../README.md) names the kinds of page under `docs/`, where a fact goes and which page has
+authority. The rules below hold for every page.
 
 ### Every document opens with its objective
 

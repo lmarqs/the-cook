@@ -17,24 +17,10 @@ the writes. Ingredients model programs' native files, cookbook repositories hold
 recipes separately from the engine, and programs consume the resulting files directly. The CLI is the public cooking
 interface.
 
-[Cook architecture](../architecture.md) states the intended design. These pages expand it;
-[ADRs](../adrs/README.md) explain its reasoning and [UX standards](../ux/README.md) describe its interaction. If a
-supporting page conflicts with the architecture, correct that page. The [root README](../../README.md) and
-[core implementation guide](../../core/README.md) describe current execution. The [cookbook](../../cookbook/README.md)
-sketches how recipes and ingredients are written and distributed.
-
-## Reading path
-
-1. [Architecture](../architecture.md): responsibilities, ordered composition, ownership, discard, replicate and
-   distribution.
-2. [Glossary](glossary.md): the terms used throughout these pages.
-3. [CLI reference](cli.md): the commands and their arguments.
-4. [Cooking](cook.md): what cooking recipes proposes and records.
-5. [Discard](discard.md): how a recipe's output is removed.
-6. [Replicate](replicate.md): recreating output from recorded sources and arguments.
-7. [Update](update.md): moving recipes to newer releases with recorded arguments.
-8. [Wrapper](wrapper.md): how a repository pins and obtains the engine.
-9. [Pitfalls](pitfalls.md): traps in permissions, recipe trust, paths, ordered changes and recovery.
+These pages state what each command and operation does, within [Cook architecture](../architecture.md). The
+[map of the docs](../README.md) says which kind of page owns which fact; this directory also holds two pages of other
+kinds, the [glossary](glossary.md) and the [pitfalls](pitfalls.md). Read the [CLI reference](cli.md) first, then the
+page of the operation at hand.
 
 ## Pages
 
@@ -48,9 +34,3 @@ sketches how recipes and ingredients are written and distributed.
 | [Update](update.md) | Choosing newer compatible releases, major updates, release discovery and approval |
 | [Wrapper](wrapper.md) | Version and checksum pinning, first-use download and cache, explicit upgrades and the current launcher |
 | [Pitfalls, gaps and traps](pitfalls.md) | Symptoms, causes, Cook's responsibility and what to review |
-
-## Related documentation
-
-- [UX standards](../ux/README.md): commands, configuration, generated content, skills, compatibility and where new
-  behavior goes.
-- [ADRs](../adrs/README.md): the decisions behind the architecture and their reasons.

@@ -32,13 +32,9 @@ files directly. Recipe evaluation is trusted code, not sandboxed by the review f
 
 ## Authority
 
-[Cook architecture](../architecture.md) states the intended design. These standards and the
-[ADRs](../adrs/README.md) follow it. Standards govern interactions within that design; when a standard or ADR conflicts
-with the architecture, correct the supporting document.
-
-Descriptions of current behavior in the [root README](../../README.md), [core guide](../../core/README.md) and recipe
-READMEs must remain truthful. A requirement in these standards does not establish implementation, and a gap in
-implementation does not invalidate the design.
+Standards govern interactions within [Cook architecture](../architecture.md), with the authority the
+[map of the docs](../README.md#authority) gives. A requirement in these standards does not establish implementation,
+and a gap in implementation does not invalidate the design.
 
 Background:
 

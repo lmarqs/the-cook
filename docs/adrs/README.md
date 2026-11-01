@@ -13,10 +13,8 @@ The [index](#index) lists every ADR with the question it answers.
 
 ## Authority
 
-[Cook architecture](../architecture.md) states the intended design. ADRs explain decisions and their reasons within
-that design; the [features](../features/) pages and [user-experience standards](../ux/) follow it too. When an ADR or
-standard conflicts with the architecture, correct the supporting document. An earlier decision does not override
-the agreed architecture.
+ADRs explain decisions and their reasons within [Cook architecture](../architecture.md), with the authority the
+[map of the docs](../README.md#authority) gives.
 
 No two ADRs contradict each other, and each rule has one owning ADR. A point that applies another ADR's rule is a
 one-line link to that ADR, which keeps the contract and its reasons in one place.

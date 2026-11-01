@@ -60,8 +60,8 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
   `core/src/test/groovy/thecook/CoordinatesTest.groovy`; recipe tests in `cookbook/test/<artifact>/`, never in core.
 - Settings: build options are Gradle `-P` properties, as `releaseVersion`; release secrets are the GitHub Actions
   secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and `SIGNING_PASSWORD`.
-- Decisions and domain rules: [docs/adrs/](docs/adrs/README.md); feature behavior in `docs/features/`, interface
-  standards in `docs/ux/`.
+- Decisions, feature behavior, standards and pitfalls: where [docs/README.md](docs/README.md) says, by the
+  `docs-layout` skill.
 - A procedure an agent repeats: a skill in `.agents/skills/`.
 - A trap a correction reveals in one area: `.agents/memory/<area>.md`, listed under Deep dive.
 

@@ -9,6 +9,8 @@
     - title: Architecture
       path: docs/architecture.md
     - title: Guide to the docs
+      path: docs/README.md
+    - title: Features
       path: docs/features/README.md
 - section: Using Cook
   pages:
