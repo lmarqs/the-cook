@@ -1,3 +1,7 @@
+---
+description: Records why existing permission rules a change retains, replaces or deletes are shown in a native-file review.
+audience: Whoever changes how a recipe writes agent permissions
+---
 # 0016. Existing permission changes receive explicit native-file review
 
 Existing agent settings can contain permission rules that a shared configuration recipe does not express. Silently

@@ -1,3 +1,7 @@
+---
+description: Explains how replicate cooks recipes again from the sources and arguments cook.lock records.
+audience: Whoever restores a recipe's output, as in a fresh clone
+---
 # Replicate recipes
 
 A fresh clone keeps cook.lock but can lack a recipe's ignored output. A developer wants to recreate those files without

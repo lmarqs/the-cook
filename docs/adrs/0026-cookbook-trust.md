@@ -1,3 +1,7 @@
+---
+description: Records why approving a batch does not establish trust in the cookbook that produced it.
+audience: Whoever adds a cookbook source or approves a batch
+---
 # 0026. Cookbook execution requires trust beyond batch approval
 
 Shared setup can come from sources outside the destination repository. Replaced source content or unreviewed code can

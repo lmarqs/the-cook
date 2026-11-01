@@ -1,3 +1,7 @@
+---
+description: Explains how the cook wrapper pins, downloads, verifies and upgrades the engine release.
+audience: Whoever runs Cook in a repository or upgrades its engine
+---
 # Wrapper: `cook`
 
 Developers and CI need to run the same engine version, and a download must match the version the repository reviewed

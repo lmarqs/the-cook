@@ -1,8 +1,8 @@
+---
+description: Introduces Cook to a newcomer, and says which feature page to open first.
+audience: Whoever is new to Cook or about to use or change one of its commands
+---
 # the-cook
-
-For a newcomer to Cook, or anyone about to use or change one of its commands. Without a route in, a reader cannot tell
-Cook's purpose from its mechanics, or a target requirement from behavior they can run today. These pages state what
-each command does; this one says what the engine is and which page to open first.
 
 ## Overview
 

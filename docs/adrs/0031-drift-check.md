@@ -1,3 +1,7 @@
+---
+description: Records why check cooks every recipe again from cook.lock and exits 1 on a difference, so one CI step never changes.
+audience: Whoever runs Cook in CI or changes check
+---
 # 0031. Check compares the kitchen with what cook.lock records
 
 A team commits the files its recipes write together with the record of how they were written. Someone edits an input,

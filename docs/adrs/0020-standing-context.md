@@ -1,3 +1,7 @@
+---
+description: Records why reusable guidance is cooked as native program content, such as skills and instruction files.
+audience: Whoever ships guidance in a cookbook
+---
 # 0020. Guidance is native program content
 
 Teams reuse coding guidance across repositories, but copying it by hand makes updates hard to share. Putting every

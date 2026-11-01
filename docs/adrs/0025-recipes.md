@@ -1,3 +1,7 @@
+---
+description: Records why reusable setup is written as trusted Groovy recipes, reviewed against current content.
+audience: Whoever writes a recipe or changes how recipes are evaluated
+---
 # 0025. Trusted Groovy recipes describe reusable file changes
 
 Teams repeat setup choices across repositories and adapt shared configuration to each project. Hand copies drift, and a

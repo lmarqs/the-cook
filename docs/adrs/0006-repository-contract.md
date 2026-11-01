@@ -1,3 +1,7 @@
+---
+description: Records why each repository keeps its own trusted recipes and choices while the engine is shared through releases.
+audience: Whoever decides what a repository keeps and what the engine provides
+---
 # 0006. Repositories hold trusted recipes separately from the shared engine
 
 When a practice spreads by copying its engine code into each repository, every copy becomes a fork: a fix made in one

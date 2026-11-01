@@ -1,3 +1,7 @@
+---
+description: Records which guarantees Cook gives for a declared batch, and what approval never protects against.
+audience: Whoever describes or relies on what Cook guarantees
+---
 # 0011. Cook's guarantees cover declared batch operations
 
 A developer needs to understand both the changes being approved and the limits of that approval. Calling configuration

@@ -1,3 +1,7 @@
+---
+description: Records why the native configuration Cook writes stays usable by people and pipelines without Cook.
+audience: Whoever changes what Cook writes into a repository
+---
 # 0010. Native configuration remains usable without Cook
 
 Not everyone who clones a repository chooses the same setup tool. If generated configuration requires that tool merely

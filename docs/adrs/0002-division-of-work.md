@@ -1,3 +1,7 @@
+---
+description: Records why recipes make the choices about a project's setup and Cook only executes the batch they declare.
+audience: Whoever writes a recipe or changes how a batch runs
+---
 # 0002. Cook separates recipe choices from batch execution
 
 Sharing setup mixes mechanical file editing with choices about a project's prose, permissions and way of working. Hand

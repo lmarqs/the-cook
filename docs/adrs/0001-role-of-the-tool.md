@@ -1,3 +1,7 @@
+---
+description: Records why Cook reviews and performs recipe-declared file operations, and runs no agent or workflow.
+audience: Whoever proposes a new responsibility for Cook
+---
 # 0001. Cook reviews and performs recipe-declared file operations
 
 Teams copy program setup between repositories by hand, and those copies diverge. A tool that helps share that setup

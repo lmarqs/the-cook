@@ -1,7 +1,7 @@
 ---
 layout: home
 permalink: /
-summary: the-cook writes the setup a repository shares, such as agent instructions, permissions, hooks and worktree rules, into the native files each tool reads, and keeps each part to the recipe that owns it.
+description: the-cook writes the setup a repository shares, such as agent instructions, permissions, hooks and worktree rules, into the native files each tool reads, and keeps each part to the recipe that owns it.
 ---
 {%- if site.release -%}{%- assign version = site.release | remove_first: "v" -%}{%- else -%}{%- assign version = "<version>" | escape -%}{%- endif -%}
 {%- assign agents = "io.github.lmarqs.cookbook:agents:" | append: version -%}

@@ -1,9 +1,13 @@
+---
+description: Sets what earns a decision record and how one is written and named, and indexes every record.
+audience: Whoever writes, changes or looks for a decision record
+---
 # Architecture decision records
 
 An architecture decision record (ADR) states one decision that shapes the structure of this project and, above all,
 why it holds. Each ADR records:
 
-- its lead: the problem it answers and the outcome it must achieve;
+- the problem it answers and the outcome it must achieve;
 - the facts it answers;
 - the reasons that connect those facts to the decision;
 - the alternatives that lose, and why;
@@ -32,11 +36,11 @@ Reasons: a corpus that accumulates superseded records forces every reader to rec
 chain of partial replacements, and a reader who stops early acts on a decision that no longer holds. A coding agent
 that reads the corpus before making a change is that reader on every run.
 
-## The lead comes first
+## The problem comes first
 
-Every ADR opens with its lead, the paragraph under the title, before any fact or decision, so a reader knows why the
-subject is on the table and what it must achieve before reading how it is settled
-([philosophy](../philosophy.md#start-from-the-objective)). The lead states two things:
+Every ADR's body opens with its problem and outcome, the paragraph under the title, before any fact or decision, so a
+reader knows why the subject is on the table and what it must achieve before reading how it is settled
+([philosophy](../philosophy.md#start-from-the-objective)). The paragraph states two things:
 
 - **The problem.** Who has it, and what goes wrong for them or what they need and lack, in at most four sentences.
 - **The outcome.** What holds once the problem is solved, stated so that anyone can tell whether it holds, in at most
@@ -55,12 +59,12 @@ in force only because nobody asked why it was there.
 A decision without its reasons cannot be applied to a case it did not foresee, and cannot be changed safely, because
 nobody can tell which facts it depends on. So every ADR justifies every point it decides:
 
-- Each numbered point of the Decision serves the outcome the lead states and has at least one reason in Reasons.
+- Each numbered point of the Decision serves the outcome the opening states and has at least one reason in Reasons.
 - A reason ties a fact from Context, or another ADR, to the point, and states what the decision trades away.
-- Context holds the facts and examples that make the lead concrete, and a reader with only this repository and
+- Context holds the facts and examples that make the problem concrete, and a reader with only this repository and
   public sources can check or follow every one of them: a third-party tool's documented behavior, with the version it
   was checked against; a property of the tool or of the problem itself; or a worked example, named as one, set in a
-  made-up organization (`acme`). It holds no conclusions. The lead is understood without it; Context is where a
+  made-up organization (`acme`). It holds no conclusions. The problem is understood without it; Context is where a
   reader checks it.
 - Context never relies on what the reader cannot see: no counts from a private survey, no cases from repositories,
   people or conversations outside this project. Why: the ADRs are read by people who were not there, and a fact they
@@ -114,6 +118,10 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
 ## Template
 
 ```markdown
+---
+description: Records why <the decision, as a reader picking from a listing needs it>.
+audience: Whoever <changes or relies on what the decision governs>
+---
 # NNNN. <The decision, one present-tense sentence>
 
 <Who has the problem, and what goes wrong for them or what they need and lack. The outcome that holds once it is
@@ -121,7 +129,7 @@ solved, stated so anyone can tell whether it holds. No solution.>
 
 ## Context
 
-The data and examples that make the lead concrete, each with its source. No conclusions.
+The data and examples that make the problem concrete, each with its source. No conclusions.
 
 ## Decision
 

@@ -1,3 +1,7 @@
+---
+description: Records why a recipe connects to another recipe's files only through parameters the person names.
+audience: Whoever writes a recipe that touches another recipe's or the team's files
+---
 # 0030. Recipes connect to other recipes' files only through parameters the person names
 
 A team composes several recipes and the programs they configure in one repository, and decides how they meet. When a

@@ -1,3 +1,7 @@
+---
+description: Records why Cook ships its own Java runtime, so a user needs no Java or build tools installed.
+audience: Whoever changes how Cook is packaged or installed
+---
 # 0004. Cook packages its Java runtime
 
 Repositories use different language stacks and runtime versions. Requiring each developer to prepare an extra matching

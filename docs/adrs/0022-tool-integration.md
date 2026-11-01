@@ -1,3 +1,7 @@
+---
+description: Records why knowledge of each program's configuration lives in cookbook ingredients, outside the engine.
+audience: Whoever integrates a new agent, editor or tool
+---
 # 0022. Ingredients model programs' native configuration
 
 Teams configure different agents, editors, version control tools and loop runners. Each program has its own files and
@@ -36,10 +40,10 @@ separately from the rules for reviewing and writing file changes.
 
 ## Reasons
 
-- **1.** Program formats evolve independently, as the lead says. Keeping their models in cookbooks lets cookbook authors
-  maintain that knowledge separately, while engine maintainers focus on file-operation behavior. The trade is that
-  cookbook authors maintain compatibility with the programs they model; separating responsibilities alone does not
-  guarantee compatible versions.
+- **1.** Program formats evolve independently, as the problem says. Keeping their models in cookbooks lets cookbook
+  authors maintain that knowledge separately, while engine maintainers focus on file-operation behavior. The trade is
+  that cookbook authors maintain compatibility with the programs they model; separating responsibilities alone does
+  not guarantee compatible versions.
 - **2.** FR-3 limits batches to file operations. Contracts for launching and supervising programs would make a
   configuration engine run them. Native files let teams use their own runners without making Cook part of every run.
   A script a recipe writes is such a file: in acme's loop-runner example, Cook writes it through the batch and never

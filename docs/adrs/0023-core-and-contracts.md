@@ -1,3 +1,7 @@
+---
+description: Records why the core holds the operation rules and leaves files, sources and the terminal to its contracts.
+audience: Whoever changes the core or one of its external mechanisms
+---
 # 0023. The core separates operation rules from external mechanisms
 
 When rules for reviewing and writing configuration are mixed with filesystem access, source loading and terminal

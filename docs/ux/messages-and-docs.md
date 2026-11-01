@@ -1,3 +1,7 @@
+---
+description: Sets how messages are worded and how documentation pages are shaped and named.
+audience: Whoever writes a message, help text or documentation page
+---
 # Messages and documentation
 
 People and coding agents act on messages and documentation literally. Vague wording, inconsistent names or a missing
@@ -133,18 +137,33 @@ in Markdown.
 The [map of the docs](../README.md) names the kinds of page under `docs/`, where a fact goes and which page has
 authority. The rules below hold for every page.
 
-### Every page opens with its lead
+### Front matter describes the page
 
-Every page under `docs/` opens with its lead, the paragraph under the title, because a reader arriving from search
-decides from the top whether the page concerns them. The lead says who reads the page and when, what it says and why
-it exists: the problem a reader has without it, and the outcome that holds once the page is read. Write it last, from
-the body, so a review can judge the body against it; a page whose lead cannot be written is not ready. Keep the
-problem independent of design details, so readers understand the purpose before judging a solution. ADRs follow the
-[ADR writing guide](../adrs/README.md#the-lead-comes-first).
+Every page under `docs/` opens with front matter that describes it, because a reader, or an agent choosing which files
+to load, decides from the top of a file or from one listing over `docs/` whether the page holds what they look for.
+The body holds what the page says, and opens with content right after the title.
 
-The lead is prose, with links where a term is first used. Front matter holds only keys a program reads, because a
-hand-kept field goes stale while it still looks exact. `./gradlew -p docs check` fails when a page's title is not
-followed by a paragraph. Cookbook units open with the lead of their doc comment.
+```markdown
+---
+description: Explains how discard removes exactly what a recipe owns and keeps everything else in its files.
+audience: Whoever stops using a recipe
+---
+# Discard recipes
+```
+
+- `description`, required: one sentence, at most 160 characters, opening with a verb that names the kind, as
+  "Records why" for a decision, and unique across pages.
+- `audience`, required: who opens the page and when, at most 100 characters.
+- `keywords`, optional: a list of search terms the body lacks, such as an error text, a flag or a rejected synonym.
+
+Values are plain text, because GitHub shows front matter as a table: no Markdown, no quotes, and no `: ` or ` #`,
+which YAML reads as syntax. The title stays the `# ` heading, so no key repeats it. Status, dates and other fields
+that change while the page does not stay out, because a hand-kept field goes stale while it still looks exact. Write
+the front matter last, from the body, so a review can judge the body against it; a page whose description cannot be
+written is not ready. `./gradlew -p docs check` fails a page whose front matter breaks these rules or whose title does
+not follow it. A page's reason sits where its body explains it; ADRs open with their problem, as the
+[ADR writing guide](../adrs/README.md#the-problem-comes-first) says. Cookbook units open with the lead of their doc
+comment.
 
 ADR facts follow under `## Context`; reference material and examples follow under their own headings, because readers
 use the outline to find each kind of information.

@@ -1,3 +1,7 @@
+---
+description: Explains how update moves recipes to newer releases within a range, with one diff to approve.
+audience: Whoever upgrades the recipes a repository cooks
+---
 # Update recipes
 
 A developer has cooked recipes at exact releases and wants newer ones without finding each release or retyping the

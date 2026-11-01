@@ -1,3 +1,7 @@
+---
+description: States the user-facing principles that settle a case no specific standard covers.
+audience: Whoever decides a case the standards leave open
+---
 # User-facing principles
 
 Specific rules cannot foresee every case. Convenience, preserving someone's work and sharing setup can pull in different

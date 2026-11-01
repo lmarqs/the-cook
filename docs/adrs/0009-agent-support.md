@@ -1,3 +1,7 @@
+---
+description: Records why each coding agent's native configuration is modeled by its own ingredient.
+audience: Whoever adds support for a coding agent
+---
 # 0009. Ingredients model each agent's native configuration
 
 Coding agents use different configuration formats. Maintaining the same repository setup by hand for several agents

@@ -1,3 +1,7 @@
+---
+description: Records why each repository pins its engine release through a committed wrapper.
+audience: Whoever changes the wrapper or how Cook is upgraded
+---
 # 0017. Each repository pins its engine release through a committed wrapper
 
 Developers and CI can run different engine releases against the same repository. Changes to recipe evaluation or file

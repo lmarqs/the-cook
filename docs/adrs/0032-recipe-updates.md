@@ -1,3 +1,7 @@
+---
+description: Records why Cook moves a recipe to a newer release only on request, within a compatibility range.
+audience: Whoever changes update or how a release is chosen
+---
 # 0032. Cook moves a recipe to a newer release on request
 
 Maintainers who reuse shared setup must find newer releases and decide which changes to accept. Requiring them to choose

@@ -1,3 +1,7 @@
+---
+description: Records why cookbooks release as jars in Maven-layout repositories, Maven Central by default.
+audience: Whoever publishes a cookbook or changes how one is fetched
+---
 # 0029. Cookbooks release as jars in Maven-layout repositories, Maven Central by default
 
 A cookbook author shares models and recipes with other repositories. People who cook a public cookbook should not need

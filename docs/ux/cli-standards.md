@@ -1,3 +1,7 @@
+---
+description: Sets how a command is shaped, in its grammar, approval, output, errors and help text.
+audience: Whoever adds or changes a command, option or message
+---
 # CLI standards
 
 People and automation need to understand what a command will change, what approval covers, and how to withdraw or

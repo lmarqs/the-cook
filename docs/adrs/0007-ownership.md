@@ -1,3 +1,7 @@
+---
+description: Records why a recipe owns the targets cook.lock records for it, and each change is reviewed against current content.
+audience: Whoever changes ownership, cook.lock or how a diff is proposed
+---
 # 0007. Declared targets define changes reviewed against current content
 
 Developers share configuration with other people and tools. An update can erase a manual change, output that a recipe

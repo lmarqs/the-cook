@@ -1,3 +1,7 @@
+---
+description: Maps Cook's responsibilities, operations, boundaries and distribution, and numbers the requirements other pages cite.
+audience: Whoever changes the engine or cites a requirement
+---
 # Cook architecture
 
 Cook is a recipe driven configuration engine. It evaluates trusted Groovy [recipes](features/glossary.md) into an

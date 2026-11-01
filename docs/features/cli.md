@@ -1,10 +1,13 @@
+---
+description: Explains the command line, its syntax, recipe operands, arguments, options and exit status.
+audience: Whoever runs Cook or changes a command
+---
 # CLI reference
 
-This page describes the intended command line contract from the
-[architecture](../architecture.md#command-line-and-build-boundary) and its requirements
-[FR-17 through FR-20](../architecture.md#requirements): command syntax, operands, arguments and options. The
-[glossary](glossary.md) defines terms such as recipe, batch and `cook.lock`. For the options the current CLI accepts,
-see the root README's [current implementation](../../README.md#current-implementation).
+The command line contract follows the [architecture](../architecture.md#command-line-and-build-boundary) and its
+requirements [FR-17 through FR-20](../architecture.md#requirements). The [glossary](glossary.md) defines terms such as
+recipe, batch and `cook.lock`; the options the current CLI accepts are in the root README's
+[current implementation](../../README.md#current-implementation).
 
 ## Synopsis
 

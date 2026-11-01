@@ -107,11 +107,14 @@ abstract class DocsLinkCheck extends DefaultTask {
   }
 }
 
-// A reader decides from the top whether a page concerns them, so its title is followed by its lead, a paragraph; the
-// rule is the one docs/ux/messages-and-docs.md gives.
-abstract class DocsLeadCheck extends DefaultTask {
-  // A line that opens anything but a paragraph: a heading, list item, table, code fence, quote, comment or tag.
-  static final String NOT_PARAGRAPH = /\A(?:#|[-*+] |\d+[.)] |\||```|~~~|>|<)/
+// A reader picks a page from its front matter, unopened, so every page describes itself there; the rule is the one
+// docs/ux/messages-and-docs.md gives.
+abstract class DocsFrontMatterCheck extends DefaultTask {
+  static final Map<String, Integer> LIMITS = [description: 160, audience: 100]
+  static final List<String> KEYS = ['description', 'audience', 'keywords']
+  // GitHub shows front matter as a table, so a value is plain text that YAML reads as one plain string.
+  static final String PLAIN = /\A[\p{L}\p{N}][^`"]*\z/
+  static final String ITEM = /\A[\p{L}\p{N}][^`"\[\]{},]*\z/
 
   @InputFiles
   @PathSensitive(PathSensitivity.RELATIVE)
@@ -127,34 +130,113 @@ abstract class DocsLeadCheck extends DefaultTask {
   void check() {
     File root = this.root.get().asFile
     List<String> wrong = []
+    Map<String, String> described = [:]
     int total = 0
     markdown.files.sort().each { File file ->
       String path = root.toPath().relativize(file.toPath())
       total++
-      String problem = leadProblem(file.readLines('UTF-8'))
+      Map<String, String> fields = [:]
+      String problem = frontMatterProblem(file.readLines('UTF-8'), fields)
 
       if (problem) {
         wrong << "${path}: ${problem}".toString()
+      }
+      else if (described.containsKey(fields.description)) {
+        wrong << "${path}: its description repeats ${described[fields.description]}'s".toString()
+      }
+      else {
+        described[fields.description] = path
       }
     }
     report.get().asFile.text = "pages ${total}, wrong ${wrong.size()}\n" + wrong.collect { it + '\n' }.join('')
 
     if (wrong) {
-      throw new GradleException("Documentation leads:\n" + wrong.join('\n'))
+      throw new GradleException("Documentation front matter:\n" + wrong.join('\n'))
     }
 
-    logger.lifecycle("Documentation leads: ${total} checked, none wrong")
+    logger.lifecycle("Documentation front matter: ${total} checked, none wrong")
   }
 
-  static String leadProblem(List<String> lines) {
-    if (!lines || !lines[0].startsWith('# ')) {
-      return 'the first line is not the title'
+  // Fills fields with the page's keys and returns what is wrong, or null.
+  static String frontMatterProblem(List<String> lines, Map<String, String> fields) {
+    if (!lines || lines[0] != '---') {
+      return 'the first line does not open its front matter, ---'
     }
 
-    String first = lines.drop(1).find { it.trim() }
+    int close = lines.drop(1).findIndexOf { it == '---' } + 1
 
-    if (first == null || first =~ NOT_PARAGRAPH) {
-      return 'the title is not followed by its lead, a paragraph'
+    if (close == 0) {
+      return 'its front matter is not closed by ---'
+    }
+
+    for (String line : lines.subList(1, close)) {
+      def field = line =~ /\A([a-z]+): (.*)\z/
+
+      if (!field.find()) {
+        return "the front matter line is not a key and its value: ${line}"
+      }
+
+      String key = field.group(1)
+      String value = field.group(2)
+
+      if (!(key in KEYS)) {
+        return "the front matter holds ${key}, which is not one of ${KEYS.join(', ')}"
+      }
+
+      if (fields.containsKey(key)) {
+        return "the front matter holds ${key} twice"
+      }
+
+      String valueProblem = key == 'keywords' ? keywordsProblem(value) : plainProblem(key, value)
+
+      if (valueProblem) {
+        return valueProblem
+      }
+
+      fields[key] = value
+    }
+
+    String missing = LIMITS.keySet().find { !fields.containsKey(it) }
+
+    if (missing) {
+      return "the front matter lacks ${missing}"
+    }
+
+    if (close + 1 >= lines.size() || !lines[close + 1].startsWith('# ')) {
+      return 'the front matter is not followed by the title'
+    }
+
+    null
+  }
+
+  static String plainProblem(String key, String value) {
+    if (!plain(value, PLAIN)) {
+      return "${key} is not plain text: ${value}"
+    }
+
+    if (value.length() > LIMITS[key]) {
+      return "${key} has ${value.length()} characters, more than ${LIMITS[key]}"
+    }
+
+    null
+  }
+
+  // YAML reads ': ' and ' #' as syntax inside an unquoted value.
+  static boolean plain(String value, String pattern) {
+    value ==~ pattern && !value.contains(': ') && !value.contains(' #')
+  }
+
+  static String keywordsProblem(String value) {
+    def list = value =~ /\A\[(.+)\]\z/
+
+    if (!list.find()) {
+      return "keywords is not a list, as [one term, another]: ${value}"
+    }
+
+    List<String> terms = list.group(1).split(', ')
+
+    if (terms.any { !plain(it, ITEM) }) {
+      return "keywords is not a list of plain terms, as [one term, another]: ${value}"
     }
 
     null
@@ -172,17 +254,17 @@ tasks.register('linkCheck', DocsLinkCheck) {
   report = layout.buildDirectory.file('reports/links.txt')
 }
 
-tasks.register('leadCheck', DocsLeadCheck) {
+tasks.register('frontMatterCheck', DocsFrontMatterCheck) {
   group = 'verification'
-  description = 'Checks that each documentation page opens with its title followed by its lead.'
+  description = 'Checks that each documentation page opens with front matter that describes it, then its title.'
   root = layout.projectDirectory
   markdown.from(fileTree(layout.projectDirectory) {
     include '**/*.md'
     exclude 'build/**', '.gradle/**'
   })
-  report = layout.buildDirectory.file('reports/leads.txt')
+  report = layout.buildDirectory.file('reports/front-matter.txt')
 }
 
 tasks.named('check') {
-  dependsOn 'linkCheck', 'leadCheck'
+  dependsOn 'linkCheck', 'frontMatterCheck'
 }

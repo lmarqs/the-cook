@@ -1,3 +1,7 @@
+---
+description: Explains how discard removes exactly what a recipe owns and keeps everything else in its files.
+audience: Whoever stops using a recipe
+---
 # Discard recipes
 
 A developer who stops using a recipe wants its output gone from the repository, without hunting through shared files for

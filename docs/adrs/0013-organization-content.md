@@ -1,3 +1,7 @@
+---
+description: Records why organization choices travel in cookbooks, separate from the engine's releases.
+audience: Whoever decides whether a choice belongs in the engine or a cookbook
+---
 # 0013. Cookbooks carry organization choices separately from the engine
 
 Organizations reuse setup across repositories, but their services, permissions and conventions differ. Putting those

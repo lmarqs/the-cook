@@ -1,3 +1,7 @@
+---
+description: Records why ingredients model programs and stations hold reusable setup choices, kept apart.
+audience: Whoever writes an ingredient or a station
+---
 # 0024. Program models remain distinct from reusable setup choices
 
 Teams reuse both knowledge of a program's configuration format and choices about how they work. When those are treated

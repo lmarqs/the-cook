@@ -1,3 +1,7 @@
+---
+description: States Cook's purpose and the tenets a proposal for it is judged against.
+audience: Whoever proposes a new responsibility for Cook
+---
 # Philosophy
 
 Teams and developers reuse configuration across repositories, but copying setup by hand makes it hard to share
@@ -47,7 +51,7 @@ performs the writes, while cookbook repositories carry the ingredients and recip
 outlive the reason it was made.
 
 **Tenet.** State the problem and desired outcome before the mechanism. Keep the reasons visible so a contributor can
-judge whether a decision still serves its goal. See the [ADR structure](adrs/README.md#the-lead-comes-first).
+judge whether a decision still serves its goal. See the [ADR structure](adrs/README.md#the-problem-comes-first).
 
 ### Keep the engine focused on file operations
 

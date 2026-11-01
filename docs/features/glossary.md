@@ -1,8 +1,10 @@
+---
+description: Defines each of Cook's terms once, and links the page that explains it.
+audience: Whoever meets a Cook term, or names a thing in code or a page
+---
 # Glossary
 
-For a reader who meets one of Cook's terms through a search or a link and needs its meaning without reading every page
-that uses it. Each term has one meaning here, which every page uses, and an entry links the page that explains it
-where one does.
+Each term has one meaning, which every page uses, and an entry links the page that explains it where one does.
 
 ## Terms
 

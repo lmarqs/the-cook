@@ -1,3 +1,7 @@
+---
+description: Records why a batch holds only declared file operations, never service calls or agent launches.
+audience: Whoever proposes a new kind of action for a batch
+---
 # 0019. Batches contain declared file operations
 
 A reviewer needs to know what approving a configuration change authorizes. Mixing file edits with service calls or agent

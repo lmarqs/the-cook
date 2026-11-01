@@ -1,3 +1,7 @@
+---
+description: Sets how generated content is marked, kept stable, reviewed and discarded in shared files.
+audience: Whoever writes a recipe's output or changes how it is written
+---
 # Generated-content standards
 
 Generated configuration shares files with developers and other tools. Broad replacements, noisy output, and unclear

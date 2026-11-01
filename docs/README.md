@@ -1,3 +1,7 @@
+---
+description: Maps the kinds of page in docs/, which one owns a fact, and where a new fact goes.
+audience: Whoever reads or writes a page about Cook
+---
 # Cook documentation
 
 People and coding agents read these pages to change Cook, and each needs to know which page owns a fact before reading
@@ -30,9 +34,9 @@ issue, never on the page, and a description of current behavior in a README stay
 | [Pitfalls](features/pitfalls.md) | It is a trap: a setup that looks right and is not, or a guarantee a reader assumes Cook gives and it does not | Gives the symptom, why it happens, what Cook is responsible for and what the reader reviews |
 | [Glossary](features/glossary.md) | It is the meaning of one of Cook's terms | Gives each concept one name, which every page uses |
 
-Every page opens with its lead, as [the lead rule](ux/messages-and-docs.md#every-page-opens-with-its-lead) says;
-`./gradlew -p docs check` fails a page whose title is not followed by a paragraph, and resolves every relative link and
-anchor.
+Every page opens with front matter that describes it, as
+[the front matter rule](ux/messages-and-docs.md#front-matter-describes-the-page) says; `./gradlew -p docs check` fails
+a page whose front matter breaks that rule, and resolves every relative link and anchor.
 
 ## Where a fact goes
 

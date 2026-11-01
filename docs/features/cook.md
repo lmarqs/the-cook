@@ -1,3 +1,7 @@
+---
+description: Explains how cooking proposes a recipe's file changes, shows one diff and writes on approval.
+audience: Whoever cooks a recipe or changes how cooking works
+---
 # Cook recipe contributions
 
 Programs read native configuration that people and other tools also edit. Copying a setup change into those files by

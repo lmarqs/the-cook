@@ -1,3 +1,7 @@
+---
+description: Lists the user-experience standards, what each constrains and how a standard changes.
+audience: Whoever designs or reviews how people meet Cook
+---
 # User-experience standards
 
 Developers, reviewers, automation and teammates encounter Cook through its commands, diffs and the native files it

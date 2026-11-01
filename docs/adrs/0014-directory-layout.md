@@ -1,3 +1,7 @@
+---
+description: Records why native output and cook.lock are the only files Cook writes into a repository.
+audience: Whoever adds a file Cook writes or reads in a repository
+---
 # 0014. Native output and recipe ownership are the only files Cook writes
 
 Setup changes touch repositories that already contain program configuration, shared agent content and local state.

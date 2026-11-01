@@ -1,3 +1,7 @@
+---
+description: Sets whether a new capability belongs in the engine, a program model, a recipe or guidance.
+audience: Whoever proposes a new capability
+---
 # Where new behavior goes
 
 Contributors need to decide whether a capability belongs in the engine, a program model, a reusable setup recipe or

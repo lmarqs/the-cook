@@ -1,3 +1,7 @@
+---
+description: Sets where configuration lives, how recipe inputs are validated and how native values are written.
+audience: Whoever adds a recipe input or writes a native setting
+---
 # Configuration standards
 
 Shared configuration can hide conflicting values, mistyped inputs, and credentials. When the scope of a change is

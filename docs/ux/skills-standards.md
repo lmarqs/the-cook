@@ -1,3 +1,7 @@
+---
+description: Sets when a skill is created and how it is scoped, discovered, kept in sync and reviewed.
+audience: Whoever writes or reviews a skill
+---
 # Skills standards
 
 Reused agent guidance can load for the wrong task, repeat procedures that drift from commands, or teach behavior

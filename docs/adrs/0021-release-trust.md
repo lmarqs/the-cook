@@ -1,3 +1,7 @@
+---
+description: Records why the wrapper checks the engine package against its reviewed pin, and why that does not prove who published it.
+audience: Whoever changes release verification or relies on it
+---
 # 0021. Reviewed engine pins verify package integrity without proving publisher identity
 
 A repository's entry point downloads executable engine content that runs with the person's credentials. A replaced or

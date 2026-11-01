@@ -1,3 +1,7 @@
+---
+description: Records why Cook edits shared native files in place and keeps their unrelated settings and formatting.
+audience: Whoever changes how Cook edits a program's configuration file
+---
 # 0008. Declared native-file targets preserve unrelated content
 
 Programs read configuration from files people and other tools also edit. Replacing a shared file to change one setting

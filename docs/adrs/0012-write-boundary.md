@@ -1,3 +1,7 @@
+---
+description: Records why Cook writes only the reviewed targets of a batch, and normalizes or cleans up nothing else.
+audience: Whoever adds an operation that writes files
+---
 # 0012. Cook confines declared batch operations to reviewed destination targets
 
 Repositories contain configuration, prose, and state that people and other tools depend on. Unrequested normalization or

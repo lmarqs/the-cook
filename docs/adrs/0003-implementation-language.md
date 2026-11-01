@@ -1,3 +1,7 @@
+---
+description: Records why Cook keeps its JVM stack, Groovy on Java, for the engine and its recipes.
+audience: Whoever proposes changing Cook's language or build
+---
 # 0003. Cook retains its JVM stack
 
 Contributors maintain the engine, its executable recipe support and cookbook content. Changing the engine's language

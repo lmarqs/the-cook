@@ -1,3 +1,7 @@
+---
+description: Sets what counts as breaking, how releases coexist with native programs and how the engine is pinned.
+audience: Whoever ships a change users may need to adapt to
+---
 # Compatibility standards
 
 Repositories upgrade at different times. Changes to command grammar or native configuration can break scripts and

@@ -1,3 +1,7 @@
+---
+description: Records why instruction files state conventions that read true without Cook.
+audience: Whoever writes instruction text a recipe generates
+---
 # 0018. Native instruction text states conventions independently of Cook
 
 Teammates and coding agents need to understand repository conventions even when they do not use the tool that configured

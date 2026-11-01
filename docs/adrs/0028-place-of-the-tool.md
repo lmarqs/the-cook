@@ -1,3 +1,7 @@
+---
+description: Records why Cook supports shared setup without controlling the programs or the way each person works.
+audience: Whoever proposes a feature that changes how people work
+---
 # 0028. Cook supports shared setup without controlling how people work
 
 People who change one repository each work their own way: their own editor, coding agents, settings, plugins, loop
