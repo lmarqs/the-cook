@@ -15,10 +15,11 @@ What makes a good philosophy page:
 This shows one good page, not the page. `docs/philosophy.md` in the made-up `acme`:
 
 ```markdown
+---
+description: States the tenets that settle a trade-off no decision record covers.
+audience: Whoever weighs two good options that no record settles
+---
 # Philosophy
-
-For whoever weighs two good options that no record settles. Written after two reviews in a row argued the same
-trade-off from the start.
 
 **Run fewer things.** Rules out a new service when one already run meets the need. Applied in
 [a shared session store](adr/0007-keep-sessions-in-a-shared-store.md), kept in the Redis already run for jobs.

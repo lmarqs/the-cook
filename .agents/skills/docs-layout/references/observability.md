@@ -18,12 +18,14 @@ What makes a good observability page:
 This shows one good page, not the page. `docs/observability/api.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Interprets what each API signal shows, when it alerts and what none of them sees.
+audience: Whoever reads an API alert or judges a deploy
+---
 # API
 
-For whoever reads an API alert or judges a deploy. Written after a deploy looked healthy for an hour while every
-partner order failed, because partner traffic had no signal of its own.
-
-Request status comes from the load balancer, split by caller key, so partner and mobile traffic read apart. 5xx
-above 1% for 5 minutes alerts; below that, one partner's retries make noise; [API errors](../runbooks/api-errors.md)
-answers it. Jobs the worker takes leave no request trace.
+Request status comes from the load balancer, split by caller key, so partner and mobile traffic read apart: a deploy
+once looked healthy for an hour while every partner order failed. 5xx above 1% for 5 minutes alerts; below that, one
+partner's retries make noise; [API errors](../runbooks/api-errors.md) answers it. Jobs the worker takes leave no request
+trace.
 ```

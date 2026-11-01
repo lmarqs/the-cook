@@ -18,12 +18,14 @@ What makes a good standard:
 This shows one good page, not the page. `docs/standards/error-messages.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Sets how the acme command line words a failure message.
+audience: Whoever writes or reviews a failure message of the acme command line
+---
 # Error messages
 
-For whoever writes or reviews a failure message of the `acme` command line. Set in 2024, when half the support
-tickets quoted a message that named no next step.
-
-- A message names what failed and the next step, so the reader acts without opening the docs.
+- A message names what failed and the next step, so the reader acts without opening the docs: in 2024, half the
+  support tickets quoted a message that named none.
 - A message MUST start with `acme:`. Scripts that wrap the tool tell its messages from their own, and break when it
   varies.
 ```
