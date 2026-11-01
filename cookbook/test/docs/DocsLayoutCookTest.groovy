@@ -193,7 +193,14 @@ docs.on = true
     assert description.length() <= 1024
     assert text.readLines().size() < 500
     assert !text.contains('[[fill')
-    ['the map wins', 'never holds a placeholder', 'edited for its facts', 'no kind fits', 'changed no fact'].each {
+    [
+      'the map wins',
+      'never holds a placeholder',
+      'edited for its facts',
+      'no kind fits',
+      'changed no fact',
+      'front matter'
+    ].each {
       assert text.contains(it)
     }
     assert !new File(SKILL, 'templates').exists()
@@ -211,11 +218,17 @@ docs.on = true
       assert !(text =~ /(?m)^- (Gives|Names|Lists|Describes|Shows), in `[A-Z]/)
     }
     def map = new File(references, 'map.md').text
-    ['one owner', '## The lead', '## Misfilings', '## A new kind', 'what happened'].each { assert map.contains(it) }
+    ['one owner', '## Front matter', '## Misfilings', '## A new kind', 'what happened'].each { assert map.contains(it) }
+    (KINDS + ['glossary']).each { name ->
+      def text = new File(references, "${name}.md").text
+      assert text =~ /```markdown\n---\ndescription: \S.*\naudience: \S.*\n(keywords: \S.*\n)?---\n# /:
+      "${name}.md's example opens without its front matter"
+      assert !text.contains('For whoever'): "${name}.md's example tells its reader in the body"
+    }
     assert !new File(COOKBOOK, 'docs/kinds').exists()
     def words = ([new File(SKILL, 'SKILL.md')] + references.listFiles().toList())
     .sum { it.text.split(/\s+/).size() }
-    assert words < 3450: "the skill holds ${words} words"
+    assert words < 3600: "the skill holds ${words} words"
   }
 
   private File kitchen() {

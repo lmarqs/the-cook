@@ -52,7 +52,8 @@ worked example from this repository. On a map with kinds, add or remove one in i
    misleads every reader who trusts the map.
 3. Gather facts from the code, the contract, the history, the issue and the person. Ask first what went wrong, what
    it cost and what was tried: only the person may know it.
-4. Write the body, then the lead. Take the shape from the kind's existing pages, else from the map and the reference.
+4. Write the body, then the front matter. Take the shape from the kind's existing pages, else from the map and the
+   reference.
 5. When the kind keeps a directory, list the page in its guide, `docs/<kind>/README.md`, created with the first page.
    Link a new guide or one-page kind from the map, and replace other pages' copies of its facts with links.
 6. Report the files written and the open questions.
@@ -64,7 +65,7 @@ Compare each page with the map, and report where it differs from these signs:
 - It sits in a declared kind, or is the glossary, and is reached from the map; its links resolve.
 - It achieves what the map describes for its kind, and its kind was not forced: no part had to be invented to fit.
 - Each fact is stated on its owner, in the glossary's terms.
-- Its lead says who reads it, what it says and why it exists, and the body says the same.
+- Its front matter tells a reader from a listing whether to open it, and the body bears it out.
 - Each reason tells what happened first, and the claims hold against the code.
 - It holds no placeholder.
 - Its shape did not change in a commit that changed no fact.

@@ -9,7 +9,7 @@ bar is a record, and one below it stays here; operating the unit is a runbook.
 
 What makes a good feature page:
 
-- The lead says what the unit is and why it is so, as it happened: a reason too small for a record has no other
+- It opens with what the unit is and why it is so, as it happened: a reason too small for a record has no other
   owner.
 - It follows the unit's own structure, its inputs, states and outputs, so a reader finds a fact where the product
   puts it. A rule that is arithmetic over state carries a worked example.
@@ -20,10 +20,15 @@ What makes a good feature page:
 This shows one good page, not the page. `docs/features/sessions.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Explains how long a session lasts, what renews it and what ends it.
+audience: Whoever changes login
+keywords: [session timeout, idle logout]
+---
 # Sessions
 
-For whoever changes login. A session keeps a user logged in until logout or 30 minutes without a request. The limit
-was 10 minutes until 2023, when shoppers paying on slow connections lost their carts mid-checkout.
+A session keeps a user logged in until logout or 30 minutes without a request. The limit was 10 minutes until 2023, when
+shoppers paying on slow connections lost their carts mid-checkout.
 
 Each request renews the session for 30 minutes; logout deletes it at once. Every replica reads the same
 [session store](../adr/0007-keep-sessions-in-a-shared-store.md), so a user stays logged in whichever one answers.

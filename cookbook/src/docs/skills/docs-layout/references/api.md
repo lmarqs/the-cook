@@ -9,7 +9,7 @@ not hold it. The definition is the contract; a copy of it in prose drifts.
 
 What makes a good interface page:
 
-- It covers one interface, and its lead says what it is for and who calls it.
+- It covers one interface, and its front matter says what it is for and who calls it.
 - It links the definition file and how the reference is built from it.
 
 ## Example
@@ -17,11 +17,14 @@ What makes a good interface page:
 This shows one good page, not the page. `docs/api/orders.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Explains how a partner calls the orders API, and where its contract lives.
+audience: Whoever integrates a partner or changes the API
+---
 # Orders API
 
-For whoever integrates a partner or changes the API. Partners asked for it in 2024, when they were keying 200
-emailed orders a day into acme by hand. [openapi/orders.yaml](../../openapi/orders.yaml) is the contract;
-`make api-docs` builds the reference.
+Partners asked for it in 2024, when they were keying 200 emailed orders a day into acme by hand.
+[openapi/orders.yaml](../../openapi/orders.yaml) is the contract; `make api-docs` builds the reference.
 
 Partners send an API key in `X-Acme-Key`. A key allows 600 requests a minute; a 429 carries `Retry-After`.
 ```

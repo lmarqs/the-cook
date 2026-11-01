@@ -24,9 +24,11 @@ What makes a good record:
 This shows one good page, not the page. `docs/adr/0007-keep-sessions-in-a-shared-store.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Records why sessions live in one store every replica reads.
+audience: Whoever changes login or deploys
+---
 # Keep sessions in a shared store
-
-For whoever changes login or deploys. Sessions live in one store every replica reads.
 
 In 2023 the web tier went to four replicas, and each deploy logged out everyone on the restarted one: 300
 "logged out mid-checkout" tickets the first month. Sticky sessions, the stopgap, did not survive a deploy. A session
