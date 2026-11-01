@@ -19,7 +19,7 @@ This shows one good page, not the page. `docs/observability/api.md` in the made-
 
 ```markdown
 ---
-description: Explains what each API signal shows, when it alerts and what none of them sees.
+description: Interprets what each API signal shows, when it alerts and what none of them sees.
 audience: Whoever reads an API alert or judges a deploy
 ---
 # API

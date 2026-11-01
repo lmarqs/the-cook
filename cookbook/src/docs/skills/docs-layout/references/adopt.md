@@ -9,7 +9,7 @@ Brings a repository's existing documentation under a map; the person reviews the
    answer may be outside `docs/`, a kind the team declares, or nowhere.
 4. Move each page with `git mv`, so history follows it. Records keep their numbers.
 5. Edit for facts and owners: keep a statement on its owner and link it from the rest. Move what describes a page
-   into its front matter; ask before dropping any other field kept by hand. Leave a page's shape alone unless it fails
-   a reader.
+   into its front matter; keep any field a program reads, and ask before dropping any other kept by hand. Leave a
+   page's shape alone unless it fails a reader.
 6. Write a guide for each kind kept as a directory, fix the links to moved files, and report the moves, splits and
    open questions.

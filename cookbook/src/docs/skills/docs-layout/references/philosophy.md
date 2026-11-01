@@ -16,7 +16,7 @@ This shows one good page, not the page. `docs/philosophy.md` in the made-up `acm
 
 ```markdown
 ---
-description: Sets the tenets that settle a trade-off no decision record covers.
+description: States the tenets that settle a trade-off no decision record covers.
 audience: Whoever weighs two good options that no record settles
 ---
 # Philosophy

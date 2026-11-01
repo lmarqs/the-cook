@@ -219,12 +219,17 @@ docs.on = true
     }
     def map = new File(references, 'map.md').text
     ['one owner', '## Front matter', '## Misfilings', '## A new kind', 'what happened'].each { assert map.contains(it) }
-    (KINDS + ['glossary']).each { name ->
+    def descriptions = (KINDS + ['glossary']).collect { name ->
       def text = new File(references, "${name}.md").text
-      assert text =~ /```markdown\n---\ndescription: \S.*\naudience: \S.*\n(keywords: \S.*\n)?---\n# /:
-      "${name}.md's example opens without its front matter"
+      def front = text =~ /```markdown\n---\ndescription: (\S.*)\naudience: (\S.*)\n(keywords: \S.*\n)?---\n# /
+      assert front: "${name}.md's example opens without its front matter"
+      assert front[0][1].length() <= 160: "${name}.md's example description passes 160 characters"
+      assert front[0][2].length() <= 100: "${name}.md's example audience passes 100 characters"
       assert !text.contains('For whoever'): "${name}.md's example tells its reader in the body"
+      front[0][1]
     }
+    def verbs = descriptions.collect { it.tokenize()[0] }
+    assert verbs.toUnique() == verbs: 'two example descriptions open with the same verb'
     assert !new File(COOKBOOK, 'docs/kinds').exists()
     def words = ([new File(SKILL, 'SKILL.md')] + references.listFiles().toList())
     .sum { it.text.split(/\s+/).size() }

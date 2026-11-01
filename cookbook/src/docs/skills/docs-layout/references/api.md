@@ -18,7 +18,7 @@ This shows one good page, not the page. `docs/api/orders.md` in the made-up `acm
 
 ```markdown
 ---
-description: Explains how a partner calls the orders API, and where its contract lives.
+description: Introduces the orders API to a partner, and points to its contract.
 audience: Whoever integrates a partner or changes the API
 ---
 # Orders API
