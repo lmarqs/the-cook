@@ -2,8 +2,25 @@
   "branches": ["main"],
   "tagFormat": "v${version}",
   "plugins": [
-    ["@semantic-release/commit-analyzer", { "preset": "conventionalcommits" }],
-    ["@semantic-release/release-notes-generator", { "preset": "conventionalcommits" }],
+    [
+      "@semantic-release/commit-analyzer",
+      { "preset": "conventionalcommits", "releaseRules": [{ "type": "docs", "release": "patch" }] }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "Features" },
+            { "type": "fix", "section": "Bug Fixes" },
+            { "type": "perf", "section": "Performance Improvements" },
+            { "type": "revert", "section": "Reverts" },
+            { "type": "docs", "section": "Documentation" }
+          ]
+        }
+      }
+    ],
     [
       "@semantic-release/exec",
       { "verifyReleaseCmd": "test -z \"$GITHUB_OUTPUT\" || echo version=${nextRelease.version} >> \"$GITHUB_OUTPUT\"" }

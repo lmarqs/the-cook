@@ -74,7 +74,7 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
   under `docs/ux/`.
 - Format and lint follow [Development tooling](README.md#development-tooling); the Done check enforces them.
 - Commits: subjects are `<type>(<area>): <sentence>`, where `<area>` is the module or topic, such as `core`, `cli` or
-  `docs`. The type decides the next release: `feat` a minor, `fix` a patch, and `docs`, `refactor`, `test`, `build`,
+  `docs`. The type decides the next release: `feat` a minor, `fix` and `docs` a patch, and `refactor`, `test`, `build`,
   `ci` and `chore` none. A `!` after the area, as in `feat(core)!:`, releases a major version. Lint-only changes use
   `chore(lint)`.
 
