@@ -6,10 +6,11 @@ terms.
 `docs/glossary.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Defines each acme term once, with the synonyms it replaces.
+audience: Whoever names a thing in code, a page or a conversation
+---
 # Glossary
-
-For whoever names a thing in code, a page or a conversation. Started when "order", "purchase" and "transaction" named
-the same thing in three services.
 
 **Order**:
 A customer's request for items, from checkout until delivery or cancellation.

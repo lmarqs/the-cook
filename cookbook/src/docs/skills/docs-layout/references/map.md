@@ -19,10 +19,12 @@ the fact, as `wait out [the rate limit](api/orders.md)`.
   queue" is a conclusion; "the payment call timed out and customers who retried were charged twice" is a reason a
   reader can test.
 
-## The lead
+## Front matter
 
-A page opens with its lead: who reads it and when, what it says, why it exists. Written last, read first; a page
-whose lead cannot be written is not ready.
+Front matter describes the page, so a reader picks it from a listing unopened; the body opens with content.
+`description`: one sentence, at most 160 characters, opening with a verb naming the kind, as "Records why", unique.
+`audience`: who opens it and when, at most 100 characters. `keywords`, optional: search words the body lacks, as an
+error text. Write it last.
 
 ## Terms and guides
 

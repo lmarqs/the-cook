@@ -17,10 +17,13 @@ What makes a good architecture page:
 This shows one good page, not the page. `docs/architecture.md` in the made-up `acme`:
 
 ```markdown
+---
+description: Maps the parts of acme, what each does and how they connect.
+audience: Whoever joins the team or changes how the parts connect
+---
 # Architecture
 
-For whoever joins the team or changes how the parts connect. Written when newcomers spent their first week finding
-where an order is settled. `acme` is a web shop: **web**, in `web/`, renders the shop and calls the **API**, in
-`api/`, which writes orders to Postgres and queues slow work on Redis for the **worker**, in `worker/`, which sends
-mail and settles payments. Sessions sit in a [shared store](adr/0007-keep-sessions-in-a-shared-store.md).
+`acme` is a web shop: **web**, in `web/`, renders the shop and calls the **API**, in `api/`, which writes orders to
+Postgres and queues slow work on Redis for the **worker**, in `worker/`, which sends mail and settles payments. Sessions
+sit in a [shared store](adr/0007-keep-sessions-in-a-shared-store.md).
 ```
