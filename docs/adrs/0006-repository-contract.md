@@ -1,14 +1,10 @@
----
-objective:
-  problem: >-
-    When a practice spreads by copying its engine code into each repository, every copy becomes a fork: a fix
-    made in one never reaches the others. Each repository also has facts and configuration choices only it knows, which
-    must live with it. Confusing those choices with engine implementation makes both harder to maintain.
-  goal: >-
-    A fix to the shared engine reaches repositories through one release, while each repository controls its
-    own configuration choices and can reuse practices maintained elsewhere.
----
 # 0006. Repositories hold trusted recipes separately from the shared engine
+
+When a practice spreads by copying its engine code into each repository, every copy becomes a fork: a fix made in one
+never reaches the others. Each repository also has facts and configuration choices only it knows, which must live with
+it. Confusing those choices with engine implementation makes both harder to maintain. A fix to the shared engine reaches
+repositories through one release, while each repository controls its own configuration choices and can reuse practices
+maintained elsewhere.
 
 ## Context
 

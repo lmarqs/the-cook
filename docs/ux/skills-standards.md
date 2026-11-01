@@ -1,13 +1,9 @@
----
-objective:
-  problem: >-
-    Reused agent guidance can load for the wrong task, repeat procedures that drift from commands, or teach
-    behavior unavailable in the release a repository uses. Shared copies can also overwrite repository-specific edits.
-  goal: >-
-    Skills are discoverable, scoped, maintainable and consistent with the commands and native programs they
-    describe. Their results can be reviewed without treating an agent's completion message as proof.
----
 # Skills standards
+
+Reused agent guidance can load for the wrong task, repeat procedures that drift from commands, or teach behavior
+unavailable in the release a repository uses. Shared copies can also overwrite repository-specific edits. Skills are
+discoverable, scoped, maintainable and consistent with the commands and native programs they describe. Their results can
+be reviewed without treating an agent's completion message as proof.
 
 ## Overview
 

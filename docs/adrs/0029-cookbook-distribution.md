@@ -1,14 +1,10 @@
----
-objective:
-  problem: >-
-    A cookbook author shares models and recipes with other repositories. People who cook a public cookbook
-    should not need an account or credentials to fetch it, and an organization needs to serve its own cookbooks. A
-    repository that cooks a release needs to know that the content it cooks is the content it reviewed.
-  goal: >-
-    Anyone can cook a public cookbook release with no setup, an organization can serve its own releases, and a
-    repository cooking a release can tell when the content under that release changes.
----
 # 0029. Cookbooks release as jars in Maven-layout repositories, Maven Central by default
+
+A cookbook author shares models and recipes with other repositories. People who cook a public cookbook should not need
+an account or credentials to fetch it, and an organization needs to serve its own cookbooks. A repository that cooks a
+release needs to know that the content it cooks is the content it reviewed. Anyone can cook a public cookbook release
+with no setup, an organization can serve its own releases, and a repository cooking a release can tell when the content
+under that release changes.
 
 ## Context
 

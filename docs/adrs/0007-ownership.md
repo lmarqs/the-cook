@@ -1,15 +1,10 @@
----
-objective:
-  problem: >-
-    Developers share configuration with other people and tools. An update can erase a manual change, output
-    that a recipe stops declaring can linger after the recipe changes, and removing everything a recipe produced is a
-    different request from changing what it declares.
-  goal: >-
-    Developers see the actual additions, updates and deletions before approving them, while unrelated content
-    stays intact, every clone agrees on which recipe produced which output, and a recipe's output can be rebuilt or
-    removed without disturbing anything else.
----
 # 0007. Declared targets define changes reviewed against current content
+
+Developers share configuration with other people and tools. An update can erase a manual change, output that a recipe
+stops declaring can linger after the recipe changes, and removing everything a recipe produced is a different request
+from changing what it declares. Developers see the actual additions, updates and deletions before approving them, while
+unrelated content stays intact, every clone agrees on which recipe produced which output, and a recipe's output can be
+rebuilt or removed without disturbing anything else.
 
 ## Context
 

@@ -107,17 +107,11 @@ abstract class DocsLinkCheck extends DefaultTask {
   }
 }
 
-// GitHub shows front matter as a table of plain text, so an objective holds no Markdown; the site shows it under the
-// title. The shape is the one docs/ux/messages-and-docs.md gives.
-abstract class DocsObjectiveCheck extends DefaultTask {
-  // Pages that state their objective in an opening paragraph, as docs/ux/messages-and-docs.md names them.
-  static final Set<String> OPENING_PARAGRAPH = ['architecture.md', 'features/cli.md', 'adrs/README.md'] as Set
-
-  static final Map<String, Integer> ADR_SENTENCES = [problem: 4, goal: 2]
-
-  // Each part is a folded block of lines indented four spaces.
-  static final String FOLDED = /((?: {4}\S.*\n)+)/
-  static final String FRONT_MATTER = /\A---\nobjective:\n  problem: >-\n/ + FOLDED + /  goal: >-\n/ + FOLDED + /---\n/
+// A reader decides from the top whether a page concerns them, so its title is followed by its lead, a paragraph; the
+// rule is the one docs/ux/messages-and-docs.md gives.
+abstract class DocsLeadCheck extends DefaultTask {
+  // A line that opens anything but a paragraph: a heading, list item, table, code fence, quote, comment or tag.
+  static final String NOT_PARAGRAPH = /\A(?:#|[-*+] |\d+[.)] |\||```|~~~|>|<)/
 
   @InputFiles
   @PathSensitive(PathSensitivity.RELATIVE)
@@ -136,48 +130,34 @@ abstract class DocsObjectiveCheck extends DefaultTask {
     int total = 0
     markdown.files.sort().each { File file ->
       String path = root.toPath().relativize(file.toPath())
-
-      if (path in OPENING_PARAGRAPH) {
-        return
-      }
-
       total++
-      def frontMatter = file.getText('UTF-8') =~ FRONT_MATTER
+      String problem = leadProblem(file.readLines('UTF-8'))
 
-      if (!frontMatter.find()) {
-        wrong << "${path}: no objective front matter with a problem and a goal".toString()
-        return
-      }
-
-      Map<String, String> parts = [problem: unfold(frontMatter.group(1)), goal: unfold(frontMatter.group(2))]
-      parts.each { String name, String text ->
-        if (text =~ /\]\(|`|\*\*/) {
-          wrong << "${path}: the objective's ${name} holds Markdown; it is plain text".toString()
-        }
-
-        int limit = path.startsWith('adrs/') ? ADR_SENTENCES[name] : Integer.MAX_VALUE
-
-        if (sentences(text) > limit) {
-          wrong << "${path}: the objective's ${name} has ${sentences(text)} sentences, more than ${limit}".toString()
-        }
+      if (problem) {
+        wrong << "${path}: ${problem}".toString()
       }
     }
-    report.get().asFile.text = "objectives ${total}, wrong ${wrong.size()}\n" + wrong.collect { it + '\n' }.join('')
+    report.get().asFile.text = "pages ${total}, wrong ${wrong.size()}\n" + wrong.collect { it + '\n' }.join('')
 
     if (wrong) {
-      throw new GradleException("Documentation objectives:\n" + wrong.join('\n'))
+      throw new GradleException("Documentation leads:\n" + wrong.join('\n'))
     }
 
-    logger.lifecycle("Documentation objectives: ${total} checked, none wrong")
+    logger.lifecycle("Documentation leads: ${total} checked, none wrong")
   }
 
-  static String unfold(String block) {
-    block.trim().replaceAll(/\s*\n\s*/, ' ')
-  }
+  static String leadProblem(List<String> lines) {
+    if (!lines || !lines[0].startsWith('# ')) {
+      return 'the first line is not the title'
+    }
 
-  // A sentence ends at a full stop, question mark or exclamation mark followed by a space or the end of the text.
-  static int sentences(String text) {
-    (text =~ /[.!?](?=\s|$)/).size()
+    String first = lines.drop(1).find { it.trim() }
+
+    if (first == null || first =~ NOT_PARAGRAPH) {
+      return 'the title is not followed by its lead, a paragraph'
+    }
+
+    null
   }
 }
 
@@ -192,17 +172,17 @@ tasks.register('linkCheck', DocsLinkCheck) {
   report = layout.buildDirectory.file('reports/links.txt')
 }
 
-tasks.register('objectiveCheck', DocsObjectiveCheck) {
+tasks.register('leadCheck', DocsLeadCheck) {
   group = 'verification'
-  description = 'Checks that each documentation page opens with its objective in plain-text front matter.'
+  description = 'Checks that each documentation page opens with its title followed by its lead.'
   root = layout.projectDirectory
   markdown.from(fileTree(layout.projectDirectory) {
     include '**/*.md'
     exclude 'build/**', '.gradle/**'
   })
-  report = layout.buildDirectory.file('reports/objectives.txt')
+  report = layout.buildDirectory.file('reports/leads.txt')
 }
 
 tasks.named('check') {
-  dependsOn 'linkCheck', 'objectiveCheck'
+  dependsOn 'linkCheck', 'leadCheck'
 }

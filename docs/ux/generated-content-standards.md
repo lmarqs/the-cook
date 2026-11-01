@@ -1,13 +1,8 @@
----
-objective:
-  problem: >-
-    Generated configuration shares files with developers and other tools. Broad replacements, noisy output,
-    and unclear deletion rules make it hard to judge a change or recover earlier values.
-  goal: >-
-    A developer can see the actual proposed change, approve its full scope, and reverse the changes of a
-    recorded batch. Content outside the declared targets stays intact.
----
 # Generated-content standards
+
+Generated configuration shares files with developers and other tools. Broad replacements, noisy output, and unclear
+deletion rules make it hard to judge a change or recover earlier values. A developer can see the actual proposed change,
+approve its full scope, and reverse the changes of a recorded batch. Content outside the declared targets stays intact.
 
 ## Overview
 

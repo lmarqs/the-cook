@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Maintainers who reuse shared setup must find newer releases and decide which changes to accept. Requiring them to
-    choose every exact version by hand makes routine maintenance repetitive, while choosing newer content without
-    their request changes the setup they trust.
-  goal: >-
-    Maintainers can request newer shared setup within a known compatibility boundary and review its effect before
-    accepting it. Their accepted setup remains identifiable independently of later releases.
----
 # 0032. Cook moves a recipe to a newer release on request
+
+Maintainers who reuse shared setup must find newer releases and decide which changes to accept. Requiring them to choose
+every exact version by hand makes routine maintenance repetitive, while choosing newer content without their request
+changes the setup they trust. Maintainers can request newer shared setup within a known compatibility boundary and
+review its effect before accepting it. Their accepted setup remains identifiable independently of later releases.
 
 ## Context
 

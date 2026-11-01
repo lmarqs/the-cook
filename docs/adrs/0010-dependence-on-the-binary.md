@@ -1,12 +1,8 @@
----
-objective:
-  problem: >-
-    Not everyone who clones a repository chooses the same setup tool. If generated configuration requires
-    that tool merely to be read, one person's choice becomes a dependency for every teammate and pipeline.
-  goal: >-
-    People and pipelines use the repository's native configuration without installing its setup tool.
----
 # 0010. Native configuration remains usable without Cook
+
+Not everyone who clones a repository chooses the same setup tool. If generated configuration requires that tool merely
+to be read, one person's choice becomes a dependency for every teammate and pipeline. People and pipelines use the
+repository's native configuration without installing its setup tool.
 
 ## Context
 

@@ -153,13 +153,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .prose > :first-child { margin-top: 0; }
 .prose h1, .prose h2, .prose h3, .prose h4 { line-height: 1.25; position: relative; scroll-margin-top: calc(var(--topbar-h) + 16px); }
 .prose h1 { font: 700 38px/1.15 var(--font-body); letter-spacing: -.5px; margin: 0 0 24px; }
-.objective {
-  margin: 0 0 32px; padding: 18px 20px; display: grid; gap: 12px;
-  background: var(--bg-raised); border: 1px solid var(--line); border-left: 4px solid var(--accent);
-}
-.objective div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; }
-.objective dt { font: 400 12px/1.9 var(--font-label); letter-spacing: 1px; text-transform: uppercase; color: var(--link); }
-.objective dd { margin: 0; font-size: 16px; color: var(--text); }
+.prose h1 + p { font-size: 18px; margin-bottom: 28px; }
 .prose h2 { font-size: 26px; font-weight: 600; margin: 48px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); }
 .prose h3 { font-size: 20px; font-weight: 600; margin: 32px 0 10px; }
 .prose h4 { font-size: 17px; font-weight: 600; margin: 24px 0 8px; }
@@ -386,7 +380,6 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .nav-toggle:checked ~ .sidebar { display: block; }
   .content { padding-top: 24px; }
   .prose h1 { font-size: 32px; }
-  .objective div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .prose h2 { font-size: 23px; }
   .prose .anchor { display: none; }
   .split, .install { grid-template-columns: minmax(0, 1fr); }

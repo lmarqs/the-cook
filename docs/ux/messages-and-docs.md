@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    People and coding agents act on messages and documentation literally. Vague wording, inconsistent names
-    or a missing next step leads them to guess. Contradictory descriptions of commands and approval make it harder to
-    judge what Cook will change.
-  goal: >-
-    A reader understands the requested operation, what approval covers and what to do next. Documentation gives
-    the intended design and current execution instructions in the places where readers expect them.
----
 # Messages and documentation
+
+People and coding agents act on messages and documentation literally. Vague wording, inconsistent names or a missing
+next step leads them to guess. Contradictory descriptions of commands and approval make it harder to judge what Cook
+will change. A reader understands the requested operation, what approval covers and what to do next. Documentation gives
+the intended design and current execution instructions in the places where readers expect them.
 
 ## Overview
 
@@ -138,33 +133,18 @@ in Markdown.
 The [map of the docs](../README.md) names the kinds of page under `docs/`, where a fact goes and which page has
 authority. The rules below hold for every page.
 
-### Every document opens with its objective
+### Every page opens with its lead
 
-Every page under `docs/` opens with an objective, because a reader arriving from search needs the purpose before the
-detail. The objective says why the page is written, not what it covers, so it lives in the page's front matter, before
-the title, and the site shows it under the title, apart from the content. ADRs follow the
-[ADR writing guide](../adrs/README.md#the-objective-comes-first). The objective has two parts:
+Every page under `docs/` opens with its lead, the paragraph under the title, because a reader arriving from search
+decides from the top whether the page concerns them. The lead says who reads the page and when, what it says and why
+it exists: the problem a reader has without it, and the outcome that holds once the page is read. Write it last, from
+the body, so a review can judge the body against it; a page whose lead cannot be written is not ready. Keep the
+problem independent of design details, so readers understand the purpose before judging a solution. ADRs follow the
+[ADR writing guide](../adrs/README.md#the-lead-comes-first).
 
-```yaml
----
-objective:
-  problem: >-
-    Who has the problem and what goes wrong or is missing.
-  goal: >-
-    The outcome that addresses it, stated so a reader can tell whether it holds.
----
-```
-
-The objective is plain text, with no links, code spans or emphasis, because GitHub shows front matter as text; a
-[glossary](../features/glossary.md) link belongs at the term's first use in the page body. `./gradlew -p docs check`
-fails when a page lacks either part or puts Markdown in one.
-
-Keep the objective independent of design details, so readers understand the purpose before judging a solution.
-
-Three pages state their objective in an opening paragraph instead, because readers open them for lookup rather than
-motivation: `docs/architecture.md` (the authority that other pages cite), `docs/features/cli.md` (command syntax) and
-`docs/adrs/README.md` (the ADR index and writing guide).
-Cookbook units open with the lead of their doc comment.
+The lead is prose, with links where a term is first used. Front matter holds only keys a program reads, because a
+hand-kept field goes stale while it still looks exact. `./gradlew -p docs check` fails when a page's title is not
+followed by a paragraph. Cookbook units open with the lead of their doc comment.
 
 ADR facts follow under `## Context`; reference material and examples follow under their own headings, because readers
 use the outline to find each kind of information.

@@ -1,13 +1,9 @@
----
-objective:
-  problem: >-
-    Teams reuse coding guidance across repositories, but copying it by hand makes updates hard to share.
-    Putting every instruction in a frequently read file also makes narrow guidance cost attention wherever it is read.
-  goal: >-
-    Teams can review reusable guidance as native files and choose where it belongs without depending on Cook
-    being present in each agent session.
----
 # 0020. Guidance is native program content
+
+Teams reuse coding guidance across repositories, but copying it by hand makes updates hard to share. Putting every
+instruction in a frequently read file also makes narrow guidance cost attention wherever it is read. Teams can review
+reusable guidance as native files and choose where it belongs without depending on Cook being present in each agent
+session.
 
 ## Context
 

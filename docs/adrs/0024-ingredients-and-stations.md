@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Teams reuse both knowledge of a program's configuration format and choices about how they work. When
-    those are treated as one responsibility, a shared program description can impose one team's choices on another, and
-    an update can obscure which choices the repository is being asked to change.
-  goal: >-
-    Teams share program models while choosing their own setup, and review the combined effect of requested
-    setup changes before they are written.
----
 # 0024. Program models remain distinct from reusable setup choices
+
+Teams reuse both knowledge of a program's configuration format and choices about how they work. When those are treated
+as one responsibility, a shared program description can impose one team's choices on another, and an update can obscure
+which choices the repository is being asked to change. Teams share program models while choosing their own setup, and
+review the combined effect of requested setup changes before they are written.
 
 ## Context
 

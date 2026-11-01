@@ -1,14 +1,10 @@
----
-objective:
-  problem: >-
-    Contributors need to decide whether a capability belongs in the engine, a program model, a reusable
-    setup recipe or guidance. A broad deterministic-versus-judgment rule can put external workflows into Cook merely
-    because they are repeatable, or turn program-specific configuration into engine policy.
-  goal: >-
-    Capabilities follow Cook's agreed responsibilities, with reusable program knowledge and setup in cookbooks,
-    judgment in guidance, and external work performed by the people and programs responsible for it.
----
 # Where new behavior goes
+
+Contributors need to decide whether a capability belongs in the engine, a program model, a reusable setup recipe or
+guidance. A broad deterministic-versus-judgment rule can put external workflows into Cook merely because they are
+repeatable, or turn program-specific configuration into engine policy. Capabilities follow Cook's agreed
+responsibilities, with reusable program knowledge and setup in cookbooks, judgment in guidance, and external work
+performed by the people and programs responsible for it.
 
 ## Overview
 

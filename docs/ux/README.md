@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Developers, reviewers, automation and teammates encounter Cook through its commands,
-    diffs and the native files it changes. Inconsistent interactions make it hard to tell what
-    will change, what approval covers and how to recover from an operation.
-  goal: >-
-    Cook presents predictable commands and reviewable file changes, with clear approval and recovery behavior
-    for both interactive and noninteractive use.
----
 # User-experience standards
+
+Developers, reviewers, automation and teammates encounter Cook through its commands, diffs and the native files it
+changes. Inconsistent interactions make it hard to tell what will change, what approval covers and how to recover from
+an operation. Cook presents predictable commands and reviewable file changes, with clear approval and recovery behavior
+for both interactive and noninteractive use.
 
 ## Overview
 

@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Teammates and coding agents need to understand repository conventions even when they do not use the tool
-    that configured them. Instructions can become misleading when they assume that tool is always present, and long
-    instruction files add reading cost to every session.
-  goal: >-
-    Repository conventions remain readable without Cook, with concise instructions that explain the actual
-    setup readers encounter.
----
 # 0018. Native instruction text states conventions independently of Cook
+
+Teammates and coding agents need to understand repository conventions even when they do not use the tool that configured
+them. Instructions can become misleading when they assume that tool is always present, and long instruction files add
+reading cost to every session. Repository conventions remain readable without Cook, with concise instructions that
+explain the actual setup readers encounter.
 
 ## Context
 

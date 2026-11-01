@@ -43,7 +43,6 @@ content is the working tree.
 
 ## Pages and the sidebar
 
-A new Markdown page renders on the site with no front matter. The `objective` in a page's front matter, its `problem`
-and `goal`, shows under the page title, and its `goal` is the page's description for search engines and link
-previews. To list a page in the sidebar, add its path and title to `_data/nav.yml`; a page under a listed folder, such as one ADR, marks its entry current through `match`. A link to a
+A new Markdown page renders on the site with no front matter. Its lead, the first paragraph after its title, is the
+page's description for search engines and link previews. To list a page in the sidebar, add its path and title to `_data/nav.yml`; a page under a listed folder, such as one ADR, marks its entry current through `match`. A link to a
 file the site does not render, such as a `.groovy` recipe or a directory, opens on GitHub at the release.

@@ -1,12 +1,8 @@
----
-objective:
-  problem: >-
-    A reader may arrive through a search or cross-reference and need the meaning of a term without reading
-    the pages that use it.
-  goal: >-
-    Readers can find the meaning of Cook's terms and the reference that explains each responsibility.
----
 # Glossary
+
+For a reader who meets one of Cook's terms through a search or a link and needs its meaning without reading every page
+that uses it. Each term has one meaning here, which every page uses, and an entry links the page that explains it
+where one does.
 
 ## Terms
 

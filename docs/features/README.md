@@ -1,13 +1,8 @@
----
-objective:
-  problem: >-
-    A newcomer needs a clear account of Cook's purpose, a route to the relevant reference, and a way to tell
-    target requirements from behavior available in the implementation.
-  goal: >-
-    Readers understand the file-operation engine, can find its operating contract, and can locate instructions
-    for the implementation they can run today.
----
 # the-cook
+
+For a newcomer to Cook, or anyone about to use or change one of its commands. Without a route in, a reader cannot tell
+Cook's purpose from its mechanics, or a target requirement from behavior they can run today. These pages state what
+each command does; this one says what the engine is and which page to open first.
 
 ## Overview
 

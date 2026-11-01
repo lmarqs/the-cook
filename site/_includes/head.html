@@ -1,6 +1,8 @@
 {%- include title.html -%}
 {%- capture full_title -%}{% if page.path == "site/index.html" %}the-cook: recipe driven configuration{% else %}{{ page_title | strip_html }} · the-cook{% endif %}{%- endcapture -%}
-{%- assign summary = page.summary | default: page.objective.goal | default: site.description -%}
+{%- comment -%} A page's lead, the first paragraph after its title, describes it to search engines and link previews. {%- endcomment -%}
+{%- assign lead = content | split: "</h1>" | last | split: "</p>" | first | split: "<p>" | last | strip_html | normalize_whitespace | truncate: 300 -%}
+{%- if content contains "</h1>" %}{% assign summary = page.summary | default: lead | default: site.description %}{% else %}{% assign summary = page.summary | default: site.description %}{% endif -%}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ full_title }}</title>

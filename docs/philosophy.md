@@ -1,14 +1,10 @@
----
-objective:
-  problem: >-
-    Teams and developers reuse configuration across repositories, but copying setup by hand makes it hard to
-    share improvements, review changes, and preserve unrelated configuration. A contributor needs to understand which
-    part of that problem Cook solves before proposing another responsibility for it.
-  goal: >-
-    Readers can judge proposals against Cook's purpose: turn reusable recipes into
-    visible, approved changes to native program files, while keeping program-specific setup separate from the engine.
----
 # Philosophy
+
+Teams and developers reuse configuration across repositories, but copying setup by hand makes it hard to share
+improvements, review changes, and preserve unrelated configuration. A contributor needs to understand which part of that
+problem Cook solves before proposing another responsibility for it. Readers can judge proposals against Cook's purpose:
+turn reusable recipes into visible, approved changes to native program files, while keeping program-specific setup
+separate from the engine.
 
 [Cook architecture](architecture.md) states the intended design. This philosophy explains its goals and tenets;
 [ADRs](adrs/README.md) record the supporting reasoning. Both follow the architecture. Documentation of the current
@@ -51,7 +47,7 @@ performs the writes, while cookbook repositories carry the ingredients and recip
 outlive the reason it was made.
 
 **Tenet.** State the problem and desired outcome before the mechanism. Keep the reasons visible so a contributor can
-judge whether a decision still serves its goal. See the [ADR structure](adrs/README.md#the-objective-comes-first).
+judge whether a decision still serves its goal. See the [ADR structure](adrs/README.md#the-lead-comes-first).
 
 ### Keep the engine focused on file operations
 

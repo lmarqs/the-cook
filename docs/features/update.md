@@ -1,13 +1,8 @@
----
-objective:
-  problem: >-
-    A developer has cooked recipes at exact releases and wants newer ones without finding each release or
-    retyping the arguments. Recreating output from the lock keeps the old versions.
-  goal: >-
-    The developer can choose the recipes to update, understand the release range and review the proposed
-    changes before approving them.
----
 # Update recipes
+
+A developer has cooked recipes at exact releases and wants newer ones without finding each release or retyping the
+arguments. Recreating output from the lock keeps the old versions. The developer can choose the recipes to update,
+understand the release range and review the proposed changes before approving them.
 
 ## Overview
 

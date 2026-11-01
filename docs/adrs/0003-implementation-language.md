@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Contributors maintain the engine, its executable recipe support and cookbook content. Changing the
-    engine's language means rewriting its file handling and public entry point, and a stack that requires the project's
-    development toolchain on every user's machine turns running Cook into a setup project.
-  goal: >-
-    Contributors can maintain the engine and cookbook content separately, and users can run Cook without
-    preparing a development environment.
----
 # 0003. Cook retains its JVM stack
+
+Contributors maintain the engine, its executable recipe support and cookbook content. Changing the engine's language
+means rewriting its file handling and public entry point, and a stack that requires the project's development toolchain
+on every user's machine turns running Cook into a setup project. Contributors can maintain the engine and cookbook
+content separately, and users can run Cook without preparing a development environment.
 
 ## Context
 

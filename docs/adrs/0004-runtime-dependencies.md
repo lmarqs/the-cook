@@ -1,13 +1,8 @@
----
-objective:
-  problem: >-
-    Repositories use different language stacks and runtime versions. Requiring each developer to prepare an
-    extra matching runtime makes adoption a setup project and introduces failures unrelated to the configuration they
-    want to change.
-  goal: >-
-    A user runs Cook on a machine that has no Java installation and none of the tools used to build Cook.
----
 # 0004. Cook packages its Java runtime
+
+Repositories use different language stacks and runtime versions. Requiring each developer to prepare an extra matching
+runtime makes adoption a setup project and introduces failures unrelated to the configuration they want to change. A
+user runs Cook on a machine that has no Java installation and none of the tools used to build Cook.
 
 ## Context
 

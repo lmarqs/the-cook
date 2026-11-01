@@ -1,12 +1,8 @@
----
-objective:
-  problem: >-
-    A reviewer needs to know what approving a configuration change authorizes. Mixing file edits with
-    service calls or agent launches makes a file diff an incomplete account of the approved work.
-  goal: >-
-    A batch's review and recovery cover the declared changes, with clear limits on what approval establishes.
----
 # 0019. Batches contain declared file operations
+
+A reviewer needs to know what approving a configuration change authorizes. Mixing file edits with service calls or agent
+launches makes a file diff an incomplete account of the approved work. A batch's review and recovery cover the declared
+changes, with clear limits on what approval establishes.
 
 ## Context
 

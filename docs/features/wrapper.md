@@ -1,13 +1,8 @@
----
-objective:
-  problem: >-
-    Developers and CI need to run the same engine version, and a download must match the version the
-    repository reviewed before it runs.
-  goal: >-
-    The engine version is a repository decision: every machine runs the pinned platform package, verifies its
-    checksum before execution, and upgrades only through an explicit, reviewed change.
----
 # Wrapper: `cook`
+
+Developers and CI need to run the same engine version, and a download must match the version the repository reviewed
+before it runs. The engine version is a repository decision: every machine runs the pinned platform package, verifies
+its checksum before execution, and upgrades only through an explicit, reviewed change.
 
 This page owns the `./cook` wrapper of the [intended architecture](../architecture.md#engine-distribution): its pin,
 checksum verification, first-use download, cache and upgrades. This source repository's own [`cook` script](../../cook)

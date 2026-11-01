@@ -10,19 +10,10 @@
   {% include sidebar.html %}
   <main id="main" class="content" tabindex="-1">
     <article class="prose">
-{%- capture objective %}
-{%- if page.objective %}
-      <dl class="objective">
-        <div><dt>Problem</dt><dd>{{ page.objective.problem | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
-        <div><dt>Goal</dt><dd>{{ page.objective.goal | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd></div>
-      </dl>
-{%- endif %}
-{%- endcapture %}
 {%- if content contains "<h1" %}
-{%- assign title_end = "</h1>" | append: objective %}
-{{ content | replace_first: "</h1>", title_end }}
+{{ content }}
 {%- else %}
-      <h1>{{ page_title }}</h1>{{ objective }}
+      <h1>{{ page_title }}</h1>
 {{ content }}
 {%- endif %}
     </article>

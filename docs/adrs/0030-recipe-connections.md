@@ -1,15 +1,10 @@
----
-objective:
-  problem: >-
-    A team composes several recipes and the programs they configure in one repository, and decides how they
-    meet. When a recipe connects itself to another recipe's or program's files because it finds them, cooking one recipe
-    changes what another writes, and nothing the reviewer reads says why. Each recipe then carries knowledge of the
-    others that breaks when they change.
-  goal: >-
-    What a recipe writes follows from its arguments and the files it models, and every connection between
-    recipes, programs and the repository can be read from the arguments a recipe was cooked with.
----
 # 0030. Recipes connect to other recipes' files only through parameters the person names
+
+A team composes several recipes and the programs they configure in one repository, and decides how they meet. When a
+recipe connects itself to another recipe's or program's files because it finds them, cooking one recipe changes what
+another writes, and nothing the reviewer reads says why. Each recipe then carries knowledge of the others that breaks
+when they change. What a recipe writes follows from its arguments and the files it models, and every connection between
+recipes, programs and the repository can be read from the arguments a recipe was cooked with.
 
 ## Context
 

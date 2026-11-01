@@ -1,15 +1,10 @@
----
-objective:
-  problem: >-
-    A team commits the files its recipes write together with the record of how they were written. Someone edits an
-    input, such as a policy, and commits without cooking, so the committed files no longer follow from the record. A
-    continuous integration step that repeats each recipe's version and arguments must be edited on every upgrade or
-    new argument, and fails or passes for the wrong reason when nobody edits it.
-  goal: >-
-    One unchanging step tells a team whether its committed files follow from the record, and a script can tell a
-    difference from a failure.
----
 # 0031. Check compares the kitchen with what cook.lock records
+
+A team commits the files its recipes write together with the record of how they were written. Someone edits an input,
+such as a policy, and commits without cooking, so the committed files no longer follow from the record. A continuous
+integration step that repeats each recipe's version and arguments must be edited on every upgrade or new argument, and
+fails or passes for the wrong reason when nobody edits it. One unchanging step tells a team whether its committed files
+follow from the record, and a script can tell a difference from a failure.
 
 ## Context
 

@@ -1,13 +1,9 @@
----
-objective:
-  problem: >-
-    People and coding agents read these pages to change Cook, and each needs to know which page owns a fact before
-    reading or writing it. A fact stated on two pages drifts, and a reader who finds the stale copy acts on it.
-  goal: >-
-    A reader can tell from this page which page answers a question, and a writer can tell where a new fact goes, so
-    each fact is stated once and linked from the rest.
----
 # Cook documentation
+
+People and coding agents read these pages to change Cook, and each needs to know which page owns a fact before reading
+or writing it. A fact stated on two pages drifts, and a reader who finds the stale copy acts on it. A reader can tell
+from this page which page answers a question, and a writer can tell where a new fact goes, so each fact is stated once
+and linked from the rest.
 
 This is the map of `docs/`: the kinds of page this repository keeps, when a fact belongs to each, and what a good page
 of each achieves. Read it before opening or writing a page. The pages here describe the intended design; how to build
@@ -34,8 +30,9 @@ issue, never on the page, and a description of current behavior in a README stay
 | [Pitfalls](features/pitfalls.md) | It is a trap: a setup that looks right and is not, or a guarantee a reader assumes Cook gives and it does not | Gives the symptom, why it happens, what Cook is responsible for and what the reader reviews |
 | [Glossary](features/glossary.md) | It is the meaning of one of Cook's terms | Gives each concept one name, which every page uses |
 
-Every page opens with its objective in front matter, as [the objective rule](ux/messages-and-docs.md#every-document-opens-with-its-objective)
-says; `./gradlew -p docs check` enforces it and resolves every relative link and anchor.
+Every page opens with its lead, as [the lead rule](ux/messages-and-docs.md#every-page-opens-with-its-lead) says;
+`./gradlew -p docs check` fails a page whose title is not followed by a paragraph, and resolves every relative link and
+anchor.
 
 ## Where a fact goes
 

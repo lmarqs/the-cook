@@ -3,7 +3,7 @@
 An architecture decision record (ADR) states one decision that shapes the structure of this project and, above all,
 why it holds. Each ADR records:
 
-- its objective;
+- its lead: the problem it answers and the outcome it must achieve;
 - the facts it answers;
 - the reasons that connect those facts to the decision;
 - the alternatives that lose, and why;
@@ -32,28 +32,22 @@ Reasons: a corpus that accumulates superseded records forces every reader to rec
 chain of partial replacements, and a reader who stops early acts on a decision that no longer holds. A coding agent
 that reads the corpus before making a change is that reader on every run.
 
-## The objective comes first
+## The lead comes first
 
-Every ADR opens with its objective, before any fact or decision, so a reader knows why the subject is on the table and
-what it must achieve before reading how it is settled ([philosophy](../philosophy.md#start-from-the-objective)). The
-objective is the reason the ADR is written, not part of its content, so it lives in the `objective` front matter
-before the title, and the site shows it under the title. It has two parts:
+Every ADR opens with its lead, the paragraph under the title, before any fact or decision, so a reader knows why the
+subject is on the table and what it must achieve before reading how it is settled
+([philosophy](../philosophy.md#start-from-the-objective)). The lead states two things:
 
-- **`problem`.** Who has the problem, and what goes wrong for them or what they need and lack, in at most four
-  sentences.
-- **`goal`.** The outcome that holds once the problem is solved, stated so that anyone can tell whether it holds, in at
-  most two sentences.
+- **The problem.** Who has it, and what goes wrong for them or what they need and lack, in at most four sentences.
+- **The outcome.** What holds once the problem is solved, stated so that anyone can tell whether it holds, in at most
+  two sentences.
 
-Both parts are plain text, with no links, code spans or emphasis, because GitHub shows front matter as text. The docs
-check, `./gradlew -p docs check`, counts a sentence at each full stop, question mark or exclamation mark followed by a
-space or the end, and fails an ADR over either limit.
-
-Neither part names a solution: no mechanism the decision introduces, none of the tool's commands, files or settings.
-One ADR has one objective; a decision that serves two objectives is two ADRs. When the problem no longer exists, the
-decision no longer applies, and the ADR is deleted.
+Neither names a solution: no mechanism the decision introduces, none of the tool's commands, files or settings; the
+title states the decision. One ADR answers one problem; a decision that serves two problems is two ADRs. When the
+problem no longer exists, the decision no longer applies, and the ADR is deleted.
 
 Reasons: a decision read without its problem is judged against whatever problem the reader assumes. A decision without
-its goal cannot be confirmed, because nothing says what success looks like. A decision whose problem is gone stays
+its outcome cannot be confirmed, because nothing says what success looks like. A decision whose problem is gone stays
 in force only because nobody asked why it was there.
 
 ## Reasons come first
@@ -61,12 +55,12 @@ in force only because nobody asked why it was there.
 A decision without its reasons cannot be applied to a case it did not foresee, and cannot be changed safely, because
 nobody can tell which facts it depends on. So every ADR justifies every point it decides:
 
-- Each numbered point of the Decision serves the objective and has at least one reason in Reasons.
+- Each numbered point of the Decision serves the outcome the lead states and has at least one reason in Reasons.
 - A reason ties a fact from Context, or another ADR, to the point, and states what the decision trades away.
-- Context holds the facts and examples that make the objective concrete, and a reader with only this repository and
+- Context holds the facts and examples that make the lead concrete, and a reader with only this repository and
   public sources can check or follow every one of them: a third-party tool's documented behavior, with the version it
   was checked against; a property of the tool or of the problem itself; or a worked example, named as one, set in a
-  made-up organization (`acme`). It holds no conclusions. The objective is understood without it; Context is where a
+  made-up organization (`acme`). It holds no conclusions. The lead is understood without it; Context is where a
   reader checks it.
 - Context never relies on what the reader cannot see: no counts from a private survey, no cases from repositories,
   people or conversations outside this project. Why: the ADRs are read by people who were not there, and a fact they
@@ -110,8 +104,7 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
   to explain a decision, its boundary or its evidence, such as `--batch-approve` or `cook.lock` at the repository root.
   Keep detailed usage in the [features](../features/) pages and terminology in the
   [glossary](../features/glossary.md); a concrete reference is not a reason to add an undecided contract.
-- Link the [glossary](../features/glossary.md) at the first use of an engine term in each ADR's body; the objective
-  holds no links.
+- Link the [glossary](../features/glossary.md) at the first use of an engine term in each ADR.
 - A third-party product whose behavior a decision depends on is named with the version that behavior was checked
   against. Prior art and rejected tools are named without a version, because nothing depends on their behavior.
   Build tooling (the JDK, jpackage, Groovy, Gradle) is named without a version, because the build files pin
@@ -121,18 +114,14 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
 ## Template
 
 ```markdown
----
-objective:
-  problem: >-
-    Who has the problem, and what goes wrong for them or what they need and lack. No solution.
-  goal: >-
-    The outcome that holds once the problem is solved, stated so anyone can tell whether it holds.
----
 # NNNN. <The decision, one present-tense sentence>
+
+<Who has the problem, and what goes wrong for them or what they need and lack. The outcome that holds once it is
+solved, stated so anyone can tell whether it holds. No solution.>
 
 ## Context
 
-The data and examples that make the objective concrete, each with its source. No conclusions.
+The data and examples that make the lead concrete, each with its source. No conclusions.
 
 ## Decision
 

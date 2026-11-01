@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Specific rules cannot foresee every case. Convenience, preserving someone's work and sharing setup can
-    pull in different directions. Without a common basis, contributors make inconsistent choices about what Cook changes
-    and what a user must approve.
-  goal: >-
-    Contributors can resolve an uncovered case from the same responsibilities and explain the result to the
-    person whose files are affected.
----
 # User-facing principles
+
+Specific rules cannot foresee every case. Convenience, preserving someone's work and sharing setup can pull in different
+directions. Without a common basis, contributors make inconsistent choices about what Cook changes and what a user must
+approve. Contributors can resolve an uncovered case from the same responsibilities and explain the result to the person
+whose files are affected.
 
 ## Overview
 

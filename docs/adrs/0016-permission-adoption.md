@@ -1,13 +1,9 @@
----
-objective:
-  problem: >-
-    Existing agent settings can contain permission rules that a shared configuration recipe does not express.
-    Silently losing a deny can broaden access; silently losing an allow can interrupt work.
-  goal: >-
-    Developers can see which existing permission rules a requested change retains, replaces or deletes before
-    approving it, without first converting their configuration through a separate import step.
----
 # 0016. Existing permission changes receive explicit native-file review
+
+Existing agent settings can contain permission rules that a shared configuration recipe does not express. Silently
+losing a deny can broaden access; silently losing an allow can interrupt work. Developers can see which existing
+permission rules a requested change retains, replaces or deletes before approving it, without first converting their
+configuration through a separate import step.
 
 ## Context
 

@@ -1,14 +1,9 @@
----
-objective:
-  problem: >-
-    Teams copy program setup between repositories by hand, and those copies diverge. A tool that helps share
-    that setup needs a clear responsibility: otherwise it grows into a second coding agent or workflow controller,
-    duplicating products that already manage models, credentials and sessions.
-  goal: >-
-    Developers can carry a way of working between repositories through reviewed configuration changes while
-    keeping their preferred programs and control over how they work.
----
 # 0001. Cook reviews and performs recipe-declared file operations
+
+Teams copy program setup between repositories by hand, and those copies diverge. A tool that helps share that setup
+needs a clear responsibility: otherwise it grows into a second coding agent or workflow controller, duplicating products
+that already manage models, credentials and sessions. Developers can carry a way of working between repositories through
+reviewed configuration changes while keeping their preferred programs and control over how they work.
 
 ## Context
 
