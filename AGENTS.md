@@ -42,8 +42,8 @@ Spotless and CodeNarc (`gradle/build-conventions/`), semantic-release (`.github/
 **Never**
 
 - Commit secrets or credentials, or put personal data in logs, fixtures or commits.
-- Edit generated files by hand: `cook.lock`; `.agents/skills/agents-layout/`, cooked from
-  `cookbook/src/agents/skills/agents-layout/`; the keys Cook renders from `.agents/permission/policy.yaml` into
+- Edit generated files by hand: `cook.lock`; `.agents/skills/agents-layout/` and `docs-layout/`,
+  cooked from `cookbook/src/<artifact>/skills/`; the keys Cook renders from `.agents/permission/policy.yaml` into
   `.agents/adapters/`; `build/` directories.
 - Make a check pass by weakening it: skipping a test, suppressing a warning, loosening an assertion.
 
