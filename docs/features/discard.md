@@ -71,7 +71,6 @@ diff shows that removal. A recipe that `cook.lock` does not list is refused, and
 /.claude/*
 !/.claude/settings.json
 !/.claude/skills
-!/.claude/commands
 # Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
 CLAUDE.md
 CLAUDE.local.md
@@ -84,7 +83,7 @@ CLAUDE.local.md
 ```diff
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,13 +1,1 @@
+@@ -1,12 +1,1 @@
  /build/
 -# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
 -# io.github.lmarqs.cookbook:agents#connect --harness=claude
@@ -92,7 +91,6 @@ CLAUDE.local.md
 -/.claude/*
 -!/.claude/settings.json
 -!/.claude/skills
--!/.claude/commands
 -# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
 -CLAUDE.md
 -CLAUDE.local.md

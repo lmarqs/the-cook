@@ -15,7 +15,7 @@ around these facts; [claude.md](claude.md) holds the same facts for Claude Code.
 | `.codex/hooks.json`, a link to `.agents/adapters/codex/hooks.json` | The hooks, read from the main checkout even in a worktree ([Worktrees](#worktrees)) |
 
 Codex reads project configuration only under `.codex/`, and reads all of it only in a trusted project
-([Trust](#trust)). It does not read `.agents/commands/` or `.claude/rules/`.
+([Trust](#trust)). It does not read `.claude/rules/`.
 
 ## Permissions
 

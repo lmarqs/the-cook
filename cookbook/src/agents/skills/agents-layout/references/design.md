@@ -11,7 +11,7 @@ rest to each run.
 
 | Axis | Examples | Decided | Lives in |
 | --- | --- | --- | --- |
-| Knowledge | Instructions, skills, slash commands, hook scripts, durable facts | By the team, in review | `AGENTS.md`, `.agents/skills/`, `commands/`, `hooks/`, `memory/` |
+| Knowledge | Instructions, skills, hook scripts, durable facts | By the team, in review | `AGENTS.md`, `.agents/skills/`, `hooks/`, `memory/` |
 | Policy | What may run without asking, what asks, what never runs | By the team, in review | `.agents/permission/policy.yaml`, rendered to `.agents/adapters/` |
 | Harness | Claude Code, Codex | Per person, or per role in a loop runner | Which program is started |
 | Mode | Attended, unattended | Per run | Launch flags |
@@ -42,7 +42,7 @@ without hiding the team's.
 | Harness | Link | Because |
 | --- | --- | --- |
 | Claude | `.claude/settings.json` | Claude reads project settings only there |
-| Claude | `.claude/skills`, `.claude/commands` | Claude finds skills and commands only there; it does not read `.agents/skills` (tested) |
+| Claude | `.claude/skills` | Claude finds skills only there; it does not read `.agents/skills` (tested) |
 | Codex | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Codex reads project configuration only there |
 
 Codex reads `AGENTS.md` and `.agents/skills/` natively, so it needs no link for them;
@@ -175,7 +175,7 @@ keeps these paths stable:
 | What | Where |
 | --- | --- |
 | Instructions | The root `AGENTS.md`, which both harnesses read natively |
-| Skills and commands | The `.claude/skills` and `.claude/commands` links for Claude; `.agents/skills/` for Codex |
+| Skills | The `.claude/skills` link for Claude; `.agents/skills/` for Codex |
 | The policy, for every run | The `.claude/settings.json` link for Claude; the `.codex/config.toml` and `.codex/rules` links for Codex |
 | A Claude role | `--settings .agents/adapters/claude/roles/<role>.json`, for each role `policy.yaml` defines |
 | A Codex role | None: every Codex run gets `commands` |

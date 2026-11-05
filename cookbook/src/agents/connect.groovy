@@ -52,7 +52,7 @@ beside them |
 | `.agents/hooks/worktree` | Run as `worktree create` or `worktree remove` with Claude Code's `WorktreeCreate` or \
 `WorktreeRemove` input on standard input; `create` prints the worktree's absolute path as its last line. Run as \
 `worktree prune [--dry-run] [--older-than=<hours>]` by a person or an agent, never from a hook |
-| `.claude/settings.json`, `.claude/skills`, `.claude/commands` | Where Claude Code reads the layout |
+| `.claude/settings.json`, `.claude/skills` | Where Claude Code reads the layout |
 | `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
 
 ## Consumes
@@ -90,8 +90,7 @@ param | owned |
 | `.claude/settings.json` | A link to `../.agents/adapters/claude/settings.json` | `--harness=claude` | link |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings \
 <file>` | `--harness=claude` and the policy has roles | owned |
-| `.claude/skills`, `.claude/commands` | Links to the directories of the same names in `../.agents/`, where Claude \
-finds skills and commands | `--harness=claude` | link |
+| `.claude/skills` | A link to `../.agents/skills`, where Claude finds skills | `--harness=claude` | link |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | \
 `--harness=codex` | owned |
 | `.agents/adapters/codex/hooks.json` | `hooks.SessionStart`: one entry for `startup\\|resume\\|clear` running the \
@@ -130,7 +129,7 @@ parameter of the tool's recipe; the team, writing its own there |
 Launching table in `.agents/README.md` lists the commands |
 | The team's other hooks to each harness | The team, under `hooks` in `.claude/settings.json` and \
 `.agents/adapters/codex/hooks.json` |
-| Shared skills and commands to Claude | Cook, by the `.claude/skills` and `.claude/commands` links |
+| Shared skills to Claude | Cook, by the `.claude/skills` link |
 | Where Claude Code's worktrees go | The person, by `--worktree-root` |
 | What makes a new worktree ready to run | The person, by `--worktree-setup`, naming the team's executable |
 | What stops and deletes a worktree's local state | The person, by `--worktree-teardown`, naming the team's \
