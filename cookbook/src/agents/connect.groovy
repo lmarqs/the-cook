@@ -52,8 +52,8 @@ beside them |
 | `.agents/hooks/worktree` | Run as `worktree create` or `worktree remove` with Claude Code's `WorktreeCreate` or \
 `WorktreeRemove` input on standard input; `create` prints the worktree's absolute path as its last line. Run as \
 `worktree prune [--dry-run] [--older-than=<hours>]` by a person or an agent, never from a hook |
-| `.claude/settings.json`, `.claude/skills` | Where Claude Code reads the layout |
-| `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json` | Where Codex reads the layout |
+| `.claude/settings.json`, `.claude/skills`, `.claude/agents` | Where Claude Code reads the layout |
+| `.codex/config.toml`, `.codex/rules`, `.codex/hooks.json`, `.codex/agents` | Where Codex reads the layout |
 
 ## Consumes
 
@@ -62,6 +62,9 @@ beside them |
 - `.agents/permission/policy.yaml` in the draft, the team's: its `commands` render into each harness's settings, its
   `tools` and `roles` into Claude's, and its `bypass` decides whether Claude's bypass mode is refused. When absent, the
   starter is seeded, which grants nothing.
+- `.agents/agents/*.md` in the draft, the team's: one subagent each, with `name`, `description` and a `claude` and a
+  `codex` map in its front matter, then the prompt. A file that breaks this, or a directory there, is refused, and
+  nothing is written; the `agents-layout` skill's `references/subagents.md` gives the schema.
 - `.agents/hooks/session-start.d/*.sh` at run time, from tool recipes and the team: the dispatcher runs each with `sh`.
   `sh`, `awk` and, for Codex, `git` must be on the path.
 - The `--worktree-setup` and `--worktree-teardown` executables at run time, committed by the team; the worktree hook
@@ -91,6 +94,9 @@ param | owned |
 | `.agents/adapters/claude/roles/<role>.json` | The role's `permissions.deny`, added to a run with `claude --settings \
 <file>` | `--harness=claude` and the policy has roles | owned |
 | `.claude/skills` | A link to `../.agents/skills`, where Claude finds skills | `--harness=claude` | link |
+| `.agents/adapters/claude/agents/<name>.md` | Each subagent in `.agents/agents/`, in Claude Code's format | \
+`--harness=claude` and a subagent exists | owned |
+| `.claude/agents` | A link to `../.agents/adapters/claude/agents` | `--harness=claude` and a subagent exists | link |
 | `.agents/adapters/codex/config.toml` | `sandbox_mode`, `approval_policy`, `sandbox_workspace_write.network_access` | \
 `--harness=codex` | owned |
 | `.agents/adapters/codex/hooks.json` | `hooks.SessionStart`: one entry for `startup\\|resume\\|clear` running the \
@@ -100,6 +106,9 @@ cannot refuse while `bypass` is `refuse`, then one rule per command entry | `--h
 command rules | owned |
 | `.codex/config.toml`, `.codex/hooks.json`, `.codex/rules` | Links to the files of the same names in \
 `../.agents/adapters/codex/` | `--harness=codex` | link |
+| `.agents/adapters/codex/agents/<name>.toml` | Each subagent in `.agents/agents/`, in Codex's custom agent format | \
+`--harness=codex` and a subagent exists | owned |
+| `.codex/agents` | A link to `../.agents/adapters/codex/agents` | `--harness=codex` and a subagent exists | link |
 | `.gitignore` | The section `harnesses`: the argument line; each selected harness's directory re-included over an \
 earlier rule, then its contents ignored except the links above, all committed; and `CLAUDE.md`, `CLAUDE.local.md` and \
 `**/.claude/CLAUDE.md`, which would make Claude skip `AGENTS.md` | Always | owned |
