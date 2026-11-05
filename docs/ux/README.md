@@ -50,7 +50,7 @@ Background:
 | --- | --- | --- |
 | Developer | CLI, recipe arguments and native files | See the actual combined diff and approve the whole batch before target writes |
 | Automation or CI | CLI without an interactive terminal | Use explicit `--batch-approve` for preapproval; noninteractive execution alone does not authorize writes |
-| Reviewer | Recipe, configuration and wrapper-pin changes | Inspect requested contributions and explicit version/checksum changes |
+| Reviewer | Recipe, configuration and engine-pin changes | Inspect requested contributions and explicit version changes |
 | Teammate who does not use Cook | Native program files | Consume those files directly without invoking Cook |
 | Cookbook author | Ingredients and trusted Groovy recipes | Maintain program models and setup separately from engine releases |
 | User removing setup | Discard | Review the removal of what a recipe owns, preserving content it does not own |

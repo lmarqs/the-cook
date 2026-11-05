@@ -22,5 +22,5 @@ page of the operation at hand.
 | [Discard](discard.md) | Removing what a recipe owns, without evaluating it |
 | [Replicate](replicate.md) | Cooking named recipes again from `cook.lock`, including in a fresh clone |
 | [Update](update.md) | Choosing newer compatible releases, major updates, release discovery and approval |
-| [Wrapper](wrapper.md) | Version and checksum pinning, first-use download and cache, explicit upgrades and the current launcher |
+| [Install](install.md) | Homebrew, mise and the release package, pinning a release for a team, upgrades and the source repository launcher |
 | [Pitfalls, gaps and traps](pitfalls.md) | Symptoms, causes, Cook's responsibility and what to review |

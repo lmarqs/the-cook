@@ -22,8 +22,8 @@
       path: docs/features/replicate.md
     - title: Update
       path: docs/features/update.md
-    - title: The cook wrapper
-      path: docs/features/wrapper.md
+    - title: Install
+      path: docs/features/install.md
     - title: Pitfalls
       path: docs/features/pitfalls.md
     - title: Glossary

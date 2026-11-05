@@ -4,27 +4,27 @@ audience: Whoever runs Cook or changes a command
 ---
 # CLI reference
 
-Every command, option and exit status of `./cook`, against requirements
+Every command, option and exit status of `cook`, against requirements
 [FR-17 through FR-20](../architecture.md#requirements). The [glossary](glossary.md) defines terms such as recipe,
 batch and `cook.lock`.
 
 ## Synopsis
 
 ```text
-./cook [-C <dir>] [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
-./cook [-C <dir>] <command> ...
-./cook check [-C <dir>] [<name>]...
-./cook replicate [-C <dir>] [batch-options] [<name>]...
-./cook update [-C <dir>] [batch-options] [--major] [<name>]...
-./cook discard [-C <dir>] [batch-options] <name>...
-./cook help [-C <dir>] [<recipe>]...
-./cook --help
-./cook --version
+cook [-C <dir>] [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
+cook [-C <dir>] <command> ...
+cook check [-C <dir>] [<name>]...
+cook replicate [-C <dir>] [batch-options] [<name>]...
+cook update [-C <dir>] [batch-options] [--major] [<name>]...
+cook discard [-C <dir>] [batch-options] <name>...
+cook help [-C <dir>] [<recipe>]...
+cook --help
+cook --version
 ```
 
-`./cook` is the release's [wrapper](wrapper.md), committed in the repository; it runs the engine version it pins.
-Without a command word, `./cook` cooks the recipes it is given. Running `./cook` with no arguments, `./cook help` or
-`./cook --help` shows the usage. `--help` takes no other arguments. `./cook --version` prints `cook <version>`, the
+`cook` is the command Homebrew, mise or the release package puts on `PATH` ([install](install.md)).
+Without a command word, `cook` cooks the recipes it is given. Running `cook` with no arguments, `cook help` or
+`cook --help` shows the usage. `--help` takes no other arguments. `cook --version` prints `cook <version>`, the
 version the build wrote into the engine, and takes no other arguments either.
 
 ## Commands
@@ -43,16 +43,16 @@ The [architecture](../architecture.md#cooking-and-discard) defines these operati
 
 ```sh
 # Cook a recipe
-./cook ./recipe.groovy
+cook ./recipe.groovy
 
 # Report whether the kitchen matches cook.lock
-./cook check
+cook check
 
 # Recreate a recipe's output from the lock
-./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
+cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
 
 # Remove what two recipes own
-./cook discard io.github.lmarqs.cookbook:agents#connect recipe
+cook discard io.github.lmarqs.cookbook:agents#connect recipe
 ```
 
 ## Recipe operands
@@ -66,17 +66,17 @@ repositories that the destination's `cook.toml` lists, or from Maven Central wit
 artifact's models; a recipe path, against the upper-case `.groovy` files in its directory.
 
 ```sh
-./cook recipe.groovy
-./cook ./recipes/project.groovy
-./cook io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
+cook recipe.groovy
+cook ./recipes/project.groovy
+cook io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
 ```
 
 `help` prints a recipe's `@help`, `@confirm` and `@yield` texts with its `@param` and `@ingredient` annotations, read
 from its source without running it or resolving its imports. It is the one way to read a recipe through Cook:
 
 ```sh
-./cook help ./recipes/project.groovy
-./cook help ./recipes/project.groovy ./recipes/dependency.groovy
+cook help ./recipes/project.groovy
+cook help ./recipes/project.groovy ./recipes/dependency.groovy
 ```
 
 ## Lock names
@@ -100,7 +100,7 @@ A first operand equal to `check`, `discard`, `replicate`, `update` or `help` sel
 named `check`, `discard`, `replicate`, `update` or `help`, make its path explicit:
 
 ```sh
-./cook ./discard
+cook ./discard
 ```
 
 ## Recipe arguments and ordering
@@ -109,8 +109,8 @@ Recipe arguments follow their recipe as `--name=value` or `--name value`. Each f
 argument scope. Shell-quote values containing spaces so the shell passes the value as part of one argument.
 
 ```sh
-./cook --batch-approve ./base.groovy --agent codex ./project.groovy --agent=claude
-./cook ./recipe.groovy --instructions='Keep existing comments.'
+cook --batch-approve ./base.groovy --agent codex ./project.groovy --agent=claude
+cook ./recipe.groovy --instructions='Keep existing comments.'
 ```
 
 In the first invocation, `--agent codex` belongs to `base.groovy`, and `--agent=claude` belongs to `project.groovy`.
@@ -123,8 +123,8 @@ takes no separate value ([prior art](../ux/cli-standards.md#prior-art)). A value
 operand is written with `=`:
 
 ```sh
-./cook ./a.groovy --source=./b.groovy
-./cook ./a.groovy --source ./b.groovy
+cook ./a.groovy --source=./b.groovy
+cook ./a.groovy --source ./b.groovy
 ```
 
 The first invocation evaluates only `a.groovy` and gives it `source` with the value `./b.groovy`. In the second,
@@ -188,8 +188,8 @@ The options act only the first time a recipe is cooked, take recipe coordinates 
 leave the file to whoever edits it.
 
 ```sh
-./cook --force io.github.lmarqs.cookbook:agents:0.0.0#seed
-./cook --skip io.github.lmarqs.cookbook:agents:0.0.0#seed
+cook --force io.github.lmarqs.cookbook:agents:0.0.0#seed
+cook --skip io.github.lmarqs.cookbook:agents:0.0.0#seed
 ```
 
 A recipe that makes a path a symbolic link refuses a file or directory already there, since its contents would stop
@@ -219,34 +219,34 @@ follows shows what the changed sources write. Replicate also reports edited path
 [source drift](replicate.md#source-drift-and-changed-arguments).
 
 ```sh
-./cook --batch-approve ./recipe.groovy
-./cook --batch-approve ./a.groovy ./b.groovy
-./cook discard --batch-approve recipe
+cook --batch-approve ./recipe.groovy
+cook --batch-approve ./a.groovy ./b.groovy
+cook discard --batch-approve recipe
 ```
 
 A batch option after a recipe fails with `cook: --batch-approve goes before the first recipe`. This invocation fails:
 
 ```sh
-./cook ./a.groovy --batch-approve
+cook ./a.groovy --batch-approve
 ```
 
 Put the option before the first recipe instead:
 
 ```sh
-./cook --batch-approve ./a.groovy
+cook --batch-approve ./a.groovy
 ```
 
 ## Check
 
-`./cook check` answers whether the kitchen matches `cook.lock`: it cooks each named recipe, or every recipe the lock
+`cook check` answers whether the kitchen matches `cook.lock`: it cooks each named recipe, or every recipe the lock
 lists, again from the source and arguments the lock records, as [replicate](replicate.md) does, and writes nothing. A
 CI step or a pre-commit hook runs it to fail when someone changed a recipe's input, such as a policy file, and did not
 cook and commit the result. The step names no version and no argument, so it stays as it is when a recipe is upgraded
 or cooked with other arguments.
 
 ```sh
-./cook check
-./cook check io.github.lmarqs.cookbook:agents#connect
+cook check
+cook check io.github.lmarqs.cookbook:agents#connect
 ```
 
 When nothing would change, check prints `Already cooked.` and exits 0. Otherwise it prints each `Changed source`
@@ -256,7 +256,7 @@ this diagnostic on stderr, naming the `-C` directory and the recipes it was give
 ```text
 cook: check: 2 files differ from what cook.lock records; nothing was written
   check cooks each recipe again from the source and arguments cook.lock records
-  run ./cook replicate, review the diff and commit it
+  run cook replicate, review the diff and commit it
 ```
 
 Check shows no `Confirm` texts and asks nothing, because it never writes; it takes `-C` and no batch option. Output a
@@ -285,8 +285,8 @@ current working directory.
 | `-C <dir>`, `--kitchen=<dir>` | Every command | Before the first recipe operand, and before or after a command word; once | Cooks in `<dir>` as if Cook had started there: recipe operands and other relative paths resolve against it |
 
 ```sh
-./cook -C services/api ./recipe.groovy
-./cook --kitchen=services/api --batch-approve ./recipe.groovy
+cook -C services/api ./recipe.groovy
+cook --kitchen=services/api --batch-approve ./recipe.groovy
 ```
 
 Like a batch option, the kitchen option after a recipe receives an error, because arguments after a recipe belong to

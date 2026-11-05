@@ -6,7 +6,7 @@ This directory shows the shape of recipes and ingredients. The engine runs the `
 ## What runs today
 
 The `agents`, `git`, `docs` and `ralph` artifacts set a repository up for several coding agents and people at once.
-Each recipe's help, read with `./cook help <coordinates>`, says what it writes.
+Each recipe's help, read with `cook help <coordinates>`, says what it writes.
 
 | Need | What runs | Read |
 | --- | --- | --- |
@@ -18,7 +18,7 @@ Each recipe's help, read with `./cook help <coordinates>`, says what it writes.
 | Output kept to one clone | With `--share=clone`, `ralph#ralph-tui` keeps ralph-tui's configuration out of commits. `replicate` cooks ralph-tui's configuration again in a fresh clone from the source and arguments `cook.lock` records | [replicate](../docs/features/replicate.md) |
 | A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](../docs/architecture.md#ownership-and-the-lock) |
 | One place for each fact, read by people and agents | `docs#layout` writes the `docs-layout` skill, which teaches where a fact goes in `docs/`, writes the map at `docs/README.md` with the team, and writes and reviews pages by it | [docs](src/docs/README.md) |
-| Drift caught in CI | `./cook check` exits 1 when the kitchen differs from what `cook.lock` records, such as a policy edited and not cooked | [check](../docs/features/cli.md#check) |
+| Drift caught in CI | `cook check` exits 1 when the kitchen differs from what `cook.lock` records, such as a policy edited and not cooked | [check](../docs/features/cli.md#check) |
 
 Every change in this table goes through the review, the lock and the recovery that [What runs](../README.md#what-runs) lists.
 
@@ -35,7 +35,7 @@ everything a reader needs without the source checkout. This cookbook's `build.gr
 with no `cook.toml`; the other directories are not published.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
-`#recipe` the address names the artifact, which `./cook help` describes and nothing cooks.
+`#recipe` the address names the artifact, which `cook help` describes and nothing cooks.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`
 records the address and a sha256 of the artifact's sources.
 
@@ -59,9 +59,9 @@ The engine does not find recipes. People find them in a cookbook's repository, o
 teammate's link. Given the coordinates:
 
 ```sh
-./cook help io.github.lmarqs.cookbook:agents:0.0.0           # the artifact's front page
-./cook help io.github.lmarqs.cookbook:agents:0.0.0#connect   # the recipe's help, params and ingredients
-./cook io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
+cook help io.github.lmarqs.cookbook:agents:0.0.0           # the artifact's front page
+cook help io.github.lmarqs.cookbook:agents:0.0.0#connect   # the recipe's help, params and ingredients
+cook io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
 ```
 
 `help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version#recipe` it prints
@@ -165,9 +165,9 @@ follow others says so in its doc comment, as `Agents.connect` does: call it afte
 
 ## Documentation
 
-A unit is read by someone who has its artifact and not its source, so `./cook` is how it is read: a recipe inside a
+A unit is read by someone who has its artifact and not its source, so `cook` is how it is read: a recipe inside a
 jar cannot be opened with a pager. Everything the reader needs ships in the artifact: its README, the doc comments on
-its models and the annotations on its recipes. `./cook help <address>...` prints help for each address in order and
+its models and the annotations on its recipes. `cook help <address>...` prints help for each address in order and
 cooks nothing. An artifact address prints its front page; a recipe address or path prints that recipe's help.
 
 The engine reads a recipe's help from its parsed source, without running the recipe or resolving its imports, so help
@@ -203,7 +203,7 @@ apply is omitted: a recipe that installs no script has no Run-time effects.
 | Produces | A table of `Target`, `Part`, `When` and `Kind`. `When` is the argument value or draft condition that triggers the row, or `Always`. `Kind` is `owned`, rewritten on every cook and removed by discard; `seed`, written when absent and never owned; or `link`, an owned symbolic link. Then how the written setup behaves, closing with `Never touches:` and the files in its topic it leaves to others |
 | Connections | Each contact point with another recipe, tool or person, and who makes it: Cook, automatically, only between the recipe's own files; the person, by a parameter, for every contact with another recipe's or the team's files ([0030](../docs/adrs/0030-recipe-connections.md)); the team, in seeds it owns; the session, at launch. Then the order and the arguments that must agree |
 | Run-time effects | What the scripts the recipe installs do when run |
-| Re-cooking | The arguments to repeat, as the opening line of its owned sections names them; what cooking a newer version changes; how its conditional parts behave under `./cook check` |
+| Re-cooking | The arguments to repeat, as the opening line of its owned sections names them; what cooking a newer version changes; how its conditional parts behave under `cook check` |
 | Traps | Known faults of the versions written for, each with its workaround |
 
 What to do after cooking is not a section of `@help`: it belongs in `@yield`, which `help` prints as "After cooking".
@@ -238,10 +238,10 @@ A model's class doc comment holds these sections in order.
 | A public method or property | What it means for the destination, what its arguments accept and what is rejected |
 | An annotated member | The part written and when, as one row of the rendered writes: `` `engines.node`, a caret range on the major, when a version is set. `` |
 
-Rendered help for an artifact and a recipe, as `./cook help` prints them:
+Rendered help for an artifact and a recipe, as `cook help` prints them:
 
 ````text
-$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0
+$ cook help io.github.lmarqs.cookbook:ralph:0.0.0
 io.github.lmarqs.cookbook:ralph:0.0.0
 
 ralph-tui works through a tracker's tasks, a Beads epic or a JSON PRD, by running coding agents in a loop. This artifact
@@ -314,7 +314,7 @@ Models
 The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ````text
-$ ./cook help io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
+$ cook help io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
 io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
 
 Sets ralph-tui up to work through a tracker's tasks with unattended coding agents, each run in a worktree of its own:
@@ -325,29 +325,29 @@ sets up and cleans the run's worktree.
 
 ```sh
 # Claude Code workers, limited by the project's denies, and its allows where the checkout is trusted
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
 # Claude Code and Codex workers, each run picking one with --agent
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
 # Claude workers bound to the agents layout's role worker
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=claude:worker
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=claude:worker
 # Claude and Codex workers with a settings file each, which the team writes
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex --worker-settings=claude:ralph-claude.json --worker-settings=codex:ralph-codex.toml
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex --worker-settings=claude:ralph-claude.json --worker-settings=codex:ralph-codex.toml
 # Claude workers in run worktrees under worktrees/ralph/ instead of .worktrees/ralph/
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-root=worktrees
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-root=worktrees
 # Claude workers in run worktrees the launcher sets up and tears down with the team's scripts
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 # Claude workers whose tasks complete only once the team's check passes
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-check=scripts/check
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-check=scripts/check
 # Beads epics and JSON PRDs: seeds both prompts, and the launcher offers --epic and --prd
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
 # Beads epics whose next bead bv picks, ranking the epic's dependency graph
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
 # Keeping all of .ralph-tui/ out of commits: each clone replicates its own, and bin/run copies it into each run
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
 # In a new clone, replaying the source and arguments from the committed cook.lock
-./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
+cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
 # Also giving agents and people the launcher's commands, in the files they read
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
 
 `--worker-role` and `--worker-settings` each take `<harness>:<x>`, once per harness, and the harness is one `--harness`
@@ -602,7 +602,7 @@ After cooking
   the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with `brew install dicklesworthstone/tap/bv`.
   Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and, with `--share=team`, `.ralph-tui/` to share
   them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/` out of commits. In a new clone, run
-  `./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
+  `cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
   `.ralph-tui/` to one clone of a team that shares it, ignore it with
   `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted `.ralph-tui/` into
   each run. `bin/run` refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
@@ -691,7 +691,7 @@ repositories = [
 ```
 
 ```sh
-./cook <group>:<artifact>:<version>#<recipe>
+cook <group>:<artifact>:<version>#<recipe>
 ```
 
 While developing a cookbook, a kitchen lists its source directory instead, and cooks each edit with no build. The

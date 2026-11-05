@@ -13,11 +13,11 @@ user runs Cook on a machine that has no Java installation and none of the tools 
 - A repository's existing runtimes follow its own stack. Worked example: acme's Node service, Python service and
   Terraform repository do not share a Java installation requirement.
 - Cook retains the [JVM stack](0003-implementation-language.md). The
-  [architecture](../architecture.md#engine-distribution) specifies jpackage packages containing Java and a committed
-  wrapper that downloads, verifies and caches a pinned platform package on first use.
+  [architecture](../architecture.md#engine-distribution) specifies jpackage packages containing Java, installed on
+  `PATH` with Homebrew, mise or the release package.
 - A launcher is one part of that complete package; distributing only the launcher omits the runtime and application
-  files it needs. The root README's [install section](../../README.md#install) describes installing a release, and the
-  [wrapper](../features/wrapper.md) page describes how the wrapper delivers it.
+  files it needs. The root README's [install section](../../README.md#install) and the
+  [install](../features/install.md) page describe installing a release.
 - [Recipes](../features/glossary.md) are trusted executable code and can call network services or local tools of
   their own.
 
@@ -25,9 +25,9 @@ user runs Cook on a machine that has no Java installation and none of the tools 
 
 1. The complete platform-specific jpackage package contains Cook and its Java runtime. Package users do not install
    Java or Gradle separately. The runtime is a bundled engine dependency.
-2. A committed wrapper pins, downloads, verifies and caches the complete platform package
-   ([0017](0017-engine-version.md)).
-3. Cookbook repositories ship ingredients and recipes separately from engine releases, and engine pins do not select
+2. Homebrew, mise or the person installs the complete platform package on `PATH`, checked against its published
+   sha256 ([0017](0017-engine-version.md)).
+3. Cookbook repositories ship ingredients and recipes separately from engine releases, and engine releases do not select
    recipe versions ([0013](0013-organization-content.md)).
 4. Batch operations execute no external commands ([0019](0019-action-kinds.md)). Trusted recipe code can still reach
    external resources; batch approval and rollback do not govern those effects ([0026](0026-cookbook-trust.md)).
@@ -37,11 +37,10 @@ user runs Cook on a machine that has no Java installation and none of the tools 
 - **1.** Packaging the runtime makes the acme repositories independent of their existing language stacks for running
   Cook. The trade: a release is a larger multi-file package with runtime maintenance and platform-specific builds,
   rather than a statically linked executable that needs only the operating system.
-- **2.** A reviewed version and checksum make release selection explicit and allow repeat use without repeated
-  downloads. Verifying before execution checks the package against the committed pin. The trade: first use needs
-  download and verification facilities.
+- **2.** A self-contained package installs the way people already install tools, and runs without repeated
+  downloads. The trade: first install needs access to the release.
 - **3.** Program models and recipes evolve separately from the engine. Separate builds preserve that responsibility.
-  The trade: changing an engine pin does not update recipes; users and cookbook authors manage the supplied content.
+  The trade: upgrading the engine does not update recipes; users and cookbook authors manage the supplied content.
 - **4.** The package bundles the runtime Cook needs, not everything a recipe may call: a recipe may reach network
   services or local tools that the package does not include. The trade: trusting a recipe includes assessing what it
   needs and does beyond its declared batch, independently of reviewing the final file diff.
@@ -74,5 +73,5 @@ Must be maintained:
 ## Confirmation
 
 - `./gradlew jpackageTest` builds and smoke-tests the packaged CLI with its bundled runtime.
-- Do the root README's [install section](../../README.md#install) and the [wrapper](../features/wrapper.md) reference
+- Do the root README's [install section](../../README.md#install) and the [install](../features/install.md) page
   distribute the complete package and keep first-use requirements apart from development tooling?

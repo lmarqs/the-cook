@@ -22,7 +22,7 @@ content separately, and users can run Cook without preparing a development envir
 
 1. Cook is Groovy on the JVM: its core, its connections and its CLI. Recipe evaluation accepts trusted Groovy code.
 2. Engine distribution uses complete platform-specific jpackage packages containing Java
-   ([0004](0004-runtime-dependencies.md)), which the wrapper pins and verifies ([0017](0017-engine-version.md)).
+   ([0004](0004-runtime-dependencies.md)), which people install on `PATH` ([0017](0017-engine-version.md)).
 3. Engine and cookbook builds have distinct responsibilities; cookbooks hold and ship ingredients and recipes
    ([0013](0013-organization-content.md)). The public cooking interface is the CLI, and Gradle handles building and
    packaging.

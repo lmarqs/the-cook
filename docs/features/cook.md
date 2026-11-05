@@ -17,14 +17,14 @@ files and configuration; cookbooks supply ingredients and recipes separately fro
 paths inside the destination repository or coordinates.
 
 ```sh
-./cook ./recipe.groovy
-./cook --batch-approve ./base.groovy --agent=codex ./project.groovy --agent=claude
+cook ./recipe.groovy
+cook --batch-approve ./base.groovy --agent=codex ./project.groovy --agent=claude
 ```
 
 ## Reference
 
 ```text
-./cook [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
+cook [batch-options] <recipe> [recipe-arguments] [<recipe> [recipe-arguments]]...
 ```
 
 Cooking takes no command word. Batch options precede recipe operands; recipe arguments follow their recipe as

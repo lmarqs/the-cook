@@ -19,9 +19,9 @@ evaluate the recipe or fetch its cookbook, so it works after the recipe's source
 
 | Intent | Request | Basis |
 | --- | --- | --- |
-| Add or update declared contributions | `./cook ./recipe.groovy` | Supplied recipes against current content and `cook.lock` |
-| Remove what a recipe's new version omits | `./cook ./recipe.groovy` with the new version | Ownership recorded for the recipe in `cook.lock` |
-| Remove everything a recipe owns | `./cook discard recipe` | Ownership recorded for the recipe in `cook.lock` |
+| Add or update declared contributions | `cook ./recipe.groovy` | Supplied recipes against current content and `cook.lock` |
+| Remove what a recipe's new version omits | `cook ./recipe.groovy` with the new version | Ownership recorded for the recipe in `cook.lock` |
+| Remove everything a recipe owns | `cook discard recipe` | Ownership recorded for the recipe in `cook.lock` |
 | Get back content from before a run | The repository's version control, such as `git revert` | The commit history |
 | Keep the configured native files and stop invoking Cook | Stop invoking Cook | Programs consume their native files directly |
 
@@ -30,11 +30,11 @@ Omitting a recipe from a later invocation leaves its output in place; see [cooki
 ## Reference
 
 ```text
-./cook discard [batch-options] <name>...
+cook discard [batch-options] <name>...
 ```
 
 Each recipe is written as its [lock name](cli.md#lock-names), `group:artifact#recipe` or a path's place in the
-kitchen without `.groovy`, such as `./cook discard recipes/setup`, so a path's file does not need to exist any more.
+kitchen without `.groovy`, such as `cook discard recipes/setup`, so a path's file does not need to exist any more.
 Cooking and help still require a version in coordinates. [Replicate](replicate.md) and [check](cli.md#check) take the
 same lock names.
 Discard takes no recipe arguments. Batch options precede the first recipe; the [CLI reference](cli.md) defines them.
@@ -78,7 +78,7 @@ CLAUDE.local.md
 # cook:end io.github.lmarqs.cookbook:agents#connect/harnesses
 ```
 
-`./cook discard io.github.lmarqs.cookbook:agents#connect` proposes:
+`cook discard io.github.lmarqs.cookbook:agents#connect` proposes:
 
 ```diff
 --- a/.gitignore
@@ -110,8 +110,8 @@ old name removes what the lock still lists for it, although its file is gone:
 
 ```sh
 git mv recipes/a.groovy recipes/b.groovy
-./cook recipes/b.groovy
-./cook discard recipes/a
+cook recipes/b.groovy
+cook discard recipes/a
 ```
 
 A recipe cooked by coordinates keeps its short name across versions, so only a changed group, artifact or recipe
@@ -120,7 +120,7 @@ name renames it, with the same two steps.
 ## Keeping native configuration
 
 Programs consume their own native files directly, so those files and their markers stay usable when you stop
-invoking Cook. Keeping configured files and deciding whether to keep the executable or wrapper are separate from
+invoking Cook. Keeping configured files and deciding whether to keep `cook` installed are separate from
 discarding a recipe. Cook does not delete recipe sources.
 
 ## Approval, boundaries, and recovery

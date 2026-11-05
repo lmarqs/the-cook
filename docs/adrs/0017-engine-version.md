@@ -1,118 +1,91 @@
 ---
-description: Records why each repository pins its engine release through a committed wrapper.
-audience: Whoever changes the wrapper or how Cook is upgraded
+description: Records why Cook installs on PATH through package and tool managers, and how a team pins the engine release.
+audience: Whoever changes how Cook is installed, released or upgraded
 ---
-# 0017. Each repository pins its engine release through a committed wrapper
+# 0017. Cook installs on PATH, and a team pins its release with the tool manager it already uses
 
-Developers and CI can run different engine releases against the same repository. Changes to recipe evaluation or file
-operations then depend on which release a machine happens to have, and a newcomer must find and install the repository's
-chosen version before running recipes. The repository chooses the engine version its developers and CI invoke, and a
-newcomer can obtain that version through the repository's entry point without installing Java or Gradle separately.
+A newcomer should run Cook with the install command they already know, without Java, Gradle or a script of Cook's own in
+the repository. A team whose developers and CI must run the same engine release needs a way to say which one, reviewed
+like any other dependency change.
 
 ## Context
 
-- The agreed [architecture](../architecture.md#engine-distribution) retains JVM distribution using `jpackage`, with
-  a platform-specific package containing Java. Its requirement FR-26 ([requirements](../architecture.md#requirements))
-  selects a committed wrapper, version and checksum pinning, first-use download, local caching, and explicit upgrades.
-- Developers may work in several repositories that choose different engine versions. CI machines may start without
-  any cached package. A machine-wide installation alone does not express each repository's choice.
-- A version and its corresponding package checksum identify the release the repository intends to run. Download
-  integrity and publisher authentication are distinct concerns ([0021](0021-release-trust.md)).
-- Cookbook repositories hold and ship ingredients and trusted Groovy recipes and can build separately from Cook
-  ([0013](0013-organization-content.md)). Ingredients model programs' native files and configuration; the engine
-  evaluates recipes and reviews and writes their declared file operations.
+- The [architecture](../architecture.md#engine-distribution) retains JVM distribution using `jpackage`: a complete
+  platform package containing Java ([0004](0004-runtime-dependencies.md)). The release workflow builds it on Linux x64
+  and arm64 and macOS arm64 and publishes each image as `the-cook-<version>-<platform>.tar.gz` with its sha256.
+- Because the package carries its own runtime, a package manager or tool manager installs it like any other
+  self-contained binary: unpack it and put its launcher on `PATH`.
+- Developers work in several repositories, and some teams already pin their tools in a committed file, such as
+  `mise.toml`.
 - Recipe ownership lives in the committed `cook.lock`, the only file of Cook's own in a destination
-  ([0014](0014-directory-layout.md)); cooking does not need it.
-- The [jpackage build](../../cli/gradle/jpackage.gradle) produces an application image with bundled Java for the
-  machine that builds it. The release workflow builds it on Linux x64 and arm64 and macOS arm64 and publishes
-  each image as `the-cook-<version>-<platform>.tar.gz` with its sha256 on the GitHub release ([install](../../README.md#install)).
+  ([0014](0014-directory-layout.md)).
 - This source repository's own [`cook` script](../../cook) launches a locally built JVM distribution for development.
 
 ## Decision
 
-1. The repository commits an executable `./cook` wrapper with an exact engine version and matching checksums for the
-   platform packages. Each release publishes its wrapper as an asset, with the version, the release's download
-   location and the checksums of its Linux x64 and arm64 and macOS arm64 packages written in it; a repository commits that file. The
-   committed pin is separate from the recipe ownership in `cook.lock`.
-2. The engine ships as a complete platform-specific `jpackage` package containing Java. The wrapper caches and
-   launches that complete package; copying only its launcher does not supply the runtime or other package contents.
-3. On first use of an uncached pin, the wrapper downloads the selected platform package and verifies it against the
-   committed checksum before execution. A mismatch prevents execution and acceptance into the cache. Later invocations
-   reuse the cached pinned package without downloading again. The package is cached in
-   `${XDG_CACHE_HOME:-$HOME/.cache}/the-cook/<version>/<platform>/`, apart for each version and platform.
-4. An upgrade replaces the committed wrapper with another release's, changing the version and corresponding package
-   checksums together for review.
-   Ordinary invocations do not move the pin. A pin change does not automatically rewrite project files, migrate
-   configuration, update cookbooks, or choose a recipe version; requested recipe updates follow
-   [0032](0032-recipe-updates.md).
-5. The wrapper passes CLI arguments to the engine. The invocation's current working directory remains the destination
-   for declared writes regardless of the wrapper or package location. CI that chooses to invoke Cook uses the same
-   pin and verification flow.
-6. Engine pinning is separate from cookbook distribution and recipe trust; recipe-version selection follows
-   [0032](0032-recipe-updates.md).
+1. Each release publishes the complete platform package for every supported platform, with its sha256.
+2. People install `cook` on `PATH` through Homebrew, mise or the release package ([install](../features/install.md)).
+   The Homebrew formula lives in this repository at [`Formula/cook.rb`](../../Formula/cook.rb), and the release
+   workflow commits each new version and its package checksums to it.
+3. Documentation and messages invoke Cook as `cook`.
+4. A team that wants every machine and CI on one release pins it in its tool manager's committed file, such as
+   `mise.toml`. Cook does not check which engine release runs it.
+5. An upgrade is the installer's own: `brew upgrade cook`, a new version in `mise.toml`, or another release package.
+   An engine upgrade does not rewrite project files, update cookbooks or choose a recipe version; requested recipe
+   updates follow [0032](0032-recipe-updates.md).
+6. The invocation's current working directory, or the directory `-C` names, is the destination, regardless of where
+   the executable is installed.
 
 ## Reasons
 
-- **1, 3.** A committed entry point and pin travel with a clone. Developers and CI obtain the chosen package rather
-  than whichever version happens to be installed globally. Version and checksum changes are visible together in review;
-  a checksum comparison prevents a different download from silently running under that pin. Local caching pays the
-  download cost on first use and permits later use offline. A machine without the pinned package must obtain it
-  before running recipes; the wrapper cannot make an uncached offline first invocation work. The release writes the
-  version and checksums into the wrapper from the build that produced the packages, so nobody copies a checksum by
-  hand. The user's cache directory holds disposable per-user data, and a directory per version and platform lets
-  repositories that pin different versions share one machine.
-- **2.** Bundling Java retains the JVM implementation without requiring each user to maintain a separate runtime.
-  The launcher depends on its package contents, so downloading and caching only an executable would break that promise.
-- **4.** Explicit upgrades make a dependency change a repository decision. Separating that change from cooking
-  recipes avoids turning an ordinary invocation into an unrequested upgrade or file rewrite.
-- **5.** Committed pins, local executable caches and recipe ownership serve different purposes. Losing the cache must
-  not erase the engine choice, and locating an executable must not change output paths.
-- **6.** Program models and recipes have their own authors and distribution. An engine version cannot establish the
-  trustworthiness or intended version of those sources.
+- **1, 2.** A self-contained package needs no installer of Cook's own. Homebrew and mise download it, check it and
+  put it on `PATH` the way people already install their tools. Keeping the formula in this repository needs no
+  second repository or token; the cost is a two-line `brew tap` and a release commit on `main`.
+- **3.** One spelling for every machine: examples copy and paste the same way whichever installer put `cook` there.
+- **4.** A tool manager already records versions for a team's other tools, and its file is reviewed like any other
+  change. A team that does not pin lets each person keep their own release, which the engine tolerates because
+  `cook.lock` records recipe versions, not engine versions.
+- **5.** Engine and cookbook releases evolve separately; moving one never moves the other.
+- **6.** Locating an executable must not change output paths.
 
 ## Rejected alternatives
 
-### Unpinned global installation
+### A committed wrapper script in each repository
 
-At its best, one installation per machine avoids a wrapper and repository pin. It loses because it leaves developers and
-CI free to run different releases for the same repository, and each newcomer must obtain the right release
-independently.
+At its best, every clone carries its engine version and package checksums, and a newcomer needs nothing installed but
+`curl`. It loses because Cook then maintains its own download, verify and cache script per platform, duplicating what
+package managers do; each repository commits a second file of Cook's own beside `cook.lock`; and every example is
+written for a path, `./cook`, that only works from the repository root.
 
-### Pin only through a task runner
+### A separate Homebrew tap repository
 
-At its best, a repository reuses a task runner's tool list. It loses because that makes the engine choice depend on
-having that task runner installed and active. The committed wrapper reaches repositories and machines that use another
-runner or none.
-
-### Commit every platform package
-
-At its best, vendoring the complete packages permits first use offline. It loses because it adds packages, including
-Java, to the repository's Git history on every upgrade. The chosen download/cache flow keeps the dependency choice
-reviewable without that storage cost, accepting that an uncached machine needs a way to obtain the package.
+At its best, `brew install lmarqs/tap/cook` is one line and the tap stays small. It loses because publishing to
+another repository needs a token with push access stored as a secret, and a second repository to maintain.
 
 ### Container as the required entry point
 
 At its best, an image carries the engine and its runtime together and suits an existing container-based CI workflow. It
 loses because requiring it for every invocation adds a container runtime and working-directory integration to every
-user's setup. The chosen jpackage distribution supplies Java directly without that requirement.
+user's setup. The jpackage distribution supplies Java directly without that requirement.
 
 ## Consequences
 
 Costs:
 
-- First use needs access to the pinned package and tools to download, verify, and unpack it.
-- Maintainers distribute complete packages and corresponding checksums for the platforms they support.
+- A repository does not, by itself, say which engine release runs it; a team that needs that pins it in its tool
+  manager.
+- First install needs access to the release, through Homebrew, mise or a download.
+- Maintainers distribute complete packages and checksums for the platforms they support, and keep the formula's
+  release commit working.
 
 Must be maintained:
 
-- Platform packages and cached executables are protected from unintended changes.
-- Repositories review explicit pin changes; cookbook changes remain separate.
+- `Formula/cook.rb` names the latest release and its package checksums.
+- Installed packages are protected from unintended changes.
 
 ## Confirmation
 
-- Review an uncached invocation: does it verify and cache the complete pinned platform package, including Java, before
-  launching it with the supplied arguments, and does a checksum mismatch prevent execution and cache acceptance?
-- Review a later invocation: does it reuse that pin offline, and does an explicit version and checksum change select
-  the new package through the same verification flow without changing cookbook content or project configuration?
-- Review a clone with the engine cache removed: is the committed pin still available, and does a wrapper or package
-  invoked elsewhere still target the caller's working directory?
+- Does `brew install cook` from the tap, `mise use github:lmarqs/the-cook` and the unpacked release package each put a
+  `cook` on `PATH` that prints the release's version?
+- After a release, does `Formula/cook.rb` on `main` name that release and the sha256 of each package?
+- Does a `cook` installed anywhere on `PATH` write to the directory it is called in, or the one `-C` names?

@@ -124,7 +124,7 @@ evidence should fit the task.
 | Explain permissions, branches or working-copy locations in `AGENTS.md`, with matching ignore rules in `.gitignore` | Native instruction prose or recipe-declared marked section | Readable conventions survive stopping Cook; describe the native settings and their limitations; use HTML comments for Markdown boundaries |
 | Share organization skills | Team-selected installer, recipe or reviewed copies | Choose one maintenance process; native discovery determines loading |
 | Record a lesson or open an issue | Agent or person with appropriate tools | Knowledge and tracker activity need judgment and their own review |
-| Pin or upgrade the Cook engine | Explicit committed wrapper version/checksum change | Engine and cookbook versions are separate choices; see [wrapper](../features/wrapper.md) |
+| Pin or upgrade the Cook engine | The team's tool manager, such as `mise.toml`, or the person's installer | Engine and cookbook versions are separate choices; see [install](../features/install.md) |
 | Set up several repositories | Separate CLI invocations from each destination | Each has its own actual diff, approval and `cook.lock`; external tools select repositories and deliver changes |
 | Remove a recipe's output | Discard | Removes what the recipe owns; earlier content comes from the repository's history |
 
@@ -132,8 +132,8 @@ evidence should fit the task.
 
 Each invocation works on one destination, its current working directory, so setup across repositories means one
 invocation per repository ([destination and source origins](../architecture.md#destination-and-source-origins)). The engine
-version is pinned by the committed wrapper and moves only by an explicit upgrade, separately from cookbook and recipe
-versions ([wrapper](../features/wrapper.md)).
+release is the one installed on `PATH`, pinned for a team by its tool manager, and moves separately from cookbook and
+recipe versions ([install](../features/install.md)).
 
 People or external automation choose the repositories and invoke Cook from each intended directory; keep that selection
 explicit, because an unrelated clone on a machine is not an instruction to configure it. Use the recipes and arguments
@@ -141,8 +141,8 @@ that fit each repository, review a representative change before repeating it els
 actual diff, for example:
 
 ```sh
-cd /work/repo-a && ./cook ./recipe.groovy
-cd /work/repo-b && ./cook ./recipe.groovy
+cd /work/repo-a && cook ./recipe.groovy
+cd /work/repo-b && cook ./recipe.groovy
 ```
 
 Approval covers a whole batch in one destination, and discard acts on that destination only. Rollback on write failure
