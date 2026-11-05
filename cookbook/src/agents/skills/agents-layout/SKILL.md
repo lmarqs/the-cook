@@ -104,8 +104,8 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Share a skill, hook script or durable fact | `.agents/skills/`, `hooks/` or `memory/` | Commit; the links expose it |
 | Share a subagent | `.agents/agents/<name>.md` | Cook `#connect`, review, commit |
 | Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; Codex runs it once the hooks are trusted in the main checkout, its worktrees included, [codex.md](references/codex.md#trust) |
-| Run a shared hook script on another harness event | The `hooks` key of `.claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |
-| Change another shared harness setting, such as `env` or an MCP server | That key in `.claude/settings.json` or `.codex/config.toml` | Commit |
+| Run a shared hook script on another harness event | The `hooks` key of `.agents/adapters/claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |
+| Change another shared harness setting, such as `env` or an MCP server | That key in `.agents/adapters/claude/settings.json` or `.agents/adapters/codex/config.toml` | Commit |
 | Change something for yourself | `.claude/settings.local.json` | Nothing to commit |
 | Choose the harness, model, mode or role of one run | The launch command, from Launching in `.agents/README.md` | Nothing to commit |
 
