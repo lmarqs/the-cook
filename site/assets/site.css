@@ -340,7 +340,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .op p { margin: 0; font-size: 15px; color: var(--text-muted); }
 
 /* Install */
-.install { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.install { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .install h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 6px; font-size: 18px; font-weight: 600; }
 .install p { margin: 0 0 12px; color: var(--text-muted); font-size: 15px; }
 .install .prose { max-width: none; }

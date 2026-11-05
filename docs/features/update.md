@@ -12,8 +12,8 @@ understand the release range and review the proposed changes before approving th
 
 Update moves [recipes](glossary.md) recorded in `cook.lock` to newer releases on request, using their recorded
 arguments. [Replicate](replicate.md) cooks the recorded versions again; update chooses newer versions first, then
-uses the same cooking review. It evaluates trusted recipe code. Recipe updates leave the engine's
-[wrapper pin](wrapper.md#upgrading) as it is.
+uses the same cooking review. It evaluates trusted recipe code. Recipe updates leave the installed
+[engine release](install.md#upgrading) as it is.
 
 ### From 8.0.0 to the newest 8.x, then the newest release
 
@@ -32,7 +32,7 @@ available from Maven Central. In your kitchen, the configured repositories deter
 Start by cooking the worktrees recipe at `8.0.0`:
 
 ```sh
-./cook -C "$kitchen" --batch-approve io.github.lmarqs.cookbook:git:8.0.0#worktrees
+cook -C "$kitchen" --batch-approve io.github.lmarqs.cookbook:git:8.0.0#worktrees
 ```
 
 After the diff, the output includes:
@@ -48,7 +48,7 @@ Created cook.lock
 Update the recipe by its version-less lock name. The newest 8.x release in this repository is `8.2.0`:
 
 ```sh
-./cook update -C "$kitchen" --batch-approve io.github.lmarqs.cookbook:git#worktrees
+cook update -C "$kitchen" --batch-approve io.github.lmarqs.cookbook:git#worktrees
 ```
 
 Output through the write summary, before the recipe's yield text:
@@ -76,7 +76,7 @@ answer the approval prompt interactively.
 A compatible dry run now holds the recipe at `8.2.0`, even though `9.0.0` is available:
 
 ```sh
-./cook update -C "$kitchen" --dry-run io.github.lmarqs.cookbook:git#worktrees
+cook update -C "$kitchen" --dry-run io.github.lmarqs.cookbook:git#worktrees
 ```
 
 ```text
@@ -87,7 +87,7 @@ Already at the newest releases.
 This exits 0: there is no newer release in the default range. Preview crossing that range with `--major`:
 
 ```sh
-./cook update -C "$kitchen" --major --dry-run io.github.lmarqs.cookbook:git#worktrees
+cook update -C "$kitchen" --major --dry-run io.github.lmarqs.cookbook:git#worktrees
 ```
 
 ```text
@@ -110,7 +110,7 @@ Would update cook.lock
 This exits 1 because the recipe would move; nothing was written. To accept the move to the newest release:
 
 ```sh
-./cook update -C "$kitchen" --major --batch-approve io.github.lmarqs.cookbook:git#worktrees
+cook update -C "$kitchen" --major --batch-approve io.github.lmarqs.cookbook:git#worktrees
 ```
 
 Output through the write summary, before the recipe's yield text:
@@ -135,7 +135,7 @@ Updated cook.lock
 The command exits 0 and records `9.0.0`. A dry run without names now checks the whole scope:
 
 ```sh
-./cook update -C "$kitchen" --dry-run
+cook update -C "$kitchen" --dry-run
 ```
 
 ```text
@@ -147,7 +147,7 @@ This exits 0. Commit the updated `cook.lock` and any output changes after review
 ## Reference
 
 ```text
-./cook update [-C <dir>] [--dry-run] [--batch-approve] [--major] [<name>]...
+cook update [-C <dir>] [--dry-run] [--batch-approve] [--major] [<name>]...
 ```
 
 Put options after `update` and before the first name. `-C <dir>` or `--kitchen=<dir>` selects the kitchen. Update

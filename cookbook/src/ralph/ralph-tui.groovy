@@ -7,31 +7,31 @@ sets up and cleans the run's worktree.
 
 ```sh
 # Claude Code workers, limited by the project's denies, and its allows where the checkout is trusted
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude
 # Claude Code and Codex workers, each run picking one with --agent
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex
 # Claude workers bound to the agents layout's role worker
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=claude:worker
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-role=claude:worker
 # Claude and Codex workers with a settings file each, which the team writes
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex \
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --harness=codex \
 --worker-settings=claude:ralph-claude.json --worker-settings=codex:ralph-codex.toml
 # Claude workers in run worktrees under worktrees/ralph/ instead of .worktrees/ralph/
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-root=worktrees
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-root=worktrees
 # Claude workers in run worktrees the launcher sets up and tears down with the team's scripts
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup \
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worktree-setup=.worktrees/setup \
 --worktree-teardown=.worktrees/teardown
 # Claude workers whose tasks complete only once the team's check passes
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-check=scripts/check
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --worker-check=scripts/check
 # Beads epics and JSON PRDs: seeds both prompts, and the launcher offers --epic and --prd
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads --tracker=json
 # Beads epics whose next bead bv picks, ranking the epic's dependency graph
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --tracker=beads-bv
 # Keeping all of .ralph-tui/ out of commits: each clone replicates its own, and bin/run copies it into each run
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
 # In a new clone, replaying the source and arguments from the committed cook.lock
-./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
+cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
 # Also giving agents and people the launcher's commands, in the files they read
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --instructions=AGENTS.md
 ```
 
 `--worker-role` and `--worker-settings` each take `<harness>:<x>`, once per harness, and the harness is one `--harness`
@@ -286,7 +286,7 @@ install it, and its launcher runs on bun. Without `-g`, mise pins them in the pr
 the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with `brew install dicklesworthstone/tap/bv`.
 Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and, with `--share=team`, `.ralph-tui/` to share
 them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/` out of commits. In a new clone, run
-`./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
+`cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
 `.ralph-tui/` to one clone of a team that shares it, ignore it with
 `echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted `.ralph-tui/` into
 each run. `bin/run` refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run

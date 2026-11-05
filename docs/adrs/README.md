@@ -103,7 +103,7 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
   commands, flags, published artifacts and their names, file formats, and the paths of files Cook reads or writes.
   Internals are how the repository builds those interfaces: class names, build scripts, source paths. An internal
   appears only as a link that gives a fact its source, never as part of the decision.
-- Prefer generic mechanism names: the wrapper, the batch, the lock, the destination, an ingredient,
+- Prefer generic mechanism names: the batch, the lock, the destination, an ingredient,
   a recipe. Use concrete command, flag, setting, environment-variable, exit-code or file references when necessary
   to explain a decision, its boundary or its evidence, such as `--batch-approve` or `cook.lock` at the repository root.
   Keep detailed usage in the [features](../features/) pages and terminology in the
@@ -181,7 +181,7 @@ Must be maintained:
 | [0013](0013-organization-content.md) | Where do shared organization choices belong? | Cookbooks carry organization choices separately from the engine |
 | [0014](0014-directory-layout.md) | Where does each kind of file live? | Native output and recipe ownership are the only files Cook writes |
 | [0016](0016-permission-adoption.md) | How are existing permission changes reviewed? | Existing permission changes receive explicit native-file review |
-| [0017](0017-engine-version.md) | Which release runs in a repository? | Each repository pins its engine release through a committed wrapper |
+| [0017](0017-engine-version.md) | Which release runs in a repository? | Cook installs on PATH, and a team pins its release with the tool manager it already uses |
 | [0018](0018-conventions.md) | How do conventions remain readable without Cook? | Native instruction text states conventions independently of Cook |
 | [0019](0019-action-kinds.md) | What does a batch contain? | Batches contain declared file operations |
 | [0020](0020-standing-context.md) | How does Cook configure reusable guidance? | Guidance is native program content |

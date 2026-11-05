@@ -46,7 +46,7 @@ import acme.python.Python
 
   @Test void keepsEscapedLineBreaksInTexts() {
     def texts = RecipeSource.texts('''@help(\'\'\'
-./cook acme:github:1.0.0#aws-oidc --job=deploy \\\\
+cook acme:github:1.0.0#aws-oidc --job=deploy \\\\
        --region=us-east-1
 \'\'\')
 @confirm(\'\'\'

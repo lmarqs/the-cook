@@ -10,17 +10,17 @@ so a fresh clone needs no cooking; Git ignores everything else in the harness di
 
 ```sh
 # A team that uses Claude Code only
-./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
+cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude
 # A team that uses Claude Code and Codex
-./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
+cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
 # A new repository: the layout and its connection in one invocation
-./cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect \
+cook io.github.lmarqs.cookbook:agents:<version>#seed io.github.lmarqs.cookbook:agents:<version>#connect \
 --harness=claude
 # Claude Code's worktrees at .worktrees/<name>, set up and torn down by the team's scripts
-./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude \
+cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude \
 --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown
 # Worktrees on branches named worktree-<name>, each starting at the session's own HEAD, fetching only on request
-./cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --worktree-branch-prefix=worktree- \
+cook io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --worktree-branch-prefix=worktree- \
 --worktree-base=head --worktree-fetch=never
 ```
 
@@ -202,7 +202,7 @@ Repeat the arguments on the opening line of the `harnesses` section in `.gitigno
 recreate the links. A newer version rewrites the keys, links, files and sections it owns; the team's keys, the scripts
 in `session-start.d/` and the seeded files stay as they are. A cook that changes the `hooks.SessionStart` entry in
 Codex's `hooks.json` leaves it untrusted for every person until each accepts it again, as Traps says. Under
-`./cook check`, a role file or `cook.rules` shows as a change once the policy gains roles or command rules, until the
+`cook check`, a role file or `cook.rules` shows as a change once the policy gains roles or command rules, until the
 recipe is cooked again.
 
 ## Traps

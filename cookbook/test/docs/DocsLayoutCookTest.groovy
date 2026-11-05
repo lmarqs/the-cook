@@ -137,7 +137,7 @@ docs.on = true
     assert texts.help.readLines().findAll { it.startsWith('## ') } ==
     ['## API', '## Produces', '## Connections', '## Re-cooking']
     assert texts.help.contains('Never touches: `docs/`')
-    assert texts.help.contains('./cook discard io.github.lmarqs.cookbook:docs#seed')
+    assert texts.help.contains('cook discard io.github.lmarqs.cookbook:docs#seed')
     assert texts.yieldText.contains('/docs-layout map')
   }
 

@@ -58,7 +58,7 @@ The following examples illustrate wording for the intended CLI:
 ```text
 cook: unknown option --batch-approve after ./recipe.groovy
   batch options precede the first recipe operand
-  run: ./cook --batch-approve ./recipe.groovy
+  run: cook --batch-approve ./recipe.groovy
 ```
 
 ```text
@@ -83,7 +83,7 @@ existing content authorizes writes. For example:
 ```text
 cook: approval required; nothing was written
   the terminal is noninteractive and --batch-approve was not given
-  run interactively to review the diff, or run: ./cook --batch-approve ./recipe.groovy
+  run interactively to review the diff, or run: cook --batch-approve ./recipe.groovy
 ```
 
 Keep normal diagnostics focused on information the caller can act on, rather than internal type names or paths inside
@@ -191,7 +191,7 @@ and member doc comments.
 A directory README is the artifact's front page. The shape is defined in [cookbook/README.md](../../cookbook/README.md).
 
 A recipe's `@help` describes it by what it provides, consumes and connects to, because a reader composes recipes from
-`./cook help` without their source. It holds these sections in order, and omits a section that does not apply:
+`cook help` without their source. It holds these sections in order, and omits a section that does not apply:
 
 1. **Lead:** what the destination gets, in one or two sentences.
 2. **API:** the invocations, one per situation; the stable paths, scripts, commands and naming rules the recipe
@@ -204,7 +204,7 @@ A recipe's `@help` describes it by what it provides, consumes and connects to, b
    that must agree.
 6. **Run-time effects:** what the scripts it installs do when run.
 7. **Re-cooking:** the arguments to repeat, what cooking a newer version changes, and how conditional parts behave under
-   `./cook check`.
+   `cook check`.
 8. **Traps:** known faults of the versions written for.
 
 What to do after cooking belongs in `@yield`, which `help` prints as "After cooking".
@@ -222,8 +222,8 @@ What to do after cooking belongs in `@yield`, which `help` prints as "After cook
   commands, diffs and output as examples of the intended interaction. Do not present invented output as a real run.
 - Use relative links for repository pages, tables when they aid lookup, and language-tagged fenced blocks for commands
   and output. Link where useful in either direction.
-- Use Cook or `the-cook` for the engine and `./cook` for the repository entry point. Show the equivalent global entry
-  point when useful ([entry points](cli-standards.md#entry-points)). Use one term per engine concept.
+- Use Cook or `the-cook` for the engine and `cook` for the command, as installed on `PATH`
+  ([entry points](cli-standards.md#entry-points)). Use one term per engine concept.
 - Use generic organizations such as `acme` in made-up examples. Recipe operands must still be exact supported paths or
   coordinates, such as `acme:setup:1.0.0#project`; do not invent a cookbook-name lookup scheme.
 - Explain program-specific files and settings when they clarify native configuration. Attribute those choices to

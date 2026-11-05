@@ -26,7 +26,7 @@ follow from the record, and a script can tell a difference from a failure.
 
 ## Decision
 
-1. `./cook check [<name>]...` cooks each named recipe, or every recipe `cook.lock` lists in its order, again from the
+1. `cook check [<name>]...` cooks each named recipe, or every recipe `cook.lock` lists in its order, again from the
    source and arguments the lock records, writes nothing, and exits 1 when anything would change. It shows changed
    sources and the diff, takes no batch option, and refuses a kitchen without `cook.lock`.
 2. Cooking has no check option, and replicate has none: `check` is the only way to ask the question.
@@ -41,7 +41,7 @@ follow from the record, and a script can tell a difference from a failure.
 - **1.** The lock is the record the committed files must follow from, so the check reads its inputs from the lock and
   the step names no version or argument that a later cook could leave behind. Checking every recipe by default covers
   a recipe cooked after the step was written. Check runs replicate's evaluation, so its report is what
-  `./cook replicate` proposes, and its diagnostic names that command as the fix. The trade is that output a clone does
+  `cook replicate` proposes, and its diagnostic names that command as the fix. The trade is that output a clone does
   not commit is absent from a fresh clone, so a CI step names the recipes whose output is committed.
 - **2.** A check of supplied inputs answers what a cook would change, which `--dry-run` already shows; a status for it
   has no caller. A second spelling of check on replicate would be one meaning with two forms to document and test.
@@ -65,15 +65,15 @@ declare such output and the lock record it. Naming the recipes in the step costs
 
 ## Consequences
 
-- A CI step is `./cook check`, or `./cook check <name>...` when some recipe's output is not committed, and it does
+- A CI step is `cook check`, or `cook check <name>...` when some recipe's output is not committed, and it does
   not change when a recipe is upgraded or cooked with other arguments.
 - Scripts that discarded or replicated by versioned coordinates or `.groovy` paths name the lock name instead.
 - Scripts that read status 1 as any failure read status 2 for errors.
 
 ## Confirmation
 
-- In a kitchen that matches its lock, `./cook check` prints `Already cooked.` and exits 0; after a hand edit to an
-  owned section it prints the diff, exits 1 and names `./cook replicate`, and the file stays as it was.
-- `./cook check` in a directory without `cook.lock` exits 2.
-- `./cook replicate acme:notes:1.2.3#notes` exits 2 with `write acme:notes#notes`.
-- `./cook --check` exits 2 as an unknown option.
+- In a kitchen that matches its lock, `cook check` prints `Already cooked.` and exits 0; after a hand edit to an
+  owned section it prints the diff, exits 1 and names `cook replicate`, and the file stays as it was.
+- `cook check` in a directory without `cook.lock` exits 2.
+- `cook replicate acme:notes:1.2.3#notes` exits 2 with `write acme:notes#notes`.
+- `cook --check` exits 2 as an unknown option.

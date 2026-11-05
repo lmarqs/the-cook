@@ -32,8 +32,8 @@ maintained elsewhere.
 3. Cookbooks hold and ship ingredients and recipes through their own repositories, with builds that can be separate
    from Cook's build ([0013](0013-organization-content.md)). Ingredients model programs' native files and
    configuration.
-4. Each repository pins the engine release in a committed wrapper ([0017](0017-engine-version.md)). Engine pinning
-   is separate from selecting the recipe version to use.
+4. People install the engine on `PATH`, and a team pins its release in its tool manager
+   ([0017](0017-engine-version.md)). Engine pinning is separate from selecting the recipe version to use.
 5. Recipes are trusted code: approval, destination boundaries, and rollback govern their declared batch operations
    only ([0026](0026-cookbook-trust.md)), and external commands are not batch actions ([0019](0019-action-kinds.md)).
 

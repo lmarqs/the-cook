@@ -19,14 +19,14 @@ Keep these version choices distinct, because changing one does not automatically
 
 | Artifact | Version responsibility | What to review |
 | --- | --- | --- |
-| Cook engine and CLI | The committed wrapper pins an engine version and matching platform-package checksums | Command grammar, operation behavior and the pin change |
+| Cook engine and CLI | Each machine runs the release its installer put on `PATH`; a team pins one in its tool manager, such as `mise.toml` | Command grammar, operation behavior and the pin change |
 | Ingredients and [cookbooks](../features/glossary.md) | Cookbook authors maintain program models and recipes in their repositories and builds | Source changes and the native program versions and formats they cover |
 | Supplied recipes | Users supply the recipe version they intend to cook | The exact source and its consumed recipe/template dependencies |
 | `cook.lock` | Cook records the source and sha256 that produced each recipe's current ownership | The `cook.lock` change |
 | Native files and sections | The consuming program defines its format and semantics | Actual file changes, key paths, section boundaries and program defaults |
 
-Changing the engine pin leaves recipe versions and project files as they are; see
-[upgrading](../features/wrapper.md#upgrading).
+Upgrading the engine leaves recipe versions and project files as they are; see
+[upgrading](../features/install.md#upgrading).
 
 ## What counts as breaking
 
@@ -107,7 +107,6 @@ region; ownership never blocks a change.
 | Version-control configuration, ignore rules and hook files | Recipes may declare them and the version-control program interprets and runs them; people and external tools create branches, manage worktrees, create or remove working copies, detect landed work, enforce delivery guards and preserve uncommitted work |
 | Pushes, pull requests, notifications and MCP services | External tools and people perform these activities |
 | Another program's data in `cook.lock` | Move it elsewhere first, because Cook writes ownership to `cook.lock` |
-| Executables on `PATH` or a global Cook install | The wrapper design runs its pinned cached package; use explicit paths when selecting another executable |
 
 Trackers own their assignment rules, sync settings, remotes and commands. Synchronized tracker data can expose
 assignments and comments to other machines, so choose local or shared data and remote-sync permissions with the
@@ -129,10 +128,9 @@ discard work in every clone, and earlier content lives in the repository's histo
 ## Installation and version pinning
 
 Cook ships as platform-specific `jpackage` packages that include Java. Distribute the complete package, because a copied
-launcher cannot find its runtime ([wrapper troubleshooting](../features/wrapper.md#troubleshooting)).
+launcher cannot find its runtime ([install troubleshooting](../features/install.md#troubleshooting)).
 
-The committed `./cook` [wrapper](../features/wrapper.md) pins an engine version and matching package checksums. Upgrades
-are explicit reviewed changes to both; ordinary invocation does not choose a newer release or reapply recipes. A
-matching checksum establishes correspondence with the committed package choice, not publisher identity, so review the
-source of the pin and checksums ([release trust reasoning](../adrs/0021-release-trust.md)). See the root README's
-[install section](../../README.md#install) for the current local entry path.
+People install `cook` on `PATH` with Homebrew, mise or the release package ([install](../features/install.md)). A team
+that wants one release everywhere pins it in its tool manager; upgrades go through that installer, and an ordinary
+invocation does not choose a newer release or reapply recipes. A matching checksum establishes that a package is the
+one the release published, not publisher identity ([release trust reasoning](../adrs/0021-release-trust.md)).

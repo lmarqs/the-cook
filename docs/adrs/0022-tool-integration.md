@@ -35,7 +35,7 @@ separately from the rules for reviewing and writing file changes.
    other output, which the team reviews, commits and runs without Cook.
 3. Native targets, ordered composition and ownership follow [0007](0007-ownership.md); omitting a model from an
    invocation removes nothing.
-4. Engine package pinning follows [0017](0017-engine-version.md) and is separate from cookbook content: an engine
+4. Engine installation and pinning follow [0017](0017-engine-version.md) and is separate from cookbook content: an engine
    upgrade does not select new cookbook content.
 
 ## Reasons
@@ -54,7 +54,7 @@ separately from the rules for reviewing and writing file changes.
   recipe's later versions remove (FR-8). Reconciling earlier output would block requested changes instead (FR-9). The
   trade is that a recipe can propose replacing an edited target; the combined diff and whole-batch approval make that
   change visible.
-- **4.** The wrapper selects an engine package, not a team's program setup. Keeping these responsibilities distinct
+- **4.** Installing the engine selects an engine package, not a team's program setup. Keeping these responsibilities distinct
   avoids coupling cookbook maintenance to engine upgrades. Recipe-version selection follows
   [0032](0032-recipe-updates.md); engine checksum verification does not establish cookbook trust
   ([0026](0026-cookbook-trust.md)). The trade is that cookbook maintenance remains a separate request.

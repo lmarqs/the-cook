@@ -73,7 +73,7 @@ therefore keep separate sections in one file. `cook.lock` lists each recipe's se
 
 Every section a recipe owns opens with a comment line naming the recipe, without its version, and the arguments it was
 cooked with. The opening line stays so a reader of the file sees the arguments beside the output, for an explicit
-re-cook or a `./cook check` step; `cook.lock` records the source and arguments for replicate even when the output is
+re-cook or a `cook check` step; `cook.lock` records the source and arguments for replicate even when the output is
 absent.
 A recipe with several values for one param writes them in a fixed order, so the line does not change with the order
 they were given in:
@@ -164,8 +164,8 @@ The CLI accepts the whole batch; choosing individual changes belongs to a separa
 the first invocation asks before writing and the second is preapproved:
 
 ```sh
-./cook ./base.groovy ./project.groovy
-./cook --batch-approve ./base.groovy ./project.groovy
+cook ./base.groovy ./project.groovy
+cook --batch-approve ./base.groovy ./project.groovy
 ```
 
 Noninteractive execution without `--batch-approve` does not authorize writes. See the

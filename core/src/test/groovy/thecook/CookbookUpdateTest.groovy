@@ -137,7 +137,7 @@ text.text = value.join(':')
 
     assert error.message == 'recipe 2 (acme:text:1.1.0#write): Unknown argument --value\n' +
     '  its arguments are --line\n  arguments recorded in cook.lock: --value=original\n' +
-    '  read `./cook help acme:text:1.1.0#write` and cook it with its new arguments'
+    '  read `cook help acme:text:1.1.0#write` and cook it with its new arguments'
     assert lockFile().text == before
     assert new File(kitchen, 'OUT.md').text == output
   }
@@ -152,7 +152,7 @@ text.text = value.join(':')
 
     assert error.message == 'acme:text:1.1.0#write: Missing --required: A new requirement\n' +
     '  its arguments are --value, --v, --required\n  arguments recorded in cook.lock: --value=original\n' +
-    '  read `./cook help acme:text:1.1.0#write` and cook it with its new arguments'
+    '  read `cook help acme:text:1.1.0#write` and cook it with its new arguments'
     assert lockFile().text == before
   }
 

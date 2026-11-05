@@ -9,7 +9,7 @@ two Groovy files in the repository, cooked like any other, with the same diff, t
 fifteen minutes you write one that keeps a notes file and a line of `.gitignore`, then move it into a cookbook other
 repositories can cook. The output shown is from a real run, shortened.
 
-You need the repository from [Get started](get-started.md), or any repository with the `cook` wrapper committed. The
+You need the repository from [Get started](get-started.md), or any Git repository, with `cook` [installed](features/install.md). The
 examples start from a `.gitignore` that holds one line of your own, `node_modules/`.
 
 ## 1. Write a model
@@ -58,7 +58,7 @@ notes.add('Run the tests before committing.')
 Cook it by its path:
 
 ```sh
-./cook recipes/notes.groovy
+cook recipes/notes.groovy
 ```
 
 ```text
@@ -82,7 +82,7 @@ Created cook.lock
 ```
 
 The lock records the recipe by its path without `.groovy`, and that it owns `NOTES.md`. Cook it again and nothing
-changes, so it prints `Already cooked.` `./cook help recipes/notes.groovy` prints the `@help` text and the model it
+changes, so it prints `Already cooked.` `cook help recipes/notes.groovy` prints the `@help` text and the model it
 uses, without running anything.
 
 ## 3. Own a section, not a file
@@ -134,7 +134,7 @@ notes.ignore('scratch/')
 ```
 
 ```sh
-./cook recipes/notes.groovy --line='Ask before force-pushing.'
+cook recipes/notes.groovy --line='Ask before force-pushing.'
 ```
 
 ```text
@@ -145,7 +145,7 @@ notes.ignore('scratch/')
 +- Ask before force-pushing.
 ```
 
-The lock records the argument, so `./cook replicate` and `./cook check` use the same value. `./cook help` now lists
+The lock records the argument, so `cook replicate` and `cook check` use the same value. `cook help` now lists
 `--line` with its `doc` and default.
 
 ## 5. Move it into a cookbook
@@ -157,7 +157,7 @@ The recipe's name changes with the move, from `recipes/notes` to `acme:notes#not
 `discard` removes exactly what the lock says the recipe wrote, without running it:
 
 ```sh
-./cook discard recipes/notes
+cook discard recipes/notes
 ```
 
 Then move the files and tell the repository where the cookbook is. The model's package, `acme.notes`, is the group
@@ -168,7 +168,7 @@ mkdir -p ../cookbook/src/notes
 mv recipes/Notes.groovy recipes/notes.groovy ../cookbook/src/notes/
 echo 'group = "acme"' > ../cookbook/cookbook.toml
 echo 'repositories = ["../cookbook"]' > cook.toml
-./cook acme:notes:0.1.0#notes --line='Ask before force-pushing.'
+cook acme:notes:0.1.0#notes --line='Ask before force-pushing.'
 ```
 
 ```text

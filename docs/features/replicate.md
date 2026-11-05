@@ -21,15 +21,15 @@ updates to existing output. It runs trusted recipe code, just as [cooking](cook.
 Cook the Ralph TUI recipe with an exact cookbook version, replacing `<version>` with that version:
 
 ```sh
-./cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
+cook io.github.lmarqs.cookbook:ralph:<version>#ralph-tui --harness=claude --share=clone
 ```
 
-After approving the diff, commit `cook.lock` and `.gitignore` along with the wrapper and any `cook.toml` needed to
+After approving the diff, commit `cook.lock` and `.gitignore` along with any `cook.toml` needed to
 resolve the cookbook. `--share=clone` keeps `.ralph-tui/` out of commits. A fresh clone therefore has the recorded
 source and arguments but lacks the configuration, prompts and launcher. In that clone, run:
 
 ```sh
-./cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
+cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui
 ```
 
 Replicate loads the recorded version and replays `--harness=claude --share=clone`; no arguments follow the operand.
@@ -39,7 +39,7 @@ a reader, but replicate reads them from the lock, so it works when the file is a
 ## Reference
 
 ```text
-./cook replicate [-C <dir>] [batch-options] [<name>]...
+cook replicate [-C <dir>] [batch-options] [<name>]...
 ```
 
 Each recipe is written as its [lock name](cli.md#lock-names), such as `group:artifact#recipe` or `recipes/setup`;

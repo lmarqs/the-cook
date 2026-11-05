@@ -111,7 +111,7 @@ recipes:
         - ".ralph-tui/bin/run"
         - ".ralph-tui/bin/worker"
 """
-    // No actions is what `./cook` reports as `Already cooked.`.
+    // No actions is what `cook` reports as `Already cooked.`.
     assert cook(kitchen, RALPH, [harness: ['claude', 'codex'], tracker: ['beads', 'json']]).actions == [:]
   }
 

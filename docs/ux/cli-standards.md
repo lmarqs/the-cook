@@ -20,9 +20,10 @@ changes it proposes.
 
 ## Entry points
 
-Document Cook invocations through the committed `./cook` wrapper, which pins an engine version and package checksums.
-The [wrapper](../features/wrapper.md) page covers first-use download, checksum verification, caching and upgrades; the
-root README's [install section](../../README.md#install) covers installing a release and building from source.
+Document Cook invocations as `cook`, the command Homebrew, mise or the release package puts on `PATH`. The
+[install](../features/install.md) page covers installing, pinning and upgrading; the root README's
+[install section](../../README.md#install) covers installing a release and building from source. `./cook` names only
+this source repository's development launcher.
 
 The CLI is the public cooking interface. Gradle builds and packages the engine and cookbooks. Cookbook repositories and
 builds remain separate from engine releases.
@@ -175,7 +176,7 @@ execution. Do not open a pager or editor that an unattended caller would have to
 With no arguments, with `help` alone or with `--help` alone, show help. `help <recipe>...` shows each recipe's help in
 order without running it, because a recipe inside an artifact cannot be read with a pager. Present the operation
 summary, grammar, operand and argument scope, batch approval behavior, and examples in a consistent order, because
-readers need to predict how a command works. Examples use `./cook` and exact recipe paths or
+readers need to predict how a command works. Examples use `cook` and exact recipe paths or
 coordinates. Explain that cooking evaluates supplied recipes, discard reads only `cook.lock`, and replicate cooks
 named recipes again from recorded sources and arguments. Show replicate with a version-less lock name, and link to the
 [CLI reference](../features/cli.md) for details.

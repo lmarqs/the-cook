@@ -22,8 +22,8 @@ relocating unrelated files.
   working directory is the destination, regardless of the recipe or executable location.
 - Sources have origins distinct from destination targets. A recipe served over HTTPS can refer to a template beside
   itself at its URL while proposing output inside the destination.
-- Cook's wrapper obtains and locally caches a complete pinned jpackage package containing Java. That executable
-  cache lives outside every destination.
+- Cook is installed on `PATH` as a complete jpackage package containing Java. The installed package lives outside
+  every destination.
 
 ## Decision
 
@@ -36,7 +36,7 @@ relocating unrelated files.
    record or cache.
 4. Recipe ownership lives in the committed `cook.lock` at the repository root ([0007](0007-ownership.md)). Cooking
    evaluates supplied recipes against current content and works without the lock.
-5. The engine pin and its cache follow [0017](0017-engine-version.md).
+5. The engine's installation and pin follow [0017](0017-engine-version.md).
 6. Cookbook repositories and source origins follow [0013](0013-organization-content.md).
 7. Configuring native program files does not make Cook the owner of those programs' state or workspaces. Recipes do
    not implicitly relocate that state.
@@ -74,8 +74,8 @@ ownership needs only the single committed `cook.lock`, and a directory invites s
 
 At its best, many repositories share one verified copy of each ingredient or recipe source. It loses as a universal
 layout requirement because recipes can use local cookbook sources inside the repository, and a source cache would be
-confused with the sources a reviewer reads in the repository. An engine package cache serves the pinned wrapper without imposing
-that cache model on cookbook content.
+confused with the sources a reviewer reads in the repository. The installed engine package does not impose that cache
+model on cookbook content.
 
 ### Replace native skills directories with whole-directory links
 

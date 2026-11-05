@@ -22,7 +22,7 @@ for terms.
 - [Checks](#checks)
 - [Paths and environment](#paths-and-environment)
 - [Ordered operations and recovery](#ordered-operations-and-recovery)
-- [Versions and the wrapper](#versions-and-the-wrapper)
+- [Versions and installation](#versions-and-installation)
 
 ## Permissions
 
@@ -116,8 +116,8 @@ for terms.
 
 - **Symptom.** Reviewed bytes match a checksum but contain unwanted executable behavior.
 - **Why.** A checksum establishes matching content, not whether its author or effects are acceptable.
-- **Cook's responsibility.** The engine wrapper verifies its package against the committed pin. This does not
-  authenticate or sandbox cookbook recipes.
+- **Cook's responsibility.** Each release publishes a sha256 for every engine package. This does not authenticate or
+  sandbox cookbook recipes.
 - **What you do.** Review source origins and recipe changes separately from engine package integrity. Users manage the
   recipe versions they supply. See [cookbooks](../architecture.md#ingredients-recipes-and-cookbooks).
 
@@ -286,10 +286,9 @@ commands in its task runner. These are project choices, and the programs that co
 - **What you do.** Restore earlier content from the repository's history, for example with `git revert` of the
   commit that cooked the recipe. Do not expect file changes to undo external program activity.
 
-## Versions and the wrapper
+## Versions and installation
 
-These entries cover recipe release discovery and the [wrapper design](wrapper.md). The current repository launcher
-uses a local build.
+These entries cover recipe release discovery and [installing Cook](install.md).
 
 ### A cookbook source directory makes its recipes unknown to update
 
@@ -304,30 +303,19 @@ uses a local build.
   directory's current files. See [release discovery](update.md#where-releases-come-from) and
   [unknown recipes](update.md#unknown-recipes).
 
-### The first run needs access to the pinned package
+### Developers and CI run different engine releases
 
-- **Symptom.** An uncached engine package cannot be obtained on a fresh machine.
-- **Why.** The wrapper needs the pinned platform package, including Java, before it can run. Local recipes alone do not
-  supply that package, and remote recipe sources may separately require network access.
-- **Cook's responsibility.** Verify the first-use package download against the committed checksum and cache the complete
-  package. Later use of the cached package needs no download.
-- **What you do.** Arrange package access or transfer the complete matching platform package and verify it against the
-  pin. Copying only its launcher omits the runtime. See [air-gapped machines](wrapper.md#air-gapped-machines).
+- **Symptom.** The same recipe cooks differently on two machines, or a command one machine knows another refuses.
+- **Why.** Each machine runs the `cook` its installer put on `PATH`, and `cook.lock` records recipe versions, not the
+  engine's.
+- **Cook's responsibility.** Run whichever release is installed; Cook does not check the engine version.
+- **What you do.** Pin the release in the team's tool manager, such as `mise.toml`, and review a pin change like any
+  dependency change. See [pinning a release for a team](install.md#pinning-a-release-for-a-team).
 
-### A checksum mismatch refuses the download
+### A copied launcher cannot find its runtime
 
-- **Symptom.** The downloaded package differs from the committed checksum.
-- **Why.** The download, selected platform package or pin may be wrong or changed.
-- **Cook's responsibility.** Refuse execution of a mismatched download and do not accept it as the cached package.
-- **What you do.** Compare the reviewed pin and package source and investigate the discrepancy. Do not silently change
-  a checksum merely to make a download run. See [wrapper security](wrapper.md#security).
-
-### Competing pins run different versions
-
-- **Symptom.** A task-runner entry point and the wrapper select different engine versions.
-- **Why.** Separate pins can change independently. Changing a version without matching package checksums also leaves
-  an inconsistent pin.
-- **Cook's responsibility.** The intended wrapper uses the committed version and platform-package checksums, reuses its
-  cached package and changes only through an explicit upgrade.
-- **What you do.** Review version and checksum changes together and avoid competing engine pins. Select recipe versions
-  separately. See [one pin](wrapper.md#one-pin) and [upgrading](wrapper.md#upgrading).
+- **Symptom.** `cook` copied out of an unpacked package fails to start.
+- **Why.** The launcher runs the Java runtime and application files inside its image.
+- **Cook's responsibility.** Publish the complete package, including Java, for each supported platform.
+- **What you do.** Unpack the whole image and put its launcher directory on `PATH`, or install with Homebrew or mise.
+  See [release package](install.md#release-package).

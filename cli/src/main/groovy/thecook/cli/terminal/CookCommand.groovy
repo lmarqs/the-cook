@@ -90,7 +90,7 @@ final class CookCommand {
     }
 
     if (invocation.any { it.split('=', 2)[0] == '--help' }) {
-      throw new UsageError('--help takes no other arguments', null, 'use ./cook help <recipe> to read a recipe')
+      throw new UsageError('--help takes no other arguments', null, 'use cook help <recipe> to read a recipe')
     }
 
     def line = Grammar.commandLine()
@@ -229,7 +229,7 @@ final class CookCommand {
         if (!recipe.known) {
           diagnose(Diagnostic.text("warning: skipping ${recipe.name}; releases are unknown",
               "repository ${recipe.unlisted.join(', ')} cannot list releases",
-              "cook the release you want by its coordinates, such as ./cook ${recipe.source}"))
+              "cook the release you want by its coordinates, such as cook ${recipe.source}"))
         } else if (recipe.to != null) {
           stdout.println("Update ${recipe.name} ${recipe.from} -> ${recipe.to}")
         } else if (recipe.newestOverall != null) {
@@ -264,7 +264,7 @@ final class CookCommand {
       review(proposal, proposal.changes, false)
       actions.each { path, action -> stdout.println('Would ' + action + ' ' + path) }
       def files = actions.size() == 1 ? '1 file differs' : "${actions.size()} files differ"
-      def fix = (['./cook replicate'] + (given == null ? [] : ['-C', given]) + names).join(' ')
+      def fix = (['cook replicate'] + (given == null ? [] : ['-C', given]) + names).join(' ')
       diagnose(Diagnostic.text("${files} from what cook.lock records; nothing was written",
           'check cooks each recipe again from the source and arguments cook.lock records',
           "run ${fix}, review the diff and commit it"))
@@ -545,7 +545,7 @@ final class CookCommand {
 
   // A mistake in the command line; unless the message names a next step, the next step is reading the usage.
   private static final class UsageError extends IllegalArgumentException {
-    UsageError(String what, String why = null, String next = 'run: ./cook help') {
+    UsageError(String what, String why = null, String next = 'run: cook help') {
       super(Diagnostic.text(what, why, next))
     }
   }

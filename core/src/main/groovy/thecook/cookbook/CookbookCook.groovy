@@ -63,7 +63,7 @@ final class CookbookCook {
           def recorded = "arguments recorded in ${CookLock.PATH}: ${line}"
           message = request.moved ?
               Diagnostic.text(Diagnostic.text(cause.reason, cause.accepted), recorded,
-              "read `./cook help ${request.operand}` and cook it with its new arguments") :
+              "read `cook help ${request.operand}` and cook it with its new arguments") :
               Diagnostic.text(message, recorded, 'cook it with its arguments')
         }
 

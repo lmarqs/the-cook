@@ -16,12 +16,12 @@ docs of the latest release.
 
 ## Quick start
 
-[Get started](docs/get-started.md) walks through a first cook with real output. In short, in a Git repository with the
-[wrapper](#install):
+[Get started](docs/get-started.md) walks through a first cook with real output. In short, with `cook`
+[installed](#install), in a Git repository:
 
 ```sh
-agents=io.github.lmarqs.cookbook:agents:$(./cook --version | cut -d' ' -f2)
-./cook $agents#seed $agents#connect --harness=claude
+agents=io.github.lmarqs.cookbook:agents:$(cook --version | cut -d' ' -f2)
+cook $agents#seed $agents#connect --harness=claude
 ```
 
 Cook shows the diff of every file it would write and asks `Write these changes? [y/N]`. Run it again and it prints
@@ -29,41 +29,37 @@ Cook shows the diff of every file it would write and asks `Write these changes? 
 
 ## Install
 
-Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 and macOS
-arm64 as `the-cook-<version>-<platform>.tar.gz`, where the platform is `linux-x64`, `linux-arm64` or `macos-arm64`: a
-complete package with its own Java runtime. It also publishes the `cook` wrapper, and each file has a `.sha256`. Commit the wrapper to pin the engine version for a repository:
+Each [release](https://github.com/lmarqs/the-cook/releases/latest) ships Cook for Linux x64 and arm64 and macOS arm64,
+with its own Java runtime. Pick one:
+
+**Homebrew**
 
 ```sh
-curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
-chmod +x cook
-./cook --help
-git add cook
+brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
+brew install cook
 ```
 
-On first use the wrapper downloads the package for the machine, refuses it unless its sha256 matches the one written
-in the wrapper, and caches it under `${XDG_CACHE_HOME:-~/.cache}/the-cook`. Later runs start the cached package. To
-upgrade, commit the wrapper of another release ([wrapper](docs/features/wrapper.md)).
+**mise**
 
-To run a package without the wrapper, unpack the **whole** image and run its launcher from the repository you want to
-cook, or name the repository with `-C`. On Linux the launcher is `cook/bin/cook`, on macOS
-`cook.app/Contents/MacOS/cook`:
+```sh
+mise use github:lmarqs/the-cook
+```
+
+**Release package**: download `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` or `macos-arm64`,
+check it against its `.sha256`, unpack the **whole** image and put its launcher on `PATH`:
 
 ```sh
 v=<version>
 curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
-tar -xzf "the-cook-$v-linux-x64.tar.gz"
-cook/bin/cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#connect" --harness=claude
+curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz.sha256"
+sha256sum -c "the-cook-$v-linux-x64.tar.gz.sha256"
+tar -xzf "the-cook-$v-linux-x64.tar.gz" -C ~/.local/share
+export PATH="$HOME/.local/share/cook/bin:$PATH"
 ```
 
-[mise](https://mise.jdx.dev) installs a release package and puts its `cook` launcher on `PATH`:
-
-```sh
-mise use github:lmarqs/the-cook@<version>
-cook --help
-```
-
-Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven
-Central.
+Then `cook --help`. A team that wants every machine and CI on one release pins it in `mise.toml`;
+[install](docs/features/install.md) covers pinning, upgrades and macOS paths. Without a `cook.toml`, coordinates such
+as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven Central.
 
 ### From source
 
@@ -95,7 +91,7 @@ This section describes what runs on `main`. The [architecture](docs/architecture
 
 ### What runs
 
-`./cook` cooks recipes left to right in one invocation, each named by coordinates,
+`cook` cooks recipes left to right in one invocation, each named by coordinates,
 `group:artifact:version#recipe`, or by a `.groovy` path inside the kitchen:
 
 - One review before any write: a `Changed source` notice for a release whose sources differ from what `cook.lock`
@@ -110,15 +106,15 @@ This section describes what runs on `main`. The [architecture](docs/architecture
   supplied arguments and what it owns, so a later run withdraws what a recipe no longer declares
   ([the lock](docs/architecture.md#ownership-and-the-lock)).
 - A failed write rolls back the writes already made, so the files are as they were, and prints the error.
-- `./cook check [<name>...]`, which cooks the named recipes, or every recipe in `cook.lock`, again from the sources and
+- `cook check [<name>...]`, which cooks the named recipes, or every recipe in `cook.lock`, again from the sources and
   arguments it records, writes nothing and exits 1 when anything would change ([check](docs/features/cli.md#check)).
-- `./cook discard [--dry-run] [--batch-approve] <name>...`, which removes what `cook.lock` lists for each recipe,
+- `cook discard [--dry-run] [--batch-approve] <name>...`, which removes what `cook.lock` lists for each recipe,
   without running it, through the same review: each section with its markers, each key, each whole file and link,
   deleting a file left empty, and the recipe's lock entry ([discard](docs/features/discard.md)).
-- `./cook replicate [--dry-run] [--batch-approve] [<name>...]`, which cooks the named recipes, or every recipe in
+- `cook replicate [--dry-run] [--batch-approve] [<name>...]`, which cooks the named recipes, or every recipe in
   `cook.lock`, again from the sources and arguments it records, including ignored output missing from a fresh clone
   ([replicate](docs/features/replicate.md)).
-- `./cook update [--dry-run] [--batch-approve] [--major] [<name>...]`, which moves coordinate recipes in `cook.lock`
+- `cook update [--dry-run] [--batch-approve] [--major] [<name>...]`, which moves coordinate recipes in `cook.lock`
   to newer compatible releases with their recorded arguments; `--major` allows releases beyond that range
   ([update](docs/features/update.md)).
 - `help` on an artifact, a recipe or a recipe path, read without running it.
@@ -163,7 +159,7 @@ class Notes {
 }
 ```
 
-and `recipes/notes.groovy`, cooked with `./cook recipes/notes.groovy`, reads:
+and `recipes/notes.groovy`, cooked with `cook recipes/notes.groovy`, reads:
 
 ```groovy
 @help('Adds a line to NOTES.md.')

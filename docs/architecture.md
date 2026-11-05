@@ -296,7 +296,7 @@ For example, run this invocation from `/work/project`:
 
 ```sh
 cd /work/project
-./cook cookbook/recipes/project.groovy
+cook cookbook/recipes/project.groovy
 ```
 
 Suppose the recipe declares `@resource('../templates/settings.toml') String settings` and writes it to
@@ -309,7 +309,7 @@ Suppose the recipe declares `@resource('../templates/settings.toml') String sett
 ## Command line and build boundary
 
 The CLI is the public cooking interface, and Gradle builds and packages Cook and cookbooks (FR-5). Without a command
-word, `./cook` cooks the recipes it is given; `check`, `update`, `discard`, `replicate` and `help` are the other
+word, `cook` cooks the recipes it is given; `check`, `update`, `discard`, `replicate` and `help` are the other
 commands. Replicate cooks from recorded sources and arguments; update requests newer recipe releases
 ([0032](adrs/0032-recipe-updates.md)). Batch options precede the first recipe operand, and recipe arguments follow
 their recipe when cooking; check, update, discard and replicate take none. The [CLI reference](features/cli.md) defines the
@@ -325,12 +325,13 @@ workflow; its version comes from the Conventional Commits since the last `v*` ta
 x64 and arm64 and macOS arm64 builds and their tests pass. A release publishes:
 
 - on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
-  package with its `.sha256`, and the `cook` wrapper with its `.sha256`;
+  package with its `.sha256`;
+- in this repository, [`Formula/cook.rb`](../Formula/cook.rb), the Homebrew formula naming the release and the sha256
+  of each package;
 - on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:git`, `:beads` and `:ralph`.
 
-A repository commits the release's executable `./cook` wrapper, which pins the engine version and the checksum of
-each package; [the wrapper](features/wrapper.md) describes pinning, checksum verification, first-use download,
-caching, and explicit upgrades.
+People install `cook` on `PATH` with Homebrew, mise or the release package, and a team that wants one release
+everywhere pins it in its tool manager; [install](features/install.md) describes each.
 
 Engine releases supply the packaged runtime. Cookbook repositories hold and ship ingredients and recipes, with
 builds that can be independent of the engine build. Users supply an exact recipe version when cooking or ask Cook
@@ -409,10 +410,10 @@ Other documents cite these requirements by number.
 
 ### CLI grammar
 
-- **FR-17:** The commands are `./cook [batch-options] <recipe> [recipe-arguments]...`, which cooks the recipes,
-  `./cook check [<name>]...`, `./cook update [batch-options] [--major] [<name>]...`,
-  `./cook replicate [batch-options] [<name>]...`,
-  `./cook discard [batch-options] <name>...`, and `./cook help [<recipe>]...`. With no arguments, `help` alone, or
+- **FR-17:** The commands are `cook [batch-options] <recipe> [recipe-arguments]...`, which cooks the recipes,
+  `cook check [<name>]...`, `cook update [batch-options] [--major] [<name>]...`,
+  `cook replicate [batch-options] [<name>]...`,
+  `cook discard [batch-options] <name>...`, and `cook help [<recipe>]...`. With no arguments, `help` alone, or
   `--help` alone, show the usage. `help` prints each recipe's help from its source without running it. A first operand
   of exactly `check`, `update`, `discard`, `replicate` or `help` selects that command; a recipe file with one of those
   names is supplied as a path, such as `./replicate`. Cook exits 0 when it did what was asked, 1 when nothing was written
@@ -447,9 +448,8 @@ Other documents cite these requirements by number.
 ### Distribution and documentation authority
 
 - **FR-26:** Cook uses JVM-based distribution with jpackage, one platform-specific package containing Java, released for
-  Linux x64 and arm64 and macOS arm64. A committed `./cook` wrapper, published with each release, pins a version and the checksum of
-  each package, fetches the package on first use, refuses it unless its checksum matches, and caches it locally.
-  Upgrades are explicit: a repository commits another release's wrapper.
+  Linux x64 and arm64 and macOS arm64, each with its sha256. People install `cook` on `PATH` through Homebrew, mise or
+  the release package; a team pins a release in its tool manager. Upgrades go through that installer.
 - **FR-27:** This document states the intended architecture. Supporting documents follow it. Documents that cover the
   implementation describe its actual behavior.
 

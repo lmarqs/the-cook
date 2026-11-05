@@ -3,7 +3,7 @@ version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
-    sha256: "2539a2f10d68034b13bfa89d96a43825cb5208c86fcd612b42ec0a0017bf072e"
+    sha256: "3dce6e93e88bbb4e4ade7ec51067760e74308134d46296b9fb0aeca0470b916b"
     arguments:
       "harness": ["claude","codex"]
       "worktree-setup": [".worktrees/setup"]
@@ -42,7 +42,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "2539a2f10d68034b13bfa89d96a43825cb5208c86fcd612b42ec0a0017bf072e"
+    sha256: "3dce6e93e88bbb4e4ade7ec51067760e74308134d46296b9fb0aeca0470b916b"
     arguments: {}
     owns:
       files:
@@ -63,7 +63,7 @@ recipes:
         - ".agents/skills/agents-layout/templates/policy.template.yaml"
   - name: "io.github.lmarqs.cookbook:docs#layout"
     source: "io.github.lmarqs.cookbook:docs:0.0.0#layout"
-    sha256: "9232ae0d9bb381d9bd4c8a5654816df9571871bff0734bc7142ee390716d3893"
+    sha256: "82acf206dbb9a160cc03cb6807fe887eab8d7ff0f9549b02c8c92ab376316f94"
     arguments:
       "skills-root": [".agents/skills"]
     owns:
@@ -82,7 +82,7 @@ recipes:
         - ".agents/skills/docs-layout/references/standards.md"
   - name: "io.github.lmarqs.cookbook:git#worktrees"
     source: "io.github.lmarqs.cookbook:git:4.2.0#worktrees"
-    sha256: "f7213b67b20747c9597662c99d7a183fe26c65d48816e98d8b76776ac31b2895"
+    sha256: "f7423fc4a23e095201def4311c844448e8038c33a269028eff185c9a19d86130"
     arguments:
       "instructions": ["AGENTS.md"]
     owns:
@@ -93,7 +93,7 @@ recipes:
           id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
   - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
     source: "io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui"
-    sha256: "846ca019a6ee16b8daf7129d3b017b04c1c2f96ee7c095a74358c7d82e7aab29"
+    sha256: "16ca2f9c816cf9da344f9c45c779f58358e906a33472b27d5f418e7b043f286b"
     arguments:
       "harness": ["claude","codex"]
       "worktree-setup": [".worktrees/setup"]

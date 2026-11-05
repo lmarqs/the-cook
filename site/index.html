@@ -52,11 +52,11 @@ description: the-cook writes the setup a repository shares, such as agent instru
         <li class="step"><h3>Commit one change</h3>
           <p>The policy and the settings it renders go into one commit, reviewed like any other.</p></li>
         <li class="step"><h3>Let CI keep watch</h3>
-          <p>Cook again and nothing changes. When someone edits the policy and forgets to cook, <code>./cook check</code> fails the build.</p></li>
+          <p>Cook again and nothing changes. When someone edits the policy and forgets to cook, <code>cook check</code> fails the build.</p></li>
       </ol>
       <div class="terminal" role="img" aria-label="Terminal: cooking agents#connect shows a diff of .agents/adapters/claude/settings.json and asks Write these changes?">
         <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
-<pre><span class="prompt">$</span> ./cook {{ agents }}#connect --harness=claude
+<pre><span class="prompt">$</span> cook {{ agents }}#connect --harness=claude
 <span class="meta">--- a/.agents/adapters/claude/settings.json</span>
 <span class="meta">+++ b/.agents/adapters/claude/settings.json</span>
 <span class="hunk">@@ -1,8 +1,13 @@</span>
@@ -78,7 +78,7 @@ description: the-cook writes the setup a repository shares, such as agent instru
 <span class="ask">Write these changes? [y/N]</span> y
 Updated .agents/adapters/claude/settings.json
 
-<span class="prompt">$</span> ./cook {{ agents }}#connect --harness=claude
+<span class="prompt">$</span> cook {{ agents }}#connect --harness=claude
 Already cooked.</pre>
       </div>
     </div>
@@ -144,7 +144,7 @@ Already cooked.</pre>
   <div class="wrap">
     <p class="kicker">The conveyor</p>
     <h2>Four cookbooks run today</h2>
-    <p class="lede">Each recipe says what it writes before it writes it: <code>./cook help &lt;coordinates&gt;</code>.</p>
+    <p class="lede">Each recipe says what it writes before it writes it: <code>cook help &lt;coordinates&gt;</code>.</p>
     <div class="cards">
       <div class="card">
         <p class="recipe">agents#seed · agents#connect</p>
@@ -195,7 +195,7 @@ Already cooked.</pre>
       </ol>
       <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy shows a diff creating NOTES.md and asks Write these changes?">
         <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
-<pre><span class="prompt">$</span> ./cook recipes/notes.groovy
+<pre><span class="prompt">$</span> cook recipes/notes.groovy
 <span class="meta">--- /dev/null</span>
 <span class="meta">+++ b/NOTES.md</span>
 <span class="hunk">@@ -0,0 +1,1 @@</span>
@@ -221,13 +221,13 @@ Created cook.lock</pre>
     <h2>Cook, withdraw, rebuild, check</h2>
     <p class="lede">Four commands, one review, one lock.</p>
     <div class="ops">
-      <div class="op"><pre>./cook &lt;recipe&gt;...</pre>
+      <div class="op"><pre>cook &lt;recipe&gt;...</pre>
         <p>Cooks recipes left to right in one batch.</p></div>
-      <div class="op"><pre>./cook discard &lt;name&gt;...</pre>
+      <div class="op"><pre>cook discard &lt;name&gt;...</pre>
         <p>Takes out exactly what a recipe put in, without running it.</p></div>
-      <div class="op"><pre>./cook replicate [&lt;name&gt;...]</pre>
+      <div class="op"><pre>cook replicate [&lt;name&gt;...]</pre>
         <p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
-      <div class="op"><pre>./cook check [&lt;name&gt;...]</pre>
+      <div class="op"><pre>cook check [&lt;name&gt;...]</pre>
         <p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
     </div>
     <p class="note"><a href="{{ '/docs/features/cli.html' | relative_url }}">The CLI reference</a> lists every option.</p>
@@ -237,9 +237,8 @@ Created cook.lock</pre>
 <section class="section" id="install">
   <div class="wrap">
     <p class="kicker">Suit up</p>
-    <h2>Pin the engine in the repository</h2>
-    <p class="lede">Commit the wrapper and everyone runs the same Cook. It downloads the release for the machine, with
-      its own Java runtime, and refuses it unless the checksum matches.</p>
+    <h2>Pick a package manager</h2>
+    <p class="lede">Every release ships Cook for Linux and macOS with its own Java runtime, so the machine needs no Java.</p>
     <ul class="platforms">
       <li>{% include icons/linux.svg %}Linux x64</li>
       <li>{% include icons/linux.svg %}Linux arm64</li>
@@ -248,16 +247,27 @@ Created cook.lock</pre>
     </ul>
     <div class="install">
       <div>
-        <h3>{% include icons/terminal.svg %}The wrapper</h3>
+        <h3>{% include icons/beer.svg %}Homebrew</h3>
         <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
-chmod +x cook
-./cook --help
-git add cook</code></pre></div></div>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
+brew install cook</code></pre></div></div>
+        </div>
+      </div>
+      <div>
+        <h3>{% include icons/package.svg %}mise</h3>
+        <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
+        </div>
+      </div>
+      <div>
+        <h3>{% include icons/download.svg %}Binary</h3>
+        <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz | tar -xz -C ~/.local/share
+export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
         </div>
       </div>
     </div>
-    <p class="note"><a href="{{ '/README.html#install' | relative_url }}">Install</a> covers mise, the packages without the wrapper and building from source.</p>
+    <p class="note">Then run <code>cook --help</code>. <a href="{{ '/docs/features/install.html' | relative_url }}">Install</a> covers checksums, macOS paths, pinning a release for a team and building from source.</p>
   </div>
 </section>
 
@@ -270,7 +280,7 @@ git add cook</code></pre></div></div>
       <a href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/apachegroovy.svg %}<strong>Write a recipe</strong><span>A model, a recipe, a section of a shared file, then a cookbook of your own.</span></a>
       <a href="{{ '/docs/philosophy.html' | relative_url }}">{% include icons/lightbulb.svg %}<strong>Philosophy</strong><span>Why the project exists, and the tenets a proposal is judged against.</span></a>
       <a href="{{ '/docs/architecture.html' | relative_url }}">{% include icons/layers.svg %}<strong>Architecture</strong><span>The intended design: responsibilities, operations, commands and distribution.</span></a>
-      <a href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<strong>CLI reference</strong><span>Every command, option and message of <code>./cook</code>.</span></a>
+      <a href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<strong>CLI reference</strong><span>Every command, option and message of <code>cook</code>.</span></a>
       <a href="{{ '/cookbook/' | relative_url }}">{% include icons/chef-hat.svg %}<strong>Cookbook</strong><span>How recipes and models are shaped, released and resolved.</span></a>
       <a href="{{ '/docs/features/glossary.html' | relative_url }}">{% include icons/book-a.svg %}<strong>Glossary</strong><span>Recipe, ingredient, kitchen, lock and the rest of the vocabulary.</span></a>
       <a href="{{ '/docs/ux/' | relative_url }}">{% include icons/ruler.svg %}<strong>Standards</strong><span>How the CLI, messages, generated content and skills behave.</span></a>

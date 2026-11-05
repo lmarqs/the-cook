@@ -48,7 +48,7 @@ tasks.register('jpackage', Exec) {
   }
 }
 
-// The release names each image by the system and architecture the wrapper reads from `uname -s` and `uname -m`.
+// The release names each image by system and architecture, the names mise, Homebrew and the docs select it by.
 def architecture = [amd64: 'x64', x86_64: 'x64', aarch64: 'arm64'][System.getProperty('os.arch')]
 def archivePlatform = windows ? null : (mac ? (architecture == 'arm64' ? 'macos-arm64' : null) :
     (architecture ? "linux-${architecture}" : null))

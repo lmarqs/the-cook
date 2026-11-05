@@ -5,9 +5,9 @@ Gives the repository the `docs-layout` skill, which teaches where a fact goes in
 ## API
 
 ```sh
-./cook io.github.lmarqs.cookbook:docs:<version>#layout --skills-root=.agents/skills
+cook io.github.lmarqs.cookbook:docs:<version>#layout --skills-root=.agents/skills
 # For Claude Code and Codex without a shared skills directory
-./cook io.github.lmarqs.cookbook:docs:<version>#layout --skills-root=.agents/skills --skills-root=.claude/skills
+cook io.github.lmarqs.cookbook:docs:<version>#layout --skills-root=.agents/skills --skills-root=.claude/skills
 ```
 
 `--skills-root` names a directory the skill is written under, and repeats for each directory a harness reads
@@ -43,10 +43,10 @@ artifact |
 
 Repeat `--skills-root`. A newer version updates the skill and nothing under `docs/`. A repository cooked with the
 `seed` recipe of an earlier version cooks `#layout` with the same `--skills-root`, then runs
-`./cook discard io.github.lmarqs.cookbook:docs#seed`, which removes the old skill files and the `kinds` section the
+`cook discard io.github.lmarqs.cookbook:docs#seed`, which removes the old skill files and the `kinds` section the
 old recipe wrote into `docs/README.md`, edits inside it included; text to keep moves outside its markers first. Until
-the discard, `#seed` stays in `cook.lock`: `./cook check` and `./cook replicate` cook it again from its earlier
-version after `#layout`, putting the old skill back, and `./cook update` finds no `#seed` in the newer version.
+the discard, `#seed` stays in `cook.lock`: `cook check` and `cook replicate` cook it again from its earlier
+version after `#layout`, putting the old skill back, and `cook update` finds no `#seed` in the newer version.
 `/docs-layout map` then writes the kinds back in the team's words.
 ''')
 @yield('''

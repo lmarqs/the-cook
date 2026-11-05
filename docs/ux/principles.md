@@ -27,8 +27,8 @@ choosing the tool that produced it.
 - Personal settings are not implicitly imported or changed. An explicitly declared target inside the destination
   uses the same review flow as any other target ([configuration](configuration-standards.md#where-files-live)).
 - Keeping native configuration means leaving it in place; removal is the explicit discard operation (principle 5).
-- The committed wrapper pins the engine version; upgrades are explicit and separate from cookbook and recipe versions
-  ([wrapper](../features/wrapper.md)).
+- Cook installs on `PATH`, and a team pins its release in its own tool manager; engine upgrades are separate from
+  cookbook and recipe versions ([install](../features/install.md)).
 
 ## 2. People judge; Cook presents the requested changes
 
@@ -89,8 +89,8 @@ Proposed replacements and deletions need visible scope and a way to recover. Why
 Use the CLI as the public cooking interface. Gradle builds and packages Cook and cookbooks. Why: users need one place to
 learn operation and approval semantics.
 
-Use `discard` and `help` as commands and `--batch-approve` as the preapproval spelling. The wrapper and a global
-installation expose the same grammar ([entry points](cli-standards.md#entry-points)).
+Use `discard` and `help` as commands and `--batch-approve` as the preapproval spelling
+([entry points](cli-standards.md#entry-points)).
 
 Native configuration lives where its program reads it. Source recipes and templates retain their origins; ownership
 lives in the committed `cook.lock`. Use the
