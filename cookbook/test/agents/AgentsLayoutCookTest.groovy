@@ -81,6 +81,7 @@ recipes:
         - ".agents/skills/agents-layout/references/claude.md"
         - ".agents/skills/agents-layout/references/codex.md"
         - ".agents/skills/agents-layout/references/design.md"
+        - ".agents/skills/agents-layout/references/glossary.md"
         - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
         - ".agents/skills/agents-layout/references/review.md"
@@ -336,6 +337,7 @@ recipes:
       '.agents/skills/agents-layout/references/claude.md',
       '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
@@ -759,6 +761,7 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/references/claude.md',
       '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
@@ -838,6 +841,7 @@ agents.connect([claude])
       '.agents/skills/agents-layout/references/claude.md',
       '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
+      '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',

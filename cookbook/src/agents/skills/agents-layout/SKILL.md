@@ -93,6 +93,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Set up a loop runner, or decide where worktrees go | [references/design.md](references/design.md#worktrees-and-loop-runners) |
 | Know what Claude Code or Codex reads, trusts and enforces here, and how it was tested | [references/claude.md](references/claude.md), [references/codex.md](references/codex.md) |
 | Understand why the layout is shaped this way, or argue for changing it | [references/design.md](references/design.md) |
+| Know what a term of the layout means, such as role, subagent or adapter | [references/glossary.md](references/glossary.md) |
 
 ## Where a change goes
 
