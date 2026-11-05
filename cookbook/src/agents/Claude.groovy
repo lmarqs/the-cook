@@ -51,6 +51,7 @@ class Claude implements Harness {
   private Map settings = [:]
   private Map<String, List<String>> roleDenies = [:]
   private Map<String, String> directoryLinks = [:]
+  private Map<String, String> agentFiles = [:]
   private List sessionStart = []
   private Map<List<String>, List> worktreeHooks = [:]
 
@@ -126,9 +127,27 @@ class Claude implements Harness {
     true
   }
 
-  /** `settings.json` when settings are set, then each shared directory linked. */
+  /** `settings.json` when settings are set, then each shared directory linked, then `agents` when subagents are shared. */
   List<String> getLinkNames() {
-    (written() ? ['settings.json'] : []) + directoryLinks.keySet()
+    (written() ? ['settings.json'] : []) + directoryLinks.keySet() + (agentFiles ? ['agents'] : [])
+  }
+
+  /**
+   * Renders each subagent as `.agents/adapters/claude/agents/<name>.md`: front matter with `name`, `description` and
+   * the keys of its `claude` map as given, then the prompt.
+   */
+  void shareAgents(List<Subagent> agents) {
+    agentFiles = agents.collectEntries { agent ->
+      def frontMatter = new YamlBuilder()
+      frontMatter([name: agent.name, description: agent.description] + (agent.blocks.claude ?: [:]))
+      ["${agent.name}.md".toString(), "${frontMatter}---\n${agent.prompt}".toString()]
+    }
+  }
+
+  /** One file per shared subagent under `.agents/adapters/claude/agents/`, in Claude Code's subagent format. */
+  @Files(path = '.agents/adapters/claude/agents')
+  Map<String, String> agentDefinitions() {
+    agentFiles ?: null
   }
 
   /**
@@ -159,7 +178,7 @@ class Claude implements Harness {
   /** One relative link in `.claude/` per shared directory, such as `skills`, when the directories are connected. */
   @Links(path = '.claude')
   Map<String, String> links() {
-    directoryLinks ?: null
+    (directoryLinks + (agentFiles ? [agents: '../.agents/adapters/claude/agents'] : [:])) ?: null
   }
 
   private Map written() {

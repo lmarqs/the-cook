@@ -322,6 +322,7 @@ recipes:
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
       '.agents/adapters/codex/hooks.json',
+      '.agents/agents/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/hooks/session-start',
       '.agents/memory/.gitkeep',
@@ -714,6 +715,7 @@ CLAUDE.local.md
     def seed = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:])
     assert seed.changes == [
       '.agents/README.md',
+      '.agents/agents/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',

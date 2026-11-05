@@ -8,8 +8,9 @@ package io.github.lmarqs.cookbook.agents
  * Markdown instructions in `AGENTS.md`, seeded from a section template that an agent fills in when asked, whose
  * line under each heading says what the section holds; version 2 of the YAML policy at
  * `.agents/permission/policy.yaml`; skill file trees under `.agents/skills/`, each with `SKILL.md` and its supporting
- * resources; the shared directories `.agents/skills/`, `.agents/hooks/` and `.agents/memory/`, described in
- * `.agents/README.md`; and the POSIX `sh` dispatcher `.agents/hooks/session-start`, which turns the output of the
+ * resources; the shared directories `.agents/skills/`, `.agents/hooks/`, `.agents/memory/` and `.agents/agents/`,
+ * described in `.agents/README.md`; one Markdown file per shared subagent under `.agents/agents/`, front matter with
+ * `name`, `description` and a `claude` and a `codex` map, then the prompt; and the POSIX `sh` dispatcher `.agents/hooks/session-start`, which turns the output of the
  * scripts in `.agents/hooks/session-start.d/` into the JSON session context Claude Code 2.1.306 and Codex 0.160.1 both
  * take.
  *
@@ -44,7 +45,7 @@ package io.github.lmarqs.cookbook.agents
 @Ingredient
 class Agents {
   /** The shared directories under `.agents/` that `seed` creates and `connect` links each harness to. */
-  static final List<String> DIRECTORIES = ['skills', 'hooks', 'memory']
+  static final List<String> DIRECTORIES = ['skills', 'hooks', 'memory', 'agents']
 
   /**
    * The session-start dispatcher each connected harness runs at session start; it runs every script in
@@ -157,6 +158,9 @@ class Agents {
       return
     }
 
+    def agents = subagents()
+    harnesses.each { it.shareAgents(agents) }
+
     sessionStarted = true
     harnesses.each { it.startSession(reach(it, SESSION_START)) }
   }
@@ -249,6 +253,12 @@ class Agents {
     keep()
   }
 
+  /** Seeds `.agents/agents/.gitkeep` so Git keeps the directory, once the layout is seeded. */
+  @Seed(path = '.agents/agents/.gitkeep')
+  String keepAgents() {
+    keep()
+  }
+
   /** The `instructions` section of `AGENTS.md`, when instruction lines are added. */
   @Section(path = 'AGENTS.md', id = 'instructions')
   List<String> instructionsSection() {
@@ -332,6 +342,20 @@ class Agents {
     "/${relative}/"
   }
 
+  /**
+   * The shared subagents, one per Markdown file directly under `.agents/agents/`, in name order; a file of another
+   * kind, such as `.gitkeep`, is not a subagent, and a directory there is refused.
+   */
+  List<Subagent> subagents() {
+    currentEntries(Subagent.DIRECTORY).findResults { name, kind ->
+      if (kind == 'directory') {
+        throw new IllegalArgumentException(
+        "${Subagent.DIRECTORY}/${name} is a directory; keep each subagent in a file directly under ${Subagent.DIRECTORY}/")
+      }
+      name.endsWith('.md') ? Subagent.parse(name, current("${Subagent.DIRECTORY}/${name}")) : null
+    }
+  }
+
   private String reach(Harness harness, String path) {
     Path.of(harness.directory)
         .normalize()
@@ -382,10 +406,85 @@ interface Harness {
   void startSession(String dispatcher)
 
   /**
+   * Renders each shared subagent in the harness's own format, beside its other adapter files, and links the harness's
+   * agent directory to them; renders nothing when `agents` is empty.
+   */
+  void shareAgents(List<Subagent> agents)
+
+  /**
    * Makes the harness create and remove its worktrees by running `hook`, a path relative to its directory, with
    * `create` or `remove`, and returns true; returns false and sets nothing when the harness has no worktree hook event.
    */
   boolean createWorktrees(String hook)
+}
+
+/**
+ * One shared subagent, from `.agents/agents/<name>.md`: front matter with `name`, `description`, and a `claude` and a
+ * `codex` map whose keys each harness takes as given, then the prompt.
+ */
+class Subagent {
+  /** Where the shared subagents live, relative to the shared setup's directory. */
+  static final String DIRECTORY = '.agents/agents'
+
+  private static final List<String> HARNESSES = ['claude', 'codex']
+
+  /** The name the harnesses call the subagent by; the file is named after it. */
+  String name
+
+  /** When to use the subagent, which the harnesses read to decide when to delegate to it. */
+  String description
+
+  /** The keys each harness takes as given, by harness name. */
+  Map<String, Map> blocks = [:]
+
+  /** The subagent's instructions, the text after the front matter. */
+  String prompt
+
+  /**
+   * Parses the subagent file `file`, a name directly under `.agents/agents/`; rejects text without front matter, keys
+   * other than `name`, `description`, `claude` and `codex`, a missing `name` or `description`, a harness block that is
+   * not a map, and a file not named after its `name`.
+   */
+  static Subagent parse(String file, String text) {
+    def where = "${DIRECTORY}/${file}"
+    def matcher = text =~ /(?s)\A---\r?\n(.*?)\r?\n---\r?\n?(.*)\z/
+
+    if (!matcher.matches()) {
+      fail(where, 'opens with front matter between two --- lines')
+    }
+    def data = new YamlSlurper().parseText(matcher.group(1))
+
+    if (!(data instanceof Map)) {
+      fail(where, 'the front matter must be a YAML map')
+    }
+    def unknown = data.keySet() - (['name', 'description'] + HARNESSES)
+
+    if (unknown) {
+      fail(where, "has unknown keys ${unknown}; use name, description, claude and codex")
+    }
+    ['name', 'description'].each { key ->
+      if (!(data[key] instanceof String) || !data[key].trim()) {
+        fail(where, "needs a ${key}")
+      }
+    }
+    HARNESSES.each { harness ->
+      if (data.containsKey(harness) && !(data[harness] instanceof Map)) {
+        fail(where, "${harness} must be a map of that harness's keys")
+      }
+    }
+
+    if (file != "${data.name}.md") {
+      fail(where, "is named after its name: rename it ${data.name}.md")
+    }
+
+    new Subagent(name: data.name, description: data.description,
+    blocks: HARNESSES.findAll { data.containsKey(it) }.collectEntries { [it, data[it]] },
+    prompt: matcher.group(2))
+  }
+
+  private static void fail(String where, String message) {
+    throw new IllegalArgumentException("${where}: ${message}")
+  }
 }
 
 /**

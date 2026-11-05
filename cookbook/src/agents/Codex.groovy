@@ -49,6 +49,7 @@ class Codex implements Harness {
   private Map hooks = [:]
   private Map<String, String> rules = [:]
   private List<String> commands = []
+  private Map<String, String> agentFiles = [:]
   private boolean hooksWritten
 
   /** The hooks file a team may write by hand, which Codex reads through `.codex/hooks.json`. */
@@ -155,8 +156,29 @@ class Codex implements Harness {
     hooksWritten = current(HOOKS_FILE) != null
   }
 
-  /** `config.toml`, `hooks.json` and `rules`, the links this instance may make. */
-  final List<String> linkNames = ['config.toml', 'hooks.json', 'rules']
+  /** `config.toml`, `hooks.json` and `rules`, the links this instance may make, then `agents` when subagents are shared. */
+  List<String> getLinkNames() {
+    ['config.toml', 'hooks.json', 'rules'] + (agentFiles ? ['agents'] : [])
+  }
+
+  /**
+   * Renders each subagent as `.agents/adapters/codex/agents/<name>.toml`: `name`, `description`, the prompt as
+   * `developer_instructions`, and the keys of its `codex` map as given.
+   */
+  void shareAgents(List<Subagent> agents) {
+    agentFiles = agents.collectEntries { agent ->
+      def toml = new TomlBuilder()
+      toml([name: agent.name, description: agent.description, developer_instructions: agent.prompt] +
+      (agent.blocks.codex ?: [:]))
+      ["${agent.name}.toml".toString(), toml.toString()]
+    }
+  }
+
+  /** One file per shared subagent under `.agents/adapters/codex/agents/`, in Codex's custom agent format. */
+  @Files(path = '.agents/adapters/codex/agents')
+  Map<String, String> agentDefinitions() {
+    agentFiles ?: null
+  }
 
   /**
    * Each supplied top-level key of `.agents/adapters/codex/config.toml`, owned whole, when configuration or permissions
@@ -191,14 +213,14 @@ class Codex implements Harness {
     commands ?: null
   }
 
-  /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json` and `rules`. */
+  /** One link in `.codex/` per adapter file or directory written: `config.toml`, `hooks.json`, `rules` and `agents`. */
   @Links(path = '.codex')
   Map<String, String> links() {
     written().collectEntries { [it, "../.agents/adapters/codex/${it}".toString()] } ?: null
   }
 
   private List<String> written() {
-    ['config.toml': config, 'hooks.json': hooks || hooksWritten, rules: rules || commands]
+    ['config.toml': config, 'hooks.json': hooks || hooksWritten, rules: rules || commands, agents: agentFiles]
     .findAll { name, declared -> declared }.keySet() as List
   }
 
