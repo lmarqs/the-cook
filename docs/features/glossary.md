@@ -8,9 +8,6 @@ Each term has one meaning, which every page uses, and an entry links the page th
 
 ## Terms
 
-These terms follow [Cook architecture](../architecture.md), which states the intended design. For current execution,
-see the [root README](../../README.md) and [core implementation guide](../../core/README.md).
-
 | Term | Meaning |
 | --- | --- |
 | Agent harness | A program that runs an agent and consumes its native configuration and guidance, such as Claude Code or Codex. Ralph TUI's agent plugin names the same thing: its `claude` and `codex` plugins are the harnesses of those names. See [ingredients](../architecture.md#ingredients-recipes-and-cookbooks). |

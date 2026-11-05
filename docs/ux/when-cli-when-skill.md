@@ -13,11 +13,9 @@ performed by the people and programs responsible for it.
 ## Overview
 
 This page places a new capability in one of the destinations below: the engine and CLI, an ingredient, a recipe, a
-cookbook, native repository files, a skill or prose, or an external tool. It follows the
-[architecture](../architecture.md); the [glossary](../features/glossary.md) defines its engine terms. Cook evaluates
-trusted Groovy recipes into ordered file operations, presents the combined terminal diff, obtains whole-batch approval,
-records ownership and writes the declared targets. The CLI is the public cooking interface; Gradle
-builds and packages Cook and cookbooks.
+cookbook, native repository files, a skill or prose, or an external tool. The [glossary](../features/glossary.md)
+defines its engine terms, and the [architecture](../architecture.md#scope-and-responsibilities) the responsibilities
+each destination carries.
 
 A capability may have several parts. Place each by responsibility and effect, rather than assuming every deterministic
 part belongs in the binary.

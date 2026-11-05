@@ -8,8 +8,7 @@ Programs read native configuration that people and other tools also edit. Copyin
 hand overwrites edits and leaves no reviewable record. A developer proposes a recipe's file changes against current
 content, reviews the combined diff, and approves the batch while content outside the declared targets stays intact.
 
-This page follows the intended [architecture](../architecture.md#evaluation-review-and-writes), which owns the
-requirements. For commands supported by the current implementation, see the [root README](../../README.md).
+[Evaluation, review and writes](../architecture.md#evaluation-review-and-writes) states the requirements.
 
 ## Overview
 
