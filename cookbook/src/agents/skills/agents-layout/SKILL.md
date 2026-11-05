@@ -184,8 +184,8 @@ rules file and its `.codex/rules` link.
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
 - **Use `ask` sparingly.** Nobody answers in an unattended run, so an `ask` refuses there, and every unattended run that
   reaches it stops.
-- **Leave models out of shared files.** A model is a person's or a loop runner's choice; a model in the shared
-  settings overrides everyone's.
+- **Leave models out of shared settings.** A run's model is a person's or a loop runner's choice; a model in the
+  shared settings overrides everyone's. A subagent may name its own, which applies only while it runs.
 - **Cook every harness the team uses.** `#connect` removes what it wrote for harnesses left out, and those files are
   committed, so cooking only your own harness removes a teammate's.
 - **Keep secrets out of `.agents/`.** Everything there is committed and read by every agent.

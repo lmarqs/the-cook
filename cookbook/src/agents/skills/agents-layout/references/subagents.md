@@ -41,7 +41,8 @@ are not subagents.
 | Claude | `.agents/adapters/claude/agents/<name>.md` | Front matter with `name`, `description` and the `claude` keys, then the prompt | `.claude/agents` |
 | Codex | `.agents/adapters/codex/agents/<name>.toml` | `name`, `description`, the prompt as `developer_instructions`, and the `codex` keys | `.codex/agents` |
 
-A harness block's values reach that harness unchanged, and the other harness never sees them: model names, tool names
+A `model` in a harness block applies only while that subagent runs; the run's own model stays the person's or the
+loop runner's choice. A harness block's values reach that harness unchanged, and the other harness never sees them: model names, tool names
 and every other value are the harness's own. A key the harness does not know is the harness's to report, as Claude
 Code does in its `--debug` log.
 
