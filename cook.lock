@@ -3,7 +3,7 @@ version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
-    sha256: "db557e445274040db61ff7fc678d086ae795e432d46057a640c2405e7ddb1b2d"
+    sha256: "2539a2f10d68034b13bfa89d96a43825cb5208c86fcd612b42ec0a0017bf072e"
     arguments:
       "harness": ["claude","codex"]
       "worktree-setup": [".worktrees/setup"]
@@ -42,7 +42,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "db557e445274040db61ff7fc678d086ae795e432d46057a640c2405e7ddb1b2d"
+    sha256: "2539a2f10d68034b13bfa89d96a43825cb5208c86fcd612b42ec0a0017bf072e"
     arguments: {}
     owns:
       files:
@@ -52,8 +52,10 @@ recipes:
         - ".agents/skills/agents-layout/references/claude.md"
         - ".agents/skills/agents-layout/references/codex.md"
         - ".agents/skills/agents-layout/references/design.md"
+        - ".agents/skills/agents-layout/references/glossary.md"
         - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
+        - ".agents/skills/agents-layout/references/review.md"
         - ".agents/skills/agents-layout/references/subagents.md"
         - ".agents/skills/agents-layout/scripts/check.sh"
         - ".agents/skills/agents-layout/templates/AGENTS.template.md"

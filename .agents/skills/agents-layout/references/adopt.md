@@ -42,7 +42,7 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    ```
 
 8. **Review.** Stage first as step 9 does: `check.sh` reads the links and the size of `AGENTS.md` from the index, so
-   before staging it fails every link. Then run the review in [SKILL.md](../SKILL.md#review) and fix what it finds.
+   before staging it fails every link. Then run the review in [review.md](review.md#review) and fix what it finds.
 9. **Commit once.** Stage every path `git status --short` lists that the adoption changed: the layout's paths below,
    and what the sections under [An existing setup](#an-existing-setup) moved, removed or rewired.
 
@@ -178,20 +178,20 @@ file `#connect` renders for both harnesses ([subagents.md](subagents.md)). This 
 Before:
 
 ```markdown
-<!-- .claude/agents/reviewer.md -->
+<!-- .claude/agents/bug-hunter.md -->
 ---
-name: reviewer
+name: bug-hunter
 description: Reviews a staged diff for correctness bugs.
 tools: Read, Grep, Glob
 ---
 You review diffs.
 ```
 
-After, in `.agents/agents/reviewer.md`:
+After, in `.agents/agents/bug-hunter.md`:
 
 ```markdown
 ---
-name: reviewer
+name: bug-hunter
 description: Reviews a staged diff for correctness bugs.
 claude:
   tools: Read, Grep, Glob

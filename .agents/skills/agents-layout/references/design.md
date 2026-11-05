@@ -39,11 +39,13 @@ without hiding the team's.
 
 ## Three places for a file
 
-| Place | Holds | Owner |
+| Place | Path | Holds |
 | --- | --- | --- |
-| `.agents/<directory>/` | What any harness can use: `skills/`, `hooks/`, `memory/`, `agents/` and `permission/policy.yaml` | The team; `#seed` creates them |
-| `.agents/adapters/<harness>/` | That harness's own files, committed: what Cook renders from `.agents/`, and what the team writes in the harness's format | Cook, for what it renders; the team, for the rest |
-| `.claude/`, `.codex/` | Links into the two places above; every other file there is personal, and ignored | Cook, for the links |
+| Shared directory | `.agents/<directory>/` | What any harness can use: `skills/`, `hooks/`, `memory/`, `agents/` and `permission/policy.yaml` |
+| Adapter | `.agents/adapters/<harness>/` | That harness's own files, committed: the renders, which Cook writes from `.agents/`, and what the team writes in the harness's format |
+| Harness directory | `.claude/`, `.codex/` | Links into the two places above; every other file there is personal, and ignored |
+
+Who owns each file is in [the owners table](../SKILL.md#owners).
 
 A file goes in the first place that fits. Knowledge any agent can use is written once, under `.agents/`. A setting
 only one harness understands is written in that harness's format, in its adapter.
