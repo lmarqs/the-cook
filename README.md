@@ -10,7 +10,8 @@
 Claude Code reads `.claude/settings.json`. Codex reads `.codex/config.toml` and its rules. Your team decides once
 what agents may run, which hooks start a session and where worktrees go; the-cook writes those decisions into the
 native files each tool reads, touches only the parts each recipe owns, and writes nothing until one person approves one
-diff. [Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
+diff. The recipes are Groovy, and the one your team is missing is two files you [write yourself](docs/write-a-recipe.md).
+[Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
 docs of the latest release.
 
 ## Quick start
@@ -139,7 +140,30 @@ A `.groovy` path inside the kitchen is a recipe like any other. Its short name, 
 its path in the kitchen without `.groovy`, so moving the file renames the recipe; the lock records its path and the
 sha256 of the recipe, the models beside it and its `@resource` files. It compiles against the models in its own
 directory, the upper-case `.groovy` files there, as a recipe in an artifact compiles against that artifact's models.
-Beside `recipes/Notes.groovy`, which declares the model `acme.notes.Notes`, `recipes/notes.groovy` reads:
+`recipes/Notes.groovy` declares the model `acme.notes.Notes`:
+
+```groovy
+package acme.notes
+
+/** The team's notes, kept in NOTES.md. */
+@Ingredient
+class Notes {
+  private final List<String> lines = []
+
+  /** Adds a line to the notes. */
+  void add(String line) {
+    lines << line
+  }
+
+  /** NOTES.md, one bullet per line added. */
+  @File(path = 'NOTES.md')
+  String file() {
+    lines ? lines.collect { "- ${it}\n" }.join() : null
+  }
+}
+```
+
+and `recipes/notes.groovy`, cooked with `./cook recipes/notes.groovy`, reads:
 
 ```groovy
 @help('Adds a line to NOTES.md.')
@@ -151,6 +175,7 @@ notes.add('Run the tests before committing.')
 ```
 
 A path outside the kitchen, through a symbolic link too, is refused.
+[Write a recipe](docs/write-a-recipe.md) grows this example step by step, into a cookbook other repositories cook.
 
 Of the [cookbook](cookbook/README.md), the `agents`, `git`, `docs`, `ralph` and `hello` artifacts run. `./gradlew -p cookbook publishToMavenLocal` packages the
 cookbook with plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the
@@ -183,6 +208,7 @@ the CLI hands its repositories to the core.
 | To learn | Read |
 | --- | --- |
 | How to cook a first recipe, step by step | [Get started](docs/get-started.md) |
+| How to write a recipe of your own and move it into a cookbook | [Write a recipe](docs/write-a-recipe.md) |
 | Why the project exists, what it is trying to achieve, and the tenets behind every decision | [Philosophy](docs/philosophy.md) |
 | The intended design: responsibilities, operations, commands and distribution | [Architecture](docs/architecture.md) |
 
