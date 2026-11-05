@@ -4,7 +4,7 @@ Writes nothing and yields a greeting.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:hello:<version>#hello
+cook io.github.lmarqs.cookbook:hello:<version>#hello
 ```
 ''')
 @yield('''

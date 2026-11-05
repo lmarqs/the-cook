@@ -57,7 +57,7 @@ recipes:
         - file: ".gitignore"
           id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
 """
-    // No actions is what `./cook` reports as `Already cooked.`.
+    // No actions is what `cook` reports as `Already cooked.`.
     assert cook(kitchen, WORKTREES).actions == [:]
   }
 

@@ -10,7 +10,7 @@ The policy supplies command permissions for both harnesses.
 ## Cook
 
 ```sh
-./cook io.github.lmarqs.cookbook:cook:<version>#setup
+cook io.github.lmarqs.cookbook:cook:<version>#setup
 ```
 
 ## Writes

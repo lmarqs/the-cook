@@ -17,7 +17,7 @@ class CookCommandTest {
     assert stdout.toString('UTF-8')
     .readLines()
     *.trim()
-    .contains('./cook a:b:1.0.0#x --name value ./setup.groovy')
+    .contains('cook a:b:1.0.0#x --name value ./setup.groovy')
   }
 
   @Test void missingUnknownAndRemovedOptionsAreUsageErrors() {
@@ -47,7 +47,7 @@ class CookCommandTest {
       stderr.reset()
       assert cli.execute(arguments as String[]) == 2 : arguments
       assert stderr.toString('UTF-8').startsWith('cook: ')
-      assert stderr.toString('UTF-8').endsWith('\n  run: ./cook help\n')
+      assert stderr.toString('UTF-8').endsWith('\n  run: cook help\n')
       assert !stderr.toString('UTF-8').contains('Usage:')
     }
     stderr.reset()
@@ -59,7 +59,7 @@ class CookCommandTest {
     stderr.reset()
     assert cli.execute(['init'] as String[]) == 2
     assert stderr.toString('UTF-8') ==
-    'cook: Not a recipe: init\n  a recipe is coordinates or a .groovy path\n  run: ./cook help\n'
+    'cook: Not a recipe: init\n  a recipe is coordinates or a .groovy path\n  run: cook help\n'
   }
 
   @Test void versionPrintsTheVersionTheBuildWroteAndTakesNoOtherArguments() {
@@ -68,7 +68,7 @@ class CookCommandTest {
     assert cli.execute(['--version'] as String[]) == 0
     assert stdout.toString('UTF-8') == "cook ${System.getProperty('cook.version')}\n"
     assert cli.execute(['--version', 'x.groovy'] as String[]) == 2
-    assert stderr.toString('UTF-8') == 'cook: --version takes no other arguments\n  run: ./cook help\n'
+    assert stderr.toString('UTF-8') == 'cook: --version takes no other arguments\n  run: cook help\n'
   }
 
   @Test void checkComparesTheKitchenWithWhatTheLockRecordsAndExitsOneOnDrift() {
@@ -97,13 +97,13 @@ class CookCommandTest {
       assert stderr.toString('UTF-8') ==
       'cook: check: 1 file differs from what cook.lock records; nothing was written\n' +
       '  check cooks each recipe again from the source and arguments cook.lock records\n' +
-      "  run ./cook replicate -C ${repo.path}, review the diff and commit it\n"
+      "  run cook replicate -C ${repo.path}, review the diff and commit it\n"
       assert notes.text.contains('\nedited\n')
 
       stderr.reset()
       assert cli.execute(['check', '-C', repo.path, 'acme:notes#notes'] as String[]) == 1
       assert stderr.toString('UTF-8')
-      .endsWith("\n  run ./cook replicate -C ${repo.path} acme:notes#notes, review the diff and commit it\n")
+      .endsWith("\n  run cook replicate -C ${repo.path} acme:notes#notes, review the diff and commit it\n")
     }
   }
 
@@ -230,7 +230,7 @@ After cooking
   @Test void theCookbookReadmesRenderedHelpIsWhatHelpPrints() {
     def repository = new File(System.getProperty('cook.repository'))
     def readme = new File(repository, 'cookbook/README.md').getText('UTF-8')
-    def examples = (readme =~ /(?s)````text\n\$ \.\/cook help (\S+)\n(.*?)````\n/).collect { [it[1], it[2]] }
+    def examples = (readme =~ /(?s)````text\n\$ cook help (\S+)\n(.*?)````\n/).collect { [it[1], it[2]] }
     assert examples
 
     examples.each { address, rendered ->
@@ -675,7 +675,7 @@ notes.add('newer')
       def warning = stderr.toString('UTF-8')
       assert warning.startsWith('cook: update: warning: skipping acme:local#local; releases are unknown\n')
       assert warning.contains("  repository ${cookbook.toURI()} cannot list releases\n")
-      assert warning.contains('  cook the release you want by its coordinates, such as ./cook acme:local:1.0.0#local\n')
+      assert warning.contains('  cook the release you want by its coordinates, such as cook acme:local:1.0.0#local\n')
       [[], ['--dry-run']].each { options ->
         stdout.reset(); stderr.reset()
         assert cli.execute((['update', '-C', repo.path] + options) as String[]) == 0
@@ -713,7 +713,7 @@ notes.add('newer')
         stderr.reset()
         assert cli.execute(['-C', repo.path, option, 'update'] as String[]) == 2
         assert stderr.toString('UTF-8') == 'cook: update: --dry-run, --batch-approve, --force and --skip ' +
-        'go before a recipe, not before a command\n  run: ./cook help\n'
+        'go before a recipe, not before a command\n  run: cook help\n'
       }
     }
   }

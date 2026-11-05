@@ -68,7 +68,7 @@ class Kitchens {
     new CookbookRepositories([jars], directory.path)
   }
 
-  /** Proposes the recipes `operands` names, each with its arguments, in one invocation, as `./cook` does. */
+  /** Proposes the recipes `operands` names, each with its arguments, in one invocation, as `cook` does. */
   static Proposal cook(File kitchen, Map<String, Map<String, List<String>>> operands) {
     new CookbookCook(kitchen, repositories(kitchen)).propose(operands.collect { operand, arguments ->
       request(operand, arguments)

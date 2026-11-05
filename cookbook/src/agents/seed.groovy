@@ -7,10 +7,10 @@ memory and subagents, which `.agents/README.md` describes, with the `agents-layo
 
 ```sh
 # A repository without AGENTS.md
-./cook io.github.lmarqs.cookbook:agents:<version>#seed
+cook io.github.lmarqs.cookbook:agents:<version>#seed
 # A repository with an AGENTS.md: replace it with the template, or keep it as it is
-./cook --force io.github.lmarqs.cookbook:agents:<version>#seed
-./cook --skip io.github.lmarqs.cookbook:agents:<version>#seed
+cook --force io.github.lmarqs.cookbook:agents:<version>#seed
+cook --skip io.github.lmarqs.cookbook:agents:<version>#seed
 ```
 
 Paths, scripts and commands other recipes, launchers and people rely on:
