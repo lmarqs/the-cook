@@ -641,6 +641,35 @@ bypass allow
     assert output.readLines().findAll { it.contains('REVIEW.md') || it.contains('templates/x.json') } == []
   }
 
+  @Test void theLayoutCheckWarnsOnARealFileTrackedInAHarnessDirectory() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def run = runner(kitchen)
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    assert run(['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock'])[0] == 0
+    def check = ['sh', '.agents/skills/agents-layout/scripts/check.sh']
+
+    def (linksOnly, linksOutput) = run(check)
+
+    assert linksOnly == 0
+    assert linksOutput.contains('ok every tracked path in .claude/ and .codex/ is a link\n')
+
+    new File(kitchen, '.claude/rules').mkdirs()
+    new File(kitchen, '.claude/rules/migrations.md').text = 'rule\n'
+    new File(kitchen, '.codex/notas ção.md').text = 'notes\n'
+    assert run(['git', 'add', '-f', '.claude/rules/migrations.md', '.codex/notas ção.md'])[0] == 0
+    def (tracked, trackedOutput) = run(check)
+
+    assert tracked == 0
+    def next = 'move what the team shares into .agents/ as adopt.md step 9 says, keep what is personal untracked'
+    assert trackedOutput.readLines().findAll { it.contains('tracked in a harness directory') } == [
+      "WARN .claude/rules/migrations.md is tracked in a harness directory -- ${next}",
+      "WARN .codex/notas ção.md is tracked in a harness directory -- ${next}",
+    ]*.toString()
+  }
+
   @Test void connectingAgainRemovesTheCommandsLinkAnEarlierReleaseOwned() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
