@@ -123,16 +123,28 @@ You review diffs. Report only bugs you can show with a failing input.
 
   @Test void refusesASubagentThatBreaksTheSchema() {
     [
-      'unknown key': ['bad.md', "---\nname: bad\ndescription: d\ncursor: {}\n---\nx\n",
-        '.agents/agents/bad.md: has unknown keys [cursor]; use name, description, claude and codex'],
+      'unknown key': [
+        'bad.md',
+        "---\nname: bad\ndescription: d\ncursor: {}\n---\nx\n",
+        '.agents/agents/bad.md: has unknown keys [cursor]; use name, description, claude and codex'
+      ],
       'no description': ['bad.md', "---\nname: bad\n---\nx\n", '.agents/agents/bad.md: needs a description'],
       'no name': ['bad.md', "---\ndescription: d\n---\nx\n", '.agents/agents/bad.md: needs a name'],
-      'block not a map': ['bad.md', "---\nname: bad\ndescription: d\nclaude: opus\n---\nx\n",
-        ".agents/agents/bad.md: claude must be a map of that harness's keys"],
-      'stem differs': ['other.md', "---\nname: bad\ndescription: d\n---\nx\n",
-        '.agents/agents/other.md: is named after its name: rename it bad.md'],
-      'no front matter': ['bad.md', 'just a prompt\n',
-        '.agents/agents/bad.md: opens with front matter between two --- lines'],
+      'block not a map': [
+        'bad.md',
+        "---\nname: bad\ndescription: d\nclaude: opus\n---\nx\n",
+        ".agents/agents/bad.md: claude must be a map of that harness's keys"
+      ],
+      'stem differs': [
+        'other.md',
+        "---\nname: bad\ndescription: d\n---\nx\n",
+        '.agents/agents/other.md: is named after its name: rename it bad.md'
+      ],
+      'no front matter': [
+        'bad.md',
+        'just a prompt\n',
+        '.agents/agents/bad.md: opens with front matter between two --- lines'
+      ],
     ].each { label, entry ->
       def (file, text, message) = entry
       def kitchen = seeded(label.replace(' ', '-'))

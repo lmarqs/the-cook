@@ -127,7 +127,7 @@ class Claude implements Harness {
     true
   }
 
-  /** `settings.json` when settings are set, then each shared directory linked, then `agents` when subagents are shared. */
+  /** `settings.json` when settings are set, then each shared directory linked, then `agents` for shared subagents. */
   List<String> getLinkNames() {
     (written() ? ['settings.json'] : []) + directoryLinks.keySet() + (agentFiles ? ['agents'] : [])
   }

@@ -156,7 +156,7 @@ class Codex implements Harness {
     hooksWritten = current(HOOKS_FILE) != null
   }
 
-  /** `config.toml`, `hooks.json` and `rules`, the links this instance may make, then `agents` when subagents are shared. */
+  /** `config.toml`, `hooks.json` and `rules`, the links this instance may make, then `agents` for shared subagents. */
   List<String> getLinkNames() {
     ['config.toml', 'hooks.json', 'rules'] + (agentFiles ? ['agents'] : [])
   }

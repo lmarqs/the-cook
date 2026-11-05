@@ -10,9 +10,9 @@ package io.github.lmarqs.cookbook.agents
  * `.agents/permission/policy.yaml`; skill file trees under `.agents/skills/`, each with `SKILL.md` and its supporting
  * resources; the shared directories `.agents/skills/`, `.agents/hooks/`, `.agents/memory/` and `.agents/agents/`,
  * described in `.agents/README.md`; one Markdown file per shared subagent under `.agents/agents/`, front matter with
- * `name`, `description` and a `claude` and a `codex` map, then the prompt; and the POSIX `sh` dispatcher `.agents/hooks/session-start`, which turns the output of the
- * scripts in `.agents/hooks/session-start.d/` into the JSON session context Claude Code 2.1.306 and Codex 0.160.1 both
- * take.
+ * `name`, `description` and a `claude` and a `codex` map, then the prompt; and the POSIX `sh` dispatcher
+ * `.agents/hooks/session-start`, which turns the output of the scripts in `.agents/hooks/session-start.d/` into the
+ * JSON session context Claude Code 2.1.306 and Codex 0.160.1 both take.
  *
  * ## Instances
  *
@@ -349,9 +349,10 @@ class Agents {
   List<Subagent> subagents() {
     currentEntries(Subagent.DIRECTORY).findResults { name, kind ->
       if (kind == 'directory') {
-        throw new IllegalArgumentException(
-        "${Subagent.DIRECTORY}/${name} is a directory; keep each subagent in a file directly under ${Subagent.DIRECTORY}/")
+        throw new IllegalArgumentException("${Subagent.DIRECTORY}/${name} is a directory; " +
+        "keep each subagent in a file directly under ${Subagent.DIRECTORY}/")
       }
+
       name.endsWith('.md') ? Subagent.parse(name, current("${Subagent.DIRECTORY}/${name}")) : null
     }
   }
@@ -452,16 +453,19 @@ class Subagent {
     if (!matcher.matches()) {
       fail(where, 'opens with front matter between two --- lines')
     }
+
     def data = new YamlSlurper().parseText(matcher.group(1))
 
     if (!(data instanceof Map)) {
       fail(where, 'the front matter must be a YAML map')
     }
+
     def unknown = data.keySet() - (['name', 'description'] + HARNESSES)
 
     if (unknown) {
       fail(where, "has unknown keys ${unknown}; use name, description, claude and codex")
     }
+
     ['name', 'description'].each { key ->
       if (!(data[key] instanceof String) || !data[key].trim()) {
         fail(where, "needs a ${key}")
