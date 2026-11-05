@@ -10,9 +10,7 @@ problem Cook solves before proposing another responsibility for it. Readers can 
 turn reusable recipes into visible, approved changes to native program files, while keeping program-specific setup
 separate from the engine.
 
-[Cook architecture](architecture.md) states the intended design. This philosophy explains its goals and tenets;
-[ADRs](adrs/README.md) record the supporting reasoning. Both follow the architecture. Documentation of the current
-implementation belongs in the [root README](../README.md) and [core guide](../core/README.md).
+[ADRs](adrs/README.md) record the reasoning behind the decisions these tenets shape.
 
 ## The problems
 

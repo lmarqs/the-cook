@@ -10,14 +10,12 @@ understandable, the proposed changes are visible before writes, and cook.lock re
 
 ## Overview
 
-These standards follow the intended [architecture](../architecture.md). Cook evaluates trusted Groovy [recipes](../features/glossary.md) into
-ordered file operations; ingredients model a program's native files and configuration, and cookbooks hold and ship
-ingredients and recipes. The [feature reference](../features/README.md) expands these responsibilities.
+Ingredients model a program's native files and configuration, and cookbooks hold and ship ingredients and
+[recipes](../features/glossary.md); the [feature reference](../features/README.md) expands these responsibilities.
 
 This page covers where files live, recipe inputs and their defaults, validation messages, native values, permission
 rules, hooks and secrets. For composition, approval and discard it links to the pages that define them; generated file
-content follows the [generated-content standard](generated-content-standards.md). See the [root README](../../README.md)
-for current execution.
+content follows the [generated-content standard](generated-content-standards.md).
 
 ## Where files live
 

@@ -11,12 +11,10 @@ unattended callers explicitly preapprove it.
 
 ## Overview
 
-These standards follow the intended [architecture](../architecture.md), with command details in the
-[CLI reference](../features/cli.md) and vocabulary in the [glossary](../features/glossary.md). The architecture is the
-authority when a supporting standard conflicts with it. See the [root README](../../README.md) for current execution
-instructions.
+Command details are in the [CLI reference](../features/cli.md) and vocabulary in the
+[glossary](../features/glossary.md).
 
-Cook evaluates trusted Groovy recipes into ordered file operations. Approval, destination boundaries and rollback cover
+Approval, destination boundaries and rollback cover
 declared batch operations, not arbitrary side effects of recipe code. Trusting a recipe is separate from approving the
 changes it proposes.
 

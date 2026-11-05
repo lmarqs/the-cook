@@ -4,10 +4,9 @@ audience: Whoever runs Cook or changes a command
 ---
 # CLI reference
 
-The command line contract follows the [architecture](../architecture.md#command-line-and-build-boundary) and its
-requirements [FR-17 through FR-20](../architecture.md#requirements). The [glossary](glossary.md) defines terms such as
-recipe, batch and `cook.lock`; the options the current CLI accepts are in the root README's
-[current implementation](../../README.md#current-implementation).
+Every command, option and exit status of `./cook`, against requirements
+[FR-17 through FR-20](../architecture.md#requirements). The [glossary](glossary.md) defines terms such as recipe,
+batch and `cook.lock`.
 
 ## Synopsis
 

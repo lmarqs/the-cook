@@ -26,6 +26,7 @@ issue, never on the page, and a description of current behavior in a README stay
 
 | Kind | A fact belongs here when | A good page |
 | --- | --- | --- |
+| [Tutorial](get-started.md) | It takes a newcomer through a first use, step by step, with the output to expect | Works when followed word for word in an empty repository, and ends with where to go next |
 | [Architecture](architecture.md) | It is about the whole engine: its responsibilities, operations, boundaries and distribution, and the numbered requirements | Names each part and how it depends on the others, so the other pages can cite it |
 | [Philosophy](philosophy.md) | It is a goal or tenet that rules out proposals across the design | Lets a reader judge a new responsibility for Cook against its purpose |
 | [Decisions](adrs/README.md) | Reversing it changes more than one feature or module, or is hard to reverse, and it came from a real trade-off | States the decision, every reason behind it and each alternative at its best; the [guide](adrs/README.md) gives the bar and the template |

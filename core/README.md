@@ -71,6 +71,43 @@ When a write fails, it restores the paths it already wrote and fails.
 
 ## Verification
 
+To cook this checkout's recipes by hand, with a Java 17 JDK and access to obtain Gradle and build dependencies, build
+the CLI from the checkout root:
+
+```sh
+./gradlew cliBuild
+```
+
+Make a scratch kitchen whose `cook.toml` resolves from this checkout's cookbook sources:
+
+```sh
+kitchen=$(mktemp -d)
+printf 'repositories = ["%s/cookbook"]\n' "$PWD" > "$kitchen/cook.toml"
+```
+
+Read the `agents` artifact's front page and one of its recipes, without running anything:
+
+```sh
+./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0
+./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0#connect
+```
+
+Cook two recipes in it:
+
+```sh
+./cook -C "$kitchen" io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
+```
+
+Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
+`y`: it prints `Created` for `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml`, the shared
+directories, the `agents-layout` skill, `.agents/adapters/claude/settings.json`, the `.claude/` links into `.agents/`,
+`.gitignore` and `cook.lock`, then what to do next.
+ Run the same command again: nothing changed, so it prints `Already cooked.` and asks nothing.
+
+The repository's [`cook` script](../cook) launches the local distribution, and the directory it runs from is the kitchen
+Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in `<dir>` as if Cook had started there.
+`./cook --help` prints the usage.
+
 `./gradlew check` runs the core tests, which never read the repository's cookbook: `CookbookCookTest` and
 `CookbookReplicateTest` cook small artifacts built in the test, by coordinates and by path; `OwnershipTest` feeds
 declarations to `Ownership` without compiling a recipe; `LoadedRecipeTest` evaluates a recipe without cooking it;

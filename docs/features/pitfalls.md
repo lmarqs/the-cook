@@ -10,7 +10,7 @@ enforced the rule or tested the work.
 
 ## Overview
 
-This page follows the [intended architecture](../architecture.md). Each entry gives the symptom, its cause, Cook's
+Each entry gives the symptom, its cause, Cook's
 responsibility and the reader's next step. Program-specific details belong in the cookbook's guidance and the consuming
 program's documentation. See [batch approval and failure
 recovery](../architecture.md#batch-approval-and-failure-recovery) for batch guarantees and [the glossary](glossary.md)

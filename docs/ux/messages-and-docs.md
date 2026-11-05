@@ -11,9 +11,8 @@ the intended design and current execution instructions in the places where reade
 
 ## Overview
 
-These rules cover CLI messages, recipe-declared text in native files and repository documentation. They follow the
-[architecture](../architecture.md): trusted Groovy recipes produce ordered file operations, reviewed as one terminal
-diff with whole-batch approval. The [glossary](../features/glossary.md) defines engine vocabulary.
+These rules cover CLI messages, recipe-declared text in native files and repository documentation. The
+[glossary](../features/glossary.md) defines engine vocabulary.
 
 ## Voice
 

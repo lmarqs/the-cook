@@ -10,8 +10,7 @@ approve its full scope, and reverse the changes of a recorded batch. Content out
 
 ## Overview
 
-These standards follow the intended [architecture](../architecture.md). They cover Cook's declared [batch](../features/glossary.md) operations. See
-the [root README](../../README.md) for current execution. Cook evaluates trusted Groovy recipes; approval, boundaries,
+These standards cover Cook's declared [batch](../features/glossary.md) operations. Approval, boundaries,
 and recovery do not sandbox arbitrary effects of recipe code.
 
 ## Kinds of generated content

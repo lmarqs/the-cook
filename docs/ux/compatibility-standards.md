@@ -11,9 +11,7 @@ deliberately, preserve unrelated content, and distinguish engine versions, cookb
 
 ## Overview
 
-This standard follows the [architecture](../architecture.md). It covers the intended file-operation engine and its
-coexistence with configured programs. Current execution instructions belong in the [root README](../../README.md) and
-[core guide](../../core/README.md).
+This standard covers the engine's file operations and their coexistence with configured programs.
 
 ## Versioning
 

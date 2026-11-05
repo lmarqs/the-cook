@@ -7,81 +7,90 @@
 
 **The cook: cook the best product without any source of contamination.**
 
-The lab is a repository worked by coding agents. Each agent works at its own station, a worktree of its own. Each
-recipe keeps to the parts of a file it owns, and one person approves one diff before anything is written.
+Claude Code reads `.claude/settings.json`. Codex reads `.codex/config.toml` and its rules. Your team decides once
+what agents may run, which hooks start a session and where worktrees go; the-cook writes those decisions into the
+native files each tool reads, touches only the parts each recipe owns, and writes nothing until one person approves one
+diff. [Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
+docs of the latest release.
 
-## Objective
+## Quick start
 
-**Problem.** Teams reuse setup across repositories: agent instructions and permissions, editor settings, ignore rules,
-build and CI files. Copied by hand, the copies drift. Those files are shared: a setup that replaces one whole loses
-what teammates and other tools wrote in it, and nobody can tell which part came from where or remove a part cleanly.
-Coding agents widen the problem. Several agents and people work in one repository at once, each agent harness reads
-its own files for instructions, permissions, hooks and skills, and each agent's worktree needs the same setup to run.
+[Get started](docs/get-started.md) walks through a first cook with real output. In short, in a Git repository with the
+[wrapper](#install):
 
-**Goal.** A setup learned once reaches every repository through one reviewed change, lives beside hand-written content
-in the same files, and is withdrawn the same way. Contributors who do not run Cook need nothing to contribute: their
-programs read the native files directly, and the lock and markers Cook leaves are reviewed like any other change.
-Every agent harness and every worktree reads the same reviewed setup from what its branch commits.
+```sh
+agents=io.github.lmarqs.cookbook:agents:$(./cook --version | cut -d' ' -f2)
+./cook $agents#seed $agents#connect --harness=claude
+```
+
+Cook shows the diff of every file it would write and asks `Write these changes? [y/N]`. Run it again and it prints
+`Already cooked.`. To cook this checkout's recipes instead of a release, see [core verification](core/README.md#verification).
+
+## Install
+
+Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 and macOS
+arm64 as `the-cook-<version>-<platform>.tar.gz`, where the platform is `linux-x64`, `linux-arm64` or `macos-arm64`: a
+complete package with its own Java runtime. It also publishes the `cook` wrapper, and each file has a `.sha256`. Commit the wrapper to pin the engine version for a repository:
+
+```sh
+curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
+chmod +x cook
+./cook --help
+git add cook
+```
+
+On first use the wrapper downloads the package for the machine, refuses it unless its sha256 matches the one written
+in the wrapper, and caches it under `${XDG_CACHE_HOME:-~/.cache}/the-cook`. Later runs start the cached package. To
+upgrade, commit the wrapper of another release ([wrapper](docs/features/wrapper.md)).
+
+To run a package without the wrapper, unpack the **whole** image and run its launcher from the repository you want to
+cook, or name the repository with `-C`. On Linux the launcher is `cook/bin/cook`, on macOS
+`cook.app/Contents/MacOS/cook`:
+
+```sh
+v=<version>
+curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
+tar -xzf "the-cook-$v-linux-x64.tar.gz"
+cook/bin/cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#connect" --harness=claude
+```
+
+[mise](https://mise.jdx.dev) installs a release package and puts its `cook` launcher on `PATH`:
+
+```sh
+mise use github:lmarqs/the-cook@<version>
+cook --help
+```
+
+Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven
+Central.
+
+### From source
+
+The [jpackage task](cli/gradle/jpackage.gradle) builds the same self-contained package for the machine that runs it,
+with a Java 17 JDK (including `jpackage`), and `jpackageArchive` packs it as the release's `.tar.gz` with its `.sha256`
+in `cli/build/distributions`:
+
+```sh
+./gradlew jpackage
+cli/build/jpackage/cook/bin/cook --help
+```
+
+The paths above are for Linux. The build defines `cook.app/Contents/MacOS/cook` on macOS and
+`cook/cook.exe` on Windows; releases ship Linux x64 and arm64 and macOS arm64 packages.
+
+`./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help,
+cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C`
+and a usage error. On Linux x64 and arm64 and macOS arm64 it also checks the archive: every entry under the image
+directory, a launcher that runs once the archive is unpacked, and a matching `.sha256`.
+
+For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry
+point; that distribution requires Java 17 on the user's machine.
 
 ## Current implementation
 
 This section describes what runs on `main`. The [architecture](docs/architecture.md) defines the intended design, and
-[issue #15](https://github.com/lmarqs/the-cook/issues/15) tracks implementing it.
-
-### Repositories worked by agents
-
-The `agents`, `git` and `ralph` artifacts set a repository up for several coding agents and people at once.
-Each recipe's help, read with `./cook help <coordinates>`, says what it writes.
-
-| Need | What runs | Read |
-| --- | --- | --- |
-| One set of instructions and permissions for every harness | `agents#seed` creates `AGENTS.md` and `.agents/permission/policy.yaml`. `agents#connect` renders the policy into Claude Code's `permissions` and Codex's sandbox and approval settings and `cook.rules`, with roles that narrow it for Claude Code | [agents](cookbook/src/agents/README.md) |
-| A fresh clone, a cloud session or CI that reads the setup without cooking | The `.claude/` and `.codex/` links into `.agents/` are committed, so a fresh checkout already holds each harness's settings, hooks and skills, and each harness reads `AGENTS.md` natively | [agents](cookbook/src/agents/README.md) |
-| Context when a session starts | Both harnesses run `.agents/hooks/session-start`, which adds the output of each `session-start.d/*.sh` to the session | [agents](cookbook/src/agents/README.md) |
-| A worktree for each agent | `git#worktrees` ignores `.worktrees/`, states the rule `.worktrees/<branch>` in `AGENTS.md` and seeds the `setup` and `teardown` scripts the team fills in. `agents#connect --worktree-setup=...` wires Claude Code's worktree hooks: a new worktree runs setup and is removed when setup fails, and removing one runs teardown and deletes its branch only once every commit on it has landed | [worktrees](cookbook/src/git/worktrees.groovy), [connect](cookbook/src/agents/connect.groovy) |
-| Unattended loop runs | `ralph#ralph-tui` writes `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>` on the branch `ralph/<name>`, and `bin/clean`, which without `--force` refuses to delete commits that have not landed. With `--worker-check`, a task completes only once the team's check passes | [ralph](cookbook/src/ralph/README.md) |
-| Output kept to one clone | With `--share=clone`, `ralph#ralph-tui` keeps ralph-tui's configuration out of commits. `replicate` cooks ralph-tui's configuration again in a fresh clone from the source and arguments `cook.lock` records | [replicate](docs/features/replicate.md) |
-| A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](docs/architecture.md#ownership-and-the-lock) |
-| Drift caught in CI | `./cook check` exits 1 when the kitchen differs from what `cook.lock` records, such as a policy edited and not cooked | [check](docs/features/cli.md#check) |
-
-Every change in this table goes through the review, the lock and the recovery that [What runs](#what-runs) lists.
-
-### Quick start
-
-With a Java 17 JDK and access to obtain Gradle and build dependencies, from the checkout root, build the CLI:
-
-```sh
-./gradlew cliBuild
-```
-
-Make a scratch kitchen whose `cook.toml` resolves from this checkout's cookbook sources:
-
-```sh
-kitchen=$(mktemp -d)
-printf 'repositories = ["%s/cookbook"]\n' "$PWD" > "$kitchen/cook.toml"
-```
-
-Read the `agents` artifact's front page and one of its recipes, without running anything:
-
-```sh
-./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0
-./cook -C "$kitchen" help io.github.lmarqs.cookbook:agents:0.0.0#connect
-```
-
-Cook two recipes in it:
-
-```sh
-./cook -C "$kitchen" io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agents:0.0.0#connect --harness=claude
-```
-
-Cook shows the diff of every file it would write, `cook.lock` included, and asks `Write these changes? [y/N]`. Answer
-`y`: it prints `Created` for `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml`, the shared
-directories, the `agents-layout` skill, `.agents/adapters/claude/settings.json`, the `.claude/` links into `.agents/`,
-`.gitignore` and `cook.lock`, then what to do next. Run the same command again: nothing changed, so it prints `Already cooked.` and asks nothing.
-
-The repository's [`cook` script](cook) launches the local distribution, and the directory it runs from is the kitchen
-Cook cooks in. `-C <dir>` or `--kitchen=<dir>` before the first recipe cooks in `<dir>` as if Cook had started there.
-`./cook --help` prints the usage.
+[issue #15](https://github.com/lmarqs/the-cook/issues/15) tracks implementing it. What each cookbook sets up is in
+[the cookbook](cookbook/README.md#what-runs-today).
 
 ### What runs
 
@@ -173,70 +182,9 @@ the CLI hands its repositories to the core.
 
 | To learn | Read |
 | --- | --- |
+| How to cook a first recipe, step by step | [Get started](docs/get-started.md) |
 | Why the project exists, what it is trying to achieve, and the tenets behind every decision | [Philosophy](docs/philosophy.md) |
 | The intended design: responsibilities, operations, commands and distribution | [Architecture](docs/architecture.md) |
-
-The same pages, as of the latest release, are published at [lmarqs.github.io/the-cook](https://lmarqs.github.io/the-cook/).
-
-## Install
-
-Each [release](https://github.com/lmarqs/the-cook/releases/latest) publishes Cook for Linux x64 and arm64 and macOS
-arm64 as `the-cook-<version>-<platform>.tar.gz`, where the platform is `linux-x64`, `linux-arm64` or `macos-arm64`: a
-complete package with its own Java runtime. It also publishes the `cook` wrapper, and each file has a `.sha256`. Commit the wrapper to pin the engine version for a repository:
-
-```sh
-curl -fsSLO https://github.com/lmarqs/the-cook/releases/latest/download/cook
-chmod +x cook
-./cook --help
-git add cook
-```
-
-On first use the wrapper downloads the package for the machine, refuses it unless its sha256 matches the one written
-in the wrapper, and caches it under `${XDG_CACHE_HOME:-~/.cache}/the-cook`. Later runs start the cached package. To
-upgrade, commit the wrapper of another release ([wrapper](docs/features/wrapper.md)).
-
-To run a package without the wrapper, unpack the **whole** image and run its launcher from the repository you want to
-cook, or name the repository with `-C`. On Linux the launcher is `cook/bin/cook`, on macOS
-`cook.app/Contents/MacOS/cook`:
-
-```sh
-v=<version>
-curl -fsSLO "https://github.com/lmarqs/the-cook/releases/download/v$v/the-cook-$v-linux-x64.tar.gz"
-tar -xzf "the-cook-$v-linux-x64.tar.gz"
-cook/bin/cook -C /path/to/repository "io.github.lmarqs.cookbook:agents:$v#connect" --harness=claude
-```
-
-[mise](https://mise.jdx.dev) installs a release package and puts its `cook` launcher on `PATH`:
-
-```sh
-mise use github:lmarqs/the-cook@<version>
-cook --help
-```
-
-Without a `cook.toml`, coordinates such as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven
-Central.
-
-### From source
-
-The [jpackage task](cli/gradle/jpackage.gradle) builds the same self-contained package for the machine that runs it,
-with a Java 17 JDK (including `jpackage`), and `jpackageArchive` packs it as the release's `.tar.gz` with its `.sha256`
-in `cli/build/distributions`:
-
-```sh
-./gradlew jpackage
-cli/build/jpackage/cook/bin/cook --help
-```
-
-The paths above are for Linux. The build defines `cook.app/Contents/MacOS/cook` on macOS and
-`cook/cook.exe` on Windows; releases ship Linux x64 and arm64 and macOS arm64 packages.
-
-`./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help,
-cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C`
-and a usage error. On Linux x64 and arm64 and macOS arm64 it also checks the archive: every entry under the image
-directory, a launcher that runs once the archive is unpacked, and a matching `.sha256`.
-
-For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry
-point; that distribution requires Java 17 on the user's machine.
 
 ## License
 

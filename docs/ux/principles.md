@@ -11,11 +11,9 @@ whose files are affected.
 
 ## Overview
 
-These principles follow the [architecture](../architecture.md), which states the intended design. The
-[glossary](../features/glossary.md) defines the engine terms used here, such as ingredient, cookbook, batch and
+The [glossary](../features/glossary.md) defines the engine terms used here, such as ingredient, cookbook, batch and
 destination. Apply the principles when a specific interaction rule leaves a question open, and record the reason in
-the relevant standard ([changing a standard](README.md#changing-a-standard)). Current execution instructions belong
-in the [root README](../../README.md) and [core guide](../../core/README.md).
+the relevant standard ([changing a standard](README.md#changing-a-standard)).
 
 ## 1. Optional and transparent
 
