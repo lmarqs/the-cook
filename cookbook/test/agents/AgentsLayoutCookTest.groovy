@@ -67,7 +67,6 @@ recipes:
       files:
         - ".agents/hooks/session-start"
       links:
-        - ".claude/commands"
         - ".claude/settings.json"
         - ".claude/skills"
   - name: "io.github.lmarqs.cookbook:agents#seed"
@@ -323,7 +322,6 @@ recipes:
       '.agents/adapters/claude/settings.json',
       '.agents/adapters/codex/config.toml',
       '.agents/adapters/codex/hooks.json',
-      '.agents/commands/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/hooks/session-start',
       '.agents/memory/.gitkeep',
@@ -341,7 +339,6 @@ recipes:
       '.agents/skills/agents-layout/templates/AGENTS.template.md',
       '.agents/skills/agents-layout/templates/README.template.md',
       '.agents/skills/agents-layout/templates/policy.template.yaml',
-      '.claude/commands',
       '.claude/settings.json',
       '.claude/skills',
       '.codex/config.toml',
@@ -625,54 +622,43 @@ bypass allow
     ]
   }
 
-  @Test void theLayoutCheckRecommendsMovingATrackedEntryBesideTheSharedDirectories() {
+  @Test void theLayoutCheckLeavesTheEntriesAProjectAddsToAgentsToTheProject() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
     def run = runner(kitchen)
     assert run(['git', 'init', '-q'])[0] == 0
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
-    def check = ['sh', '.agents/skills/agents-layout/scripts/check.sh']
+    new File(kitchen, '.agents/REVIEW.md').text = 'review\n'
+    new File(kitchen, '.agents/templates').mkdirs()
+    new File(kitchen, '.agents/templates/x.json').text = '{}\n'
     assert run(['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock'])[0] == 0
-    new File(kitchen, '.agents/hook-config.json').text = '{}\n'
-    // A file only one machine has is not the team's layout.
-    def (local, localOutput) = run(check)
 
-    assert local == 0
-    assert localOutput.contains('ok every tracked entry in .agents/ belongs to the layout\n')
+    def (status, output) = run(['sh', '.agents/skills/agents-layout/scripts/check.sh'])
 
-    assert run(['git', 'add', '.agents/hook-config.json'])[0] == 0
-    def (tracked, trackedOutput) = run(check)
-
-    assert tracked == 0
-    assert trackedOutput.readLines().findAll { it.contains('hook-config') } == [
-      'WARN .agents/hook-config.json is outside the shared directories -- move it beside what uses it in skills/, ' +
-      'commands/, hooks/ or memory/, merge permission rules into permission/policy.yaml, or move it out of .agents/ ' +
-      'when no agent reads it; then update the paths that name it'
-    ]
-
-    new File(kitchen, '.agents/notas-ção.md').text = 'notes\n'
-    assert run(['git', 'add', '.agents/notas-ção.md'])[0] == 0
-    def (accented, accentedOutput) = run(check)
-
-    assert accented == 0
-    assert accentedOutput.contains('WARN .agents/notas-ção.md is outside the shared directories -- ')
+    assert status == 0
+    assert output.readLines().findAll { it.contains('REVIEW.md') || it.contains('templates/x.json') } == []
   }
 
-  @Test void theLayoutCheckReadsNoEntryFromAnAgentsLinkItself() {
+  @Test void connectingAgainRemovesTheCommandsLinkAnEarlierReleaseOwned() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
-    def run = runner(kitchen)
-    assert run(['git', 'init', '-q'])[0] == 0
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
-    def elsewhere = new File(kitchen, 'shared')
-    assert new File(kitchen, '.agents').renameTo(elsewhere)
-    Files.createSymbolicLink(new File(kitchen, '.agents').toPath(), Paths.get('shared'))
-    assert run(['git', 'add', '.agents'])[0] == 0
+    def connect = { -> cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]) }
+    connect().commit()
+    // A 10.x release linked .claude/commands and recorded it in cook.lock; this one no longer declares it.
+    new File(kitchen, '.agents/commands').mkdirs()
+    Files.createSymbolicLink(new File(kitchen, '.claude/commands').toPath(), Paths.get('../.agents/commands'))
+    def lock = new File(kitchen, 'cook.lock')
+    lock.text = lock.text.replace('      links:\n        - ".claude/settings.json"',
+        '      links:\n        - ".claude/commands"\n        - ".claude/settings.json"')
 
-    def output = run(['sh', new File(elsewhere, 'skills/agents-layout/scripts/check.sh').absolutePath])[1]
+    def again = connect()
 
-    assert output.contains('ok every tracked entry in .agents/ belongs to the layout\n')
+    assert again.changes == ['.claude/commands', 'cook.lock']
+    again.commit()
+    assert !Files.exists(new File(kitchen, '.claude/commands').toPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS)
+    assert new File(kitchen, '.agents/commands').isDirectory()
   }
 
   @Test void commitsTheHarnessLinksAndKeepsEverythingElseInTheirDirectoriesOutOfGit() {
@@ -699,7 +685,6 @@ bypass allow
 /.claude/*
 !/.claude/settings.json
 !/.claude/skills
-!/.claude/commands
 !/.codex/
 /.codex/*
 !/.codex/config.toml
@@ -714,7 +699,7 @@ CLAUDE.local.md
     def ignored = { String path ->
       ['git', '-C', kitchen.path, 'check-ignore', '-q', '--no-index', path].execute().waitFor() == 0
     }
-    ['.claude/settings.json', '.claude/skills', '.claude/commands', '.codex/config.toml', '.codex/rules'].each {
+    ['.claude/settings.json', '.claude/skills', '.codex/config.toml', '.codex/rules'].each {
       assert Files.isSymbolicLink(new File(kitchen, it).toPath())
       assert !ignored(it)
     }
@@ -729,7 +714,6 @@ CLAUDE.local.md
     def seed = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:])
     assert seed.changes == [
       '.agents/README.md',
-      '.agents/commands/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',
@@ -758,7 +742,6 @@ CLAUDE.local.md
       '.agents/adapters/codex/config.toml',
       '.agents/adapters/codex/hooks.json',
       '.agents/hooks/session-start',
-      '.claude/commands',
       '.claude/settings.json',
       '.claude/skills',
       '.codex/config.toml',
@@ -775,7 +758,6 @@ CLAUDE.local.md
     assert !new File(kitchen, 'AGENTS.md').text.contains('#codex')
     assert Files.readSymbolicLink(new File(kitchen, '.codex/config.toml').toPath()).toString() ==
     '../.agents/adapters/codex/config.toml'
-    assert Files.readSymbolicLink(new File(kitchen, '.claude/commands').toPath()).toString() == '../.agents/commands'
     assert connect().changes == []
 
     // `File.deleteDir` would follow the links into `.agents/`; `rm -rf` does not, and neither does this.
@@ -785,7 +767,7 @@ CLAUDE.local.md
           .each { Files.delete(it) }
     }
     def again = connect()
-    def links = ['.claude/commands', '.claude/settings.json', '.claude/skills']
+    def links = ['.claude/settings.json', '.claude/skills']
     assert again.changes == links + ['.codex/config.toml', '.codex/hooks.json']
     again.commit()
     // How a session asks is each person's choice, so the shared settings leave out `defaultMode`.
