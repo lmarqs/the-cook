@@ -132,6 +132,7 @@ you wrote it.
 
 ## Where to go next
 
+- [Write a recipe](write-a-recipe.md) turns the setup your team is missing into a recipe of your own.
 - [Cooking](features/cook.md) explains what a recipe owns and what it leaves alone.
 - [The agents cookbook](../cookbook/src/agents/README.md) lists what else `#connect` sets up, such as session hooks and
   worktrees.

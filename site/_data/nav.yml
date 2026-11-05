@@ -6,6 +6,8 @@
       path: README.md
     - title: Get started
       path: docs/get-started.md
+    - title: Write a recipe
+      path: docs/write-a-recipe.md
     - title: Features
       path: docs/features/README.md
 - section: Using Cook
