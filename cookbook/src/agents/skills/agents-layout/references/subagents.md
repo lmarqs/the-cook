@@ -65,4 +65,5 @@ A directory under `.agents/agents/` is refused too.
 Claude Code reads subagents from `.claude/agents/` and ignores a front matter key it does not know, as its
 [subagent documentation](https://code.claude.com/docs/en/sub-agents) says. Codex reads custom agents from `*.toml`
 files under `.codex/agents/`, each needing `name`, `description` and `developer_instructions`, and loads a project's
-only once the project is trusted ([codex.md](codex.md#trust)); the trust part is read from its source, not tested.
+only once the project is trusted ([codex.md](codex.md#trust)). Both were tested by asking each harness to list its
+subagents.
