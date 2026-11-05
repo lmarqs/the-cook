@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles, skills or commands, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Takes adopt to set the layout up, review to check it, and review --fix to close the gaps it finds. Not for the repository's own code, and not for a person's own harness settings outside this repository.
+description: Explains the shared .agents/ layout that lets several people run AI Agents in one repository, each in their own way. Use it to adopt the layout, change agent instructions, permissions, roles or skills, investigate an agent that ignores the setup or runs what the team did not expect, or understand why the layout is shaped as it is. Takes adopt to set the layout up, review to check it, and review --fix to close the gaps it finds. Not for the repository's own code, and not for a person's own harness settings outside this repository.
 argument-hint: "[adopt | review [--fix]]"
 ---
 
@@ -68,7 +68,7 @@ Every file here has one owner. Most surprises come from editing a file someone e
 
 | Owner | Files | Changed by |
 | --- | --- | --- |
-| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `commands/`, `hooks/` with its own session-start scripts in `hooks/session-start.d/`, `memory/`, `.agents/README.md`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
+| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `hooks/` with its own session-start scripts in `hooks/session-start.d/`, `memory/`, `.agents/README.md`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
 | A tool's recipe | A script in `.agents/hooks/session-start.d/`, at the path the person names by a parameter of that recipe | Cooking that recipe with that parameter |
 | Cook | What it renders from the policy: `permissions` in `.agents/adapters/claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `.agents/adapters/codex/config.toml`, `.agents/adapters/codex/rules/cook.rules` and `.agents/adapters/claude/roles/`; the session start: `.agents/hooks/session-start` and `hooks.SessionStart` in `.agents/adapters/claude/settings.json` and `.agents/adapters/codex/hooks.json`; the links in `.claude/` and `.codex/`; the `harnesses` section of `.gitignore` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
@@ -83,7 +83,7 @@ AGENTS.md                         instructions for every agent; each harness rea
   README.md                       what lives where, and the command line for each kind of run
   permission/policy.yaml          what agents may run; the one file to edit for permissions
   adapters/<harness>/             each harness's settings: the policy as Cook renders it, other keys the team's
-  skills/ commands/ hooks/ memory/
+  skills/ hooks/ memory/
 .claude/  .codex/                 committed links into .agents/, plus each person's local files
 ```
 
@@ -99,13 +99,12 @@ reach every agent when they go where every agent reads them, and personal ones s
 
 ## Shared directories
 
-Everything the team shares with agents, apart from `AGENTS.md` and the policy, goes in one of four directories under
+Everything the team shares with agents, apart from `AGENTS.md` and the policy, goes in one of three directories under
 `.agents/`. Each harness reaches them in its own way; nothing needs copying per harness.
 
 | Directory | Holds | Claude reaches it | Codex reaches it |
 | --- | --- | --- | --- |
 | `skills/` | One directory per skill: `SKILL.md`, whose frontmatter `name` and `description` say when to use it, and the files it refers to | Through the `.claude/skills` link | Natively |
-| `commands/` | One Markdown file per slash command; the file name is the command | Through the `.claude/commands` link | Not read; turn a command both need into a skill |
 | `hooks/` | Scripts that hook settings run, by their path from the repository root, and the files they load | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
 | `memory/` | Durable facts about the repository that the code and `README.md` do not show; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
 
@@ -139,7 +138,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Tell every agent something | `AGENTS.md` | Commit |
 | Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
 | Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
-| Share a skill, slash command, hook script or durable fact | `.agents/skills/`, `commands/`, `hooks/` or `memory/` | Commit; the links expose it |
+| Share a skill, hook script or durable fact | `.agents/skills/`, `hooks/` or `memory/` | Commit; the links expose it |
 | Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; Codex runs it once the hooks are trusted in the main checkout, its worktrees included, [codex.md](references/codex.md#trust) |
 | Run a shared hook script on another harness event | The `hooks` key of `.claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |
 | Change another shared harness setting, such as `env` or an MCP server | That key in `.claude/settings.json` or `.codex/config.toml` | Commit |

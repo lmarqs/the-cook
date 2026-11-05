@@ -11,7 +11,6 @@ investigate an agent that misbehaves, and why it is shaped this way.
 | --- | --- | --- |
 | `/AGENTS.md` | Instructions for every agent, whatever its harness or role. Each harness reads it natively | The team |
 | `skills/` | One directory per skill with its `SKILL.md`. Codex reads it natively; Claude through `/.claude/skills` | The team |
-| `commands/` | One Markdown file per slash command. Claude reads it through `/.claude/commands`; Codex does not | The team |
 | `hooks/` | Scripts that each harness's hook settings run, by their path from the repository root, and the files they load. Each `session-start.d/*.sh` prints context that every harness adds to a session as it starts, with the harness name as `$1` | The team; Cook owns the `session-start` dispatcher and the `worktree` hook |
 | `memory/` | Durable facts the code and `README.md` do not show, read when `AGENTS.md` points to them; no secrets | The team |
 | `permission/policy.yaml` | What agents may run: `commands` and `tools` for every session, `roles` that narrow it | The team |
