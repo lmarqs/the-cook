@@ -4,12 +4,6 @@
   pages:
     - title: Overview
       path: README.md
-    - title: Philosophy
-      path: docs/philosophy.md
-    - title: Architecture
-      path: docs/architecture.md
-    - title: Guide to the docs
-      path: docs/README.md
     - title: Features
       path: docs/features/README.md
 - section: Using Cook
@@ -22,12 +16,22 @@
       path: docs/features/discard.md
     - title: Replicate
       path: docs/features/replicate.md
+    - title: Update
+      path: docs/features/update.md
     - title: The cook wrapper
       path: docs/features/wrapper.md
     - title: Pitfalls
       path: docs/features/pitfalls.md
     - title: Glossary
       path: docs/features/glossary.md
+- section: Understand
+  pages:
+    - title: Philosophy
+      path: docs/philosophy.md
+    - title: Architecture
+      path: docs/architecture.md
+    - title: Guide to the docs
+      path: docs/README.md
 - section: Cookbook
   pages:
     - title: Cookbooks

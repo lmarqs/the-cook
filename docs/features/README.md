@@ -2,7 +2,7 @@
 description: Introduces Cook to a newcomer, and says which feature page to open first.
 audience: Whoever is new to Cook or about to use or change one of its commands
 ---
-# the-cook
+# Features
 
 ## Overview
 
