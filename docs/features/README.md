@@ -7,7 +7,7 @@ audience: Whoever is new to Cook or about to use or change one of its commands
 ## Overview
 
 Each page here says what one command or operation does for the person running it, so they can predict what it
-proposes, records and refuses without reading the code. New to Cook? Start with [Get started](../get-started.md). The
+proposes, records and refuses without reading the code. New to Cook? Start with [Get started](../get-started.md), then [Write a recipe](../write-a-recipe.md). The
 [map of the docs](../README.md) says which kind of page owns which fact; this directory also holds two pages of other
 kinds, the [glossary](glossary.md) and the [pitfalls](pitfalls.md). Read the [CLI reference](cli.md) first, then the
 page of the operation at hand.

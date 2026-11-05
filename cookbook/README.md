@@ -697,7 +697,7 @@ While developing a cookbook, a kitchen lists its source directory instead, and c
 directory serves `<group>:<artifact>:<any version>` from the files of `src/<artifact>/`, leaving out hidden files:
 
 ```toml
-repositories = ["../../../cookbook"]
+repositories = ["../cookbook"]
 ```
 
 Coordinates take exact release versions. Publishing a changed cookbook under the same version, or editing it in a
