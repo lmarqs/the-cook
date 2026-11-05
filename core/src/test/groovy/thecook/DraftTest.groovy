@@ -29,7 +29,8 @@ class DraftTest {
       'linked.md': 'symlink',
       nested: 'directory',
     ]
-    assert draft.entries('agents').keySet().toList() == ['added.md', 'fresh', 'kept.md', 'linked.md', 'nested']
+    def names = draft.entries('agents').keySet()
+    assert names as List == ['added.md', 'fresh', 'kept.md', 'linked.md', 'nested']
     assert draft.changes == ['agents/added.md', 'agents/fresh/deep/file.md', 'agents/gone.md']
   }
 

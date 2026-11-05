@@ -63,6 +63,7 @@ final class Draft {
       }
 
       def parts = written.substring(prefix.length()).tokenize('/')
+
       if (parts.size() == 1) {
         found[parts[0]] = state.kind
       } else if (state.exists) {
