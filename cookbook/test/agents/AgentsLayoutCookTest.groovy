@@ -83,6 +83,7 @@ recipes:
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/investigate.md"
         - ".agents/skills/agents-layout/references/policy.md"
+        - ".agents/skills/agents-layout/references/review.md"
         - ".agents/skills/agents-layout/references/subagents.md"
         - ".agents/skills/agents-layout/scripts/check.sh"
         - ".agents/skills/agents-layout/templates/AGENTS.template.md"
@@ -337,6 +338,7 @@ recipes:
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
+      '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
       '.agents/skills/agents-layout/scripts/check.sh',
       '.agents/skills/agents-layout/templates/AGENTS.template.md',
@@ -759,6 +761,7 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
+      '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
       '.agents/skills/agents-layout/scripts/check.sh',
       '.agents/skills/agents-layout/templates/AGENTS.template.md',
@@ -837,6 +840,7 @@ agents.connect([claude])
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/investigate.md',
       '.agents/skills/agents-layout/references/policy.md',
+      '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
       '.agents/skills/agents-layout/scripts/check.sh',
       '.agents/skills/agents-layout/templates/AGENTS.template.md',

@@ -42,7 +42,7 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    ```
 
 8. **Review.** Stage first as step 9 does: `check.sh` reads the links and the size of `AGENTS.md` from the index, so
-   before staging it fails every link. Then run the review in [SKILL.md](../SKILL.md#review) and fix what it finds.
+   before staging it fails every link. Then run the review in [review.md](review.md#review) and fix what it finds.
 9. **Commit once.** Stage every path `git status --short` lists that the adoption changed: the layout's paths below,
    and what the sections under [An existing setup](#an-existing-setup) moved, removed or rewired.
 
