@@ -30,6 +30,9 @@ rules give a command.
 
 ### No roles
 
+Codex calls the custom agents in `.codex/agents/` roles; this skill calls them subagents
+([subagents.md](subagents.md)), and a role here is a run's narrowing of the policy.
+
 A role needs a way for one run to add rules that another run does not get. Codex has none:
 
 - `CODEX_PERMISSION_PROFILE` is a variable Codex sets for the commands it runs, not one that selects a profile.

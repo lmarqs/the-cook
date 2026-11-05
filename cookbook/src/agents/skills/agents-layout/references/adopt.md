@@ -178,20 +178,20 @@ file `#connect` renders for both harnesses ([subagents.md](subagents.md)). This 
 Before:
 
 ```markdown
-<!-- .claude/agents/reviewer.md -->
+<!-- .claude/agents/bug-hunter.md -->
 ---
-name: reviewer
+name: bug-hunter
 description: Reviews a staged diff for correctness bugs.
 tools: Read, Grep, Glob
 ---
 You review diffs.
 ```
 
-After, in `.agents/agents/reviewer.md`:
+After, in `.agents/agents/bug-hunter.md`:
 
 ```markdown
 ---
-name: reviewer
+name: bug-hunter
 description: Reviews a staged diff for correctness bugs.
 claude:
   tools: Read, Grep, Glob

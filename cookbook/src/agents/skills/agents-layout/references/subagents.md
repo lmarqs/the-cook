@@ -9,7 +9,7 @@ Claude Code 2.1.304 and Codex 0.160.1.
 
 ```markdown
 ---
-name: reviewer
+name: bug-hunter
 description: Reviews a staged diff for correctness bugs.
 claude:
   tools: [Read, Grep, Glob]
