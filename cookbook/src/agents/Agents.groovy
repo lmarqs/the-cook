@@ -8,9 +8,10 @@ package io.github.lmarqs.cookbook.agents
  * Markdown instructions in `AGENTS.md`, seeded from a section template that an agent fills in when asked, whose
  * line under each heading says what the section holds; version 2 of the YAML policy at
  * `.agents/permission/policy.yaml`; skill file trees under `.agents/skills/`, each with `SKILL.md` and its supporting
- * resources; the shared directories `.agents/skills/`, `.agents/hooks/` and `.agents/memory/`, described in `.agents/README.md`; and the POSIX `sh` dispatcher `.agents/hooks/session-start`,
- * which turns the output of the scripts in `.agents/hooks/session-start.d/` into the JSON session context Claude Code
- * 2.1.306 and Codex 0.160.1 both take.
+ * resources; the shared directories `.agents/skills/`, `.agents/hooks/` and `.agents/memory/`, described in
+ * `.agents/README.md`; and the POSIX `sh` dispatcher `.agents/hooks/session-start`, which turns the output of the
+ * scripts in `.agents/hooks/session-start.d/` into the JSON session context Claude Code 2.1.306 and Codex 0.160.1 both
+ * take.
  *
  * ## Instances
  *
