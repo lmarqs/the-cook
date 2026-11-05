@@ -103,7 +103,7 @@ Already cooked.</pre>
       <li id="pin-5" data-pin="5"><span class="num">5</span><div><h3>Robot arms: unattended loops</h3>
         <p>A loop run finishes a task only when the team's own check passes. <a href="{{ '/cookbook/src/ralph/' | relative_url }}">ralph cookbook</a></p></div></li>
       <li id="pin-6" data-pin="6"><span class="num">6</span><div><h3>The conveyor: cookbooks</h3>
-        <p>Recipes arrive as versioned jars, from Maven Central by default, pinned in <code>cook.lock</code>. <a href="{{ '/cookbook/' | relative_url }}">Cookbooks</a></p></div></li>
+        <p>Recipes arrive as versioned jars, from Maven Central or a cookbook of your own, pinned in <code>cook.lock</code>. A <code>.groovy</code> file in the repository is a recipe too. <a href="{{ '/cookbook/' | relative_url }}">Cookbooks</a></p></div></li>
     </ol>
     <ul class="works-with" aria-label="Works with">
       <li>{% include icons/claude.svg %}Claude Code</li>
@@ -179,6 +179,42 @@ Already cooked.</pre>
   </div>
 </section>
 
+<section class="section" id="your-recipes">
+  <div class="wrap">
+    <p class="kicker">The notebook</p>
+    <h2>Write the recipe your team is missing</h2>
+    <p class="lede">A recipe is a Groovy file in your repository. Cook reviews, records and checks it like one from a cookbook.</p>
+    <div class="cook">
+      <ol class="steps">
+        <li class="step"><h3>Model what you own</h3>
+          <p>A class marked <code>@Ingredient</code> names the files, sections and keys it writes. The rest of every file stays the team's.</p></li>
+        <li class="step"><h3>Write the recipe</h3>
+          <p>A few lines that describe themselves in <code>@help</code>, take options with <code>@param</code> and call the model.</p></li>
+        <li class="step"><h3>Cook it by its path</h3>
+          <p>No build, no publishing. When another repository wants it, move both files into a cookbook and cook it by coordinates.</p></li>
+      </ol>
+      <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy shows a diff creating NOTES.md and asks Write these changes?">
+        <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
+<pre><span class="prompt">$</span> ./cook recipes/notes.groovy
+<span class="meta">--- /dev/null</span>
+<span class="meta">+++ b/NOTES.md</span>
+<span class="hunk">@@ -0,0 +1,1 @@</span>
+<span class="add">+- Run the tests before committing.</span>
+<span class="meta">--- /dev/null</span>
+<span class="meta">+++ b/cook.lock</span>
+<span class="meta">...</span>
+<span class="add">+  - name: "recipes/notes"</span>
+<span class="add">+    source: "recipes/notes.groovy"</span>
+
+<span class="ask">Write these changes? [y/N]</span> y
+Created NOTES.md
+Created cook.lock</pre>
+      </div>
+    </div>
+    <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> takes you from these two files to a cookbook, step by step.</p>
+  </div>
+</section>
+
 <section class="section" id="operations">
   <div class="wrap">
     <p class="kicker">Procedures</p>
@@ -231,6 +267,7 @@ git add cook</code></pre></div></div>
     <h2>Read next</h2>
     <div class="map">
       <a href="{{ '/docs/get-started.html' | relative_url }}">{% include icons/book-open.svg %}<strong>Get started</strong><span>Install Cook and cook your first recipe, step by step.</span></a>
+      <a href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/apachegroovy.svg %}<strong>Write a recipe</strong><span>A model, a recipe, a section of a shared file, then a cookbook of your own.</span></a>
       <a href="{{ '/docs/philosophy.html' | relative_url }}">{% include icons/lightbulb.svg %}<strong>Philosophy</strong><span>Why the project exists, and the tenets a proposal is judged against.</span></a>
       <a href="{{ '/docs/architecture.html' | relative_url }}">{% include icons/layers.svg %}<strong>Architecture</strong><span>The intended design: responsibilities, operations, commands and distribution.</span></a>
       <a href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<strong>CLI reference</strong><span>Every command, option and message of <code>./cook</code>.</span></a>
