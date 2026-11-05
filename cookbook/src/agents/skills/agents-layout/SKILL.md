@@ -26,9 +26,9 @@ typed (tested).
 Run `sh .agents/skills/agents-layout/scripts/check.sh` from the repository root. It writes nothing, prints one line
 per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. A `FAIL`
 is a setup a harness cannot read: `AGENTS.md` missing, a `CLAUDE.md` that hides it, or a link missing, broken or
-ignored. A `WARN` is a recommendation to weigh, such as the word budget or an entry directly under `.agents/` outside
-the shared directories; a name `AGENTS.md` gives that is not in the tree may be a stale path, or a git ref or a file
-made at run time. It reads the links, the entries of `.agents/` and the tracked `AGENTS.md` files from the index, so
+ignored. A `WARN` is a recommendation to weigh, such as the word budget or a tracked file in `.claude/` or `.codex/`
+that is not a link; a name `AGENTS.md` gives that is not in the tree may be a stale path, or a git ref or a file
+made at run time. It reads the links, the tracked files of `.claude/` and `.codex/` and the tracked `AGENTS.md` files from the index, so
 stage the layout before running it on uncommitted work. Then make the checks a script cannot:
 
 - Each rule in `AGENTS.md` states what its source states: the code, a config file, the README, CI or the developer.
@@ -62,7 +62,7 @@ working alone, a third has one harness coordinate another's workers through a lo
 them the same knowledge and the same agreed permissions, and leaves each run free to pick its harness, model, mode
 and role.
 
-## Four owners
+## Owners
 
 Every file here has one owner. Most surprises come from editing a file someone else owns.
 
@@ -111,8 +111,8 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 
 - **A skill** is for knowledge an agent needs only for some tasks: it loads when its description matches, so it costs
   nothing otherwise. A rule every task needs belongs in `AGENTS.md`.
-- **A command** is a prompt a person starts by name, such as `/release`. Keep it short and let it name the skill
-  that holds the detail.
+- **A subagent** is a helper with its own prompt that an agent delegates a task to. It is written once and rendered
+  for each harness, so both run the same prompt.
 - **A hook** runs on a harness event, such as before a command or after an edit, with no agent deciding. The script
   is shared; when it runs is set per harness, because the events and their input differ. Session start is the
   exception: a script in `hooks/session-start.d/` that prints text reaches every connected harness as session

@@ -13,7 +13,7 @@ around these facts; [claude.md](claude.md) holds the same facts for Claude Code.
 | `.codex/config.toml`, a link to `.agents/adapters/codex/config.toml` | The project configuration: the sandbox and approval keys the policy sets, and every other key the team writes |
 | `.codex/rules`, a link to `.agents/adapters/codex/rules/` | The command rules, `cook.rules` among them, loaded whole |
 | `.codex/hooks.json`, a link to `.agents/adapters/codex/hooks.json` | The hooks, read from the main checkout even in a worktree ([Worktrees](#worktrees)) |
-| `.codex/agents`, a link to `.agents/adapters/codex/agents/` | The shared subagents as custom agents, rendered from `.agents/agents/` ([subagents.md](subagents.md)); Codex reads every `*.toml` below it, as its source shows; not tested |
+| `.codex/agents`, a link to `.agents/adapters/codex/agents/` | The shared subagents as custom agents, rendered from `.agents/agents/` ([subagents.md](subagents.md)); Codex reads every `*.toml` below it, as its source shows, once the project is trusted; it lists a rendered one among its roles (tested) |
 
 Codex reads project configuration only under `.codex/`, and reads all of it only in a trusted project
 ([Trust](#trust)). It does not read `.claude/rules/`.
