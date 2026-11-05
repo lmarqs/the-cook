@@ -7,6 +7,10 @@ investigate an agent that misbehaves, and why it is shaped this way.
 
 ## What lives where
 
+A file goes in one of [three places](skills/agents-layout/references/design.md#three-places-for-a-file): `.agents/`
+for what any harness can use, `adapters/<harness>/` for one harness's own files, and the links in `/.claude/` and
+`/.codex/`.
+
 | Path | Holds | Decided by |
 | --- | --- | --- |
 | `/AGENTS.md` | Instructions for every agent, whatever its harness or role. Each harness reads it natively | The team |

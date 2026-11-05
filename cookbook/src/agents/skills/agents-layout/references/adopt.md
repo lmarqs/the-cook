@@ -55,8 +55,9 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    The links in `.claude/` and `.codex/` are committed, so a clone, a worktree, a cloud session or a CI job reads the
    layout with no cooking and no Cook installed. The `harnesses` section of `.gitignore` keeps everything else a
    harness writes there, such as `.claude/settings.local.json` or `.claude/worktrees/`, out of commits. Commit no
-   real file in either directory: a file the team shares goes under `.agents/`, which the links reach, and a file
-   for one person stays on their machine. [design.md](design.md#links-and-adapters-are-committed) gives the cost.
+   real file in either directory: a file the team shares goes in one of the
+   [three places](design.md#three-places-for-a-file), and a file for one person stays on their machine.
+   [design.md](design.md#links-and-adapters-are-committed) gives the cost.
 
    After the commit, `git ls-files .claude .codex` lists only links, and `git ls-files -s .claude .codex` shows each
    with mode `120000`. `git check-ignore --no-index $(find .claude .codex -maxdepth 1 -type l)` prints nothing; a link

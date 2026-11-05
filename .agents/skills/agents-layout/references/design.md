@@ -37,6 +37,28 @@ only for some tasks fits a skill, which both harnesses load on demand.
 (tested, including `CLAUDE.local.md`). The cost: a person cannot keep notes for this repository alone in Claude
 without hiding the team's.
 
+## Three places for a file
+
+| Place | Holds | Owner |
+| --- | --- | --- |
+| `.agents/<directory>/` | What any harness can use: `skills/`, `hooks/`, `memory/` and `permission/policy.yaml` | The team; `#seed` creates them |
+| `.agents/adapters/<harness>/` | That harness's own files, committed: what Cook renders from `.agents/`, and what the team writes in the harness's format | Cook, for what it renders; the team, for the rest |
+| `.claude/`, `.codex/` | Links into the two places above; every other file there is personal, and ignored | Cook, for the links |
+
+A file goes in the first place that fits. Knowledge any agent can use is written once, under `.agents/`. A setting
+only one harness understands is written in that harness's format, in its adapter.
+
+The adapters exist because a harness's own files need a home that is committed and not ignored. Some are shared
+between Cook and the team: `claude/settings.json` holds the permissions Cook renders beside the hooks and `env` the
+team writes, and Cook owns only the keys it renders ([Cook owns only the keys it
+renders](#cook-owns-only-the-keys-it-renders)). Others are the team's alone, such as the settings file a loop runner
+passes its Codex worker. Writing them directly into `.claude/` and `.codex/` would mean a `!` line in `.gitignore`
+for each one, and would give up ignoring those directories by default
+([Links and adapters are committed](#links-and-adapters-are-committed)).
+
+Cook's rule stops at these places. Other files or directories a project keeps under `.agents/`, such as review notes
+or templates, are the project's, and the layout check does not report them.
+
 ## Links only where a harness reads a fixed path
 
 | Harness | Link | Because |
