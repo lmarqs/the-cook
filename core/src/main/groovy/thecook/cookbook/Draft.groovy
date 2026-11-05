@@ -44,6 +44,36 @@ final class Draft {
     state(path).kind
   }
 
+  /**
+   * The entries directly under the directory `path`, by name in name order, each with its kind, `file`, `symlink` or
+   * `directory`, as the invocation left them so far; empty when `path` holds none.
+   */
+  Map<String, String> entries(String path) {
+    def prefix = path in ['', '.'] ? '' : "${path}/"
+    Map<String, String> found = new TreeMap<>()
+    def directory = prefix ? repository.target(path) : repository.directory
+
+    if (Files.isDirectory(directory.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+      directory.list()?.each { found[it] = kind("${prefix}${it}") }
+    }
+
+    after.each { written, state ->
+      if (!written.startsWith(prefix)) {
+        return
+      }
+
+      def parts = written.substring(prefix.length()).tokenize('/')
+
+      if (parts.size() == 1) {
+        found[parts[0]] = state.kind
+      } else if (state.exists) {
+        found[parts[0]] = 'directory'
+      }
+    }
+
+    found.findAll { name, kind -> kind } as Map<String, String>
+  }
+
   /** Writes `content` to `path`; `mode` replaces the file's permissions, which otherwise stay as they are. */
   void write(String path, String content, String mode = null) {
     def current = state(path)

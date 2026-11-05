@@ -42,4 +42,12 @@ abstract class CookbookModel {
   String current(String path) {
     this.@engineDraft.read(Declarations.join(directory, path))
   }
+
+  /**
+   * The entries directly under the destination directory at `path` below `directory`, by name, each with its kind,
+   * `file`, `symlink` or `directory`, as the recipes before this one left them; empty when there are none.
+   */
+  Map<String, String> currentEntries(String path) {
+    this.@engineDraft.entries(Declarations.join(directory, path))
+  }
 }

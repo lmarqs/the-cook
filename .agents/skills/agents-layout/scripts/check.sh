@@ -131,6 +131,22 @@ check_links() {
   fi
 }
 
+check_harness_files() {
+  # The harness directories hold links; a real file tracked there reaches only one harness, and one a harness wrote
+  # for one person reaches everyone.
+  files=$(git -c core.quotePath=false ls-files -s -- .claude .codex | awk '$1 != "120000"' | cut -f2-)
+  found=0
+  saved_ifs=$IFS
+  IFS=$newline
+  for file in $files; do
+    warn "$file is tracked in a harness directory" \
+      'move what the team shares into .agents/ as adopt.md step 9 says, keep what is personal untracked'
+    found=1
+  done
+  IFS=$saved_ifs
+  [ "$found" -eq 0 ] && ok 'every tracked path in .claude/ and .codex/ is a link'
+}
+
 if [ -f AGENTS.md ]; then
   check_agents_md
 else
@@ -139,5 +155,6 @@ fi
 check_agents_bytes
 check_claude_files
 check_links
+check_harness_files
 
 exit "$status"

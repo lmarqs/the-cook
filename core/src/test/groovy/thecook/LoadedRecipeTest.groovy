@@ -47,6 +47,33 @@ class Notes {
     assert evaluation.arguments == [:]
   }
 
+  @Test void aModelListsADestinationDirectoryAsTheRecipesBeforeItLeftIt() {
+    def kitchen = kitchen()
+    write(kitchen, 'recipes/IndexModel.groovy', '''package acme.notes
+
+@Ingredient
+class Index {
+  boolean wanted
+  @File(path = 'INDEX.md')
+  String index() {
+    wanted ? currentEntries('docs').collect { name, kind -> "${name} ${kind}" }.join('\\n') + '\\n' : null
+  }
+}
+''')
+    write(kitchen, 'recipes/index.groovy', '''import acme.notes.Index
+@ingredient(Index) def index
+index.wanted = true
+''')
+    write(kitchen, 'docs/a.md', 'a\n')
+    def draft = new Draft(kitchen)
+    draft.write('docs/b.md', 'b\n')
+    def recipe = new RecipeLoader(kitchen, new CookbookRepositories([], 'none')).load('recipes/index.groovy')
+
+    def evaluation = recipe.evaluate([], draft)
+
+    assert evaluation.declared.owned*.value == ['a.md file\nb.md file\n']
+  }
+
   private File kitchen() {
     def kitchen = folder.newFolder()
     write(kitchen, 'IN.md', 'In\n')

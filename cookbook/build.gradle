@@ -41,6 +41,10 @@ dependencies {
   testImplementation project(':core')
   testImplementation testFixtures(project(':core'))
   testImplementation 'junit:junit:4.13.2'
+  // The tests parse the TOML the recipes render, with the module the recipes render it with.
+  testImplementation("org.apache.groovy:groovy-toml:${GroovySystem.version}") {
+    exclude group: 'org.apache.groovy'
+  }
 }
 
 tasks.named('test') {

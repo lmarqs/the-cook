@@ -42,7 +42,7 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    ```
 
 8. **Review.** Stage first as step 9 does: `check.sh` reads the links and the size of `AGENTS.md` from the index, so
-   before staging it fails every link. Then run the review in [SKILL.md](../SKILL.md#review) and fix what it finds.
+   before staging it fails every link. Then run the review in [review.md](review.md#review) and fix what it finds.
 9. **Commit once.** Stage every path `git status --short` lists that the adoption changed: the layout's paths below,
    and what the sections under [An existing setup](#an-existing-setup) moved, removed or rewired.
 
@@ -162,6 +162,42 @@ I prefer short answers.
 ```
 
 After: the first two rules are in `AGENTS.md`, the last line is back with its author, and `CLAUDE.md` is gone.
+
+### Claude subagents in .claude/agents/
+
+Codex does not read `.claude/agents/`, and the layout keeps `.claude/` to links, so each subagent moves to the shared
+file `#connect` renders for both harnesses ([subagents.md](subagents.md)). This belongs to step 5.
+
+1. `git mv .claude/agents/<name>.md .agents/agents/<name>.md` for each file; one in a subdirectory moves up, renamed
+   after its `name`.
+2. In each file, keep `name` and `description` at the top of the front matter, and move every other key under
+   `claude:`. Add a `codex:` map for the keys Codex needs, such as its `model`.
+3. After step 7, `.claude/agents` is a link, and `.agents/adapters/claude/agents/<name>.md` holds the same keys the
+   file had before the move.
+
+Before:
+
+```markdown
+<!-- .claude/agents/bug-hunter.md -->
+---
+name: bug-hunter
+description: Reviews a staged diff for correctness bugs.
+tools: Read, Grep, Glob
+---
+You review diffs.
+```
+
+After, in `.agents/agents/bug-hunter.md`:
+
+```markdown
+---
+name: bug-hunter
+description: Reviews a staged diff for correctness bugs.
+claude:
+  tools: Read, Grep, Glob
+---
+You review diffs.
+```
 
 ### Claude path-scoped rules in .claude/rules/
 

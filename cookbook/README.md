@@ -103,7 +103,7 @@ An author's code reaches the engine only through annotations. It imports nothing
 
 | Annotation | On | Declares |
 | --- | --- | --- |
-| `@Ingredient` | class | A model or content. The engine adds `directory`, the instance's base inside the destination with `.` at its root; `resource(name)` and `resources(dir)`, which read one file or every file packaged in the jar, or in the directory of a model beside a loose recipe; and `current(path)`, which reads a destination file. |
+| `@Ingredient` | class | A model or content. The engine adds `directory`, the instance's base inside the destination with `.` at its root; `resource(name)` and `resources(dir)`, which read one file or every file packaged in the jar, or in the directory of a model beside a loose recipe; `current(path)`, which reads a destination file; and `currentEntries(dir)`, which lists a destination directory's entries by name and kind. |
 | `@Section(path, id, comment)` | member returning `List<String>` | The marked section `id` of a shared text file. `comment` names the comment syntax when the extension does not. |
 | `@Sections(path, id, comment, missing)` | member returning `Map<String, List<String>>` | The marked section `id` in one file per entry: the key is the file's path under `path`, and the value its lines. With `missing = 'fail'`, a file the draft lacks is refused rather than created holding only the section. |
 | `@Key(path, segments)` | member | One key path in a JSON, TOML or YAML document, owned whole. A segment can select a list entry. |
@@ -133,7 +133,8 @@ Rules:
 - The engine owns every format: markers in the right comment syntax, key merge that preserves unrelated keys, order
   and comments, link and mode handling, the destination boundary.
 - An ingredient reads destination content only through `current(path)`, which returns the file as the recipes before
-  this one in the invocation left it, or `null` when absent. It never reads the disk, the lock or the engine's state.
+  this one in the invocation left it, or `null` when absent, and `currentEntries(dir)`, which lists a directory's
+  entries the same way. It never reads the disk, the lock or the engine's state.
 - Two declarations of one target in one recipe are an error. Across recipes, the last one wins and owns the target.
 - A model exposes facts for other models through plain methods, such as the files it leaves behind. The recipe wires
   them. Ingredients never call each other's outputs.
