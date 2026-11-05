@@ -3,7 +3,7 @@ version: 1
 recipes:
   - name: "io.github.lmarqs.cookbook:agents#connect"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#connect"
-    sha256: "f17acaa81ffec6424d5a7ccaea505e7613f7a2dc675fc4a411c92915b412b69f"
+    sha256: "440cec5e8a8cac4daccea38ff6adc3b3d211fe53d6e28a3f52f33d5dfebcef15"
     arguments:
       "harness": ["claude","codex"]
       "worktree-setup": [".worktrees/setup"]
@@ -42,7 +42,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "f17acaa81ffec6424d5a7ccaea505e7613f7a2dc675fc4a411c92915b412b69f"
+    sha256: "440cec5e8a8cac4daccea38ff6adc3b3d211fe53d6e28a3f52f33d5dfebcef15"
     arguments: {}
     owns:
       files:
