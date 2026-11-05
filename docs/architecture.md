@@ -241,7 +241,7 @@ owns, discarding that recipe proposes, besides removing the links and files it o
 ```diff
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,13 +1,1 @@
+@@ -1,12 +1,1 @@
  /build/
 -# cook:begin io.github.lmarqs.cookbook:agents#connect/harnesses
 -# io.github.lmarqs.cookbook:agents#connect --harness=claude
@@ -249,7 +249,6 @@ owns, discarding that recipe proposes, besides removing the links and files it o
 -/.claude/*
 -!/.claude/settings.json
 -!/.claude/skills
--!/.claude/commands
 -# Claude Code skips AGENTS.md while any of these exists, so they stay out of commits.
 -CLAUDE.md
 -CLAUDE.local.md

@@ -6,7 +6,6 @@
 /.claude/*
 !/.claude/settings.json
 !/.claude/skills
-!/.claude/commands
 !/.codex/
 /.codex/*
 !/.codex/config.toml

@@ -77,10 +77,9 @@ before                     after
                              .agents/adapters/claude/settings.json
                              .agents/adapters/codex/config.toml
                              .agents/skills/agents-layout/
-                             .agents/commands/  hooks/  memory/
+                             .agents/hooks/  memory/
                              .claude/settings.json -> ../.agents/adapters/claude/settings.json
                              .claude/skills -> ../.agents/skills
-                             .claude/commands -> ../.agents/commands
                              .codex/config.toml -> ../.agents/adapters/codex/config.toml
 ```
 
@@ -370,24 +369,6 @@ commands:
     - [git, [status, diff]]
 ```
 
-### Files beside the shared directories
-
-Harnesses reach `.agents/` through the shared directories and the adapters only, so a file or directory the team
-keeps directly under `.agents/` is found only through a path someone wrote down. `check.sh` warns on each. This comes
-before step 8.
-
-1. List the entries that are not the layout's:
-
-   ```sh
-   git ls-files -- .agents | sed -n 's|^\.agents/\([^/]*\).*|\1|p' | sort -u |
-     grep -vxE 'README\.md|permission|adapters|skills|commands|hooks|memory'
-   ```
-
-2. Find what names each one: `git grep -n -e <entry>`.
-3. Move it beside what uses it: a file a hook script loads into `hooks/`, a file one skill reads into that skill's
-   directory, a durable fact into `memory/`, permission rules into `permission/policy.yaml`. A file no agent reads, such as a loop runner's configuration, leaves
-   `.agents/`. Then update every path step 2 found, and the relative paths inside the moved file.
-
 ## Risks a review catches
 
 Mechanical moves do not cover every existing setup. These fail loudly; each has a check to run before step 7.
@@ -395,7 +376,7 @@ Mechanical moves do not cover every existing setup. These fail loudly; each has 
 - **A file or directory where `#connect` makes a link.** Cook refuses, saying, for example, that
   `.codex/config.toml is a file, and this recipe makes it a link to ../.agents/adapters/codex/config.toml`, and writes
   nothing. Check: `find .claude .codex -mindepth 1 -maxdepth 1 ! -type l` lists what is not a link; a
-  `settings.json`, `skills`, `commands`, `config.toml`, `rules` or `hooks.json` among them stops the cook that links
+  `settings.json`, `skills`, `config.toml`, `rules` or `hooks.json` among them stops the cook that links
   it. Move a file to the adapter of the same name, as `git mv .codex/config.toml .agents/adapters/codex/config.toml`
   does, a directory's files into `.agents/`, and cook again.
 - **An ignore rule that hides a link.** Cook's `harnesses` section re-includes each harness directory, but a rule after

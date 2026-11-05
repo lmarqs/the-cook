@@ -1,7 +1,7 @@
 @help('''
 Creates the shared agent layout: `AGENTS.md` from a section template for an agent to fill in, the shared policy at
-`.agents/permission/policy.yaml`, which grants nothing until edited, and the shared directories for skills, commands,
-hooks and memory, which `.agents/README.md` describes, with the `agents-layout` skill that explains the layout.
+`.agents/permission/policy.yaml`, which grants nothing until edited, and the shared directories for skills, hooks
+and memory, which `.agents/README.md` describes, with the `agents-layout` skill that explains the layout.
 
 ## API
 
@@ -19,8 +19,8 @@ Paths, scripts and commands other recipes, launchers and people rely on:
 | --- | --- |
 | `AGENTS.md` | The instructions every harness reads |
 | `.agents/permission/policy.yaml` | The shared policy, which `#connect` renders into each harness's settings |
-| `.agents/skills/`, `.agents/commands/`, `.agents/hooks/`, `.agents/memory/` | The shared directories, each described \
-in `.agents/README.md` |
+| `.agents/skills/`, `.agents/hooks/`, `.agents/memory/` | The shared directories, each described in \
+`.agents/README.md` |
 | The Launching table in `.agents/README.md` | The launch command for each harness, mode and role |
 | `sh .agents/skills/agents-layout/scripts/check.sh` | The layout check |
 | `/agents-layout` in Claude Code, `$agents-layout` in Codex | The skill, taking `adopt`, `review` or `review --fix` |
@@ -40,7 +40,7 @@ in `.agents/README.md` |
 | `AGENTS.md` | Section template, written the first time the recipe is cooked | Always | seed |
 | `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
 | `.agents/README.md` | What each shared path holds | Always, when absent | seed |
-| `.agents/skills/`, `commands/`, `hooks/`, `memory/` | An empty `.gitkeep` each | Always, when absent | seed |
+| `.agents/skills/`, `hooks/`, `memory/` | An empty `.gitkeep` each | Always, when absent | seed |
 | `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout, with the templates of the \
 seeded files under `templates/` and the layout check `scripts/check.sh` | Always | owned |
 

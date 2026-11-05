@@ -12,8 +12,8 @@ package io.github.lmarqs.cookbook.agents
  * `hooks.WorktreeRemove` alone, command hooks that replace how Claude Code 2.1.308 makes and removes its worktrees: the
  * first prints the worktree's path as its last line, and the second removes it. One file per policy role under
  * `.agents/adapters/claude/roles/`, holding only that role's `permissions.deny`, which a run adds with
- * `claude --settings <file>`. Symbolic links from `.claude/skills` and `.claude/commands` to the shared directories
- * complete the project setup: Claude Code finds skills and commands only there. Hooks and memory are reached by their
+ * `claude --settings <file>`. A symbolic link from `.claude/skills` to the shared skills completes the project setup:
+ * Claude Code finds skills only there. Hooks and memory are reached by their
  * paths from the repository root, so they need no link, and Claude Code reads `AGENTS.md` natively.
  * `.claude/` holds only links and Claude's local files, so it can be deleted and cooked again.
  *
@@ -95,11 +95,11 @@ class Claude implements Harness {
   }
 
   /**
-   * Links `.claude/skills` and `.claude/commands` to the shared directories of those names, the only ones Claude Code
-   * finds by a fixed path; each path is relative to this instance's directory.
+   * Links `.claude/skills` to the shared skills, which Claude Code finds only by that fixed path; the path is relative
+   * to this instance's directory.
    */
   void readDirectories(Map<String, String> paths) {
-    paths.findAll { name, path -> name in ['skills', 'commands'] }
+    paths.findAll { name, path -> name == 'skills' }
     .each { name, path -> directoryLinks[name] = "../${path}".toString() }
   }
 
