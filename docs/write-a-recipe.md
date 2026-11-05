@@ -1,5 +1,5 @@
 ---
-description: Writes a model and a recipe in a repository, cooks them by path, gives the recipe a section of a shared file, then moves both into a cookbook that cook.toml serves without a build.
+description: Walks from a model and a recipe cooked by path, through a section of a shared file and an option, to a cookbook other repositories cook.
 audience: Whoever has cooked a shipped recipe and wants one of their own, with a terminal and fifteen minutes
 ---
 # Write a recipe
