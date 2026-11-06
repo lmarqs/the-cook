@@ -93,9 +93,46 @@
     });
   }
 
+  // Mermaid loads only on a page that has a diagram; until it renders, or if it cannot load, the source stays shown.
+  function diagrams() {
+    var blocks = document.querySelectorAll(".prose code.language-mermaid");
+    if (!blocks.length) return;
+    var style = getComputedStyle(document.documentElement);
+    function token(name) { return style.getPropertyValue(name).trim(); }
+    import("https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs").then(function (module) {
+      var mermaid = module.default;
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "strict",
+        flowchart: { useMaxWidth: false },
+        theme: "base",
+        themeVariables: {
+          fontFamily: token("--font-body"),
+          background: token("--bg"),
+          primaryColor: token("--bg-raised"),
+          primaryTextColor: token("--text"),
+          primaryBorderColor: token("--line-strong"),
+          lineColor: token("--text-muted"),
+          textColor: token("--text"),
+          edgeLabelBackground: token("--bg")
+        }
+      });
+      blocks.forEach(function (code, index) {
+        var block = code.closest(".highlighter-rouge") || code.parentElement;
+        mermaid.render("diagram-" + index, code.textContent).then(function (result) {
+          var figure = document.createElement("div");
+          figure.className = "diagram";
+          figure.innerHTML = result.svg;
+          block.replaceWith(figure);
+        });
+      });
+    });
+  }
+
   linkSources();
   anchors();
   toc();
   copyButtons();
+  diagrams();
   labPins();
 })();
