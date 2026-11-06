@@ -344,8 +344,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .examples > input:focus-visible + label { outline: 2px solid var(--link); outline-offset: 2px; }
 .example { display: none; flex: 0 0 100%; min-width: 0; padding: 28px 0 0; border-top: 3px solid var(--accent); }
 #example-file:checked ~ .ex-file, #example-key:checked ~ .ex-key, #example-param:checked ~ .ex-param { display: block; }
-.cook.pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
-.cook.pair .source + .source { margin-top: 18px; }
+.cook .source + .source { margin-top: 18px; }
 .cook { display: grid; grid-template-columns: minmax(0, 1fr) 200px minmax(0, 1.1fr); gap: 0 28px; align-items: start; }
 .cook-line-up {
   list-style: none; margin: 0; padding: 8px 0; position: relative; align-self: stretch;
@@ -448,9 +447,8 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .toc { display: none; }
 }
 @media (max-width: 980px) {
-  .hero-inner, .cook, .cook.pair, .opening-pair { grid-template-columns: minmax(0, 1fr); }
+  .hero-inner, .cook, .opening-pair { grid-template-columns: minmax(0, 1fr); }
   .opening-pair { gap: 32px; }
-  .cook.pair > .terminal { margin-top: 24px; }
   .cook-line-up { margin: 28px 0; padding: 0; }
   .legend { grid-auto-rows: auto; }
   .legend li, .legend li:nth-child(even) { grid-template-columns: minmax(0, 1fr); }

@@ -42,7 +42,7 @@ description: A configuration manager for projects. A team settles its standards 
         tracked and reviewed, how editors and agents are set up. Settling it takes weeks of trying and arguing, and
         then it finally works. The project feels good to work with, and every part connects like clockwork.</p>
       <p class="lede turn">Until one day a tool ships an update, a second project arrives, the team wants to try a new
-        tool, a new developer brings a tool of their own, and each one needs what took the team weeks to settle.</p>
+        tool, a new developer brings a tool of their own. And all of that challenges what was already settled.</p>
     </div>
     <ol class="legend">
       <li><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">1</span><div><h3>One version reaches every project</h3>
@@ -120,16 +120,7 @@ notes.ignore(<span class="add">'scratch/'</span>)</pre>
               <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
             </ul>
           </div>
-          <ol class="cook-line-up" aria-label="What cooking does">
-            <li><span class="station">{% include icons/terminal.svg %}</span><div><b>Cook</b>
-              <p>The recipe runs against the files as they are now.</p></div></li>
-            <li><span class="station">{% include icons/layers.svg %}</span><div><b>Plan</b>
-              <p>Each model turns its calls into sections, keys and files.</p></div></li>
-            <li><span class="station">{% include icons/scale.svg %}</span><div><b>Review</b>
-              <p>One diff for the whole batch, <code>cook.lock</code> included.</p></div></li>
-            <li><span class="station">{% include icons/package.svg %}</span><div><b>Write</b>
-              <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
-          </ol>
+          {% include cook-line-up.html %}
           <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
             <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/notes.groovy
@@ -156,7 +147,7 @@ Created cook.lock</pre>
         </div>
         </div>
         <div class="example ex-key">
-          <div class="cook pair">
+          <div class="cook">
             <div>
               <div class="terminal source" role="img" aria-label="The model recipes/Editor.groovy: its formatOnSaveKey member owns the key editor.formatOnSave in .vscode/settings.json.">
                 <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Editor.groovy</b></div>
@@ -187,6 +178,7 @@ editor.formatOnSave()</pre>
                 <li><code>cook discard</code> takes out that one key and nothing else.</li>
               </ul>
             </div>
+            {% include cook-line-up.html %}
             <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy adds editor.formatOnSave to .vscode/settings.json beside the team's editor.fontSize, and records the key in cook.lock.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/editor.groovy
@@ -213,15 +205,17 @@ Created cook.lock</pre>
           </div>
         </div>
         <div class="example ex-param">
-          <div class="cook pair">
+          <div class="cook">
             <div>
               <div class="terminal source" role="img" aria-label="The recipe recipes/editor.groovy with a param: indent, two spaces by default, passed to the Editor model.">
                 <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/editor.groovy</b></div>
-<pre><span class="prompt">@help</span>(<span class="add">'Formats each file on save and sets the indent.'</span>)
+<pre><span class="prompt">@help</span>(<span class="add">'Formats each file on save \
+and sets the indent.'</span>)
 <span class="hunk">import</span> acme.editor.Editor
 
 <span class="prompt">@ingredient</span>(Editor) <span class="hunk">def</span> editor
-<span class="prompt">@param</span>(value = <span class="add">'indent'</span>, doc = <span class="add">'Spaces per indent'</span>,
+<span class="prompt">@param</span>(value = <span class="add">'indent'</span>,
+       doc = <span class="add">'Spaces per indent'</span>,
        default = <span class="add">'2'</span>) <span class="hunk">int</span> indent
 
 editor.formatOnSave()
@@ -235,6 +229,7 @@ editor.indent(indent)</pre>
                   use the same value.</li>
               </ul>
             </div>
+            {% include cook-line-up.html %}
             <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy with --indent=4 adds editor.tabSize 4 and records the argument in cook.lock.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/editor.groovy --indent=4
