@@ -286,7 +286,7 @@ Updated cook.lock</pre>
   <div class="wrap">
     <p class="chapter-label">The procedures</p>
     <div>
-      <h2>Cook, update, discard, replicate, check</h2>
+      <h2>Cook, update, discard, replicate, check, help</h2>
       <p class="lede">The commands, and the record of what they wrote.</p>
       <div class="commands">
         <div class="command"><code>{% include icons/chef-hat.svg %}cook &lt;recipe&gt;...</code><p>Cooks recipes left to right in one batch.</p></div>
@@ -294,6 +294,7 @@ Updated cook.lock</pre>
         <div class="command"><code>{% include icons/trash-2.svg %}cook discard &lt;name&gt;...</code><p>Takes out exactly what a recipe put in, without running it.</p></div>
         <div class="command"><code>{% include icons/repeat.svg %}cook replicate [&lt;name&gt;...]</code><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
         <div class="command"><code>{% include icons/circle-check.svg %}cook check [&lt;name&gt;...]</code><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
+        <div class="command"><code>{% include icons/book-open.svg %}cook help &lt;recipe&gt;...</code><p>Shows what a recipe writes and which parameters it takes, without running it.</p></div>
       </div>
       <a class="next-step" href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<span><strong>The CLI reference</strong>
         lists every option.</span></a>
