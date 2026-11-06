@@ -126,21 +126,38 @@ description: A configuration manager for projects. A team settles its standards 
   <div class="wrap">
     <p class="chapter-label">The notebook</p>
     <div>
-    <h2>A convention no cookbook holds</h2>
-    <p class="lede">An organisation has a rule no public cookbook holds. A recipe is a Groovy file in the repository, and
-      Cook treats it like one from a cookbook.</p>
-    <div class="cook">
-      <ol class="steps">
-        <li class="step"><h3>Model what the recipe owns</h3>
-          <p>A class marked <code>@Ingredient</code> names the files, sections and keys it writes. The rest of every file stays the team's.</p></li>
-        <li class="step"><h3>Write the recipe</h3>
-          <p>A few lines that describe themselves in <code>@help</code>, take options with <code>@param</code> and call the model.</p></li>
-        <li class="step"><h3>Cook it by its path</h3>
-          <p>No build, no publishing. When another repository wants it, move both files into a cookbook and cook it by coordinates.</p></li>
-      </ol>
-      <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy shows a diff creating NOTES.md and asks Write these changes?">
-        <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
+      <h2>How a recipe works</h2>
+      <p class="lede">A recipe is a short Groovy file in the repository. It asks for a model, and the model says what it
+        writes. Cook writes that and nothing else.</p>
+      <div class="cook">
+        <div>
+          <div class="terminal source" role="img" aria-label="The recipe recipes/notes.groovy: it asks for the Notes model, adds a line to the notes and keeps scratch/ out of Git.">
+            <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/notes.groovy</b></div>
+<pre><span class="prompt">@help</span>(<span class="add">'Adds a line to NOTES.md and keeps scratch/ out of Git.'</span>)
+<span class="hunk">import</span> acme.notes.Notes
+
+<span class="prompt">@ingredient</span>(Notes) <span class="hunk">def</span> notes
+
+notes.add(<span class="add">'Run the tests before committing.'</span>)
+notes.ignore(<span class="add">'scratch/'</span>)</pre>
+          </div>
+          <ul class="callouts">
+            <li><code>@ingredient</code> asks for the <code>Notes</code> model, which owns <code>NOTES.md</code> and one
+              marked section of <code>.gitignore</code>.</li>
+            <li>Cooking shows the whole change as one diff and writes nothing until it is approved.</li>
+            <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
+          </ul>
+        </div>
+        <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
+          <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/notes.groovy
+<span class="meta">--- a/.gitignore</span>
+<span class="meta">+++ b/.gitignore</span>
+<span class="hunk">@@ -1,1 +1,4 @@</span>
+ node_modules/
+<span class="add">+# cook:begin recipes/notes/scratch</span>
+<span class="add">+scratch/</span>
+<span class="add">+# cook:end recipes/notes/scratch</span>
 <span class="meta">--- /dev/null</span>
 <span class="meta">+++ b/NOTES.md</span>
 <span class="hunk">@@ -0,0 +1,1 @@</span>
@@ -148,15 +165,15 @@ description: A configuration manager for projects. A team settles its standards 
 <span class="meta">--- /dev/null</span>
 <span class="meta">+++ b/cook.lock</span>
 <span class="meta">...</span>
-<span class="add">+  - name: "recipes/notes"</span>
-<span class="add">+    source: "recipes/notes.groovy"</span>
 
 <span class="ask">Write these changes? [y/N]</span> y
+Updated .gitignore
 Created NOTES.md
 Created cook.lock</pre>
+        </div>
       </div>
-    </div>
-    <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> goes from these two files to a cookbook, step by step.</p>
+      <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> builds this one
+        step by step, from the model to a cookbook other repositories cook.</p>
     </div>
   </div>
 </section>
