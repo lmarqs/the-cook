@@ -272,11 +272,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .opening .lede { font-size: 19px; line-height: 1.55; margin: 0 0 40px; max-width: 860px; }
 .story { max-width: 700px; }
 .story p { margin: 0 0 16px; font-size: 17px; line-height: 1.6; }
-.cases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.case { padding: 26px 26px 24px; border-top: 3px solid var(--accent); }
-.case-label { margin: 0 0 14px; font: 400 12px/1.2 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
-.case p:last-child { margin: 0; font-size: 16px; line-height: 1.6; }
-.answer { margin: 64px 0 0; padding-top: 40px; border-top: 1px solid var(--line-strong); max-width: 860px; }
+.answer { margin: 0; max-width: 860px; }
 .answer h3 { font: 700 clamp(26px, 2.6vw, 32px)/1.1 var(--font-body); letter-spacing: -.6px; margin: 0 0 18px; }
 .answer .lede { margin: 0 0 32px; }
 
@@ -303,7 +299,8 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   font: 400 13px/1 var(--font-label); border: 2px solid #111318;
 }
 .legend h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; line-height: 1.3; }
-.legend p { margin: 0; color: var(--text-muted); font-size: 15px; }
+.legend p { margin: 0; font-size: 15px; }
+.legend .was { margin: 0 0 12px; padding: 0 0 12px; border-bottom: 1px dashed var(--line-strong); color: var(--text-muted); }
 
 /* Commands */
 .commands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
@@ -396,7 +393,6 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 @media (max-width: 980px) {
   .hero-inner, .cook { grid-template-columns: minmax(0, 1fr); }
   .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cases { grid-template-columns: minmax(0, 1fr); }
   .install { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 860px) {
