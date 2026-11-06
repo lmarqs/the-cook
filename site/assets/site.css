@@ -275,6 +275,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .story { max-width: var(--measure); }
 .story p { margin: 0 0 16px; font-size: 17px; line-height: 1.6; }
 .answer { margin: 0; max-width: var(--measure); }
+.opening-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; margin: 0 0 48px; }
+.opening-pair .lede, .opening-pair .answer .lede { margin: 0; max-width: none; }
+.opening-pair .answer { max-width: none; padding-left: 32px; border-left: 3px solid var(--accent); }
 .answer h3 { font: 700 clamp(26px, 2.6vw, 32px)/1.1 var(--font-body); letter-spacing: -.6px; margin: 0 0 18px; }
 .answer .lede { margin: 0 0 32px; }
 
@@ -332,6 +335,19 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .command p { margin: 0; padding: 16px 20px 18px; font-size: 15.5px; }
 
 /* Steps beside a terminal */
+.examples { display: flex; flex-wrap: wrap; margin: 8px 0 0; }
+.examples > input { position: absolute; opacity: 0; pointer-events: none; }
+.examples > label {
+  padding: 12px 20px; cursor: pointer; font: 400 12px/1.2 var(--font-label); letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-muted); border: 1px solid var(--line); border-bottom: 0; background: var(--bg-sunken); margin-right: -1px;
+}
+.examples > label:hover { color: var(--text); }
+.examples > input:checked + label { color: var(--accent-ink); background: var(--accent); border-color: var(--accent-ink); }
+.examples > input:focus-visible + label { outline: 2px solid var(--link); outline-offset: 2px; }
+.example { display: none; flex: 0 0 100%; min-width: 0; padding: 28px 0 0; border-top: 3px solid var(--accent); }
+#example-file:checked ~ .ex-file, #example-key:checked ~ .ex-key, #example-param:checked ~ .ex-param { display: block; }
+.cook.pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+.cook.pair .source + .source { margin-top: 18px; }
 .cook { display: grid; grid-template-columns: minmax(0, 1fr) 200px minmax(0, 1.1fr); gap: 0 28px; align-items: start; }
 .cook-line-up {
   list-style: none; margin: 0; padding: 8px 0; position: relative; align-self: stretch;
@@ -434,7 +450,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .toc { display: none; }
 }
 @media (max-width: 980px) {
-  .hero-inner, .cook { grid-template-columns: minmax(0, 1fr); }
+  .hero-inner, .cook, .cook.pair, .opening-pair { grid-template-columns: minmax(0, 1fr); }
+  .opening-pair { gap: 32px; }
+  .cook.pair > .terminal { margin-top: 24px; }
   .cook-line-up { margin: 28px 0; padding: 0; }
   .legend { grid-auto-rows: auto; }
   .legend li, .legend li:nth-child(even) { grid-template-columns: minmax(0, 1fr); }
@@ -471,6 +489,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .opening h2 { font-size: 26px; }
   .seam h2 { font-size: 36px; }
   .commands, .recipes { grid-template-columns: minmax(0, 1fr); }
+  .examples > label { flex: 1 1 0; padding: 10px 8px; font-size: 10px; letter-spacing: 1px; text-align: center; }
   .hero-inner { padding: 40px 16px 48px; gap: 32px; }
   .hero .lede { font-size: 17px; }
 }

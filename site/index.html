@@ -35,15 +35,18 @@ description: A configuration manager for projects. A team settles its standards 
   <div class="wrap">
     <p class="chapter-label">The lab</p>
     <h2>Knowledge should be easy to replicate</h2>
-    <p class="lede">A team works out how a project must be: how the code is formatted, which tools run at
-      which version, what a build must pass, how a release is cut, how documentation is organised, how work is tracked
-      and reviewed, how editors and agents are set up. Settling it takes weeks of trying and arguing, and then it
-      works. Then there is a second project, a third, and a new teammate on the first.</p>
-    <div class="answer" id="the-lab">
-      <h3>A place where standards matter</h3>
-      <p class="lede">The standard travels with the code: every clone has it, every branch keeps it, and the next project
-        starts from the same one. Whoever works there, a person through an editor or an agent through its harness,
-        finds the same standard.</p>
+    <div class="opening-pair">
+      <p class="lede">A team works out how a project must be: how the code is formatted, which tools run at
+        which version, what a build must pass, how a release is cut, how documentation is organised, how work is tracked
+        and reviewed, how editors and agents are set up. Settling it takes weeks of trying and arguing, and then it
+        works. Then there is a second project, a third, and a new teammate on the first, and
+        each one needs what the team already settled.</p>
+      <div class="answer" id="the-lab">
+        <h3>A place where standards matter</h3>
+        <p class="lede">The standard travels with the code: every clone has it, every branch keeps it, and the next project
+          starts from the same one. Whoever works there, a person through an editor or an agent through its harness,
+          finds the same standard.</p>
+      </div>
     </div>
     <ol class="legend">
       <li><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">1</span><div><h3>One version reaches every project</h3>
@@ -97,10 +100,15 @@ description: A configuration manager for projects. A team settles its standards 
         <p>A recipe is a short Groovy file in the project. It asks for a model, and the model says what it writes.
           Cook writes that and nothing else.</p>
       </div>
-      <div class="cook">
-        <div>
-          <div class="terminal source" role="img" aria-label="The recipe recipes/notes.groovy: it asks for the Notes model, adds a line to the notes and keeps scratch/ out of Git.">
-            <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/notes.groovy</b></div>
+      <div class="examples">
+        <input type="radio" name="example" id="example-file" checked><label for="example-file">A file and a section</label>
+        <input type="radio" name="example" id="example-key"><label for="example-key">A key in JSON</label>
+        <input type="radio" name="example" id="example-param"><label for="example-param">A parameter</label>
+        <div class="example ex-file">
+        <div class="cook">
+          <div>
+            <div class="terminal source" role="img" aria-label="The recipe recipes/notes.groovy: it asks for the Notes model, adds a line to the notes and keeps scratch/ out of Git.">
+              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/notes.groovy</b></div>
 <pre><span class="prompt">@help</span>(<span class="add">'Adds a note and ignores scratch/.'</span>)
 <span class="hunk">import</span> acme.notes.Notes
 
@@ -108,26 +116,26 @@ description: A configuration manager for projects. A team settles its standards 
 
 notes.add(<span class="add">'Run the tests before committing.'</span>)
 notes.ignore(<span class="add">'scratch/'</span>)</pre>
+            </div>
+            <ul class="callouts">
+              <li><code>@ingredient</code> asks for the <code>Notes</code> model, which owns <code>NOTES.md</code> and one
+                marked section of <code>.gitignore</code>.</li>
+              <li>Cooking shows the whole change as one diff and writes nothing until it is approved.</li>
+              <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
+            </ul>
           </div>
-          <ul class="callouts">
-            <li><code>@ingredient</code> asks for the <code>Notes</code> model, which owns <code>NOTES.md</code> and one
-              marked section of <code>.gitignore</code>.</li>
-            <li>Cooking shows the whole change as one diff and writes nothing until it is approved.</li>
-            <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
-          </ul>
-        </div>
-        <ol class="cook-line-up" aria-label="What cooking does">
-          <li><span class="station">{% include icons/terminal.svg %}</span><div><b>Cook</b>
-            <p>The recipe runs against the files as they are now.</p></div></li>
-          <li><span class="station">{% include icons/layers.svg %}</span><div><b>Plan</b>
-            <p>Each model turns its calls into sections, keys and files.</p></div></li>
-          <li><span class="station">{% include icons/scale.svg %}</span><div><b>Review</b>
-            <p>One diff for the whole batch, <code>cook.lock</code> included.</p></div></li>
-          <li><span class="station">{% include icons/package.svg %}</span><div><b>Write</b>
-            <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
-        </ol>
-        <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
-          <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
+          <ol class="cook-line-up" aria-label="What cooking does">
+            <li><span class="station">{% include icons/terminal.svg %}</span><div><b>Cook</b>
+              <p>The recipe runs against the files as they are now.</p></div></li>
+            <li><span class="station">{% include icons/layers.svg %}</span><div><b>Plan</b>
+              <p>Each model turns its calls into sections, keys and files.</p></div></li>
+            <li><span class="station">{% include icons/scale.svg %}</span><div><b>Review</b>
+              <p>One diff for the whole batch, <code>cook.lock</code> included.</p></div></li>
+            <li><span class="station">{% include icons/package.svg %}</span><div><b>Write</b>
+              <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
+          </ol>
+          <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
+            <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/notes.groovy
 <span class="meta">--- a/.gitignore</span>
 <span class="meta">+++ b/.gitignore</span>
@@ -148,6 +156,116 @@ notes.ignore(<span class="add">'scratch/'</span>)</pre>
 Updated .gitignore
 Created NOTES.md
 Created cook.lock</pre>
+          </div>
+        </div>
+        </div>
+        <div class="example ex-key">
+          <div class="cook pair">
+            <div>
+              <div class="terminal source" role="img" aria-label="The model recipes/Editor.groovy: its formatOnSaveKey member owns the key editor.formatOnSave in .vscode/settings.json.">
+                <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Editor.groovy</b></div>
+<pre><span class="prompt">@Ingredient</span>
+<span class="hunk">class</span> Editor {
+  <span class="hunk">private</span> Boolean format
+
+  <span class="hunk">void</span> formatOnSave() { format = <span class="hunk">true</span> }
+
+  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>,
+       segments = [<span class="add">'editor.formatOnSave'</span>])
+  Boolean formatOnSaveKey() { format }
+}</pre>
+              </div>
+              <div class="terminal source" role="img" aria-label="The recipe recipes/editor.groovy: it asks for the Editor model and turns on format on save.">
+                <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/editor.groovy</b></div>
+<pre><span class="prompt">@help</span>(<span class="add">'Formats each file on save.'</span>)
+<span class="hunk">import</span> acme.editor.Editor
+
+<span class="prompt">@ingredient</span>(Editor) <span class="hunk">def</span> editor
+
+editor.formatOnSave()</pre>
+              </div>
+              <ul class="callouts">
+                <li><code>@Key</code> owns one key, <code>editor.formatOnSave</code>, in <code>.vscode/settings.json</code>.</li>
+                <li><code>editor.fontSize</code> stays as the team wrote it. Cook merges one key and keeps the rest of the
+                  file.</li>
+                <li><code>cook discard</code> takes out that one key and nothing else.</li>
+              </ul>
+            </div>
+            <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy adds editor.formatOnSave to .vscode/settings.json beside the team's editor.fontSize, and records the key in cook.lock.">
+              <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
+<pre><span class="prompt">$</span> cook recipes/editor.groovy
+<span class="meta">--- a/.vscode/settings.json</span>
+<span class="meta">+++ b/.vscode/settings.json</span>
+<span class="hunk">@@ -1,3 +1,4 @@</span>
+ {
+<span class="del">-  "editor.fontSize": 14</span>
+<span class="add">+  "editor.fontSize": 14,</span>
+<span class="add">+  "editor.formatOnSave": true</span>
+ }
+<span class="meta">--- /dev/null</span>
+<span class="meta">+++ b/cook.lock</span>
+<span class="meta">...</span>
+<span class="add">+    owns:</span>
+<span class="add">+      keys:</span>
+<span class="add">+        - file: ".vscode/settings.json"</span>
+<span class="add">+          path: ["editor.formatOnSave"]</span>
+
+<span class="ask">Write these changes? [y/N]</span> y
+Updated .vscode/settings.json
+Created cook.lock</pre>
+            </div>
+          </div>
+        </div>
+        <div class="example ex-param">
+          <div class="cook pair">
+            <div>
+              <div class="terminal source" role="img" aria-label="The recipe recipes/editor.groovy with a param: indent, two spaces by default, passed to the Editor model.">
+                <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/editor.groovy</b></div>
+<pre><span class="prompt">@help</span>(<span class="add">'Formats each file on save and sets the indent.'</span>)
+<span class="hunk">import</span> acme.editor.Editor
+
+<span class="prompt">@ingredient</span>(Editor) <span class="hunk">def</span> editor
+<span class="prompt">@param</span>(value = <span class="add">'indent'</span>, doc = <span class="add">'Spaces per indent'</span>,
+       default = <span class="add">'2'</span>) <span class="hunk">int</span> indent
+
+editor.formatOnSave()
+editor.indent(indent)</pre>
+              </div>
+              <ul class="callouts">
+                <li><code>@param</code> turns the indent into an option: <code>--indent=4</code> here, <code>2</code> by
+                  default.</li>
+                <li>The model gains a second <code>@Key</code>, <code>editor.tabSize</code>.</li>
+                <li>The lock records <code>--indent=4</code>, so <code>cook replicate</code> and <code>cook check</code>
+                  use the same value.</li>
+              </ul>
+            </div>
+            <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy with --indent=4 adds editor.tabSize 4 and records the argument in cook.lock.">
+              <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
+<pre><span class="prompt">$</span> cook recipes/editor.groovy --indent=4
+<span class="meta">--- a/.vscode/settings.json</span>
+<span class="meta">+++ b/.vscode/settings.json</span>
+<span class="hunk">@@ -1,4 +1,5 @@</span>
+ {
+   "editor.fontSize": 14,
+<span class="del">-  "editor.formatOnSave": true</span>
+<span class="add">+  "editor.formatOnSave": true,</span>
+<span class="add">+  "editor.tabSize": 4</span>
+ }
+<span class="meta">--- a/cook.lock</span>
+<span class="meta">+++ b/cook.lock</span>
+<span class="meta">...</span>
+<span class="del">-    arguments: {}</span>
+<span class="add">+    arguments:</span>
+<span class="add">+      "indent": ["4"]</span>
+<span class="meta">...</span>
+<span class="add">+        - file: ".vscode/settings.json"</span>
+<span class="add">+          path: ["editor.tabSize"]</span>
+
+<span class="ask">Write these changes? [y/N]</span> y
+Updated .vscode/settings.json
+Updated cook.lock</pre>
+            </div>
+          </div>
         </div>
       </div>
       <a class="next-step" href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/book-open.svg %}<span><strong>Write a recipe</strong>
