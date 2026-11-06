@@ -10,10 +10,10 @@
 People and coding agents work in your repository at once, each with their own editor, harness and working copy.
 Onboard on day one: a fresh clone already carries how the project is built and checked and what an agent may run. Work
 in parallel: every branch gets its own worktree with that setup. Make it yours: your own settings sit beside the
-team's, never in a commit. Do it again: the same recipes cook the next repository. Kept by hand, that setup drifts
-between tools, working copies and repositories. the-cook writes the decisions, made once, into the native files each
-tool reads, touches only the parts each recipe owns, and writes nothing until one person approves one diff. Recipes are
-Groovy, and the one your team is missing is two files you [write yourself](docs/write-a-recipe.md).
+team's, never in a commit. Do it again: the same recipes cook the next repository. Kept by hand, that setup drifts.
+Decide once instead. the-cook puts it in every tool's own files, leaves the rest of each file alone, and shows you one
+diff before anything changes. Recipes are Groovy, and the one your team is missing is two files you
+[write yourself](docs/write-a-recipe.md).
 [Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
 docs of the latest release.
 
