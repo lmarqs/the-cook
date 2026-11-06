@@ -12,10 +12,9 @@ description: the-cook writes the setup a repository shares, such as agent instru
       <p class="kicker">Recipe driven configuration</p>
       <h1>Cook the best product <em>without any source of contamination.</em></h1>
       <p class="lede">People and coding agents work in your repository at once, each with their own editor, harness
-        and working copy. Every newcomer needs the same setup on day one, a worktree to work in parallel, and room to
-        make it their own. Kept by hand, that setup drifts between tools, copies and repositories. Cook writes the
-        decisions your team made once into the native file each tool reads, touches only the part it owns, and writes
-        nothing until you approve the diff. The same recipes cook the next repository.</p>
+        and working copy. Onboard on day one. Work in parallel. Keep your own setup. Carry the recipe to the next
+        repository. Cook writes the decisions your team made once into the native file each tool reads, touches only
+        the part it owns, and writes nothing until you approve the diff.</p>
       <div class="actions">
         <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
         <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
@@ -36,6 +35,45 @@ description: the-cook writes the setup a repository shares, such as agent instru
       <a class="pin" href="#pin-4" data-pin="4" style="left: 12%; top: 60%;" aria-label="4: the repository board">4</a>
       <a class="pin" href="#pin-5" data-pin="5" style="left: 58%; top: 44%;" aria-label="5: the robot arms">5</a>
       <a class="pin" href="#pin-6" data-pin="6" style="left: 82%; top: 75%;" aria-label="6: the conveyor">6</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="the-shift">
+  <div class="wrap">
+    <p class="kicker">The shift</p>
+    <h2>Onboard on day one. Work in parallel. Make it yours. Do it again.</h2>
+    <p class="lede">Four things a repository keeps true for everyone who works in it, person or agent, and that setup
+      copied by hand loses.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>Onboard on day one</h3>
+        <p>A fresh clone already has the setup: <code>#connect</code> commits the links each harness reads, and
+          <code>cook replicate</code> rebuilds what git ignores. A newcomer installs Cook and starts; a cloud session
+          starts without even that.</p>
+        <a class="more" href="{{ '/docs/get-started.html' | relative_url }}">Get started</a>
+      </div>
+      <div class="card">
+        <h3>Work in parallel</h3>
+        <p>Each branch gets a worktree at <code>.worktrees/&lt;branch&gt;</code>, with the setup that branch commits
+          and the setup and teardown scripts your team fills in once. People and agents work side by side without
+          touching each other's files.</p>
+        <a class="more" href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a>
+      </div>
+      <div class="card">
+        <h3>Make it yours</h3>
+        <p>A recipe touches only the sections, keys and files it owns. Your theme, model and standing approvals stay
+          in your harness's local file, such as <code>.claude/settings.local.json</code>, merged over the team's
+          settings and kept out of commits.</p>
+        <a class="more" href="{{ '/docs/features/cook.html#sections-and-markers' | relative_url }}">Sections and markers</a>
+      </div>
+      <div class="card">
+        <h3>Do it again</h3>
+        <p>The setup that worked here is a list of recipes, pinned in <code>cook.lock</code>. Cook the same list in the
+          next repository and it starts where this one is. Change a recipe once and every repository that cooks it
+          gets the change as a reviewed diff.</p>
+        <a class="more" href="{{ '/cookbook/' | relative_url }}">Cookbooks</a>
+      </div>
     </div>
   </div>
 </section>
