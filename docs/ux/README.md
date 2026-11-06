@@ -27,6 +27,7 @@ files directly. Recipe evaluation is trusted code, not sandboxed by the review f
 | [configuration-standards.md](configuration-standards.md) | File locations, recipe inputs, defaults, validation, native values, permission rules, hooks and secrets |
 | [generated-content-standards.md](generated-content-standards.md) | Native files, sections and markers, guidance and memory files, stable output, review and discard |
 | [messages-and-docs.md](messages-and-docs.md) | Message wording, engine vocabulary and documentation authority |
+| [writing-for-readers.md](writing-for-readers.md) | How a page that sells Cook is written: from the reader's need, in one voice, as problem, change and evidence |
 | [compatibility-standards.md](compatibility-standards.md) | Compatibility effects, native coexistence, recovery and engine pinning |
 
 ## Authority
