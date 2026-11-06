@@ -90,12 +90,7 @@ defaults:
     values:
       description: Describes how infra connects the core engine to the places cookbook releases come from, such as Maven repositories and local paths.
   - scope:
-      path: cookbook/src/agents/skills
-    values:
-      robots: noindex, follow
-      sitemap: false
-  - scope:
-      path: cookbook/src/docs/skills
+      path: cookbook/src/*/skills
     values:
       robots: noindex, follow
       sitemap: false

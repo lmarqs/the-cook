@@ -8,10 +8,11 @@
 <meta name="color-scheme" content="dark light">
 <meta name="robots" content="{{ page.robots | default: 'index, follow, max-image-preview:large' }}">
 {%- assign share_image = '/docs/assets/the-lab.png' | absolute_url -%}
-{%- assign share_image_alt = "Pixel-art lab: workers in yellow hazmat suits work at their own benches while a man in a black pork-pie hat watches from a glass office marked THE COOK." %}
+{%- assign share_image_alt = "Pixel-art lab: workers in yellow hazmat suits work at their own benches while a man in a black pork-pie hat watches from a glass office marked THE COOK." -%}
+{%- assign website_id = '/#website' | absolute_url %}
 <meta property="og:site_name" content="the-cook">
 <meta property="og:locale" content="en_US">
-<meta property="og:type" content="{% if page.layout == 'home' %}website{% else %}article{% endif %}">
+<meta property="og:type" content="{% if page.path == "site/index.html" %}website{% else %}article{% endif %}">
 <meta property="og:title" content="{{ full_title | escape }}">
 <meta property="og:description" content="{{ summary | escape }}">
 <meta property="og:url" content="{{ page.url | absolute_url }}">
@@ -26,14 +27,14 @@
 <meta name="twitter:image:alt" content="{{ share_image_alt | escape }}">
 <link rel="canonical" href="{{ page.url | absolute_url }}">
 <link rel="sitemap" type="application/xml" href="{{ '/sitemap.xml' | relative_url }}">
-{%- if page.layout == "home" %}
+{%- if page.path == "site/index.html" %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": {{ site.url | append: site.baseurl | append: "/#website" | jsonify }},
+      "@id": {{ website_id | jsonify }},
       "name": "the-cook",
       "url": {{ "/" | absolute_url | jsonify }},
       "description": {{ site.description | jsonify }},
@@ -68,7 +69,7 @@
   "url": {{ page.url | absolute_url | jsonify }},
   "image": {{ share_image | jsonify }},
   "inLanguage": "en",
-  "isPartOf": { "@id": {{ site.url | append: site.baseurl | append: "/#website" | jsonify }} }
+  "isPartOf": { "@id": {{ website_id | jsonify }} }
 }
 </script>
 {%- endif %}
