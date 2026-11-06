@@ -285,6 +285,20 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .chapter .lede { font-size: 20px; line-height: 1.5; margin: 0 0 32px; max-width: var(--measure); }
 .chapter .story { margin: 0 0 32px; }
 .chapter .story:last-child { margin-bottom: 0; }
+.traits { list-style: none; margin: 0 0 8px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.traits li {
+  --tank: var(--accent); display: flex; flex-direction: column; gap: 16px; padding: 22px 22px 24px;
+  background: var(--bg-raised); border: 1px solid var(--line); border-top: 4px solid var(--tank);
+}
+.traits .blue { --tank: var(--tank-blue); }
+.traits .green { --tank: var(--tank-green); }
+.traits .orange { --tank: var(--tank-orange); }
+.traits .purple { --tank: var(--tank-purple); }
+.traits .icon {
+  width: 44px; height: 44px; padding: 10px; color: var(--tank); border: 2px solid var(--tank);
+  background: color-mix(in srgb, var(--tank) 12%, transparent);
+}
+.traits p { margin: 0; font-size: 16px; line-height: 1.55; }
 .subhead { font: 700 26px/1.15 var(--font-body); letter-spacing: -.4px; margin: 56px 0 14px; padding-top: 40px; border-top: 1px solid var(--line-strong); }
 
 .legend { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-rows: 1fr; gap: 24px; }
@@ -306,7 +320,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .legend p { margin: 0; font-size: 16px; line-height: 1.6; }
 .legend .was { margin: 0 0 14px; padding: 0 0 14px; border-bottom: 1px dashed var(--line-strong); color: var(--text-muted); }
 .legend .kind { display: block; margin: 0 0 6px; font: 400 11px/1.4 var(--font-label); letter-spacing: 1.5px; text-transform: uppercase; }
-.legend .was .kind { color: var(--text-muted); }
+.legend .was .kind { color: var(--diff-del); }
 .legend .fix .kind { color: var(--amber); }
 
 /* Commands */
@@ -429,6 +443,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .legend li:nth-child(even) .scene { order: 0; }
   .legend .scene { aspect-ratio: 3 / 2; min-height: 0; border: 0 !important; border-bottom: 1px solid var(--line) !important; }
   .install .card { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .traits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 860px) {
   .docs-shell { display: block; padding: 0 16px; }
@@ -457,7 +472,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .home main .recipe > code { min-height: 0; }
   .opening h2 { font-size: 26px; }
   .seam h2 { font-size: 36px; }
-  .commands, .recipes { grid-template-columns: minmax(0, 1fr); }
+  .commands, .recipes, .traits { grid-template-columns: minmax(0, 1fr); }
   .hero-inner { padding: 40px 16px 48px; gap: 32px; }
   .hero .lede { font-size: 17px; }
 }
