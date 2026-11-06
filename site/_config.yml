@@ -9,6 +9,7 @@ baseurl: /the-cook
 repository: lmarqs/the-cook
 source_url: https://github.com/lmarqs/the-cook
 release:
+google_analytics: G-4D40875MH6
 
 layouts_dir: site/_layouts
 includes_dir: site/_includes

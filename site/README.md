@@ -7,7 +7,7 @@ into the site:
 
 | Path | Holds |
 | --- | --- |
-| `_config.yml` | The Jekyll configuration: titles, the excluded source and build files, and `release`, which `prepare` sets |
+| `_config.yml` | The Jekyll configuration: titles, the excluded source and build files, `google_analytics`, the Google Analytics measurement ID that `head.html` loads on every page, and `release`, which `prepare` sets |
 | `_layouts/` | `default`, every Markdown page with the docs sidebar, and `home`, the landing page |
 | `_includes/` | The head, top bar, sidebar and footer the layouts share |
 | `_includes/icons/` | Inline SVG icons, `{% include icons/<name>.svg %}`, drawn in the colour of the text around them |
