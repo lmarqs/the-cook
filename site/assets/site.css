@@ -276,6 +276,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .case { padding: 26px 26px 24px; border-top: 3px solid var(--accent); }
 .case-label { margin: 0 0 14px; font: 400 12px/1.2 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
 .case p:last-child { margin: 0; font-size: 16px; line-height: 1.6; }
+.answer { margin: 64px 0 0; padding-top: 40px; border-top: 1px solid var(--line-strong); max-width: 860px; }
+.answer h3 { font: 700 clamp(26px, 2.6vw, 32px)/1.1 var(--font-body); letter-spacing: -.6px; margin: 0 0 18px; }
+.answer .lede { margin: 0 0 32px; }
 
 .chapter { padding: 88px 0; border-top: 1px solid var(--line); }
 .chapter:nth-of-type(odd) { background: var(--bg-sunken); }
