@@ -297,7 +297,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .legend li:nth-child(even) { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
 .legend li:nth-child(even) .scene { order: 2; }
 .legend .scene {
-  min-height: 100%; background: #07080b url("../../docs/assets/the-lab.png") 50% 50% / 250% no-repeat;
+  min-height: 100%; background: #07080b url("the-lab-1536.webp") 50% 50% / 250% no-repeat;
   image-rendering: pixelated;
 }
 .legend li:nth-child(odd) .scene { border-right: 1px solid var(--line); }
