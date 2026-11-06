@@ -96,6 +96,17 @@ description: A configuration manager for projects. A team settles its standards 
         <p>A recipe is a short Groovy file in the project. It asks for a model, and the model says what it writes.
           Cook writes that and nothing else.</p>
       </div>
+      <div class="hello">
+        <ol class="cook-line-up" aria-label="What cooking does">
+          <li><span class="station">{% include icons/terminal.svg %}</span><div><b>Cook</b>
+            <p>The recipe runs against the files as they are now.</p></div></li>
+          <li><span class="station">{% include icons/layers.svg %}</span><div><b>Plan</b>
+            <p>Each model turns its calls into sections, keys and files.</p></div></li>
+          <li><span class="station">{% include icons/scale.svg %}</span><div><b>Review</b>
+            <p>One diff for the whole batch, <code>cook.lock</code> included.</p></div></li>
+          <li><span class="station">{% include icons/package.svg %}</span><div><b>Write</b>
+            <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
+        </ol>
       <div class="examples">
         <input type="radio" name="example" id="example-file" checked><label for="example-file">A file and a section</label>
         <input type="radio" name="example" id="example-key"><label for="example-key">A key in JSON</label>
@@ -120,7 +131,6 @@ notes.ignore(<span class="add">'scratch/'</span>)</pre>
               <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
             </ul>
           </div>
-          {% include cook-line-up.html %}
           <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
             <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/notes.groovy
@@ -178,7 +188,6 @@ editor.formatOnSave()</pre>
                 <li><code>cook discard</code> takes out that one key and nothing else.</li>
               </ul>
             </div>
-            {% include cook-line-up.html %}
             <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy adds editor.formatOnSave to .vscode/settings.json beside the team's editor.fontSize, and records the key in cook.lock.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/editor.groovy
@@ -229,7 +238,6 @@ editor.indent(indent)</pre>
                   use the same value.</li>
               </ul>
             </div>
-            {% include cook-line-up.html %}
             <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy with --indent=4 adds editor.tabSize 4 and records the argument in cook.lock.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/editor.groovy --indent=4
@@ -258,6 +266,7 @@ Updated cook.lock</pre>
             </div>
           </div>
         </div>
+      </div>
       </div>
       <a class="next-step" href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/book-open.svg %}<span><strong>Write a recipe</strong>
         builds this one step by step, from the model to a cookbook other projects cook.</span></a>
