@@ -76,10 +76,17 @@ description: A configuration manager for projects. A team settles its standards 
 <section class="chapter" id="the-formula">
   <div class="wrap">
     <p class="chapter-label">The recipes</p>
-    <div id="your-recipes">
-      <h2>Hello world: your first recipe</h2>
+    <div>
+      <h2>A standard, written down</h2>
       <p class="lede">A recipe says what a standard puts in a project and where. The team keeps it at a version, and
         every project applies the same one.</p>
+      <div class="story pull">
+        <p>When the team improves a standard, the improvement reaches every project as one diff, and one person reads it
+          before it lands. A copy that falls behind is caught by a check, not by a teammate. A standard the team drops
+          leaves with everything it brought, and nothing else. The team's own lines stay as they were, and each program
+          keeps reading its own files, so nobody needs Cook to follow the standard.</p>
+      </div>
+      <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>
       <div class="story">
         <p>A recipe is a short Groovy file in the repository. It asks for a model, and the model says what it writes.
           Cook writes that and nothing else.</p>
@@ -126,12 +133,6 @@ Updated .gitignore
 Created NOTES.md
 Created cook.lock</pre>
         </div>
-      </div>
-      <div class="story pull after-cook">
-        <p>When the team improves a standard, the improvement reaches every project as one diff, and one person reads it
-          before it lands. A copy that falls behind is caught by a check, not by a teammate. A standard the team drops
-          leaves with everything it brought, and nothing else. The team's own lines stay as they were, and each program
-          keeps reading its own files, so nobody needs Cook to follow the standard.</p>
       </div>
       <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> builds this one
         step by step, from the model to a cookbook other repositories cook.</p>
