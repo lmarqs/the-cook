@@ -1,7 +1,7 @@
 ---
 layout: home
 permalink: /
-description: A configuration manager for repositories where people and coding agents work together. Your team's way of working becomes recipes, cooked into every repository as one reviewed diff.
+description: A configuration manager for projects. A team settles its standards once, replicates them to every project, person and agent, and improves them in one place.
 ---
 {%- if site.release -%}{%- assign version = site.release | remove_first: "v" -%}{%- else -%}{%- assign version = "<version>" | escape -%}{%- endif -%}
 {%- assign agents = "io.github.lmarqs.cookbook:agents:" | append: version -%}
@@ -11,10 +11,8 @@ description: A configuration manager for repositories where people and coding ag
     <div class="hero-copy">
       <p class="kicker">Recipe driven configuration</p>
       <h1>Cook the best product <em>without any source of contamination.</em></h1>
-      <p class="lede">A configuration manager for repositories where people and coding agents work together. Your
-        team's way of working becomes recipes: native files for every tool, the deterministic part, and skills for the
-        part that needs judgment. Cook them into every repository, move them to a newer release, discard what you
-        outgrow, and approve each change as one diff.</p>
+      <p class="lede">Cook is a configuration manager for projects. A team settles its standards once, replicates them to
+        every project, every person and every agent, and improves them in one place.</p>
       <div class="actions">
         <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
         <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
@@ -28,231 +26,95 @@ description: A configuration manager for repositories where people and coding ag
       </ul>
     </div>
     <div class="lab-map">
-      <img src="{{ '/docs/assets/the-lab.png' | relative_url }}" width="1536" height="1024" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK. Numbered pins mark the parts the lab section explains.">
+      <img src="{{ '/docs/assets/the-lab.png' | relative_url }}" width="1536" height="1024" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK. Numbered pins mark the parts the lab chapter explains.">
       <a class="pin" href="#pin-1" data-pin="1" style="left: 73%; top: 25%;" aria-label="1: the office">1</a>
       <a class="pin" href="#pin-2" data-pin="2" style="left: 36%; top: 66%;" aria-label="2: a bench">2</a>
       <a class="pin" href="#pin-3" data-pin="3" style="left: 17%; top: 40%;" aria-label="3: a hazmat suit">3</a>
-      <a class="pin" href="#pin-4" data-pin="4" style="left: 12%; top: 60%;" aria-label="4: the repository board">4</a>
+      <a class="pin" href="#pin-4" data-pin="4" style="left: 12%; top: 60%;" aria-label="4: the board">4</a>
       <a class="pin" href="#pin-5" data-pin="5" style="left: 58%; top: 44%;" aria-label="5: the robot arms">5</a>
       <a class="pin" href="#pin-6" data-pin="6" style="left: 82%; top: 75%;" aria-label="6: the conveyor">6</a>
     </div>
   </div>
 </section>
 
-<section class="section" id="the-shift">
+<section class="opening" id="the-problem">
   <div class="wrap">
-    <p class="kicker">The shift</p>
-    <h2>Onboard on day one. Work in parallel. Make it yours. Do it again.</h2>
-    <p class="lede">Four things a repository keeps true for everyone who works in it, person or agent, and that setup
-      copied by hand loses.</p>
-    <div class="cards">
-      <div class="card">
-        <h3>Onboard on day one</h3>
-        <p>A fresh clone already has the setup: <code>#connect</code> commits the links each harness reads, and
-          <code>cook replicate</code> rebuilds what git ignores. A newcomer installs Cook and starts; a cloud session
-          starts without even that.</p>
-        <a class="more" href="{{ '/docs/get-started.html' | relative_url }}">Get started</a>
-      </div>
-      <div class="card">
-        <h3>Work in parallel</h3>
-        <p>Each branch gets a worktree at <code>.worktrees/&lt;branch&gt;</code>, with the setup that branch commits
-          and the setup and teardown scripts your team fills in once. People and agents work side by side without
-          touching each other's files.</p>
-        <a class="more" href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a>
-      </div>
-      <div class="card">
-        <h3>Make it yours</h3>
-        <p>A recipe touches only the sections, keys and files it owns. Your theme, model and standing approvals stay
-          in your harness's local file, such as <code>.claude/settings.local.json</code>, merged over the team's
-          settings and kept out of commits.</p>
-        <a class="more" href="{{ '/docs/features/cook.html#sections-and-markers' | relative_url }}">Sections and markers</a>
-      </div>
-      <div class="card">
-        <h3>Do it again</h3>
-        <p>The setup that worked here is a list of recipes, pinned in <code>cook.lock</code>. Cook the same list in the
-          next repository and it starts where this one is. Change a recipe once and every repository that cooks it
-          gets the change as a reviewed diff.</p>
-        <a class="more" href="{{ '/cookbook/' | relative_url }}">Cookbooks</a>
-      </div>
+    <h2>Knowledge should be easy to replicate</h2>
+    <p class="lede">A team works out how it wants to work in one project: how the code is formatted, which tools run at
+      which version, what a build must pass, how a release is cut, how documentation is organised, how work is tracked
+      and reviewed, how editors and agents are set up. Settling it takes weeks of trying and arguing, and then it
+      works. Then there is a second project, a third, and a new teammate on the first.</p>
+    <div class="story">
+      <p>Each of those standards ends up in a file some program reads, so the second project gets the standards by
+        copying files. The third gets them from whichever of the two is newer. A month later the team improves one
+        standard, and the improvement goes into one project and no further.</p>
+      <p>The new teammate clones the first project and finds last month's version of how the team works, and asks.
+        Someone pastes the current files over the old ones to catch up, and the paste takes a colleague's own settings
+        with it. By the end of the year the team's standards exist in ten versions across ten projects, and nobody can
+        say which lines are the standard and which were edited by hand.</p>
+      <p>Dropping a standard is harder still. Adopting one tool left a line here and a block there, across half a dozen
+        files that belong to other things. When the team moves on from it, nobody remembers every place it touched,
+        and what is not found stays behind.</p>
     </div>
   </div>
 </section>
 
-<section class="section" id="why-not-a-skill">
+<section class="chapter" id="the-lab">
   <div class="wrap">
-    <p class="kicker">The formula</p>
-    <h2>Deterministic where it can be. Judgment where it must.</h2>
-    <p class="lede">An agent following a skill sets one repository up once. Cook keeps the setup the same across
-      repositories, harnesses and releases, and hands the judgment to skills it writes.</p>
-    <div class="split">
-      <div class="panel problem">
-        <h3>An agent with a skill</h3>
-        <p>Ten repositories set up from one skill are ten setups. No check says the agent did it right, and nobody can
-          later say which lines were the setup and which the team's.</p>
-        <p>A better setup means running the agent again in every repository and reconciling by eye, through dozens of
-          edits, and the next change needs the agent again.</p>
+    <p class="chapter-label">The lab</p>
+    <div>
+      <h2>A place where standards matter</h2>
+      <p class="lede">The standard travels with the code: every clone has it, every branch keeps it, and the next project
+        starts from the same one. Whoever works there, a person through an editor or an agent through its harness,
+        finds the same standard.</p>
+      <div class="story">
+        <p>Six things hold in the lab, whoever is working and whatever they work with.</p>
       </div>
-      <div class="panel goal">
-        <h3>Cook, then the skill</h3>
-        <p>One recipe at one version gives the same files in every repository. <code>cook check</code> fails CI on
-          drift with no agent or model, and <code>discard</code> removes exactly what a recipe wrote.</p>
-        <p>A newer release is one diff per repository, approved once and rolled back if a write fails. The output is
-          native files anyone reads; the skills Cook writes carry the rest.</p>
-      </div>
-    </div>
-    <p class="note"><a href="{{ '/docs/philosophy.html#why-not-a-skill' | relative_url }}">Why not a skill</a> ties each point to the decision behind it.</p>
-  </div>
-</section>
-
-<section class="section" id="one-cook">
-  <div class="wrap">
-    <p class="kicker">The office</p>
-    <h2>Edit the policy, cook, review, commit</h2>
-    <p class="lede">One policy file. Three native files. Two harnesses. One question.</p>
-    <div class="cook">
-      <ol class="steps">
-        <li class="step"><h3>Edit what the team decides</h3>
-          <p>Allow <code>git status</code> and <code>git diff</code>, deny <code>git reset --hard</code>, in <code>.agents/permission/policy.yaml</code>.</p></li>
-        <li class="step"><h3>Cook and read the diff</h3>
-          <p>Cook renders the policy into each harness's own files and shows every change, <code>cook.lock</code> included, as one diff. It asks once. A failed write puts the files back as they were.</p></li>
-        <li class="step"><h3>Commit one change</h3>
-          <p>The policy and the settings it renders go into one commit, reviewed like any other.</p></li>
-        <li class="step"><h3>Let CI keep watch</h3>
-          <p>Cook again and nothing changes. When someone edits the policy and forgets to cook, <code>cook check</code> fails the build.</p></li>
+      <ol class="legend">
+        <li id="pin-1" data-pin="1"><span class="num">1</span><div><h3>The office: one review</h3>
+          <p>A person reads every change to the setup before it lands.</p></div></li>
+        <li id="pin-2" data-pin="2"><span class="num">2</span><div><h3>Benches: a working copy each</h3>
+          <p>Each worker has a place of their own and waits for nobody.</p></div></li>
+        <li id="pin-3" data-pin="3"><span class="num">3</span><div><h3>Suits: nothing crosses over</h3>
+          <p>One worker's setup does not leak into another's, and the team's own lines stay as they were.</p></div></li>
+        <li id="pin-4" data-pin="4"><span class="num">4</span><div><h3>The board: native files</h3>
+          <p>Each program reads its own files. Nobody needs Cook to do their work.</p></div></li>
+        <li id="pin-5" data-pin="5"><span class="num">5</span><div><h3>Robot arms: unattended work</h3>
+          <p>Agents run on their own. A task is done when the team's check says so.</p></div></li>
+        <li id="pin-6" data-pin="6"><span class="num">6</span><div><h3>The conveyor: the setup arrives</h3>
+          <p>The same setup, at the same version, in every project.</p></div></li>
       </ol>
-      <div class="terminal" role="img" aria-label="Terminal: cooking agents#connect shows a diff of .agents/adapters/claude/settings.json and asks Write these changes?">
-        <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
-<pre><span class="prompt">$</span> cook {{ agents }}#connect --harness=claude
-<span class="meta">--- a/.agents/adapters/claude/settings.json</span>
-<span class="meta">+++ b/.agents/adapters/claude/settings.json</span>
-<span class="hunk">@@ -1,8 +1,13 @@</span>
- {
-   "permissions": {
-<span class="del">-    "allow": [],</span>
-<span class="add">+    "allow": [</span>
-<span class="add">+      "Bash(git status *)",</span>
-<span class="add">+      "Bash(git diff *)"</span>
-<span class="add">+    ],</span>
-     "ask": [],
-<span class="del">-    "deny": [],</span>
-<span class="add">+    "deny": [</span>
-<span class="add">+      "Bash(git reset --hard *)"</span>
-<span class="add">+    ],</span>
-     "disableBypassPermissionsMode": "disable"
-   },
+    </div>
+  </div>
+</section>
 
-<span class="ask">Write these changes? [y/N]</span> y
-Updated .agents/adapters/claude/settings.json
-
-<span class="prompt">$</span> cook {{ agents }}#connect --harness=claude
-Already cooked.</pre>
+<section class="chapter" id="the-formula">
+  <div class="wrap">
+    <p class="chapter-label">The formula</p>
+    <div>
+      <h2>A standard, written down</h2>
+      <p class="lede">A recipe says what a standard puts in a project and where. The team keeps it at a version, and
+        every project applies the same one.</p>
+      <div class="story">
+        <p>When the team improves a standard, the improvement reaches every project as one diff, and one person reads it
+          before it lands. A copy that falls behind is caught by a check, not by a teammate. A standard the team drops
+          leaves with everything it brought, and nothing else. The team's own lines stay as they were, and each program
+          keeps reading its own files, so nobody needs Cook to follow the standard.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section" id="the-lab">
+<section class="chapter" id="your-recipes">
   <div class="wrap">
-    <p class="kicker">The lab</p>
-    <h2>A repository worked by agents</h2>
-    <p class="lede">Several agents and people work in one repository at once. Each pin is a rule Cook keeps there, and
-      links to the page that states it.</p>
-    <ol class="legend">
-      <li id="pin-1" data-pin="1"><span class="num">1</span><div><h3>The office: one review</h3>
-        <p>Nothing is written until one person approves one diff. <a href="{{ '/docs/features/cook.html#review-and-recovery' | relative_url }}">Review and recovery</a></p></div></li>
-      <li id="pin-2" data-pin="2"><span class="num">2</span><div><h3>Benches: one worktree per agent</h3>
-        <p>Each agent works on its own branch, in its own checkout, with the setup that branch commits. <a href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a></p></div></li>
-      <li id="pin-3" data-pin="3"><span class="num">3</span><div><h3>Suits: no contamination</h3>
-        <p>A recipe touches only the sections, keys and files it owns. The rest of the file stays yours. <a href="{{ '/docs/features/cook.html#sections-and-markers' | relative_url }}">Sections and markers</a></p></div></li>
-      <li id="pin-4" data-pin="4"><span class="num">4</span><div><h3>The board: native files</h3>
-        <p>Every harness reads its own files directly, so a teammate who never runs Cook loses nothing. <a href="{{ '/docs/adrs/0010-dependence-on-the-binary.html' | relative_url }}">Why</a></p></div></li>
-      <li id="pin-5" data-pin="5"><span class="num">5</span><div><h3>Robot arms: unattended loops</h3>
-        <p>A loop run finishes a task only when the team's own check passes. <a href="{{ '/cookbook/src/ralph/' | relative_url }}">ralph cookbook</a></p></div></li>
-      <li id="pin-6" data-pin="6"><span class="num">6</span><div><h3>The conveyor: cookbooks</h3>
-        <p>Recipes arrive as versioned jars, from Maven Central or a cookbook of your own, pinned in <code>cook.lock</code>. A <code>.groovy</code> file in the repository is a recipe too. <a href="{{ '/cookbook/' | relative_url }}">Cookbooks</a></p></div></li>
-    </ol>
-    <ul class="works-with" aria-label="Works with">
-      <li>{% include icons/claude.svg %}Claude Code</li>
-      <li>{% include icons/bot.svg %}Codex</li>
-      <li>{% include icons/git.svg %}Git worktrees</li>
-      <li>{% include icons/circle-dot.svg %}Beads</li>
-      <li>{% include icons/repeat.svg %}ralph-tui</li>
-      <li>{% include icons/apachemaven.svg %}Maven Central</li>
-    </ul>
-  </div>
-</section>
-
-<section class="section" id="why">
-  <div class="wrap">
-    <p class="kicker">Contamination</p>
-    <h2>Setup copied by hand drifts</h2>
-    <div class="split">
-      <div class="panel problem">
-        <h3>Without Cook</h3>
-        <p>Last month someone allowed <code>git diff</code> for Claude Code. Codex never heard about it, the other
-          repository still has the old copy, and a teammate's hook in the same settings file vanished when a fresh copy
-          was pasted over it.</p>
-        <p>Now nobody can say which lines are shared setup and which were written by hand.</p>
-      </div>
-      <div class="panel goal">
-        <h3>With Cook</h3>
-        <p>The decision lives in one policy file. Cook renders it into Claude Code's and Codex's own files, marks the
-          part it owns, and leaves every other line alone.</p>
-        <p>The change lands as one reviewed commit. A recipe you stop using leaves the same way, and takes only what it
-          brought.</p>
-      </div>
-    </div>
-    <p class="note"><a href="{{ '/docs/philosophy.html' | relative_url }}">The philosophy</a> says why Cook exists and what it is not.</p>
-  </div>
-</section>
-
-<section class="section" id="sets-up">
-  <div class="wrap">
-    <p class="kicker">The conveyor</p>
-    <h2>Four cookbooks run today</h2>
-    <p class="lede">Each recipe says what it writes before it writes it: <code>cook help &lt;coordinates&gt;</code>.</p>
-    <div class="cards">
-      <div class="card">
-        <p class="recipe">agents#seed · agents#connect</p>
-        <h3>One rulebook for every harness</h3>
-        <p><code>#seed</code> writes <code>AGENTS.md</code> and a permission policy. <code>#connect</code> renders the
-          policy into Claude Code and Codex, and commits the links, so a fresh clone or a cloud session already has
-          the setup.</p>
-        <a class="more" href="{{ '/cookbook/src/agents/' | relative_url }}">agents cookbook</a>
-      </div>
-      <div class="card">
-        <p class="recipe">git#worktrees</p>
-        <h3>A bench for each agent</h3>
-        <p>Every worktree goes to <code>.worktrees/&lt;branch&gt;</code>, with setup and teardown scripts your team
-          fills in once and every agent runs.</p>
-        <a class="more" href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a>
-      </div>
-      <div class="card">
-        <p class="recipe">ralph#ralph-tui</p>
-        <h3>Loops that stop at your check</h3>
-        <p>ralph-tui runs unattended in a worktree of its own. A task completes only when the team's check passes, and
-          clean-up keeps commits that have not landed unless forced.</p>
-        <a class="more" href="{{ '/cookbook/src/ralph/' | relative_url }}">ralph cookbook</a>
-      </div>
-      <div class="card">
-        <p class="recipe">docs#layout</p>
-        <h3>One source of truth for people and agents</h3>
-        <p>The <code>docs-layout</code> skill teaches where a fact goes in <code>docs/</code>, so each fact lives on
-          one page that people and coding agents both read.</p>
-        <a class="more" href="{{ '/cookbook/src/docs/' | relative_url }}">docs cookbook</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="your-recipes">
-  <div class="wrap">
-    <p class="kicker">The notebook</p>
-    <h2>Write the recipe your team is missing</h2>
-    <p class="lede">A recipe is a Groovy file in your repository. Cook reviews, records and checks it like one from a cookbook.</p>
+    <p class="chapter-label">The notebook</p>
+    <div>
+    <h2>A convention no cookbook holds</h2>
+    <p class="lede">An organisation has a rule no public cookbook holds. A recipe is a Groovy file in the repository, and
+      Cook treats it like one from a cookbook.</p>
     <div class="cook">
       <ol class="steps">
-        <li class="step"><h3>Model what you own</h3>
+        <li class="step"><h3>Model what the recipe owns</h3>
           <p>A class marked <code>@Ingredient</code> names the files, sections and keys it writes. The rest of every file stays the team's.</p></li>
         <li class="step"><h3>Write the recipe</h3>
           <p>A few lines that describe themselves in <code>@help</code>, take options with <code>@param</code> and call the model.</p></li>
@@ -277,81 +139,118 @@ Created NOTES.md
 Created cook.lock</pre>
       </div>
     </div>
-    <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> takes you from these two files to a cookbook, step by step.</p>
+    <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> goes from these two files to a cookbook, step by step.</p>
+    </div>
   </div>
 </section>
 
-<section class="section" id="operations">
+<section class="chapter close" id="install">
   <div class="wrap">
-    <p class="kicker">Procedures</p>
-    <h2>Cook, withdraw, rebuild, check</h2>
-    <p class="lede">Four commands, one review, one lock.</p>
-    <div class="ops">
-      <div class="op"><pre>cook &lt;recipe&gt;...</pre>
-        <p>Cooks recipes left to right in one batch.</p></div>
-      <div class="op"><pre>cook discard &lt;name&gt;...</pre>
-        <p>Takes out exactly what a recipe put in, without running it.</p></div>
-      <div class="op"><pre>cook replicate [&lt;name&gt;...]</pre>
-        <p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
-      <div class="op"><pre>cook check [&lt;name&gt;...]</pre>
-        <p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
+    <p class="chapter-label">Start</p>
+    <div>
+      <h2>Start with one repository</h2>
+      <p class="lede">Install Cook, cook one recipe and read the diff. The next repository cooks the same list.</p>
+      <div class="actions">
+        <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
+      </div>
+      <ul class="platforms">
+        <li>{% include icons/linux.svg %}Linux x64</li>
+        <li>{% include icons/linux.svg %}Linux arm64</li>
+        <li>{% include icons/apple.svg %}macOS arm64</li>
+        <li>{% include icons/openjdk.svg %}Java runtime included</li>
+      </ul>
+      <div class="install">
+        <div>
+          <h3>{% include icons/beer.svg %}Homebrew</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
+brew install cook</code></pre></div></div>
+          </div>
+        </div>
+        <div>
+          <h3>{% include icons/package.svg %}mise</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
+          </div>
+        </div>
+        <div>
+          <h3>{% include icons/download.svg %}Binary</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz | tar -xz -C ~/.local/share
+export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
+          </div>
+        </div>
+      </div>
+      <p class="note">Then run <code>cook --help</code>. <a href="{{ '/docs/features/install.html' | relative_url }}">Install</a> covers checksums, macOS paths, pinning a release for a team and building from source.</p>
+    </div>
+  </div>
+</section>
+
+<section class="seam">
+  <div class="wrap">
+    <p class="part">Part two</p>
+    <h2>The cookbook</h2>
+    <p>The recipes that run today, and what each one writes.</p>
+  </div>
+</section>
+
+<section class="ref" id="commands">
+  <div class="wrap">
+    <p class="path">cli</p>
+    <h2>The four commands</h2>
+    <p class="lede">Four commands and one record of what they wrote.</p>
+    <div class="rows ops">
+      <div class="k">cook &lt;recipe&gt;...</div><div><p>Cooks recipes left to right in one batch.</p></div>
+      <div class="k">cook discard &lt;name&gt;...</div><div><p>Takes out exactly what a recipe put in, without running it.</p></div>
+      <div class="k">cook replicate [&lt;name&gt;...]</div><div><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
+      <div class="k">cook check [&lt;name&gt;...]</div><div><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
     </div>
     <p class="note"><a href="{{ '/docs/features/cli.html' | relative_url }}">The CLI reference</a> lists every option.</p>
   </div>
 </section>
 
-<section class="section" id="install">
+<section class="ref" id="sets-up">
   <div class="wrap">
-    <p class="kicker">Suit up</p>
-    <h2>Pick a package manager</h2>
-    <p class="lede">Every release ships Cook for Linux and macOS with its own Java runtime, so the machine needs no Java.</p>
-    <ul class="platforms">
-      <li>{% include icons/linux.svg %}Linux x64</li>
-      <li>{% include icons/linux.svg %}Linux arm64</li>
-      <li>{% include icons/apple.svg %}macOS arm64</li>
-      <li>{% include icons/openjdk.svg %}Java runtime included</li>
-    </ul>
-    <div class="install">
-      <div>
-        <h3>{% include icons/beer.svg %}Homebrew</h3>
-        <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
-brew install cook</code></pre></div></div>
-        </div>
-      </div>
-      <div>
-        <h3>{% include icons/package.svg %}mise</h3>
-        <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
-        </div>
-      </div>
-      <div>
-        <h3>{% include icons/download.svg %}Binary</h3>
-        <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz | tar -xz -C ~/.local/share
-export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
-        </div>
-      </div>
+    <p class="path">cookbook / index</p>
+    <h2>What runs today</h2>
+    <p class="lede">Each recipe says what it writes before it writes it: <code>cook help &lt;coordinates&gt;</code>.</p>
+    <div class="rows">
+      <div class="k">agents#seed<br>agents#connect</div>
+      <div><h3>One rulebook for every harness</h3>
+        <p><code>#seed</code> writes <code>AGENTS.md</code> and a permission policy. <code>#connect</code> renders the
+          policy into Claude Code and Codex, and commits the links, so a fresh clone or a cloud session already has the
+          setup.</p>
+        <a href="{{ '/cookbook/src/agents/' | relative_url }}">agents cookbook</a></div>
+      <div class="k">git#worktrees</div>
+      <div><h3>A bench for each agent</h3>
+        <p>Every worktree goes to <code>.worktrees/&lt;branch&gt;</code>, with setup and teardown scripts the team fills
+          in once and every agent runs.</p>
+        <a href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a></div>
+      <div class="k">ralph#ralph-tui</div>
+      <div><h3>Loops that stop at the team's check</h3>
+        <p>ralph-tui runs unattended in a worktree of its own. A task completes only when the team's check passes, and
+          clean-up keeps commits that have not landed unless forced.</p>
+        <a href="{{ '/cookbook/src/ralph/' | relative_url }}">ralph cookbook</a></div>
+      <div class="k">docs#layout</div>
+      <div><h3>One source of truth for people and agents</h3>
+        <p>The <code>docs-layout</code> skill teaches where a fact goes in <code>docs/</code>, so each fact lives on one
+          page that people and coding agents both read.</p>
+        <a href="{{ '/cookbook/src/docs/' | relative_url }}">docs cookbook</a></div>
     </div>
-    <p class="note">Then run <code>cook --help</code>. <a href="{{ '/docs/features/install.html' | relative_url }}">Install</a> covers checksums, macOS paths, pinning a release for a team and building from source.</p>
   </div>
 </section>
 
-<section class="section" id="docs">
+<nav class="docs-index" id="docs" aria-label="Documentation">
   <div class="wrap">
-    <p class="kicker">The manuals</p>
-    <h2>Read next</h2>
-    <div class="map">
-      <a href="{{ '/docs/get-started.html' | relative_url }}">{% include icons/book-open.svg %}<strong>Get started</strong><span>Install Cook and cook your first recipe, step by step.</span></a>
-      <a href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/apachegroovy.svg %}<strong>Write a recipe</strong><span>A model, a recipe, a section of a shared file, then a cookbook of your own.</span></a>
-      <a href="{{ '/docs/philosophy.html' | relative_url }}">{% include icons/lightbulb.svg %}<strong>Philosophy</strong><span>Why the project exists, who it is for, and what it is and is not.</span></a>
-      <a href="{{ '/docs/contributing.html' | relative_url }}">{% include icons/scale.svg %}<strong>Contributing</strong><span>The tenets a proposal for Cook is judged against.</span></a>
-      <a href="{{ '/docs/architecture.html' | relative_url }}">{% include icons/layers.svg %}<strong>Architecture</strong><span>The intended design: responsibilities, operations, commands and distribution.</span></a>
-      <a href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<strong>CLI reference</strong><span>Every command, option and message of <code>cook</code>.</span></a>
-      <a href="{{ '/cookbook/' | relative_url }}">{% include icons/chef-hat.svg %}<strong>Cookbook</strong><span>How recipes and models are shaped, released and resolved.</span></a>
-      <a href="{{ '/docs/features/glossary.html' | relative_url }}">{% include icons/book-a.svg %}<strong>Glossary</strong><span>Recipe, ingredient, kitchen, lock and the rest of the vocabulary.</span></a>
-      <a href="{{ '/docs/ux/' | relative_url }}">{% include icons/ruler.svg %}<strong>Standards</strong><span>How the CLI, messages, generated content and skills behave.</span></a>
-      <a href="{{ '/docs/adrs/' | relative_url }}">{% include icons/gavel.svg %}<strong>Decisions</strong><span>The architecture decision records and the reasoning behind each one.</span></a>
-    </div>
+    <a href="{{ '/docs/get-started.html' | relative_url }}">Get started</a>
+    <a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a>
+    <a href="{{ '/docs/philosophy.html' | relative_url }}">Philosophy</a>
+    <a href="{{ '/docs/architecture.html' | relative_url }}">Architecture</a>
+    <a href="{{ '/docs/features/cli.html' | relative_url }}">CLI reference</a>
+    <a href="{{ '/cookbook/' | relative_url }}">Cookbook</a>
+    <a href="{{ '/docs/features/glossary.html' | relative_url }}">Glossary</a>
+    <a href="{{ '/docs/ux/' | relative_url }}">Standards</a>
+    <a href="{{ '/docs/adrs/' | relative_url }}">Decisions</a>
+    <a href="{{ '/docs/contributing.html' | relative_url }}">Contributing</a>
   </div>
-</section>
+</nav>
