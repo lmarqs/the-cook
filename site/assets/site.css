@@ -279,8 +279,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 
 .chapter { padding: 88px 0; border-top: 1px solid var(--line); }
 .chapter:nth-of-type(odd) { background: var(--bg-sunken); }
-.chapter > .wrap { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; }
-.chapter-label { margin: 0; font: 400 13px/1.2 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
+.chapter-label { margin: 0 0 18px; font: 400 13px/1.2 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
 .chapter h2 { font: 700 36px/1.08 var(--font-body); letter-spacing: -1px; margin: 0 0 22px; max-width: 780px; }
 .chapter .lede { font-size: 20px; line-height: 1.5; margin: 0 0 32px; max-width: 700px; }
 .chapter .story { margin: 0 0 32px; }
@@ -395,7 +394,6 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .hero-inner, .cook { grid-template-columns: minmax(0, 1fr); }
   .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cases { grid-template-columns: minmax(0, 1fr); }
-  .chapter > .wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .install { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 860px) {
