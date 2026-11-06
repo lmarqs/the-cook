@@ -92,16 +92,6 @@ description: A configuration manager for projects. A team settles its standards 
           <dt><code>@param</code></dt><dd>Takes <code>--name=value</code>. The lock remembers it for every later cook.</dd>
         </dl>
       </div>
-      <ul class="traits">
-        <li class="blue">{% include icons/git-compare.svg %}<p>When the team improves a standard, the improvement reaches every
-          project as one diff, and one person reads it before it lands.</p></li>
-        <li class="green">{% include icons/circle-check.svg %}<p>A copy that falls behind is caught by a check, not by a
-          teammate.</p></li>
-        <li class="orange">{% include icons/trash-2.svg %}<p>A standard the team drops leaves with everything it brought, and
-          nothing else.</p></li>
-        <li class="purple">{% include icons/file-text.svg %}<p>The team's own lines stay as they were, and each program keeps
-          reading its own files, so nobody needs Cook to follow the standard.</p></li>
-      </ul>
       <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>
       <div class="story">
         <p>A recipe is a short Groovy file in the project. It asks for a model, and the model says what it writes.
