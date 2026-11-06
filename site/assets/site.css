@@ -286,21 +286,23 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .pull { max-width: 760px; padding: 24px 28px; border-left: 4px solid var(--accent); }
 .pull p { margin: 0; }
 
-.legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.legend li { padding: 0; overflow: hidden; transition: border-color .08s, transform .08s, box-shadow .08s; }
-.legend li:target, .legend li:hover { border-color: var(--accent); transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--shadow); }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px; }
+.legend li { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); padding: 0; overflow: hidden; }
+.legend li:nth-child(even) .scene { order: 2; }
 .legend .scene {
-  aspect-ratio: 3 / 2; background: #07080b url("../../docs/assets/the-lab.png") 50% 50% / 250% no-repeat;
-  border-bottom: 1px solid var(--line); image-rendering: pixelated;
+  min-height: 100%; background: #07080b url("../../docs/assets/the-lab.png") 50% 50% / 250% no-repeat;
+  image-rendering: pixelated;
 }
-.legend-body { display: grid; grid-template-columns: 28px 1fr; gap: 16px; padding: 18px 20px 20px; }
+.legend li:nth-child(odd) .scene { border-right: 1px solid var(--line); }
+.legend li:nth-child(even) .scene { border-left: 1px solid var(--line); }
+.legend-body { display: grid; grid-template-columns: 28px 1fr; gap: 20px; padding: 28px 32px 30px; }
 .legend .num {
   width: 28px; height: 28px; margin-top: 1px; display: grid; place-items: center; background: #f5c518; color: #111318;
   font: 400 13px/1 var(--font-label); border: 2px solid #111318;
 }
-.legend h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; line-height: 1.3; }
-.legend p { margin: 0; font-size: 15px; }
-.legend .was { margin: 0 0 12px; padding: 0 0 12px; border-bottom: 1px dashed var(--line-strong); color: var(--text-muted); }
+.legend h3 { margin: 0 0 12px; font-size: 22px; font-weight: 600; line-height: 1.3; }
+.legend p { margin: 0; font-size: 16px; line-height: 1.6; }
+.legend .was { margin: 0 0 14px; padding: 0 0 14px; border-bottom: 1px dashed var(--line-strong); color: var(--text-muted); }
 
 /* Commands */
 .commands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
@@ -392,7 +394,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 }
 @media (max-width: 980px) {
   .hero-inner, .cook { grid-template-columns: minmax(0, 1fr); }
-  .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .legend li { grid-template-columns: minmax(0, 1fr); }
+  .legend li:nth-child(even) .scene { order: 0; }
+  .legend .scene { aspect-ratio: 3 / 2; min-height: 0; border: 0 !important; border-bottom: 1px solid var(--line) !important; }
   .install { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 860px) {
@@ -424,7 +428,6 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .seam h2 { font-size: 36px; }
   .commands, .recipes { grid-template-columns: minmax(0, 1fr); }
   .hero-inner { padding: 40px 16px 48px; gap: 32px; }
-  .legend { grid-template-columns: minmax(0, 1fr); }
   .hero .lede { font-size: 17px; }
 }
 @media (max-width: 420px) {
