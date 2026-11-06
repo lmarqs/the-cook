@@ -85,11 +85,16 @@ description: A configuration manager for projects. A team settles its standards 
         <p class="lede"><strong>Write a standard once.</strong> A recipe is a short Groovy file. Cook it into one project
           or fifty, at the same version, each with its own parameters.</p>
         <dl class="spec" aria-label="What a recipe can do">
-          <dt><code>@File</code></dt><dd>Drops in a whole file.</dd>
-          <dt><code>@Key</code></dt><dd>Slips one key into JSON, TOML or YAML. Every other key stays put.</dd>
-          <dt><code>@Section</code></dt><dd>Claims a marked corner of a shared file. The rest stays the team's.</dd>
-          <dt><code>@Links</code></dt><dd>Points symbolic links where the standard needs them.</dd>
-          <dt><code>@param</code></dt><dd>Takes <code>--name=value</code> in a recipe. <code>cook.lock</code> remembers it for every later cook.</dd>
+          <dt><code>@File</code></dt><dd>Drops in a whole file.
+            <code class="use">@File(path = 'NOTES.md') String notes()</code></dd>
+          <dt><code>@Key</code></dt><dd>Slips one key into JSON, TOML or YAML. Every other key stays put.
+            <code class="use">@Key(path = '.vscode/settings.json', segments = ['editor.formatOnSave']) Boolean formatOnSave()</code></dd>
+          <dt><code>@Section</code></dt><dd>Claims a marked corner of a shared file. The rest stays the team's.
+            <code class="use">@Section(path = '.gitignore', id = 'scratch') List&lt;String&gt; ignored()</code></dd>
+          <dt><code>@Links</code></dt><dd>Points symbolic links where the standard needs them.
+            <code class="use">@Links(path = '.claude') Map&lt;String, String&gt; links()</code></dd>
+          <dt><code>@param</code></dt><dd>Takes <code>--name=value</code> in a recipe. <code>cook.lock</code> remembers it for every later cook.
+            <code class="use">@param(value = 'indent', default = '2') int indent</code></dd>
         </dl>
       </div>
       <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>
