@@ -80,19 +80,6 @@
     });
   }
 
-  // On the landing page, a pin on the lab image and its legend entry light up together.
-  function labPins() {
-    document.querySelectorAll("[data-pin]").forEach(function (el) {
-      var id = el.getAttribute("data-pin");
-      var pair = document.querySelectorAll('[data-pin="' + id + '"]');
-      function set(on) { pair.forEach(function (p) { p.classList.toggle("on", on); }); }
-      el.addEventListener("mouseenter", function () { set(true); });
-      el.addEventListener("mouseleave", function () { set(false); });
-      el.addEventListener("focus", function () { set(true); });
-      el.addEventListener("blur", function () { set(false); });
-    });
-  }
-
   // Mermaid loads only on a page that has a diagram; until it renders, or if it cannot load, the source stays shown.
   // The single-file build is the one a checksum can cover: the ESM build fetches chunks that integrity cannot pin.
   function diagrams() {
@@ -140,5 +127,4 @@
   toc();
   copyButtons();
   diagrams();
-  labPins();
 })();

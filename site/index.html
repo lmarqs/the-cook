@@ -26,13 +26,7 @@ description: A configuration manager for projects. A team settles its standards 
       </ul>
     </div>
     <div class="lab-map">
-      <img src="{{ '/docs/assets/the-lab.png' | relative_url }}" width="1536" height="1024" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK. Numbered pins mark the parts the lab chapter explains.">
-      <a class="pin" href="#pin-1" data-pin="1" style="left: 73%; top: 25%;" aria-label="1: the office">1</a>
-      <a class="pin" href="#pin-2" data-pin="2" style="left: 36%; top: 66%;" aria-label="2: a bench">2</a>
-      <a class="pin" href="#pin-3" data-pin="3" style="left: 17%; top: 40%;" aria-label="3: a hazmat suit">3</a>
-      <a class="pin" href="#pin-4" data-pin="4" style="left: 12%; top: 60%;" aria-label="4: the board">4</a>
-      <a class="pin" href="#pin-5" data-pin="5" style="left: 58%; top: 44%;" aria-label="5: the robot arms">5</a>
-      <a class="pin" href="#pin-6" data-pin="6" style="left: 82%; top: 75%;" aria-label="6: the conveyor">6</a>
+      <img src="{{ '/docs/assets/the-lab.png' | relative_url }}" width="1536" height="1024" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK.">
     </div>
   </div>
 </section>
@@ -44,17 +38,26 @@ description: A configuration manager for projects. A team settles its standards 
       which version, what a build must pass, how a release is cut, how documentation is organised, how work is tracked
       and reviewed, how editors and agents are set up. Settling it takes weeks of trying and arguing, and then it
       works. Then there is a second project, a third, and a new teammate on the first.</p>
-    <div class="story">
-      <p>Each of those standards ends up in a file some program reads, so the second project gets the standards by
-        copying files. The third gets them from whichever of the two is newer. A month later the team improves one
-        standard, and the improvement goes into one project and no further.</p>
-      <p>The new teammate clones the first project and finds last month's version of how the team works, and asks.
-        Someone pastes the current files over the old ones to catch up, and the paste takes a colleague's own settings
-        with it. By the end of the year the team's standards exist in ten versions across ten projects, and nobody can
-        say which lines are the standard and which were edited by hand.</p>
-      <p>Dropping a standard is harder still. Adopting one tool left a line here and a block there, across half a dozen
-        files that belong to other things. When the team moves on from it, nobody remembers every place it touched,
-        and what is not found stays behind.</p>
+    <div class="cases">
+      <div class="case">
+        <p class="case-label">The copy</p>
+        <p>Each of those standards ends up in a file some program reads, so the second project gets the standards by
+          copying files. The third gets them from whichever of the two is newer. A month later the team improves one
+          standard, and the improvement goes into one project and no further.</p>
+      </div>
+      <div class="case">
+        <p class="case-label">The new teammate</p>
+        <p>The new teammate clones the first project and finds last month's version of how the team works, and asks.
+          Someone pastes the current files over the old ones to catch up, and the paste takes a colleague's own settings
+          with it. By the end of the year the team's standards exist in ten versions across ten projects, and nobody can
+          say which lines are the standard and which were edited by hand.</p>
+      </div>
+      <div class="case">
+        <p class="case-label">The drop</p>
+        <p>Dropping a standard is harder still. Adopting one tool left a line here and a block there, across half a dozen
+          files that belong to other things. When the team moves on from it, nobody remembers every place it touched,
+          and what is not found stays behind.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -67,22 +70,19 @@ description: A configuration manager for projects. A team settles its standards 
       <p class="lede">The standard travels with the code: every clone has it, every branch keeps it, and the next project
         starts from the same one. Whoever works there, a person through an editor or an agent through its harness,
         finds the same standard.</p>
-      <div class="story">
-        <p>Six things hold in the lab, whoever is working and whatever they work with.</p>
-      </div>
       <ol class="legend">
-        <li id="pin-1" data-pin="1"><span class="num">1</span><div><h3>The office: one review</h3>
-          <p>A person reads every change to the setup before it lands.</p></div></li>
-        <li id="pin-2" data-pin="2"><span class="num">2</span><div><h3>Benches: a working copy each</h3>
-          <p>Each worker has a place of their own and waits for nobody.</p></div></li>
-        <li id="pin-3" data-pin="3"><span class="num">3</span><div><h3>Suits: nothing crosses over</h3>
-          <p>One worker's setup does not leak into another's, and the team's own lines stay as they were.</p></div></li>
-        <li id="pin-4" data-pin="4"><span class="num">4</span><div><h3>The board: native files</h3>
-          <p>Each program reads its own files. Nobody needs Cook to do their work.</p></div></li>
-        <li id="pin-5" data-pin="5"><span class="num">5</span><div><h3>Robot arms: unattended work</h3>
-          <p>Agents run on their own. A task is done when the team's check says so.</p></div></li>
-        <li id="pin-6" data-pin="6"><span class="num">6</span><div><h3>The conveyor: the setup arrives</h3>
-          <p>The same setup, at the same version, in every project.</p></div></li>
+        <li id="pin-1"><div class="scene" style="background-position: 88% 8%;"></div><div class="legend-body"><span class="num">1</span><div><h3>The office: one review</h3>
+          <p>A person reads every change to the setup before it lands.</p></div></div></li>
+        <li id="pin-2"><div class="scene" style="background-position: 27% 77%;"></div><div class="legend-body"><span class="num">2</span><div><h3>Benches: a working copy each</h3>
+          <p>Each worker has a place of their own and waits for nobody.</p></div></div></li>
+        <li id="pin-3"><div class="scene" style="background-position: 0% 33%;"></div><div class="legend-body"><span class="num">3</span><div><h3>Suits: nothing crosses over</h3>
+          <p>One worker's setup does not leak into another's, and the team's own lines stay as they were.</p></div></div></li>
+        <li id="pin-4"><div class="scene" style="background-position: 0% 67%;"></div><div class="legend-body"><span class="num">4</span><div><h3>The board: native files</h3>
+          <p>Each program reads its own files. Nobody needs Cook to do their work.</p></div></div></li>
+        <li id="pin-5"><div class="scene" style="background-position: 63% 40%;"></div><div class="legend-body"><span class="num">5</span><div><h3>Robot arms: unattended work</h3>
+          <p>Agents run on their own. A task is done when the team's check says so.</p></div></div></li>
+        <li id="pin-6"><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">6</span><div><h3>The conveyor: the setup arrives</h3>
+          <p>The same setup, at the same version, in every project.</p></div></div></li>
       </ol>
     </div>
   </div>
@@ -90,12 +90,12 @@ description: A configuration manager for projects. A team settles its standards 
 
 <section class="chapter" id="the-formula">
   <div class="wrap">
-    <p class="chapter-label">The recipe</p>
+    <p class="chapter-label">The recipes</p>
     <div>
       <h2>A standard, written down</h2>
       <p class="lede">A recipe says what a standard puts in a project and where. The team keeps it at a version, and
         every project applies the same one.</p>
-      <div class="story">
+      <div class="story pull">
         <p>When the team improves a standard, the improvement reaches every project as one diff, and one person reads it
           before it lands. A copy that falls behind is caught by a check, not by a teammate. A standard the team drops
           leaves with everything it brought, and nothing else. The team's own lines stay as they were, and each program
@@ -111,11 +111,11 @@ description: A configuration manager for projects. A team settles its standards 
     <div>
       <h2>The four commands</h2>
       <p class="lede">Four commands and one record of what they wrote.</p>
-      <div class="rows ops">
-        <div class="k">cook &lt;recipe&gt;...</div><div><p>Cooks recipes left to right in one batch.</p></div>
-        <div class="k">cook discard &lt;name&gt;...</div><div><p>Takes out exactly what a recipe put in, without running it.</p></div>
-        <div class="k">cook replicate [&lt;name&gt;...]</div><div><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
-        <div class="k">cook check [&lt;name&gt;...]</div><div><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
+      <div class="commands">
+        <div class="command"><code>cook &lt;recipe&gt;...</code><p>Cooks recipes left to right in one batch.</p></div>
+        <div class="command"><code>cook discard &lt;name&gt;...</code><p>Takes out exactly what a recipe put in, without running it.</p></div>
+        <div class="command"><code>cook replicate [&lt;name&gt;...]</code><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
+        <div class="command"><code>cook check [&lt;name&gt;...]</code><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
       </div>
       <p class="note"><a href="{{ '/docs/features/cli.html' | relative_url }}">The CLI reference</a> lists every option.</p>
     </div>
@@ -194,20 +194,20 @@ Created cook.lock</pre>
         <li>{% include icons/openjdk.svg %}Java runtime included</li>
       </ul>
       <div class="install">
-        <div>
+        <div class="card">
           <h3>{% include icons/beer.svg %}Homebrew</h3>
           <div class="prose">
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
 brew install cook</code></pre></div></div>
           </div>
         </div>
-        <div>
+        <div class="card">
           <h3>{% include icons/package.svg %}mise</h3>
           <div class="prose">
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
           </div>
         </div>
-        <div>
+        <div class="card">
           <h3>{% include icons/download.svg %}Binary</h3>
           <div class="prose">
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz | tar -xz -C ~/.local/share
@@ -232,25 +232,25 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
     <p class="path">cookbook / index</p>
     <h2>What runs today</h2>
     <p class="lede">Each recipe says what it writes before it writes it: <code>cook help &lt;coordinates&gt;</code>.</p>
-    <div class="rows">
-      <div class="k">agents#seed<br>agents#connect</div>
-      <div><h3>One rulebook for every harness</h3>
+    <div class="recipes">
+      <div class="recipe"><code>agents#seed<br>agents#connect</code>
+        <h3>One rulebook for every harness</h3>
         <p><code>#seed</code> writes <code>AGENTS.md</code> and a permission policy. <code>#connect</code> renders the
           policy into Claude Code and Codex, and commits the links, so a fresh clone or a cloud session already has the
           setup.</p>
         <a href="{{ '/cookbook/src/agents/' | relative_url }}">agents cookbook</a></div>
-      <div class="k">git#worktrees</div>
-      <div><h3>A bench for each agent</h3>
+      <div class="recipe"><code>git#worktrees</code>
+        <h3>A bench for each agent</h3>
         <p>Every worktree goes to <code>.worktrees/&lt;branch&gt;</code>, with setup and teardown scripts the team fills
           in once and every agent runs.</p>
         <a href="{{ '/cookbook/src/git/' | relative_url }}">git cookbook</a></div>
-      <div class="k">ralph#ralph-tui</div>
-      <div><h3>Loops that stop at the team's check</h3>
+      <div class="recipe"><code>ralph#ralph-tui</code>
+        <h3>Loops that stop at the team's check</h3>
         <p>ralph-tui runs unattended in a worktree of its own. A task completes only when the team's check passes, and
           clean-up keeps commits that have not landed unless forced.</p>
         <a href="{{ '/cookbook/src/ralph/' | relative_url }}">ralph cookbook</a></div>
-      <div class="k">docs#layout</div>
-      <div><h3>One source of truth for people and agents</h3>
+      <div class="recipe"><code>docs#layout</code>
+        <h3>One source of truth for people and agents</h3>
         <p>The <code>docs-layout</code> skill teaches where a fact goes in <code>docs/</code>, so each fact lives on one
           page that people and coding agents both read.</p>
         <a href="{{ '/cookbook/src/docs/' | relative_url }}">docs cookbook</a></div>
