@@ -110,12 +110,16 @@ notes.ignore(<span class="add">'scratch/'</span>)</pre>
             <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
           </ul>
         </div>
-        <div class="cook-step" aria-hidden="true">
-          <span class="cook-line"></span>
-          <span class="cook-badge">{% include icons/chef-hat.svg %}</span>
-          <span class="cook-word">cook</span>
-          <span class="cook-line arrow"></span>
-        </div>
+        <ol class="cook-line-up" aria-label="What cooking does">
+          <li><span class="station">{% include icons/terminal.svg %}</span><div><b>Cook</b>
+            <p>The recipe runs against the files as they are now.</p></div></li>
+          <li><span class="station">{% include icons/layers.svg %}</span><div><b>Plan</b>
+            <p>Each model turns its calls into sections, keys and files.</p></div></li>
+          <li><span class="station">{% include icons/scale.svg %}</span><div><b>Review</b>
+            <p>One diff for the whole batch, <code>cook.lock</code> included.</p></div></li>
+          <li><span class="station">{% include icons/package.svg %}</span><div><b>Write</b>
+            <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
+        </ol>
         <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
           <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/notes.groovy
@@ -140,8 +144,8 @@ Created NOTES.md
 Created cook.lock</pre>
         </div>
       </div>
-      <p class="note"><a href="{{ '/docs/write-a-recipe.html' | relative_url }}">Write a recipe</a> builds this one
-        step by step, from the model to a cookbook other repositories cook.</p>
+      <a class="next-step" href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/book-open.svg %}<span><strong>Write a recipe</strong>
+        builds this one step by step, from the model to a cookbook other repositories cook.</span></a>
     </div>
   </div>
 </section>
