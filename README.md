@@ -7,10 +7,12 @@
 
 **The cook: cook the best product without any source of contamination.**
 
-Claude Code reads `.claude/settings.json`. Codex reads `.codex/config.toml` and its rules. Your team decides once
-what agents may run, which hooks start a session and where worktrees go; the-cook writes those decisions into the
-native files each tool reads, touches only the parts each recipe owns, and writes nothing until one person approves one
-diff. The recipes are Groovy, and the one your team is missing is two files you [write yourself](docs/write-a-recipe.md).
+A repository anyone can work in, people and coding agents alike, needs one setup every editor, harness and working
+copy follows: what an agent may run, which hooks start a session, where worktrees go. Kept by hand, that setup drifts
+between tools, between working copies and between repositories, and what worked in one is rebuilt in the next.
+the-cook writes those decisions, made once, into the native files each tool reads, touches only the parts each recipe
+owns, and writes nothing until one person approves one diff. The same recipes cook the next repository. They are
+Groovy, and the one your team is missing is two files you [write yourself](docs/write-a-recipe.md).
 [Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
 docs of the latest release.
 
