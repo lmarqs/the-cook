@@ -1,7 +1,7 @@
 ---
 layout: home
 permalink: /
-description: the-cook writes the setup a repository shares, such as agent instructions, permissions, hooks and worktree rules, into the native files each tool reads, and keeps each part to the recipe that owns it.
+description: A configuration manager for repositories where people and coding agents work together. Your team's way of working becomes recipes, cooked into every repository as one reviewed diff.
 ---
 {%- if site.release -%}{%- assign version = site.release | remove_first: "v" -%}{%- else -%}{%- assign version = "<version>" | escape -%}{%- endif -%}
 {%- assign agents = "io.github.lmarqs.cookbook:agents:" | append: version -%}
@@ -11,10 +11,10 @@ description: the-cook writes the setup a repository shares, such as agent instru
     <div class="hero-copy">
       <p class="kicker">Recipe driven configuration</p>
       <h1>Cook the best product <em>without any source of contamination.</em></h1>
-      <p class="lede">People and coding agents work in your repository at once, each with their own editor, harness
-        and working copy. Onboard on day one. Work in parallel. Keep your own setup. Carry the recipe to the next
-        repository. As the team grows, the project gets complex and new projects arrive, add a recipe, upgrade it or
-        take it out. Each change is one diff you review, and a recipe taken out leaves nothing behind.</p>
+      <p class="lede">A configuration manager for repositories where people and coding agents work together. Your
+        team's way of working becomes recipes: native files for every tool, the deterministic part, and skills for the
+        part that needs judgment. Cook them into every repository, move them to a newer release, discard what you
+        outgrow, and approve each change as one diff.</p>
       <div class="actions">
         <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
         <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
@@ -75,6 +75,32 @@ description: the-cook writes the setup a repository shares, such as agent instru
         <a class="more" href="{{ '/cookbook/' | relative_url }}">Cookbooks</a>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="section" id="why-not-a-skill">
+  <div class="wrap">
+    <p class="kicker">The formula</p>
+    <h2>Deterministic where it can be. Judgment where it must.</h2>
+    <p class="lede">An agent following a skill sets one repository up once. Cook keeps the setup the same across
+      repositories, harnesses and releases, and hands the judgment to skills it writes.</p>
+    <div class="split">
+      <div class="panel problem">
+        <h3>An agent with a skill</h3>
+        <p>Ten repositories set up from one skill are ten setups. No check says the agent did it right, and nobody can
+          later say which lines were the setup and which the team's.</p>
+        <p>A better setup means running the agent again in every repository and reconciling by eye, through dozens of
+          edits, and the next change needs the agent again.</p>
+      </div>
+      <div class="panel goal">
+        <h3>Cook, then the skill</h3>
+        <p>One recipe at one version gives the same files in every repository. <code>cook check</code> fails CI on
+          drift with no agent or model, and <code>discard</code> removes exactly what a recipe wrote.</p>
+        <p>A newer release is one diff per repository, approved once and rolled back if a write fails. The output is
+          native files anyone reads; the skills Cook writes carry the rest.</p>
+      </div>
+    </div>
+    <p class="note"><a href="{{ '/docs/philosophy.html#why-not-a-skill' | relative_url }}">Why not a skill</a> ties each point to the decision behind it.</p>
   </div>
 </section>
 
