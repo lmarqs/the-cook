@@ -12,7 +12,7 @@ into the site:
 | `_includes/` | The head, top bar, sidebar and footer the layouts share |
 | `_includes/icons/` | Inline SVG icons, `{% include icons/<name>.svg %}`, drawn in the colour of the text around them |
 | `_data/nav.yml` | The docs sidebar in reading order, and the title each page shows on the site |
-| `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons and source links; `hat.svg`, the favicon and the brand mark in the top bar |
+| `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons, source links and Mermaid diagrams; `hat.svg`, the favicon and the brand mark in the top bar |
 | `index.html` | The landing page, served at `/` |
 | `prepare` | Readies a checkout for the build: copies `_config.yml` to the root with the release tag, and gives the root `README.md` front matter so Jekyll renders it as a page |
 | `preview` | Builds the working tree with the image `actions/jekyll-build-pages` runs and serves it locally |
@@ -44,5 +44,6 @@ content is the working tree.
 ## Pages and the sidebar
 
 A new Markdown page renders on the site as it is. The `description` in its front matter, which every page under
-`docs/` carries, is the page's description for search engines and link previews; a page without one gets the site's. To list a page in the sidebar, add its path and title to `_data/nav.yml`; a page under a listed folder, such as one ADR, marks its entry current through `match`. A link to a
+`docs/` carries, is the page's description for search engines and link previews; a page without one gets the site's. To list a page in the sidebar, add its path and title to `_data/nav.yml`; a page under a listed folder, such as one ADR, marks its entry current through `match`. A ```` ```mermaid ```` code block renders as a diagram in the page's colours, with
+Mermaid 11.4.1 loaded from jsDelivr on pages that have one. A link to a
 file the site does not render, such as a `.groovy` recipe or a directory, opens on GitHub at the release.
