@@ -45,3 +45,47 @@ defaults:
       path: ""
     values:
       layout: default
+  - scope:
+      path: README.md
+    values:
+      description: Introduces Cook, a recipe driven configuration tool that replicates a team's standards to every project, person and coding agent.
+  - scope:
+      path: cookbook/README.md
+    values:
+      description: Lists the cookbook artifacts Cook runs today and shows the shape of a recipe and its ingredients.
+  - scope:
+      path: cookbook/src/agents/README.md
+    values:
+      description: Describes the agents cookbook artifact, which gives every coding agent in a repository the same guidance, permissions and skills.
+  - scope:
+      path: cookbook/src/cook/README.md
+    values:
+      description: Describes the cook cookbook artifact, which configures coding agents for working on the-cook itself.
+  - scope:
+      path: cookbook/src/docs/README.md
+    values:
+      description: Describes the docs cookbook artifact, which makes docs/ the one tree that people and coding agents both read.
+  - scope:
+      path: cookbook/src/docs/principles.md
+    values:
+      description: Explains the principles behind the docs recipe and the sources behind each choice.
+  - scope:
+      path: cookbook/src/git/README.md
+    values:
+      description: Describes the git cookbook artifact, which gives a repository one ignored root for linked worktrees with setup and teardown scripts.
+  - scope:
+      path: cookbook/src/hello/README.md
+    values:
+      description: Describes the hello cookbook artifact, a recipe that writes nothing and yields a greeting for tests.
+  - scope:
+      path: cookbook/src/ralph/README.md
+    values:
+      description: Describes the ralph cookbook artifact, which sets up ralph-tui to run coding agents unattended in a worktree of their own.
+  - scope:
+      path: core/README.md
+    values:
+      description: Describes how the core engine, thecook.cookbook, cooks recipes named by coordinates or by a Groovy path in the kitchen.
+  - scope:
+      path: infra/README.md
+    values:
+      description: Describes how infra connects the core engine to the places cookbook releases come from, such as Maven repositories and local paths.
