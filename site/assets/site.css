@@ -358,11 +358,20 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 
 .note { margin: 28px 0 0; font-size: 14.5px; color: var(--text-muted); }
 
-/* The docs, listed above the footer */
-.docs-index { padding: 32px 0; background: var(--bg-sunken); border-top: 1px solid var(--line); font-size: 14px; }
-.docs-index .wrap { display: flex; flex-wrap: wrap; gap: 6px 22px; }
-.docs-index a { color: var(--text-muted); }
-.docs-index a:hover { color: var(--link-hover); }
+/* Read next: the docs map */
+.section { padding: 80px 0; }
+.section + .section { border-top: 1px solid var(--line); }
+.section h2 { font: 700 34px/1.15 var(--font-body); margin: 0 0 14px; letter-spacing: -.5px; }
+.section .lede { max-width: 720px; color: var(--text-muted); font-size: 18px; margin: 0 0 36px; }
+.map { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.map a {
+  display: block; padding: 18px 20px; background: var(--bg-raised); border: 1px solid var(--line); text-decoration: none; color: var(--text);
+  box-shadow: 0 0 0 var(--shadow); transition: transform .08s, box-shadow .08s, border-color .08s;
+}
+.map a:hover { border-color: var(--accent); transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--shadow); color: var(--text); }
+.map a > .icon { display: block; width: 24px; height: 24px; margin-bottom: 12px; color: var(--link); }
+.map strong { display: block; font: 700 18px/1.2 var(--font-body); color: var(--link); margin-bottom: 6px; }
+.map span { font-size: 14.5px; color: var(--text-muted); }
 
 /* Narrow screens */
 @media (max-width: 1180px) {
@@ -397,6 +406,8 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .topnav .icon { display: none; }
   .wrap { padding: 0 16px; }
   .chapter { padding: 56px 0; }
+  .section { padding: 56px 0; }
+  .section h2 { font-size: 27px; }
   .chapter h2 { font-size: 28px; }
   .opening h2 { font-size: 26px; }
   .seam h2 { font-size: 36px; }
