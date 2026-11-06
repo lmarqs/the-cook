@@ -86,15 +86,20 @@ description: A configuration manager for projects. A team settles its standards 
           or fifty, at the same version, each with its own parameters.</p>
         <dl class="spec" aria-label="What a recipe can do">
           <dt><code>@File</code></dt><dd>Drops in a whole file.
-            <code class="use">@File(path = 'NOTES.md') String notes()</code></dd>
+<pre class="use"><span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
+String notes()</pre></dd>
           <dt><code>@Key</code></dt><dd>Slips one key into JSON, TOML or YAML. Every other key stays put.
-            <code class="use">@Key(path = '.vscode/settings.json', segments = ['editor.formatOnSave']) Boolean formatOnSave()</code></dd>
+<pre class="use"><span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>, segments = [<span class="add">'editor.formatOnSave'</span>])
+Boolean formatOnSave()</pre></dd>
           <dt><code>@Section</code></dt><dd>Claims a marked corner of a shared file. The rest stays the team's.
-            <code class="use">@Section(path = '.gitignore', id = 'scratch') List&lt;String&gt; ignored()</code></dd>
+<pre class="use"><span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
+List&lt;String&gt; ignored()</pre></dd>
           <dt><code>@Links</code></dt><dd>Points symbolic links where the standard needs them.
-            <code class="use">@Links(path = '.claude') Map&lt;String, String&gt; links()</code></dd>
+<pre class="use"><span class="prompt">@Links</span>(path = <span class="add">'.claude'</span>)
+Map&lt;String, String&gt; links()</pre></dd>
           <dt><code>@param</code></dt><dd>Takes <code>--name=value</code> in a recipe. <code>cook.lock</code> remembers it for every later cook.
-            <code class="use">@param(value = 'indent', default = '2') int indent</code></dd>
+<pre class="use"><span class="prompt">@param</span>(value = <span class="add">'indent'</span>, default = <span class="add">'2'</span>)
+<span class="hunk">int</span> indent</pre></dd>
         </dl>
       </div>
       <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>

@@ -298,7 +298,13 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .home main .spec dt code { background: none; border: 0; padding: 0; font: 600 14px/1.5 var(--font-mono); color: #f5c518; }
 .spec dd { font-size: 15px; line-height: 1.5; padding-left: 0; }
 .home main .spec dd code { font: 13px var(--font-mono); color: #45d872; background: none; border: 0; padding: 0; }
-.home main .spec dd .use { display: block; margin-top: 6px; color: #8d93a1; overflow-wrap: anywhere; }
+.home main .spec dd .use {
+  margin: 10px 0 0; padding: 10px 14px; background: #0d0f14; border: 1px solid #1c212c; border-left: 3px solid #2a3040;
+  font: 13px/1.6 var(--font-mono); color: #e7e4dc; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.spec .use .prompt { color: #f5c518; }
+.spec .use .add { color: #45d872; }
+.spec .use .hunk { color: #6fb6ff; }
 .subhead { font: 700 26px/1.15 var(--font-body); letter-spacing: -.4px; margin: 56px 0 14px; padding-top: 40px; border-top: 1px solid var(--line-strong); }
 
 .legend { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-rows: 1fr; gap: 24px; }
