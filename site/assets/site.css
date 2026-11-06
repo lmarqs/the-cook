@@ -164,6 +164,8 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .prose hr { border: 0; height: 6px; margin: 40px 0; background: repeating-linear-gradient(-45deg, var(--line-strong) 0 10px, transparent 10px 20px); }
 .prose blockquote { margin-left: 0; padding: 4px 16px; border-left: 4px solid var(--amber); color: var(--text-muted); background: var(--bg-raised); }
 .prose img { display: block; margin: 0 auto; border: 2px solid var(--line); }
+.prose a > img { display: inline-block; margin: 0; border: 0; vertical-align: middle; }
+.prose h1 + p:has(> a > img) { font-size: inherit; margin-bottom: 18px; }
 .prose .anchor { position: absolute; left: -1.1em; padding-right: .3em; color: var(--text-muted); text-decoration: none; opacity: 0; font-weight: 400; }
 .prose h2 .anchor { top: 18px; }
 .prose :is(h1, h2, h3, h4):hover .anchor, .prose .anchor:focus { opacity: 1; }
