@@ -7,15 +7,15 @@
 
 **The cook: cook the best product without any source of contamination.**
 
-People and coding agents work in your repository at once, each with their own editor, harness and working copy.
-Onboard on day one: a fresh clone already carries how the project is built and checked and what an agent may run. Work
-in parallel: every branch gets its own worktree with that setup. Make it yours: your own settings sit beside the
-team's, never in a commit. Do it again: the same recipes cook the next repository. Kept by hand, that setup drifts.
-With the-cook, add a recipe, upgrade it or take it out as the team grows, the project gets complex and new projects
-arrive. Each change is one diff you review, and a recipe taken out leaves nothing behind. Recipes are Groovy, and the
-one your team is missing is two files you [write yourself](docs/write-a-recipe.md).
-[Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
-docs of the latest release.
+the-cook is a configuration manager for repositories where people and coding agents work together. Your team's way
+of working becomes recipes: Groovy files that write each tool's own native files, the deterministic part, and skills
+that guide an agent through the part that needs judgment. Cook the recipes into a repository and read one diff before
+anything is written. Cook them into the next repository and get the same files. Move to a newer release and each
+repository gets one reviewed diff, discard a recipe and it leaves nothing behind, and `cook check` fails CI when a
+repository drifts from what it cooked. The output is plain native files, so a teammate without Cook, an agent and CI
+all read them. The recipe your team is missing is two files you [write yourself](docs/write-a-recipe.md).
+[Philosophy](docs/philosophy.md) says why it exists, what it is not and why a skill alone does not do it, and
+[the site](https://lmarqs.github.io/the-cook/) shows the docs of the latest release.
 
 ## Quick start
 
