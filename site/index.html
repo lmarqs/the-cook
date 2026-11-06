@@ -84,23 +84,32 @@ description: A configuration manager for projects. A team settles its standards 
       <div class="formula">
         <p class="lede"><strong>Write a standard once.</strong> A recipe is a short Groovy file. Cook it into one project
           or fifty, at the same version, each with its own parameters.</p>
-        <dl class="spec" aria-label="What a recipe can do">
-          <dt><code>@File</code></dt><dd>Drops in a whole file.
-<pre class="use"><span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
-String notes()</pre></dd>
-          <dt><code>@Key</code></dt><dd>Slips one key into JSON, TOML or YAML. Every other key stays put.
-<pre class="use"><span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>, segments = [<span class="add">'editor.formatOnSave'</span>])
-Boolean formatOnSave()</pre></dd>
-          <dt><code>@Section</code></dt><dd>Claims a marked corner of a shared file. The rest stays the team's.
-<pre class="use"><span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
-List&lt;String&gt; ignored()</pre></dd>
-          <dt><code>@Links</code></dt><dd>Points symbolic links where the standard needs them.
-<pre class="use"><span class="prompt">@Links</span>(path = <span class="add">'.claude'</span>)
-Map&lt;String, String&gt; links()</pre></dd>
-          <dt><code>@param</code></dt><dd>Takes <code>--name=value</code> in a recipe. <code>cook.lock</code> remembers it for every later cook.
-<pre class="use"><span class="prompt">@param</span>(value = <span class="add">'indent'</span>, default = <span class="add">'2'</span>)
-<span class="hunk">int</span> indent</pre></dd>
-        </dl>
+        <div class="terminal source" role="img" aria-label="A model, recipes/Project.groovy, with one member per kind of thing a recipe can write: a file, a key, a section and links; and a recipe that takes a parameter.">
+          <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Project.groovy</b></div>
+<pre><span class="prompt">@Ingredient</span>
+<span class="hunk">class</span> Project {
+  <span class="meta">/** Drops in a whole file. */</span>
+  <span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
+  String notes() { … }
+
+  <span class="meta">/** Slips one key into JSON, TOML or YAML. Every other key stays put. */</span>
+  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>, segments = [<span class="add">'editor.formatOnSave'</span>])
+  Boolean formatOnSave() { … }
+
+  <span class="meta">/** Claims a marked corner of a shared file. The rest stays the team's. */</span>
+  <span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
+  List&lt;String&gt; ignored() { … }
+
+  <span class="meta">/** Points symbolic links where the standard needs them. */</span>
+  <span class="prompt">@Links</span>(path = <span class="add">'.claude'</span>)
+  Map&lt;String, String&gt; links() { … }
+}</pre>
+          <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/project.groovy</b></div>
+<pre><span class="prompt">@ingredient</span>(Project) <span class="hunk">def</span> project
+
+<span class="meta">// Takes --indent=4. cook.lock remembers it for every later cook.</span>
+<span class="prompt">@param</span>(value = <span class="add">'indent'</span>, default = <span class="add">'2'</span>) <span class="hunk">int</span> indent</pre>
+        </div>
       </div>
       <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>
       <div class="story">
