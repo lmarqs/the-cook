@@ -98,7 +98,7 @@ for terms.
   operations. Executing commands is not a batch action; arbitrary recipe effects are outside those guarantees.
 - **What you do.** Read and trust sources before evaluation, including dependencies; a source's address or a reviewed output
   diff alone does not establish that code is safe to execute. Approving the resulting diff is a separate decision. See
-  [trust recipes explicitly](../philosophy.md#trust-recipes-explicitly) and the
+  [trust recipes explicitly](../contributing.md#trust-recipes-explicitly) and the
   [cookbook trust ADR](../adrs/0026-cookbook-trust.md).
 
 ### Text read by an agent can become instructions

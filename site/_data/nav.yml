@@ -32,6 +32,8 @@
   pages:
     - title: Philosophy
       path: docs/philosophy.md
+    - title: Contributing
+      path: docs/contributing.md
     - title: Architecture
       path: docs/architecture.md
     - title: Guide to the docs

@@ -40,7 +40,7 @@ that reads the corpus before making a change is that reader on every run.
 
 Every ADR's body opens with its problem and outcome, the paragraph under the title, before any fact or decision, so a
 reader knows why the subject is on the table and what it must achieve before reading how it is settled
-([philosophy](../philosophy.md#start-from-the-objective)). The paragraph states two things:
+([contributing](../contributing.md#start-from-the-objective)). The paragraph states two things:
 
 - **The problem.** Who has it, and what goes wrong for them or what they need and lack, in at most four sentences.
 - **The outcome.** What holds once the problem is solved, stated so that anyone can tell whether it holds, in at most

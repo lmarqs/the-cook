@@ -37,7 +37,8 @@ and a gap in implementation does not invalidate the design.
 
 Background:
 
-- Goals and tenets: [philosophy](../philosophy.md)
+- Goals: [philosophy](../philosophy.md)
+- Tenets: [contributing](../contributing.md)
 - Architecture reasoning: [ADRs](../adrs/README.md)
 - Feature navigation: [features](../features/README.md)
 - CLI grammar and argument scope: [CLI reference](../features/cli.md)

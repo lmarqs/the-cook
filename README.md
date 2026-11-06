@@ -208,7 +208,8 @@ the CLI hands its repositories to the core.
 | --- | --- |
 | How to cook a first recipe, step by step | [Get started](docs/get-started.md) |
 | How to write a recipe of your own and move it into a cookbook | [Write a recipe](docs/write-a-recipe.md) |
-| Why the project exists, what it is trying to achieve, and the tenets behind every decision | [Philosophy](docs/philosophy.md) |
+| Why the project exists, who it is for, and what it is and is not | [Philosophy](docs/philosophy.md) |
+| The tenets a proposal for Cook is judged against | [Contributing](docs/contributing.md) |
 | The intended design: responsibilities, operations, commands and distribution | [Architecture](docs/architecture.md) |
 
 ## License
