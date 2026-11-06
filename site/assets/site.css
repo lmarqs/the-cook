@@ -277,6 +277,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .answer { margin: 0; max-width: var(--measure); }
 .opening-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; margin: 0 0 48px; }
 .opening-pair .lede, .opening-pair .answer .lede { margin: 0; max-width: none; }
+.opening-pair .problem .lede + .lede { margin-top: 1em; }
 .opening-pair .answer { max-width: none; padding-left: 32px; border-left: 3px solid var(--accent); }
 .answer h3 { font: 700 clamp(26px, 2.6vw, 32px)/1.1 var(--font-body); letter-spacing: -.6px; margin: 0 0 18px; }
 .answer .lede { margin: 0 0 32px; }
