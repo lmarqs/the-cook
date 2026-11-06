@@ -363,9 +363,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 }
 .platforms li { display: inline-flex; align-items: center; gap: 7px; }
 .platforms .icon { width: 16px; height: 16px; }
-.install { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.install .card { padding: 20px 22px 18px; }
-.install h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+.install { display: grid; gap: 14px; }
+.install .card { display: grid; grid-template-columns: 170px minmax(0, 1fr); align-items: center; gap: 22px; padding: 16px 22px; }
+.install h3 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 16px; font-weight: 600; }
 .install h3 .icon { width: 20px; height: 20px; color: var(--link); }
 .install .prose { max-width: none; }
 .install .prose pre { margin: 0; font-size: 13px; white-space: pre-wrap; }
@@ -433,7 +433,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .legend li, .legend li:nth-child(even) { grid-template-columns: minmax(0, 1fr); }
   .legend li:nth-child(even) .scene { order: 0; }
   .legend .scene { aspect-ratio: 3 / 2; min-height: 0; border: 0 !important; border-bottom: 1px solid var(--line) !important; }
-  .install { grid-template-columns: minmax(0, 1fr); }
+  .install .card { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 }
 @media (max-width: 860px) {
   .docs-shell { display: block; padding: 0 16px; }
