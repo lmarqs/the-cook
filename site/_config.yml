@@ -11,6 +11,9 @@ source_url: https://github.com/lmarqs/the-cook
 release:
 google_analytics: G-4D40875MH6
 
+plugins:
+  - jekyll-sitemap
+
 layouts_dir: site/_layouts
 includes_dir: site/_includes
 data_dir: site/_data
