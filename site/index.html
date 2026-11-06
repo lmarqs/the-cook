@@ -10,7 +10,7 @@ description: A configuration manager for projects. A team settles its standards 
   <div class="hero-inner">
     <div class="hero-copy">
       <p class="kicker">Recipe driven configuration</p>
-      <h1>Cook the best product <em>without any source of contamination.</em></h1>
+      <h1>Your team's standards in every project, <em>without any source of contamination.</em></h1>
       <p class="lede">Cook is a configuration manager for projects. A team settles its standards once, replicates them to
         every project, every person and every agent, and improves them in one place.</p>
       <div class="actions">
@@ -34,15 +34,15 @@ description: A configuration manager for projects. A team settles its standards 
 <section class="opening" id="the-problem">
   <div class="wrap">
     <p class="chapter-label">The lab</p>
-    <h2>A place where standards matter</h2>
+    <h2>Standards copied by hand drift apart</h2>
     <p class="subtitle">Knowledge should be easy to replicate</p>
     <div class="opening-pair">
       <p class="lede">A team works out how a project must be: how the code is formatted, which tools run at
         which version, what a build must pass, how a release is cut, how documentation is organised, how work is
         tracked and reviewed, how editors and agents are set up. Settling it takes weeks of trying and arguing, and
         then it finally works. The project feels good to work with, and every part connects like clockwork.</p>
-      <p class="lede turn">Until one day a tool ships an update, a second project arrives, the team wants to try a new
-        tool, a new developer brings a tool of their own. And all of that challenges what was already settled.</p>
+      <p class="lede turn">Until one day a second project arrives, the team improves a standard, a new developer joins,
+        and the team moves on from a tool. Each one challenges what was already settled.</p>
     </div>
     <ol class="legend">
       <li><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">1</span><div><h3>One version reaches every project</h3>
@@ -53,8 +53,8 @@ description: A configuration manager for projects. A team settles its standards 
       <li><div class="scene" style="background-position: 88% 8%;"></div><div class="legend-body"><span class="num">2</span><div><h3>An improvement reaches every project</h3>
         <p class="was"><span class="kind">Problem</span>A month later the team improves one standard, and the improvement goes into one project and no further.</p>
         <p class="fix"><span class="kind">Solution</span>When the team improves it, one person reads the change once, and it reaches every project as one change.
-          Whether a project still has the current version is a check that runs on its own, not something a teammate
-          notices months later.</p></div></div></li>
+          Whether a project still has the current version is something CI answers with
+          <code>cook update --dry-run</code>, not something a teammate notices months later.</p></div></div></li>
       <li><div class="scene" style="background-position: 27% 77%;"></div><div class="legend-body"><span class="num">3</span><div><h3>The current standard is at every seat</h3>
         <p class="was"><span class="kind">Problem</span>The new teammate clones the first project and finds last month's version of how the team works, and asks.</p>
         <p class="fix"><span class="kind">Solution</span>A new teammate finds the current standard on the first day, in the project itself, with no older copy to ask
@@ -65,12 +65,12 @@ description: A configuration manager for projects. A team settles its standards 
           say which lines are the standard and which were edited by hand.</p>
         <p class="fix"><span class="kind">Solution</span>What a standard wrote is marked, so it is never confused with what a teammate wrote by hand, and nobody's own
           settings travel to another project with it. The team's own lines stay as they were.</p></div></div></li>
-      <li><div class="scene" style="background-position: 0% 33%;"></div><div class="legend-body"><span class="num">5</span><div><h3>A dropped standard leaves whole</h3>
+      <li><div class="scene" style="background-position: 0% 33%;"></div><div class="legend-body"><span class="num">5</span><div><h3>A dropped standard takes everything it brought</h3>
         <p class="was"><span class="kind">Problem</span>Dropping a standard is harder still. Adopting one tool left a line here and a block there, across half a dozen
           files that belong to other things. When the team moves on from it, nobody remembers every place it touched, and
           what is not found stays behind.</p>
         <p class="fix"><span class="kind">Solution</span>A standard the team drops leaves with everything it brought, from every file it touched, and nothing else.
-          Following a standard needs no new tool, so what is left behind is only the team's own work.</p></div></div></li>
+          Projects read a standard's files without Cook installed, so dropping one leaves no tool behind either.</p></div></div></li>
     </ol>
   </div>
 </section>
@@ -81,19 +81,19 @@ description: A configuration manager for projects. A team settles its standards 
     <div>
       <h2>A standard, written down and replicable</h2>
       <div class="formula">
-        <p class="lede"><strong>Write a standard once.</strong> Cook it into one project or fifty, at the same version,
+        <p class="lede"><strong>Write a standard once</strong>, as a recipe: a short Groovy file. Cook it into one project or fifty, at the same version,
           each with its own parameters.</p>
         <dl class="spec" aria-label="What a recipe can do">
           <dt><code>@File</code></dt><dd>Drops in a whole file.</dd>
           <dt><code>@Key</code></dt><dd>Slips one key into JSON, TOML or YAML. Every other key stays put.</dd>
           <dt><code>@Section</code></dt><dd>Claims a marked corner of a shared file. The rest stays the team's.</dd>
           <dt><code>@Links</code></dt><dd>Points symbolic links where the standard needs them.</dd>
-          <dt><code>@param</code></dt><dd>Takes <code>--name=value</code>. The lock remembers it for every later cook.</dd>
+          <dt><code>@param</code></dt><dd>Takes <code>--name=value</code> in a recipe. <code>cook.lock</code> remembers it for every later cook.</dd>
         </dl>
       </div>
       <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>
       <div class="story">
-        <p>A recipe is a short Groovy file in the project. It asks for a model, and the model says what it writes.
+        <p>A recipe asks for a model, an ingredient that owns one program's files, and the model says what it writes.
           Cook writes that and nothing else.</p>
       </div>
       <div class="hello">
@@ -278,57 +278,17 @@ Updated cook.lock</pre>
   <div class="wrap">
     <p class="chapter-label">The procedures</p>
     <div>
-      <h2>Cook, discard, replicate, check</h2>
-      <p class="lede">Four commands and one record of what they wrote.</p>
+      <h2>Cook, update, discard, replicate, check</h2>
+      <p class="lede">Five commands and one record of what they wrote.</p>
       <div class="commands">
         <div class="command"><code>{% include icons/chef-hat.svg %}cook &lt;recipe&gt;...</code><p>Cooks recipes left to right in one batch.</p></div>
+        <div class="command"><code>{% include icons/tag.svg %}cook update [&lt;name&gt;...]</code><p>Moves recipes to newer releases in their range, as one diff to approve.</p></div>
         <div class="command"><code>{% include icons/trash-2.svg %}cook discard &lt;name&gt;...</code><p>Takes out exactly what a recipe put in, without running it.</p></div>
         <div class="command"><code>{% include icons/repeat.svg %}cook replicate [&lt;name&gt;...]</code><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
         <div class="command"><code>{% include icons/circle-check.svg %}cook check [&lt;name&gt;...]</code><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
       </div>
       <a class="next-step" href="{{ '/docs/features/cli.html' | relative_url }}">{% include icons/terminal.svg %}<span><strong>The CLI reference</strong>
         lists every option.</span></a>
-    </div>
-  </div>
-</section>
-
-<section class="chapter close" id="install">
-  <div class="wrap">
-    <p class="chapter-label">The start</p>
-    <div>
-      <h2>Start with one project</h2>
-      <p class="lede">Install Cook, cook one recipe and read the diff. The next project cooks the same list.</p>
-      <ul class="platforms">
-        <li>{% include icons/linux.svg %}Linux x64</li>
-        <li>{% include icons/linux.svg %}Linux arm64</li>
-        <li>{% include icons/apple.svg %}macOS arm64</li>
-        <li>{% include icons/openjdk.svg %}Java runtime included</li>
-      </ul>
-      <div class="install">
-        <div class="card">
-          <h3>{% include icons/beer.svg %}Homebrew</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
-brew install cook</code></pre></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>{% include icons/package.svg %}mise</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>{% include icons/download.svg %}Binary</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz \
-  | tar -xz -C ~/.local/share
-export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
-          </div>
-        </div>
-      </div>
-      <a class="next-step" href="{{ '/docs/features/install.html' | relative_url }}">{% include icons/download.svg %}<span><strong>Install</strong>
-        covers checksums, macOS paths, pinning a release for a team and building from source. Then run <code>cook --help</code>.</span></a>
     </div>
   </div>
 </section>
@@ -342,14 +302,12 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
 
 <section class="ref" id="sets-up">
   <div class="wrap">
-    <p class="chapter-label">The cookbook</p>
-    <h2>What runs today</h2>
     <p class="lede">Each recipe says what it writes before it writes it: <code>cook help &lt;coordinates&gt;</code>.</p>
     <div class="recipes">
       <div class="recipe"><code>agents#seed<br>agents#connect</code>
         <h3>One rulebook for every harness</h3>
         <p><code>#seed</code> writes <code>AGENTS.md</code> and a permission policy. <code>#connect</code> renders the
-          policy into Claude Code and Codex, and commits the links, so a fresh clone or a cloud session already has the
+          policy into Claude Code and Codex, and writes links the repository commits, so a fresh clone or a cloud session already has the
           setup.</p>
         <a href="{{ '/cookbook/src/agents/' | relative_url }}">agents cookbook</a></div>
       <div class="recipe"><code>git#worktrees</code>
@@ -386,6 +344,47 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
       <a href="{{ '/docs/features/glossary.html' | relative_url }}">{% include icons/book-a.svg %}<strong>Glossary</strong><span>Recipe, ingredient, kitchen, lock and the rest of the vocabulary.</span></a>
       <a href="{{ '/docs/ux/' | relative_url }}">{% include icons/ruler.svg %}<strong>Standards</strong><span>How the CLI, messages, generated content and skills behave.</span></a>
       <a href="{{ '/docs/adrs/' | relative_url }}">{% include icons/gavel.svg %}<strong>Decisions</strong><span>The architecture decision records and the reasoning behind each one.</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="chapter close" id="install">
+  <div class="wrap">
+    <p class="chapter-label">The start</p>
+    <div>
+      <h2>Start with one project</h2>
+      <p class="lede">Install Cook, cook one recipe and read the diff. The next project cooks the same recipes, at the versions <code>cook.lock</code> records.</p>
+      <ul class="platforms">
+        <li>{% include icons/linux.svg %}Linux x64</li>
+        <li>{% include icons/linux.svg %}Linux arm64</li>
+        <li>{% include icons/apple.svg %}macOS arm64</li>
+        <li>{% include icons/openjdk.svg %}Java runtime included</li>
+      </ul>
+      <div class="install">
+        <div class="card">
+          <h3>{% include icons/beer.svg %}Homebrew</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
+brew install cook</code></pre></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>{% include icons/package.svg %}mise</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>{% include icons/download.svg %}Binary</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz \
+  | tar -xz -C ~/.local/share
+export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
+          </div>
+        </div>
+      </div>
+      <a class="next-step" href="{{ '/docs/features/install.html' | relative_url }}">{% include icons/download.svg %}<span><strong>Install</strong>
+        covers checksums, macOS paths, pinning a release for a team and building from source. Then run <code>cook --help</code>.</span></a>
     </div>
   </div>
 </section>
