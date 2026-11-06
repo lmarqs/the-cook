@@ -2,6 +2,8 @@ name: pages
 
 # The site shows the docs of one release, so a reader never sees what main has and the release lacks. The release
 # workflow calls this one with the tag it just made; a manual run publishes the tag it names, or the latest release.
+# A manual run may build a later commit of that release's line through `ref`, so a docs-only change reaches the site
+# without cutting a release; the version on the site stays the tag's.
 on:
   workflow_call:
     inputs:
@@ -12,6 +14,10 @@ on:
     inputs:
       tag:
         description: The release tag to publish, such as v6.1.0; empty publishes the latest release
+        type: string
+        required: false
+      ref:
+        description: A commit after the tag to build instead, such as main; it must descend from the tag
         type: string
         required: false
 
@@ -38,7 +44,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - uses: actions/checkout@v7
         with:
-          ref: refs/tags/${{ steps.tag.outputs.tag }}
+          ref: ${{ inputs.ref || format('refs/tags/{0}', steps.tag.outputs.tag) }}
+          fetch-depth: ${{ inputs.ref && '0' || '1' }}
+      # A ref before the tag, or on another line, would show docs the release does not match.
+      - if: inputs.ref
+        run: git merge-base --is-ancestor "refs/tags/$TAG" HEAD || { echo "::error::$REF does not descend from $TAG"; exit 1; }
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          REF: ${{ inputs.ref }}
       # A tag older than site/ builds with Jekyll's defaults.
       - run: |
           if [ -x site/prepare ]; then
