@@ -84,8 +84,6 @@ description: A configuration manager for projects. A team settles its standards 
       <div class="formula">
         <p class="lede"><strong>Write a standard once.</strong> A recipe is a short Groovy file. Cook it into one project
           or fifty, at the same version, each with its own parameters.</p>
-      </div>
-      <div class="hello">
         <ol class="cook-line-up" aria-label="What cooking does">
           <li><span class="station">{% include icons/terminal.svg %}</span><div><b>Cook</b>
             <p>The recipe runs against the files as they are now.</p></div></li>
@@ -96,6 +94,7 @@ description: A configuration manager for projects. A team settles its standards 
           <li><span class="station">{% include icons/package.svg %}</span><div><b>Write</b>
             <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
         </ol>
+      </div>
       <div class="examples">
         <input type="radio" name="example" id="example-file" checked><label for="example-file">A file and a section</label>
         <input type="radio" name="example" id="example-key"><label for="example-key">A key in JSON</label>
@@ -278,7 +277,6 @@ Updated cook.lock</pre>
             </div>
           </div>
         </div>
-      </div>
       </div>
       <a class="next-step" href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/book-open.svg %}<span><strong>Write a recipe</strong>
         builds this one step by step, from the model to a cookbook other projects cook.</span></a>
