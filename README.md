@@ -7,14 +7,13 @@
 
 **The cook: cook the best product without any source of contamination.**
 
-Anyone should be able to open your repository, build it, change it and check it, whether they are a person or a
-coding agent, and leave it as they found it. That takes one setup every editor, harness and working copy follows: how
-the project is built and checked, where decisions are written down, where worktrees go, what an agent may run. Kept by
-hand, that setup drifts between tools, between working copies and between repositories, and what worked in one is
-rebuilt in the next. the-cook writes those decisions, made once, into the native files each tool reads, touches only
-the parts each recipe owns, and writes nothing until one person approves one diff. The same recipes cook the next
-repository. They are Groovy, and the one your team is missing is two files you
-[write yourself](docs/write-a-recipe.md).
+People and coding agents work in your repository at once, each with their own editor, harness and working copy.
+Every newcomer, person or agent, needs the same setup on day one: how the project is built and checked, what an agent
+may run, a worktree to work in parallel, and room to make the setup their own on top. Kept by hand, that setup drifts
+between tools, between working copies and between repositories, and what worked in one is rebuilt in the next.
+the-cook writes those decisions, made once, into the native files each tool reads, touches only the parts each recipe
+owns, and writes nothing until one person approves one diff. The same recipes cook the next repository. They are
+Groovy, and the one your team is missing is two files you [write yourself](docs/write-a-recipe.md).
 [Philosophy](docs/philosophy.md) says why it exists, and [the site](https://lmarqs.github.io/the-cook/) shows the
 docs of the latest release.
 
