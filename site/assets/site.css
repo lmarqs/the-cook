@@ -263,11 +263,10 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   border: 1px solid var(--accent-ink);
 }
 
-.opening { padding: 40px 0 88px; }
+.opening { padding: 72px 0 88px; }
 .opening .wrap { max-width: 1180px; }
 .opening h2 {
-  font: 700 clamp(30px, 3.4vw, 40px)/1.08 var(--font-body); letter-spacing: -.8px; margin: 0 0 24px; padding-top: 36px;
-  border-top: 1px solid var(--line-strong); max-width: 860px;
+  font: 700 clamp(30px, 3.4vw, 40px)/1.08 var(--font-body); letter-spacing: -.8px; margin: 0 0 24px; max-width: 860px;
 }
 .opening .lede { font-size: 19px; line-height: 1.55; margin: 0 0 40px; max-width: 860px; }
 .story { max-width: 700px; }
