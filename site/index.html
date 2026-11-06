@@ -113,7 +113,9 @@ description: A configuration manager for projects. A team settles its standards 
 
   <span class="meta">/** Write a whole file. */</span>
   <span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
-  String file() { lines ? lines.collect { <span class="add">"- ${it}\n"</span> }.join() : <span class="hunk">null</span> }
+  String file() {
+    lines ? lines.collect { <span class="add">"- ${it}\n"</span> }.join() : <span class="hunk">null</span>
+  }
 
   <span class="meta">/** Write one marked section of a shared file. */</span>
   <span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
@@ -126,7 +128,8 @@ description: A configuration manager for projects. A team settles its standards 
 <span class="prompt">@help</span>(<span class="add">'Adds a note and ignores scratch/.'</span>)
 <span class="hunk">import</span> acme.notes.Notes
 
-<span class="meta">// Ask for the model. Cook writes what it declares, and nothing else.</span>
+<span class="meta">// Ask for the model. Cook writes what it declares,</span>
+<span class="meta">// and nothing else.</span>
 <span class="prompt">@ingredient</span>(Notes) <span class="hunk">def</span> notes
 
 notes.add(<span class="add">'Run the tests before committing.'</span>)

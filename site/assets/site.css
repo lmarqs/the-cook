@@ -336,7 +336,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .examples > input:focus-visible + label { outline: 2px solid var(--link); outline-offset: 2px; }
 .example { display: none; flex: 0 0 100%; min-width: 0; padding: 28px 0 0; border-top: 3px solid var(--accent); }
 #example-file:checked ~ .ex-file, #example-key:checked ~ .ex-key, #example-param:checked ~ .ex-param { display: block; }
-.cook { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.cook { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+.cook > .source { display: flex; flex-direction: column; }
+.cook > .source > pre { flex: 1; }
 .cook > .terminal:not(.source) { grid-column: 1 / -1; }
 .cook-line-up {
   list-style: none; margin: 0; padding: 8px 0; position: relative; align-self: stretch;
