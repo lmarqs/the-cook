@@ -105,6 +105,23 @@ description: A configuration manager for projects. A team settles its standards 
   </div>
 </section>
 
+<section class="chapter" id="commands">
+  <div class="wrap">
+    <p class="chapter-label">Procedures</p>
+    <div>
+      <h2>The four commands</h2>
+      <p class="lede">Four commands and one record of what they wrote.</p>
+      <div class="rows ops">
+        <div class="k">cook &lt;recipe&gt;...</div><div><p>Cooks recipes left to right in one batch.</p></div>
+        <div class="k">cook discard &lt;name&gt;...</div><div><p>Takes out exactly what a recipe put in, without running it.</p></div>
+        <div class="k">cook replicate [&lt;name&gt;...]</div><div><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
+        <div class="k">cook check [&lt;name&gt;...]</div><div><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
+      </div>
+      <p class="note"><a href="{{ '/docs/features/cli.html' | relative_url }}">The CLI reference</a> lists every option.</p>
+    </div>
+  </div>
+</section>
+
 <section class="chapter" id="your-recipes">
   <div class="wrap">
     <p class="chapter-label">The notebook</p>
@@ -190,21 +207,6 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
   <div class="wrap">
     <h2>Our cookbook</h2>
     <p>Batteries included. The recipes Cook ships today, and what each one writes.</p>
-  </div>
-</section>
-
-<section class="ref" id="commands">
-  <div class="wrap">
-    <p class="path">cli</p>
-    <h2>The four commands</h2>
-    <p class="lede">Four commands and one record of what they wrote.</p>
-    <div class="rows ops">
-      <div class="k">cook &lt;recipe&gt;...</div><div><p>Cooks recipes left to right in one batch.</p></div>
-      <div class="k">cook discard &lt;name&gt;...</div><div><p>Takes out exactly what a recipe put in, without running it.</p></div>
-      <div class="k">cook replicate [&lt;name&gt;...]</div><div><p>Rebuilds what the lock records, including ignored output a fresh clone lacks.</p></div>
-      <div class="k">cook check [&lt;name&gt;...]</div><div><p>Writes nothing. Exits 1 when the files differ from the lock, 2 on an error.</p></div>
-    </div>
-    <p class="note"><a href="{{ '/docs/features/cli.html' | relative_url }}">The CLI reference</a> lists every option.</p>
   </div>
 </section>
 
