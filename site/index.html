@@ -88,26 +88,27 @@ description: A configuration manager for projects. A team settles its standards 
           <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Project.groovy</b></div>
 <pre><span class="prompt">@Ingredient</span>
 <span class="hunk">class</span> Project {
-  <span class="meta">/** Drops in a whole file. */</span>
+  <span class="meta">/** Write a whole file. */</span>
   <span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
   String notes() { … }
 
-  <span class="meta">/** Slips one key into JSON, TOML or YAML. Every other key stays put. */</span>
-  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>, segments = [<span class="add">'editor.formatOnSave'</span>])
+  <span class="meta">/** Write one key of a JSON, TOML or YAML file. */</span>
+  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>,
+       segments = [<span class="add">'editor.formatOnSave'</span>])
   Boolean formatOnSave() { … }
 
-  <span class="meta">/** Claims a marked corner of a shared file. The rest stays the team's. */</span>
+  <span class="meta">/** Write one marked section of a shared file. */</span>
   <span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
   List&lt;String&gt; ignored() { … }
 
-  <span class="meta">/** Points symbolic links where the standard needs them. */</span>
+  <span class="meta">/** Write symbolic links. */</span>
   <span class="prompt">@Links</span>(path = <span class="add">'.claude'</span>)
   Map&lt;String, String&gt; links() { … }
 }</pre>
           <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/project.groovy</b></div>
 <pre><span class="prompt">@ingredient</span>(Project) <span class="hunk">def</span> project
 
-<span class="meta">// Takes --indent=4. cook.lock remembers it for every later cook.</span>
+<span class="meta">// Take --indent=4, and keep it in cook.lock for every later cook.</span>
 <span class="prompt">@param</span>(value = <span class="add">'indent'</span>, default = <span class="add">'2'</span>) <span class="hunk">int</span> indent</pre>
         </div>
       </div>
