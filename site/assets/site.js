@@ -94,13 +94,18 @@
   }
 
   // Mermaid loads only on a page that has a diagram; until it renders, or if it cannot load, the source stays shown.
+  // The single-file build is the one a checksum can cover: the ESM build fetches chunks that integrity cannot pin.
   function diagrams() {
     var blocks = document.querySelectorAll(".prose code.language-mermaid");
     if (!blocks.length) return;
     var style = getComputedStyle(document.documentElement);
     function token(name) { return style.getPropertyValue(name).trim(); }
-    import("https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs").then(function (module) {
-      var mermaid = module.default;
+    var script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js";
+    script.integrity = "sha384-rbtjAdnIQE/aQJGEgXrVUlMibdfTSa4PQju4HDhN3sR2PmaKFzhEafuePsl9H/9I";
+    script.crossOrigin = "anonymous";
+    script.addEventListener("load", function () {
+      var mermaid = window.mermaid;
       mermaid.initialize({
         startOnLoad: false,
         securityLevel: "strict",
@@ -127,6 +132,7 @@
         });
       });
     });
+    document.head.appendChild(script);
   }
 
   linkSources();

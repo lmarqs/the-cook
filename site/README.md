@@ -45,5 +45,6 @@ content is the working tree.
 
 A new Markdown page renders on the site as it is. The `description` in its front matter, which every page under
 `docs/` carries, is the page's description for search engines and link previews; a page without one gets the site's. To list a page in the sidebar, add its path and title to `_data/nav.yml`; a page under a listed folder, such as one ADR, marks its entry current through `match`. A ```` ```mermaid ```` code block renders as a diagram in the page's colours, with
-Mermaid 11.4.1 loaded from jsDelivr on pages that have one. A link to a
+Mermaid 11.4.1 loaded from jsDelivr on pages that have one; `site.js` pins its SHA-384, so a new version takes a new
+hash. A link to a
 file the site does not render, such as a `.groovy` recipe or a directory, opens on GitHub at the release.
