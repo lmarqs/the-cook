@@ -120,6 +120,22 @@ description: A configuration manager for projects. A team settles its standards 
         <div class="example ex-file">
         <div class="cook">
           <div>
+            <div class="terminal source" role="img" aria-label="The model recipes/Notes.groovy: its file member owns NOTES.md and its ignoredPaths member owns the scratch section of .gitignore.">
+              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Notes.groovy</b></div>
+<pre><span class="prompt">@Ingredient</span>
+<span class="hunk">class</span> Notes {
+  <span class="hunk">private final</span> List&lt;String&gt; lines = [], ignored = []
+
+  <span class="hunk">void</span> add(String line) { lines &lt;&lt; line }
+  <span class="hunk">void</span> ignore(String path) { ignored &lt;&lt; path }
+
+  <span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
+  String file() { lines ? lines.collect { <span class="add">"- ${it}\n"</span> }.join() : <span class="hunk">null</span> }
+
+  <span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
+  List&lt;String&gt; ignoredPaths() { ignored ?: <span class="hunk">null</span> }
+}</pre>
+            </div>
             <div class="terminal source" role="img" aria-label="The recipe recipes/notes.groovy: it asks for the Notes model, adds a line to the notes and keeps scratch/ out of Git.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/notes.groovy</b></div>
 <pre><span class="prompt">@help</span>(<span class="add">'Adds a note and ignores scratch/.'</span>)
