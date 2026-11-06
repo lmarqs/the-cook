@@ -146,12 +146,6 @@ description: A configuration manager for projects. A team settles its standards 
 notes.add(<span class="add">'Run the tests before committing.'</span>)
 notes.ignore(<span class="add">'scratch/'</span>)</pre>
             </div>
-            <ul class="callouts">
-              <li><code>@ingredient</code> asks for the <code>Notes</code> model, which owns <code>NOTES.md</code> and one
-                marked section of <code>.gitignore</code>.</li>
-              <li>Cooking shows the whole change as one diff and writes nothing until it is approved.</li>
-              <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
-            </ul>
           </div>
           <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
             <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
@@ -203,12 +197,6 @@ Created cook.lock</pre>
 
 editor.formatOnSave()</pre>
               </div>
-              <ul class="callouts">
-                <li><code>@Key</code> owns one key, <code>editor.formatOnSave</code>, in <code>.vscode/settings.json</code>.</li>
-                <li><code>editor.fontSize</code> stays as the team wrote it. Cook merges one key and keeps the rest of the
-                  file.</li>
-                <li><code>cook discard</code> takes out that one key and nothing else.</li>
-              </ul>
             </div>
             <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy adds editor.formatOnSave to .vscode/settings.json beside the team's editor.fontSize, and records the key in cook.lock.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
@@ -252,13 +240,6 @@ and sets the indent.'</span>)
 editor.formatOnSave()
 editor.indent(indent)</pre>
               </div>
-              <ul class="callouts">
-                <li><code>@param</code> turns the indent into an option: <code>--indent=4</code> here, <code>2</code> by
-                  default.</li>
-                <li>The model gains a second <code>@Key</code>, <code>editor.tabSize</code>.</li>
-                <li>The lock records <code>--indent=4</code>, so <code>cook replicate</code> and <code>cook check</code>
-                  use the same value.</li>
-              </ul>
             </div>
             <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy with --indent=4 adds editor.tabSize 4 and records the argument in cook.lock.">
               <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
