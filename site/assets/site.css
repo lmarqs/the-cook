@@ -314,7 +314,23 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .command p { margin: 0; padding: 16px 20px 18px; font-size: 15.5px; }
 
 /* Steps beside a terminal */
-.cook { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 40px; align-items: start; }
+.cook { display: grid; grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1.15fr); gap: 0 20px; align-items: start; }
+.cook-step { align-self: center; position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cook-step::before { content: ""; position: absolute; left: -20px; right: -14px; top: 27px; border-top: 2px dashed var(--line-strong); }
+.cook-step::after {
+  content: ""; position: absolute; right: -22px; top: 21px; border: 7px solid transparent; border-left: 10px solid var(--accent);
+}
+.cook-line { display: none; border-left: 2px dashed var(--line-strong); }
+.cook-line.arrow { position: relative; }
+.cook-line.arrow::after {
+  content: ""; position: absolute; left: -8px; bottom: -14px; border: 7px solid transparent; border-top: 10px solid var(--accent);
+}
+.cook-badge {
+  position: relative; width: 56px; height: 56px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink);
+  border: 2px solid var(--accent-ink); box-shadow: 4px 4px 0 var(--shadow);
+}
+.cook-badge .icon { width: 28px; height: 28px; }
+.cook-word { font: 400 12px/1 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
 .terminal { background: #07080b; border: 2px solid #2a3040; box-shadow: 6px 6px 0 var(--shadow); color: #d7d4cc; }
 .terminal-bar { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: #141821; border-bottom: 1px solid #2a3040; font: 12px/1 var(--font-mono); color: #8b919e; }
 .terminal-bar span { width: 10px; height: 10px; background: #3a4254; }
@@ -394,6 +410,9 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 }
 @media (max-width: 980px) {
   .hero-inner, .cook { grid-template-columns: minmax(0, 1fr); }
+  .cook-step { padding: 16px 0 28px; }
+  .cook-step::before, .cook-step::after { display: none; }
+  .cook-line { display: block; height: 20px; }
   .legend li { grid-template-columns: minmax(0, 1fr); }
   .legend li:nth-child(even) .scene { order: 0; }
   .legend .scene { aspect-ratio: 3 / 2; min-height: 0; border: 0 !important; border-bottom: 1px solid var(--line) !important; }

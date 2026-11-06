@@ -110,6 +110,12 @@ notes.ignore(<span class="add">'scratch/'</span>)</pre>
             <li><code>node_modules/</code> stays as the team wrote it. No recipe owns it, so no cook touches it.</li>
           </ul>
         </div>
+        <div class="cook-step" aria-hidden="true">
+          <span class="cook-line"></span>
+          <span class="cook-badge">{% include icons/chef-hat.svg %}</span>
+          <span class="cook-word">cook</span>
+          <span class="cook-line arrow"></span>
+        </div>
         <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
           <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
 <pre><span class="prompt">$</span> cook recipes/notes.groovy
