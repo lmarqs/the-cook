@@ -46,7 +46,7 @@ description: A configuration manager for projects. A team settles its standards 
         finds the same standard.</p>
     </div>
     <ol class="legend">
-      <li><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">1</span><div><h3>One version, every project</h3>
+      <li><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">1</span><div><h3>One version reaches every project</h3>
         <p class="was"><span class="kind">Problem</span>Each of those standards ends up in a file some program reads, so the second project gets the
           standards by copying files. The third gets them from whichever of the two is newer.</p>
         <p class="fix"><span class="kind">Solution</span>A standard still lands in the files each program reads, but it arrives from one place instead of by copy, at
@@ -56,7 +56,7 @@ description: A configuration manager for projects. A team settles its standards 
         <p class="fix"><span class="kind">Solution</span>When the team improves it, one person reads the change once, and it reaches every project as one change.
           Whether a project still has the current version is a check that runs on its own, not something a teammate
           notices months later.</p></div></div></li>
-      <li><div class="scene" style="background-position: 27% 77%;"></div><div class="legend-body"><span class="num">3</span><div><h3>The current standard at every seat</h3>
+      <li><div class="scene" style="background-position: 27% 77%;"></div><div class="legend-body"><span class="num">3</span><div><h3>The current standard is at every seat</h3>
         <p class="was"><span class="kind">Problem</span>The new teammate clones the first project and finds last month's version of how the team works, and asks.</p>
         <p class="fix"><span class="kind">Solution</span>A new teammate finds the current standard on the first day, in the project itself, with no older copy to ask
           about and no catching up by paste.</p></div></div></li>
@@ -91,7 +91,7 @@ description: A configuration manager for projects. A team settles its standards 
       </div>
       <h3 class="subhead" id="your-recipes">Hello world: your first recipe</h3>
       <div class="story">
-        <p>A recipe is a short Groovy file in the repository. It asks for a model, and the model says what it writes.
+        <p>A recipe is a short Groovy file in the project. It asks for a model, and the model says what it writes.
           Cook writes that and nothing else.</p>
       </div>
       <div class="cook">
@@ -148,7 +148,7 @@ Created cook.lock</pre>
         </div>
       </div>
       <a class="next-step" href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/book-open.svg %}<span><strong>Write a recipe</strong>
-        builds this one step by step, from the model to a cookbook other repositories cook.</span></a>
+        builds this one step by step, from the model to a cookbook other projects cook.</span></a>
     </div>
   </div>
 </section>
@@ -175,8 +175,8 @@ Created cook.lock</pre>
   <div class="wrap">
     <p class="chapter-label">The start</p>
     <div>
-      <h2>Start with one repository</h2>
-      <p class="lede">Install Cook, cook one recipe and read the diff. The next repository cooks the same list.</p>
+      <h2>Start with one project</h2>
+      <p class="lede">Install Cook, cook one recipe and read the diff. The next project cooks the same list.</p>
       <ul class="platforms">
         <li>{% include icons/linux.svg %}Linux x64</li>
         <li>{% include icons/linux.svg %}Linux arm64</li>
@@ -200,14 +200,14 @@ brew install cook</code></pre></div></div>
         <div class="card">
           <h3>{% include icons/download.svg %}Binary</h3>
           <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz | tar -xz -C ~/.local/share
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz \
+  | tar -xz -C ~/.local/share
 export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
           </div>
         </div>
       </div>
-      <p class="then">Then run <code>cook --help</code>.</p>
       <a class="next-step" href="{{ '/docs/features/install.html' | relative_url }}">{% include icons/download.svg %}<span><strong>Install</strong>
-        covers checksums, macOS paths, pinning a release for a team and building from source.</span></a>
+        covers checksums, macOS paths, pinning a release for a team and building from source. Then run <code>cook --help</code>.</span></a>
     </div>
   </div>
 </section>
@@ -221,7 +221,7 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
 
 <section class="ref" id="sets-up">
   <div class="wrap">
-    <p class="path">cookbook / index</p>
+    <p class="chapter-label">The cookbook</p>
     <h2>What runs today</h2>
     <p class="lede">Each recipe says what it writes before it writes it: <code>cook help &lt;coordinates&gt;</code>.</p>
     <div class="recipes">
@@ -252,7 +252,7 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
 
 <section class="section" id="docs">
   <div class="wrap">
-    <p class="kicker">The manuals</p>
+    <p class="chapter-label">The manuals</p>
     <h2>Read next</h2>
     <div class="map">
       <a href="{{ '/docs/get-started.html' | relative_url }}">{% include icons/book-open.svg %}<strong>Get started</strong><span>Install Cook and cook your first recipe, step by step.</span></a>

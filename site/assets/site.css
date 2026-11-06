@@ -3,6 +3,7 @@
    same lab with the lights on. */
 
 :root {
+  --measure: 760px;
   --bg: #0d0f14;
   --bg-raised: #141821;
   --bg-sunken: #0a0c10;
@@ -270,10 +271,10 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .opening h2 {
   font: 700 clamp(30px, 3.4vw, 40px)/1.08 var(--font-body); letter-spacing: -.8px; margin: 0 0 24px; max-width: 860px;
 }
-.opening .lede { font-size: 19px; line-height: 1.55; margin: 0 0 40px; max-width: 860px; }
-.story { max-width: 700px; }
+.opening .lede { font-size: 19px; line-height: 1.55; margin: 0 0 40px; max-width: var(--measure); }
+.story { max-width: var(--measure); }
 .story p { margin: 0 0 16px; font-size: 17px; line-height: 1.6; }
-.answer { margin: 0; max-width: 860px; }
+.answer { margin: 0; max-width: var(--measure); }
 .answer h3 { font: 700 clamp(26px, 2.6vw, 32px)/1.1 var(--font-body); letter-spacing: -.6px; margin: 0 0 18px; }
 .answer .lede { margin: 0 0 32px; }
 
@@ -281,7 +282,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .chapter:nth-of-type(odd) { background: var(--bg-sunken); }
 .chapter-label { margin: 0 0 18px; font: 400 13px/1.2 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
 .chapter h2 { font: 700 36px/1.08 var(--font-body); letter-spacing: -1px; margin: 0 0 22px; max-width: 780px; }
-.chapter .lede { font-size: 20px; line-height: 1.5; margin: 0 0 32px; max-width: 700px; }
+.chapter .lede { font-size: 20px; line-height: 1.5; margin: 0 0 32px; max-width: var(--measure); }
 .chapter .story { margin: 0 0 32px; }
 .chapter .story:last-child { margin-bottom: 0; }
 .subhead { font: 700 26px/1.15 var(--font-body); letter-spacing: -.4px; margin: 56px 0 14px; padding-top: 40px; border-top: 1px solid var(--line-strong); }
@@ -324,15 +325,16 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   list-style: none; margin: 0; padding: 8px 0; position: relative; align-self: stretch;
   display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
 }
-.cook-line-up::before {
-  content: ""; position: absolute; left: 21px; top: 30px; bottom: 30px; border-left: 2px dashed var(--line-strong);
-}
 .cook-line-up::after {
   content: ""; position: absolute; left: 15px; top: 24px; width: 14px; height: 14px; background: var(--tank-orange);
   border: 2px solid var(--accent-ink); animation: crate 6s steps(48) infinite;
 }
 @keyframes crate { 0% { top: 24px; opacity: 0; } 6% { opacity: 1; } 90% { opacity: 1; } 100% { top: calc(100% - 38px); opacity: 0; } }
 .cook-line-up li { position: relative; z-index: 1; display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: start; }
+.cook-line-up li:not(:last-child) { flex: 1; }
+.cook-line-up li:not(:last-child)::before {
+  content: ""; position: absolute; z-index: -1; left: 21px; top: 44px; bottom: -18px; border-left: 2px dashed var(--line-strong);
+}
 .station {
   width: 44px; height: 44px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink);
   border: 2px solid var(--accent-ink); box-shadow: 3px 3px 0 var(--shadow);
@@ -368,8 +370,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .install h3 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 16px; font-weight: 600; }
 .install h3 .icon { width: 20px; height: 20px; color: var(--link); }
 .install .prose { max-width: none; }
-.install .prose pre { margin: 0; font-size: 13px; white-space: pre-wrap; }
-.install .prose pre code { overflow-wrap: anywhere; }
+.install .prose pre { margin: 0; font-size: 13px; white-space: pre; overflow-x: auto; }
 
 /* The seam between the parts */
 .seam { background: #07080b; color: #e7e4dc; border-block: 1px solid #1d222d; padding: 72px 0; }
@@ -378,19 +379,14 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 
 /* Part two: the cookbook, each recipe on a card under its coordinates */
 .ref { padding: 72px 0; }
-.ref .path {
-  margin: 0 0 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line-strong);
-  font: 400 12.5px var(--font-mono); letter-spacing: .3px; color: var(--text-muted);
-}
-.ref .path::before { content: "// "; color: var(--line-strong); }
-.ref h2 { font: 600 28px/1.2 var(--font-body); letter-spacing: -.3px; margin: 0 0 10px; }
-.ref .lede { font-size: 16px; color: var(--text-muted); margin: 0 0 28px; max-width: 720px; }
+.ref h2, .section h2 { font: 700 36px/1.08 var(--font-body); letter-spacing: -1px; margin: 0 0 22px; max-width: 780px; }
+.ref .lede { font-size: 20px; line-height: 1.5; margin: 0 0 32px; max-width: var(--measure); }
 .recipes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .recipe { display: flex; flex-direction: column; padding: 0; overflow: hidden; transition: border-color .08s; }
 .recipe:hover { border-color: var(--accent); }
 .home main .recipe > code {
   display: block; padding: 12px 20px; background: #07080b; color: #f5c518; border: 0; border-bottom: 1px solid var(--line);
-  font: 600 13.5px/1.5 var(--font-mono);
+  font: 600 13.5px/1.5 var(--font-mono); min-height: calc(2 * 1.5em + 24px);
 }
 .recipe h3 { margin: 18px 20px 6px; font-size: 17px; font-weight: 600; }
 .recipe p { margin: 0 20px 14px; color: var(--text-muted); font-size: 15px; flex: 1; }
@@ -406,13 +402,10 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .next-step strong { color: var(--link); }
 .next-step::after { content: "\2192"; margin-left: auto; padding-left: 12px; font-size: 22px; color: var(--link); }
 .note { margin: 28px 0 0; font-size: 14.5px; color: var(--text-muted); }
-.then { margin: 22px 0 0; font-size: 17px; }
-.then + .next-step { margin-top: 16px; }
 
 /* Read next: the docs map */
 .section { padding: 80px 0; border-top: 1px solid var(--line); background: var(--bg-sunken); }
-.section h2 { font: 700 34px/1.15 var(--font-body); margin: 0 0 24px; letter-spacing: -.5px; }
-.section .lede { max-width: 720px; color: var(--text-muted); font-size: 18px; margin: 0 0 36px; }
+.section .lede { max-width: var(--measure); color: var(--text-muted); font-size: 18px; margin: 0 0 36px; }
 .map { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 .map a {
   display: block; padding: 18px 20px; background: var(--bg-raised); border: 1px solid var(--line); text-decoration: none; color: var(--text);
@@ -460,8 +453,8 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .wrap { padding: 0 16px; }
   .chapter { padding: 56px 0; }
   .section { padding: 56px 0; }
-  .section h2 { font-size: 27px; }
-  .chapter h2 { font-size: 28px; }
+  .chapter h2, .ref h2, .section h2 { font-size: 28px; }
+  .home main .recipe > code { min-height: 0; }
   .opening h2 { font-size: 26px; }
   .seam h2 { font-size: 36px; }
   .commands, .recipes { grid-template-columns: minmax(0, 1fr); }
