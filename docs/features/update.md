@@ -107,7 +107,7 @@ Update io.github.lmarqs.cookbook:git#worktrees 8.2.0 -> 9.0.0
 Would update cook.lock
 ```
 
-This exits 1 because the recipe would move; nothing was written. To accept the move to the newest release:
+This exits 0, as every dry run does; nothing was written. To accept the move to the newest release:
 
 ```sh
 cook update -C "$kitchen" --major --batch-approve io.github.lmarqs.cookbook:git#worktrees
@@ -210,9 +210,9 @@ Update accepts no replacement recipe arguments of its own.
 
 ### Dry runs, approval and recovery
 
-`--dry-run` shows the moves and the cooking diff without writing or asking for approval. It exits 1 if any recipe
-would move, 0 if none would, and 2 on an error. A skipped unknown recipe is a warning; it does not by itself make
-the exit status nonzero. The status depends on release moves, even if a move changes only `cook.lock`.
+`--dry-run` shows the moves and the cooking diff without writing or asking for approval. It exits 0 whether or not
+a recipe would move, as every [dry run](../ux/cli-standards.md#dry-runs) does, and 2 on an error. A skipped unknown
+recipe is a warning; it does not by itself make the exit status nonzero.
 
 A normal update exits 0 after approved writes or when no move is available, 1 for declined or missing approval,
 and 2 on an error. Update uses cooking's confirm texts, terminal diff, whole-batch approval, yield texts and

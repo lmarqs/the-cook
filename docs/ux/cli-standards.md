@@ -100,10 +100,8 @@ and the rollback clearly so the caller can tell what happened.
 visible before anything is lost. Report each path with a `Would` line, because a proposal must not be presented as a
 completed write ([streams and human output](#streams-and-human-output)).
 
-A dry run of cooking, discard or replicate exits 0 whether or not it would change anything, because it did what it
-was asked; whether a kitchen matches its lock is the question `check` answers
-([0031](../adrs/0031-drift-check.md)). A dry run of update exits 1 when a recipe would move
-([update](../features/update.md#dry-runs-approval-and-recovery)).
+A dry run exits 0 whether or not it would change anything, because it did what it was asked; whether a kitchen
+matches its lock is the question `check` answers ([0031](../adrs/0031-drift-check.md)).
 
 ## Output
 
@@ -171,8 +169,8 @@ a misplaced `--batch-approve` message directs the caller to put it before the fi
 
 Keep routine diagnostics focused on information the caller can act on, rather than internal identifiers or stack traces.
 Exit 0 when the command did what it was asked, 1 when nothing was written because approval was declined or missing or
-`check` found a difference or `update --dry-run` found a move, and 2 on any error, so a script tells a difference from
-a failure ([0031](../adrs/0031-drift-check.md)); the [CLI reference](../features/cli.md#exit-status) lists them.
+`check` found a difference, and 2 on any error, so a script tells a difference from a failure
+([0031](../adrs/0031-drift-check.md)); the [CLI reference](../features/cli.md#exit-status) lists them.
 
 ## Non-interactive operation
 

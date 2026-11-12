@@ -242,8 +242,7 @@ final class CookCommand {
         return true
       }
 
-      def written = write(updater.propose(plan), args.dryRun, args.batchApprove)
-      !args.dryRun && written
+      write(updater.propose(plan), args.dryRun, args.batchApprove)
     }
   }
 

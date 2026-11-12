@@ -551,7 +551,7 @@ notes.add('newer')
       def recorded = lock.text; def content = notes.text
 
       stdout.reset()
-      assert cli.execute(['update', '--kitchen=' + repo.path, '--dry-run', '--batch-approve'] as String[]) == 1 :
+      assert cli.execute(['update', '--kitchen=' + repo.path, '--dry-run', '--batch-approve'] as String[]) == 0 :
       stderr.toString('UTF-8')
       def moves = 'Update acme:notes#more 1.2.3 -> 1.3.0\nUpdate acme:notes#notes 1.2.3 -> 1.3.0\n'
       assert stdout.toString('UTF-8').startsWith(moves + 'Confirm acme:notes:1.3.0#notes\n')
@@ -629,7 +629,7 @@ notes.add('newer')
         assert lock.text == recorded
       }
       stdout.reset()
-      assert cli.execute(['update', '-C', repo.path, '--major', '--dry-run'] as String[]) == 1
+      assert cli.execute(['update', '-C', repo.path, '--major', '--dry-run'] as String[]) == 0
       assert stdout.toString('UTF-8').startsWith('Update acme:notes#more 1.2.3 -> 2.0.0\n')
       assert lock.text == recorded
       assert cli.execute(['update', '-C', repo.path, '--major', '--batch-approve'] as String[]) == 0

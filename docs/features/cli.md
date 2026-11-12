@@ -268,12 +268,12 @@ there; a CI step names the recipes whose output is committed.
 | Status | Meaning |
 | --- | --- |
 | 0 | The command did what it was asked: it wrote the changes, found nothing to change or printed what was asked |
-| 1 | Nothing was written because approval was declined or missing, check found a difference, or `update --dry-run` found a newer release in scope |
+| 1 | Nothing was written because approval was declined or missing, or check found a difference |
 | 2 | An error: a misused command line, a refused operand, a recipe that failed to load or evaluate, or a failed write |
 
 A CI step therefore tells a kitchen that differs from its lock, status 1, from a check that could not run, status 2.
-`update --dry-run` exits 1 when a recipe would move, 0 when none would, and 2 on an error. An unknown recipe skipped
-in an unnamed update is a warning, not an error; see [unknown recipes](update.md#unknown-recipes).
+A dry run exits 0 whether or not it would change anything. An unknown recipe skipped in an unnamed update is a
+warning, not an error; see [unknown recipes](update.md#unknown-recipes).
 
 ## Kitchen
 
