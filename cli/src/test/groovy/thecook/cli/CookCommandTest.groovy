@@ -24,7 +24,9 @@ class CookCommandTest {
     def stdout = new ByteArrayOutputStream()
     assert command(stdout, new ByteArrayOutputStream()).execute(['--help'] as String[]) == 0
     def version = System.getProperty('cook.version')
-    def lines = stdout.toString('UTF-8').readLines()*.trim()
+    def lines = stdout.toString('UTF-8')
+        .readLines()
+        *.trim()
     assert lines.containsAll([
       "cook io.github.lmarqs.cookbook:hello:${version}#world".toString(),
       "cook help io.github.lmarqs.cookbook:hello:${version}#agent".toString(),
