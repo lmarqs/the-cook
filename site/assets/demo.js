@@ -140,6 +140,7 @@
       return path === LOCK ? count : count + files[path].filter(function (line) { return line.recipe; }).length;
     }, 0);
   };
+  const untouched = project({});
 
   // A unified diff between two projects. A recipe only appends or removes whole lines, so two cursors are enough.
   function diff(before, after) {
@@ -194,8 +195,9 @@
     }, 28);
   }
 
-  function run(action, recipe) {
+  function run(action, item) {
     if (busy) return;
+    const recipe = item.recipe;
     const next = Object.assign({}, cooked);
     if (action === "discard") delete next[recipe.id];
     else next[recipe.id] = action === "cook" ? 0 : LATEST;
@@ -204,6 +206,8 @@
     const change = diff(before, after);
     const command = { cook: "cook ", update: "cook update ", discard: "cook discard " }[action] + recipe.id;
     busy = true;
+    freshLines = {};
+    freshFiles = {};
     render();
     type(command, function () {
       if (action === "update") {
@@ -211,9 +215,9 @@
       }
       change.lines.forEach(function (line) { print(line[0], line[1]); });
       change.changed.forEach(function (path) {
-        print("", (!before[path] ? "Created " : !after[path] ? "Removed " : "Updated ") + path);
+        print("", (!before[path] ? "Created " : !after[path] ? "Deleted " : "Updated ") + path);
       });
-      const goal = items.filter(function (item) { return item.recipe === recipe; })[0].node.querySelector(".demo-goal").textContent.trim();
+      const goal = item.node.querySelector(".demo-goal").textContent.trim();
       if (action === "discard") print("demo-done", "Took out what " + recipe.id + " brought. Your own lines: untouched.");
       else print("demo-done", "✓ " + goal + ".");
 
@@ -221,19 +225,23 @@
       Object.keys(before).forEach(function (path) {
         before[path].forEach(function (line) { known[path + "|" + keyOf(line)] = true; });
       });
-      freshLines = {};
       Object.keys(after).forEach(function (path) {
         after[path].forEach(function (line) {
           if (!known[path + "|" + keyOf(line)]) freshLines[path + "|" + keyOf(line)] = true;
         });
       });
-      freshFiles = {};
       change.changed.forEach(function (path) { freshFiles[path] = true; });
       cooked = next;
       openFile = change.changed.filter(function (path) { return path !== LOCK && after[path]; })[0] || "README.md";
       commands++;
       busy = false;
       render();
+      // The button that ran the command is hidden in the new state, which would leave a keyboard user at the page's top.
+      const focused = document.activeElement;
+      if (focused === document.body || item.node.contains(focused)) {
+        const nextAction = { todo: "cook", cooked: "update", latest: "discard" }[item.node.dataset.state];
+        item.node.querySelector('[data-action="' + nextAction + '"]').focus({ preventScroll: true });
+      }
     });
   }
 
@@ -266,7 +274,6 @@
   }
 
   function renderExplorer(files) {
-    const base = project({});
     const tree = part("tree");
     const folders = {};
     tree.textContent = "";
@@ -281,7 +288,7 @@
         row.title = folder;
         tree.append(row);
       }
-      const badge = !base[path] ? "U" : files[path].length !== base[path].length ? "M" : "";
+      const badge = !untouched[path] ? "U" : files[path].length !== untouched[path].length ? "M" : "";
       const row = make("li");
       const button = make("button", (folder ? "demo-nested " : "") + (badge ? "demo-" + badge : ""));
       button.type = "button";
@@ -294,6 +301,7 @@
         view = "file";
         freshFiles = {};
         render();
+        tree.querySelector("[aria-current]").focus();
       });
       row.append(button);
       tree.append(row);
@@ -307,11 +315,14 @@
       const button = make("button", "demo-tab");
       button.type = "button";
       button.innerHTML = icon;
-      button.append(make("span", "", name), make("span", "demo-close", "×"));
+      const close = make("span", "demo-close", "×");
+      close.setAttribute("aria-hidden", "true");
+      button.append(make("span", "", name), close);
       if (view === target) button.setAttribute("aria-current", "true");
       button.addEventListener("click", function () {
         view = target;
         render();
+        tabs.querySelector("[aria-current]").focus();
       });
       tabs.append(button);
     };
@@ -371,9 +382,10 @@
 
   items.forEach(function (item) {
     item.node.querySelectorAll("button").forEach(function (button) {
-      button.addEventListener("click", function () { run(button.dataset.action, item.recipe); });
+      button.addEventListener("click", function () { run(button.dataset.action, item); });
     });
   });
   render();
   demo.hidden = false;
+  document.querySelector(".demo-caption").hidden = false;
 })();
