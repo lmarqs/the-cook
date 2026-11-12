@@ -230,6 +230,18 @@ commands in its task runner. These are project choices, and the programs that co
   version control and external tools; before removing a working copy, preserve work and local data through those
   tools, for example by committing or stashing changes.
 
+### An agent's sandbox makes the destination read-only
+
+- **Symptom.** Cooking from inside a coding agent's session fails with
+  `cook: <kitchen>/.agents/.cook-<number>.tmp: Read-only file system`, or `mise use` cannot install Cook.
+- **Why.** An agent's sandbox decides what its commands may write. Codex's workspace sandbox keeps `.agents/` and
+  `.codex/` read-only inside the workspace, and the directories mise installs into sit outside it, so recipes that
+  write the agent layout, such as `agents#seed` and `agents#connect`, cannot write there.
+- **Cook's responsibility.** Write the whole batch or nothing: a refused write leaves the destination as it was.
+- **What you do.** Install Cook and cook recipes that write an agent's own configuration from a terminal, or from a
+  session the agent runs outside its sandbox. Recipes that write elsewhere, such as `git#worktrees`, cook from inside
+  it.
+
 ### Running from a subdirectory changes the destination
 
 - **Symptom.** A recipe targets files under a subdirectory when root configuration was intended.
