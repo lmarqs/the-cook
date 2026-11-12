@@ -13,20 +13,104 @@ description: A configuration manager for projects. A team settles its standards 
       <h1>Cook the best product <em>without any source of contamination.</em></h1>
       <p class="lede">Cook is a configuration manager for projects. Your team settles its standards once, replicates them to
         every project, every person and every agent, and improves them in one place.</p>
-      <div class="actions">
-        <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
-        <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
-      </div>
-      <ul class="hero-meta">
-        <li>{% include icons/apachegroovy.svg %}Groovy recipes</li>
-        <li>{% include icons/linux.svg %}Linux</li>
-        <li>{% include icons/apple.svg %}macOS</li>
-        <li>{% include icons/apache.svg %}Apache-2.0</li>
-        <li><a href="{{ site.source_url }}">{% include icons/github.svg %}lmarqs/the-cook</a></li>
-      </ul>
     </div>
-    <div class="lab-map">
-      <img src="{{ '/site/assets/the-lab-1536.webp' | relative_url }}" srcset="{{ '/site/assets/the-lab-768.webp' | relative_url }} 768w, {{ '/site/assets/the-lab-1536.webp' | relative_url }} 1536w" sizes="(min-width: 1400px) 775px, (min-width: 981px) 56vw, calc(100vw - 32px)" width="1536" height="1024" fetchpriority="high" decoding="async" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK.">
+    <div class="demo" hidden>
+      <div class="demo-menu">
+        <div class="demo-menu-head">
+          <p class="demo-label">The menu</p>
+          <div class="demo-progress"><div class="demo-bar"><i data-demo="bar"></i></div><span data-demo="count">0 of 3 standards</span></div>
+        </div>
+        <ul class="demo-items">
+          <li class="demo-item tone-blue" data-recipe="git#worktrees" data-state="todo">
+            <p class="demo-goal"><span class="demo-mark">{% include icons/circle-x.svg %}{% include icons/circle-check.svg %}</span>Every branch gets its own bench</p>
+            <p class="demo-recipe">{% include icons/git.svg %}git#worktrees <span data-demo="version"></span><b class="demo-badge">1 update</b></p>
+            <p class="demo-note" data-demo="note">Writes a worktree folder and its setup script.</p>
+            <div class="demo-actions">
+              <button type="button" data-action="cook">{% include icons/chef-hat.svg %}Cook</button>
+              <button type="button" data-action="update">{% include icons/tag.svg %}Update</button>
+              <button type="button" data-action="latest" disabled>{% include icons/circle-check.svg %}Latest</button>
+              <button type="button" data-action="discard">{% include icons/trash-2.svg %}Discard</button>
+            </div>
+          </li>
+          <li class="demo-item tone-purple" data-recipe="agents#seed" data-state="todo">
+            <p class="demo-goal"><span class="demo-mark">{% include icons/circle-x.svg %}{% include icons/circle-check.svg %}</span>Coding agents know the team's rules</p>
+            <p class="demo-recipe">{% include icons/bot.svg %}agents#seed <span data-demo="version"></span><b class="demo-badge">1 update</b></p>
+            <p class="demo-note" data-demo="note">Writes AGENTS.md, the rulebook agents read.</p>
+            <div class="demo-actions">
+              <button type="button" data-action="cook">{% include icons/chef-hat.svg %}Cook</button>
+              <button type="button" data-action="update">{% include icons/tag.svg %}Update</button>
+              <button type="button" data-action="latest" disabled>{% include icons/circle-check.svg %}Latest</button>
+              <button type="button" data-action="discard">{% include icons/trash-2.svg %}Discard</button>
+            </div>
+          </li>
+          <li class="demo-item tone-green" data-recipe="docs#layout" data-state="todo">
+            <p class="demo-goal"><span class="demo-mark">{% include icons/circle-x.svg %}{% include icons/circle-check.svg %}</span>Docs have a map everyone follows</p>
+            <p class="demo-recipe">{% include icons/book-open.svg %}docs#layout <span data-demo="version"></span><b class="demo-badge">1 update</b></p>
+            <p class="demo-note" data-demo="note">Writes the docs-layout skill, the map of docs/.</p>
+            <div class="demo-actions">
+              <button type="button" data-action="cook">{% include icons/chef-hat.svg %}Cook</button>
+              <button type="button" data-action="update">{% include icons/tag.svg %}Update</button>
+              <button type="button" data-action="latest" disabled>{% include icons/circle-check.svg %}Latest</button>
+              <button type="button" data-action="discard">{% include icons/trash-2.svg %}Discard</button>
+            </div>
+          </li>
+        </ul>
+        <dl class="demo-stats">
+          <div><dd data-demo="lines">0</dd><dt>lines written</dt></div>
+          <div><dd data-demo="commands">0</dd><dt>commands</dt></div>
+          <div><dd>0</dd><dt>copy-pastes</dt></div>
+        </dl>
+      </div>
+      <div class="demo-stage">
+        <div class="demo-ide">
+          <div class="demo-titlebar"><i></i><i></i><i></i><span>my-project</span></div>
+          <div class="demo-work">
+            <div class="demo-explorer"><p class="demo-label">Explorer</p><ul data-demo="tree"></ul></div>
+            <div class="demo-editor"><div class="demo-tabs" data-demo="tabs"></div><div data-demo="code"></div></div>
+          </div>
+          <div class="demo-terminal">
+            <p class="demo-label">Terminal</p>
+            <pre data-demo="out"><span class="demo-meta">This project has no standards yet. Pick a recipe from the menu: it runs here, as it would in your terminal.
+</span></pre>
+          </div>
+          <p class="demo-status" data-demo="status" role="status">cook check: no cook.lock yet</p>
+        </div>
+      </div>
+      <template data-demo="win">
+        <div class="demo-win">
+          <p class="demo-win-title">Project up to standard.</p>
+          <p><span data-demo="win-commands"></span> commands, <span data-demo="win-lines"></span> lines written for you, 0 copy-pastes. Every
+            improvement the team made reached this project.</p>
+          <p class="demo-win-go">Now do it on yours:</p>
+          <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
+          <a class="button ghost" href="#install">Install Cook</a>
+        </div>
+      </template>
+      <template data-icon="folder">{% include icons/folder.svg %}</template>
+      <template data-icon="text">{% include icons/file-text.svg %}</template>
+      <template data-icon="git">{% include icons/git.svg %}</template>
+      <template data-icon="script">{% include icons/terminal.svg %}</template>
+      <template data-icon="lock">{% include icons/lock.svg %}</template>
+      <template data-icon="check">{% include icons/circle-check.svg %}</template>
+    </div>
+    <noscript>
+      <div class="lab-map">
+    <img src="{{ '/site/assets/the-lab-1536.webp' | relative_url }}" srcset="{{ '/site/assets/the-lab-768.webp' | relative_url }} 768w, {{ '/site/assets/the-lab-1536.webp' | relative_url }} 1536w" sizes="(min-width: 1400px) 775px, (min-width: 981px) 56vw, calc(100vw - 32px)" width="1536" height="1024" fetchpriority="high" decoding="async" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK.">
+  </div>
+    </noscript>
+    <div class="hero-foot">
+      <div class="actions">
+      <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
+      <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
+    </div>
+      <p class="demo-caption">The project above is a simulation: recipe names are shortened, and the versions and files are samples.</p>
+      <ul class="hero-meta">
+      <li>{% include icons/apachegroovy.svg %}Groovy recipes</li>
+      <li>{% include icons/linux.svg %}Linux</li>
+      <li>{% include icons/apple.svg %}macOS</li>
+      <li>{% include icons/apache.svg %}Apache-2.0</li>
+      <li><a href="{{ site.source_url }}">{% include icons/github.svg %}lmarqs/the-cook</a></li>
+    </ul>
     </div>
   </div>
 </section>

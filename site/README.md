@@ -12,7 +12,7 @@ into the site:
 | `_includes/` | The head, top bar, sidebar and footer the layouts share; the head carries the title, description, canonical link, Open Graph and Twitter tags, and the JSON-LD of the page |
 | `_includes/icons/` | Inline SVG icons, `{% include icons/<name>.svg %}`, drawn in the colour of the text around them |
 | `_data/nav.yml` | The docs sidebar in reading order, and the title each page shows on the site |
-| `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons, source links and Mermaid diagrams; `hat.svg`, the favicon and the brand mark in the top bar; `the-lab-768.webp` and `the-lab-1536.webp`, the landing page's lab at two widths, and `the-lab-share.jpg`, its 1200x800 link-preview image, all cut from `docs/assets/the-lab.png`, which stays the README's image on GitHub |
+| `assets/` | `site.css`, the lab theme in dark and light schemes; `site.js`, heading anchors, the page contents, copy buttons, source links and Mermaid diagrams; `demo.js`, the landing page's demo, which only the `home` layout loads; `hat.svg`, the favicon and the brand mark in the top bar; `the-lab-768.webp` and `the-lab-1536.webp`, the lab at two widths, which the landing page shows in its problem scenes and in place of the demo when JavaScript is off, and `the-lab-share.jpg`, its 1200x800 link-preview image, all cut from `docs/assets/the-lab.png`, which stays the README's image on GitHub |
 | `index.html` | The landing page, served at `/` |
 | `prepare` | Readies a checkout for the build: copies `_config.yml` to the root with the release tag, and gives the root `README.md` front matter so Jekyll renders it as a page |
 | `preview` | Builds the working tree with the image `actions/jekyll-build-pages` runs and serves it locally |
@@ -23,6 +23,19 @@ tank colours for categories. Text and headings are IBM Plex Sans; the pixel face
 Brand icons, such as `github.svg`, `linux.svg` and `claude.svg`, are [Simple Icons](https://simpleicons.org) 16.35.0,
 under CC0. The rest are [Lucide](https://lucide.dev) 1.61.0, under the licence in `_includes/icons/LICENSE-lucide`. A
 new icon takes the path data from the same package, in the markup of the icons already here.
+
+## The landing page's demo
+
+The hero of `index.html` holds a sample project that a visitor changes from a menu of three recipes. Cooking a recipe
+writes its files, updating it brings the lines a newer version added, and discarding it takes out what it wrote; the
+project's own lines stay through all three. The editor window shows the result as a developer sees it day to day: the
+explorer with Git's status letters, the open file with the recipe that wrote each line, and a terminal with the command
+and its diff. A fourth tab opens when every recipe is at its newest version, and links to Get started and Install.
+
+Nothing in the demo runs Cook. `demo.js` holds the sample: each recipe's two versions and the files they write. The
+menu's markup, its texts and every icon are in `index.html`, where each card keeps one height in every state. The
+commands write without the `Write these changes? [y/N]` prompt the CLI shows, and recipe names are shortened, which
+the caption under the demo says.
 
 ## Publishing
 
