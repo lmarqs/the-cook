@@ -69,7 +69,7 @@ without the information they need; recipe sources are not the consuming program'
 
 At its best, cleanup can keep conventions while removing instructions tied to the configuring tool. It loses because it
 requires a stored class for every section and a separate reconciliation step. Removal by a recipe's new version and
-reversal of a batch instead expose exactly what will change for approval.
+discard of a recipe instead expose exactly what will change for approval.
 
 ### Enforce a fixed instruction-size budget in the engine
 

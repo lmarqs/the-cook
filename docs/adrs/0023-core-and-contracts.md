@@ -32,7 +32,7 @@ of the mechanisms that read, present and write their inputs and results.
    implement the external mechanisms those rules need; wiring (the entry point) supplies those connections.
    Dependencies point from connections and wiring toward the core.
 2. Those boundaries follow the agreed file-operation responsibilities: current content, ordered changes, actual diff
-   review, whole-batch approval, destination containment, recovery and recorded reversal. The core defines no
+   review, whole-batch approval, destination containment, recovery and recorded ownership. The core defines no
    contracts for version control or for running agents, and adds no external command execution to a batch. This
    decision does not enumerate or finalize method signatures, model APIs or a complete port inventory.
 3. The core is independent of any interface and writes and records only the changes it receives as accepted

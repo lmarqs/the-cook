@@ -89,7 +89,7 @@ collide and unrelated databases, settings, and hand-written content can be chang
 ### Include delivery commands in the batch
 
 At its best, setup and publication are one invocation. It loses because commands and remote writes have effects
-that the declared file diff and local recovery patches cannot describe or reverse.
+that the declared file diff and rollback cannot describe or reverse.
 
 ## Consequences
 

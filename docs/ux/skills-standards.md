@@ -150,7 +150,7 @@ rule applies and what evidence supports it, rather than relying on emphasis.
 
 A skill should call the supported command for an operation and link its reference, because a parallel procedure can
 drift from the command's actual behavior. Explain the intent, prerequisites and review decisions; do not teach an
-agent to imitate Cook's file writes or recovery records by hand when asking it to cook.
+agent to imitate Cook's file writes or its `cook.lock` records by hand when asking it to cook.
 
 Avoid copying full flag catalogs into skills. Link the [CLI reference](../features/cli.md) for the intended design and
 version-appropriate usage guidance for actual execution. Do not cite a command the CLI does not have.

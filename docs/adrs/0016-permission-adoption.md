@@ -86,8 +86,7 @@ Costs:
 Must be maintained:
 
 - Preservation of unrelated native content and accurate diffs for permission changes.
-- `cook.lock` ownership limited to the rules and keys a recipe wrote, and reverse patches that restore a batch's own
-  values.
+- `cook.lock` ownership limited to the rules and keys a recipe wrote.
 
 ## Confirmation
 

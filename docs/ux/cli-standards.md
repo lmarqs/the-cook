@@ -4,8 +4,8 @@ audience: Whoever adds or changes a command, option or message
 ---
 # CLI standards
 
-People and automation need to understand what a command will change, what approval covers, and how to withdraw or
-reverse configuration. Inconsistent argument scope and hidden approval rules make those decisions hard. Cook presents
+People and automation need to understand what a command will change, what approval covers, and how to remove what a
+recipe wrote. Inconsistent argument scope and hidden approval rules make those decisions hard. Cook presents
 predictable commands and the actual combined diff before target writes. Interactive users approve the whole batch;
 unattended callers explicitly preapprove it.
 
@@ -94,6 +94,17 @@ review flow; ownership never blocks a change.
 If a write fails, roll back changes already made by the batch, so the files stay as they were. Report the failure
 and the rollback clearly so the caller can tell what happened.
 
+### Dry runs
+
+`--dry-run` shows the same review as a write, the diff included, asks nothing and writes nothing, so a change is
+visible before anything is lost. Report each path with a `Would` line, because a proposal must not be presented as a
+completed write ([streams and human output](#streams-and-human-output)).
+
+A dry run of cooking, discard or replicate exits 0 whether or not it would change anything, because it did what it
+was asked; whether a kitchen matches its lock is the question `check` answers
+([0031](../adrs/0031-drift-check.md)). A dry run of update exits 1 when a recipe would move
+([update](../features/update.md#dry-runs-approval-and-recovery)).
+
 ## Output
 
 ### Streams and human output
@@ -134,7 +145,7 @@ Terminal messages use a small set of kitchen/lab icons. Each icon marks an activ
 | 🧂 | Warning |
 | 💥 | Error |
 | ⛔ | Refused operation or missing approval |
-| 🧯 | Reversal or rollback |
+| 🧯 | Rollback |
 | ⏳ | Waiting, such as a package download |
 
 Use one icon per message, from this set, with the status word still present; the prefix icon is that one icon.

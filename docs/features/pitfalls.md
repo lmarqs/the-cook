@@ -4,7 +4,7 @@ audience: Whoever relies on a setup Cook wrote, or reviews one
 ---
 # Pitfalls, gaps and traps
 
-Recipe evaluation, native permission settings, source paths and reversal can behave differently from a reader's
+Recipe evaluation, native permission settings, source paths and discard can behave differently from a reader's
 expectations. A correct-looking setting or successful file write does not establish that a program loaded the setting,
 enforced the rule or tested the work.
 
@@ -94,7 +94,7 @@ for terms.
 
 - **Symptom.** A recipe causes an external effect before its diff is approved, or the effect remains after rollback.
 - **Why.** Recipes are trusted executable Groovy code. Evaluation can do more than declare file operations.
-- **Cook's responsibility.** Diff review, destination boundaries, reverse patches and rollback govern declared batch
+- **Cook's responsibility.** Diff review, destination boundaries and rollback govern declared batch
   operations. Executing commands is not a batch action; arbitrary recipe effects are outside those guarantees.
 - **What you do.** Read and trust sources before evaluation, including dependencies; a source's address or a reviewed output
   diff alone does not establish that code is safe to execute. Approving the resulting diff is a separate decision. See
