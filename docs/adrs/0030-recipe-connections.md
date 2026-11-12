@@ -27,9 +27,8 @@ recipes, programs and the repository can be read from the arguments a recipe was
 - When two recipes write the same section, key or file, the last one wins and becomes its owner
   ([0007](0007-ownership.md)), and a recipe rewrites what it owns on every cook. A recipe that owns a program's hook
   key therefore replaces the team's own edit to that key, and takes the key from another recipe or loses it to one.
-- People and coding agents learn a repository's rules from instruction files the team keeps for them, such as a
-  README for people and an agent instruction file for agents. A rule a recipe sets up, such as where worktrees go,
-  reaches them only through those files.
+- A recipe states the rules it sets up in instruction files ([0018](0018-conventions.md)), and repositories keep
+  those files under different names, such as a README for people and an agent instruction file for agents.
 
 ## Decision
 
@@ -43,8 +42,9 @@ recipes, programs and the repository can be read from the arguments a recipe was
    another recipe that the person names by point 2.
 4. Cook connects automatically only files of one recipe, such as a link from the path a program reads to the file the
    recipe owns.
-5. A recipe states the rules it sets up in each instruction file the person names by point 2, as a section
-   ([0018](0018-conventions.md)), and in none the person leaves unnamed.
+5. An instruction file is such a meeting point: a recipe writes the section that states its rules
+   ([0018](0018-conventions.md)) in each instruction file the person names by point 2, and in none the person leaves
+   unnamed.
 
 ## Reasons
 
@@ -60,11 +60,9 @@ recipes, programs and the repository can be read from the arguments a recipe was
   that copies one picks some programs and drifts from the rest. A recipe that owns another program's key also replaces
   the team's use of it on every cook. The trade is a step the team takes by hand, which the recipe's After cooking names.
 - **4.** Between files of one recipe the connection has one correct form and no other party to agree with.
-- **5.** Otherwise every repository that cooks a recipe writes the same few lines by hand on where its files are and
-  how to use them, and those lines drift when the recipe changes. Owned, they change with the recipe's arguments and
-  version. Naming the files keeps point 1: the recipe never looks for an instruction file, a repository whose agents
-  read another file names that one, and one cook writes to every file named. The trade is a section the team does not
-  edit by hand, since the recipe owns it ([0007](0007-ownership.md)).
+- **5.** Naming the files keeps point 1: the recipe never looks for an instruction file, a repository whose agents
+  read another file names that one, and one cook writes to every file named. The trade is the one point 1 makes, an
+  argument to type.
 
 ## Rejected alternatives
 
@@ -83,7 +81,5 @@ wrong one.
 
 ## Consequences
 
-- A recipe's Connections section says "the person, by a parameter" for every contact with another recipe or the team,
-  and "Cook, automatically" only between its own files.
-- A recipe that offers a meeting point publishes its shape in API, such as a directory whose scripts run at session
-  start, so other recipes' parameters can name it.
+- A recipe's help names each meeting point it uses or offers and who makes the connection, in the API and Connections
+  sections that [cookbook units](../ux/messages-and-docs.md#cookbook-units) defines.

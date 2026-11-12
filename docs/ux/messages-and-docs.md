@@ -40,8 +40,8 @@ The same rules apply to guidance read by coding agents, because ambiguity can be
   to distinguish a recipe input failure from a target write failure.
 - Name destination files relative to the invocation directory, with `:line:column` when known. Identify source files
   by their original location or coordinates, because that is the source to edit.
-- Distinguish warnings from failures in words. Leave exit codes out of message guidance, because exit-code meanings
-  are undecided ([errors](cli-standards.md#errors)).
+- Distinguish warnings from failures in words; the exit status tells a script the outcome
+  ([errors](cli-standards.md#errors)).
 - Do not emit ANSI escapes to non-TTY streams, because logs and transcripts must remain readable. Formatting and
   progress messages must not hide or replace the final batch diff.
 

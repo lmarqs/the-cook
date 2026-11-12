@@ -41,8 +41,9 @@ A notice is explanatory text; ownership is recorded in the committed `cook.lock`
 
 Markers bound a section in shared text and name the recipe that owns it and the region within that recipe:
 `cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`. The
-[architecture](../architecture.md#ordered-composition-and-declared-targets) defines section targets. Use the file
-format's appropriate comment syntax:
+[architecture](../architecture.md#ordered-composition-and-declared-targets) defines section targets, and
+[0007](../adrs/0007-ownership.md) gives the reasons for markers and what they name. Write a marker as a comment in the
+file's own format, because the program and the people who read the file keep reading it with the markers in place:
 
 ```markdown
 Text outside the section remains intact.
@@ -136,9 +137,10 @@ Every run evaluates the supplied recipes again, so a manual edit appears in the 
 ## Refused connections
 
 A recipe that connects to something another recipe or the team provides, such as a file it names by a parameter,
-refuses to cook when that is missing from the draft, and writes nothing. The refusal names what to define and what to
-cook, in the [error message](messages-and-docs.md#error-messages) order, because the person can then make the
-connection without reading the recipe. For example, the intended wording for a role file a recipe names:
+refuses to cook when that is missing from the draft, and writes nothing
+([0030](../adrs/0030-recipe-connections.md)). The refusal names what to define and what to cook, in the
+[error message](messages-and-docs.md#error-messages) order, because the person can then make the connection without
+reading the recipe. For example, the intended wording for a role file a recipe names:
 
 ```text
 cook: io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui: --worker-role=claude:worker needs .agents/adapters/claude/roles/worker.json

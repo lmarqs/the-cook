@@ -193,6 +193,6 @@ Must be maintained:
 | [0026](0026-cookbook-trust.md) | What does batch approval establish about cookbook trust? | Cookbook execution requires trust beyond batch approval |
 | [0028](0028-place-of-the-tool.md) | What place does the tool take among the people who use it? | Cook supports shared setup without controlling how people work |
 | [0029](0029-cookbook-distribution.md) | How are cookbooks released and resolved? | Cookbooks release as jars in Maven-layout repositories, Maven Central by default |
-| [0030](0030-recipe-connections.md) | How does a recipe connect to other recipes' files? | Recipes connect to other recipes' files, and state their rules in instruction files, only through parameters the person names |
+| [0030](0030-recipe-connections.md) | How does a recipe connect to other recipes' files? | Recipes connect to other recipes' files only through parameters the person names |
 | [0031](0031-drift-check.md) | How does a team find committed files that no longer follow from cook.lock? | Check compares the kitchen with what cook.lock records |
 | [0032](0032-recipe-updates.md) | When may Cook choose a newer recipe release? | Cook moves a recipe to a newer release on request |

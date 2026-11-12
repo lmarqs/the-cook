@@ -25,9 +25,9 @@ and a SQL review skill through a cookbook while choosing which native files each
    files. Guidance written into native files is consumed by the configured program directly
    ([0010](0010-dependence-on-the-binary.md)). Cook does not promise when a program loads a skill, whether an
    instruction enters a session, or whether an agent follows it.
-2. Shared instruction sections use declared begin/end markers with the file format's comment syntax. Markers name the
-   owning recipe and region ([0007](0007-ownership.md)). Ordered operations propose changes against current content,
-   preserve unrelated text, and receive whole-batch diff review, including when the section was edited manually.
+2. Shared instruction sections are bounded by markers that name the owning recipe and region
+   ([0007](0007-ownership.md)). Ordered operations propose changes against current content, preserve unrelated text,
+   and receive whole-batch diff review, including when the section was edited manually.
 
 ## Reasons
 

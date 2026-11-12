@@ -26,8 +26,9 @@ rebuilt or removed without disturbing anything else.
 
 1. Recipe declarations address whole files by path, structured content by key path, and sections of shared text by
    markers, `cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`, which name the owning recipe's short name
-   and the region within it. Markers use the format's comment syntax, including HTML comments for Markdown. Content
-   outside the declared targets is preserved ([0008](0008-native-configuration.md)).
+   and the region within it. A marker is a comment in the file's own format; the
+   [generated-content standard](../ux/generated-content-standards.md#sections-and-markers) gives its form in each.
+   Content outside the declared targets is preserved ([0008](0008-native-configuration.md)).
 2. Recipes and their operations compose left to right against current content. When two recipes write the same
    section, key or file, the last one wins and becomes its owner; the diff is the only notice. Cooking recipe B does
    not remove output that recipe A owns, even when A is omitted from the invocation.
@@ -67,7 +68,7 @@ The trust limits of these guarantees follow [0011](0011-safety-invariants.md), a
 - **1.** Paths, keys and marked sections identify the scope a developer reviews. A marker that names its recipe and
   region lets several recipes keep separate sections in one file and lets a reader see which recipe produced a section.
   Format-appropriate markers let people and programs continue reading a shared file. Key paths avoid requiring
-  comments in formats that do not allow them.
+  comments in formats that do not allow them. The trade: a recipe's name is visible in native files.
 - **2.** Ordered composition lets recipes intentionally overlap, and the last writer is the one whose later versions
   should maintain the target. Limiting an invocation to declared and previously owned targets keeps a request for one
   recipe from deleting another recipe's output. The trade: an overlap transfers ownership with no notice beyond the

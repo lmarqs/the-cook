@@ -41,8 +41,10 @@ follow from the record, and a script can tell a difference from a failure.
 - **1.** The lock is the record the committed files must follow from, so the check reads its inputs from the lock and
   the step names no version or argument that a later cook could leave behind. Checking every recipe by default covers
   a recipe cooked after the step was written. Check runs replicate's evaluation, so its report is what
-  `cook replicate` proposes, and its diagnostic names that command as the fix. The trade is that output a clone does
-  not commit is absent from a fresh clone, so a CI step names the recipes whose output is committed.
+  `cook replicate` proposes, and its diagnostic names that command as the fix. It writes nothing and takes no batch
+  option, because a check that could write would make a step's result depend on its own side effect. The trade is
+  that output a clone does not commit is absent from a fresh clone, so a CI step names the recipes whose output is
+  committed.
 - **2.** A check of supplied inputs answers what a cook would change, which `--dry-run` already shows; a status for it
   has no caller. A second spelling of check on replicate would be one meaning with two forms to document and test.
 - **3.** One lock entry has one name. A versioned operand that the lock overrides reads as a choice of version that

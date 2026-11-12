@@ -20,7 +20,8 @@ changes it proposes.
 
 ## Entry points
 
-Document Cook invocations as `cook`, the command Homebrew, mise or the release package puts on `PATH`. The
+Document Cook invocations as `cook`, the command Homebrew, mise or the release package puts on `PATH`, because one
+spelling copies and pastes the same way whichever installer put it there ([0017](../adrs/0017-engine-version.md)). The
 [install](../features/install.md) page covers installing, pinning and upgrading; the root README's
 [install section](../../README.md#install) covers installing a release and building from source. `./cook` names only
 this source repository's development launcher.
@@ -37,7 +38,8 @@ recipe and template references resolve.
 The [CLI reference](../features/cli.md) defines the commands: cooking, with no command word, as the default; `check`,
 `replicate`, `update` and `discard`, which read `cook.lock`; and `help` with recipes. Commands that read the lock take
 recipes only by the lock name, without recipe arguments, and refuse versioned coordinates or a `.groovy` path with the
-lock name to write, because the lock supplies the recorded version. Update chooses a newer release from that version.
+lock name to write, because the lock supplies the recorded version ([0031](../adrs/0031-drift-check.md)). Update
+chooses a newer release from that version.
 It also defines recipe operands, per-recipe argument scope and the placement of batch options before the first
 operand. Help, messages and examples follow that grammar,
 because callers predict what a command does from its operands and argument scope.
@@ -72,12 +74,9 @@ Replicate refuses an entry whose arguments were never recorded and asks for one 
 
 ### Checking for drift
 
-`check` reports what replicate would change and exits 1 when anything would, so a CI step can fail on a kitchen whose
-committed files no longer match `cook.lock`. It is a command, not an option of cooking, because it answers a question
-about the lock rather than cooking supplied inputs, and its inputs come only from the lock, so the step names no
-version or argument that a later cook could leave behind. It writes nothing and takes no batch option, because a
-check that could write would make a CI step's result depend on its own side effect. Replicate has no check option:
-`check` is the one spelling. See [ADR 0031](../adrs/0031-drift-check.md).
+`check` is a command, and neither cooking nor replicate has a check option, by the one-spelling rule of the
+[command grammar](#command-grammar). [ADR 0031](../adrs/0031-drift-check.md) records that decision and its reasons,
+and the [CLI reference](../features/cli.md#check) what the command reports.
 
 ## Batch review and approval
 
@@ -162,7 +161,7 @@ a misplaced `--batch-approve` message directs the caller to put it before the fi
 Keep routine diagnostics focused on information the caller can act on, rather than internal identifiers or stack traces.
 Exit 0 when the command did what it was asked, 1 when nothing was written because approval was declined or missing or
 `check` found a difference or `update --dry-run` found a move, and 2 on any error, so a script tells a difference from
-a failure; the [CLI reference](../features/cli.md#exit-status) lists them.
+a failure ([0031](../adrs/0031-drift-check.md)); the [CLI reference](../features/cli.md#exit-status) lists them.
 
 ## Non-interactive operation
 
