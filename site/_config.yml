@@ -76,7 +76,7 @@ defaults:
   - scope:
       path: cookbook/src/hello/README.md
     values:
-      description: Describes the hello cookbook artifact, a recipe that writes nothing and yields a greeting for tests.
+      description: Describes the hello cookbook artifact, the first recipes to cook, one for people and one that teaches coding agents Cook.
   - scope:
       path: cookbook/src/ralph/README.md
     values:

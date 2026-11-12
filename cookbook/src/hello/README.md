@@ -1,1 +1,2 @@
-A recipe that writes nothing and yields a greeting. The cookbook's tests cook it from the jar the build packages.
+The recipes to cook first. `#world` shows a person one whole cook, and `#agent` tells a coding agent how to use Cook.
+Each writes nothing but its own entry in `cook.lock`, which `cook discard` removes.

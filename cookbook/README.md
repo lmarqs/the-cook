@@ -19,6 +19,7 @@ Each recipe's help, read with `cook help <coordinates>`, says what it writes.
 | A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](../docs/architecture.md#ownership-and-the-lock) |
 | One place for each fact, read by people and agents | `docs#layout` writes the `docs-layout` skill, which teaches where a fact goes in `docs/`, writes the map at `docs/README.md` with the team, and writes and reviews pages by it | [docs](src/docs/README.md) |
 | Drift caught in CI | `cook check` exits 1 when the kitchen differs from what `cook.lock` records, such as a policy edited and not cooked | [check](../docs/features/cli.md#check) |
+| A first cook, and how a coding agent uses Cook | `hello#world` writes only its own entry in `cook.lock` and says what one cook did. `hello#agent` does the same and tells an agent how to find recipes, cook them with the person's approval and keep `cook.lock`; `cook --help` names both | [hello](src/hello/README.md) |
 
 Every change in this table goes through the review, the lock and the recovery that [What runs](../README.md#what-runs) lists.
 
@@ -31,7 +32,7 @@ Models may depend on other models for their types and on ordinary libraries. Rec
 A cookbook releases as jars in a Maven-layout repository, one jar with a POM per directory under `src/`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
 everything a reader needs without the source checkout. This cookbook's `build.gradle` writes them with plain Gradle. Each release of this repository publishes the `agents`,
-`docs`, `git` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
+`docs`, `git`, `hello` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
 with no `cook.toml`; the other directories are not published.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without

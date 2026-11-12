@@ -50,6 +50,8 @@
       match: cookbook/src/docs/
     - title: git
       path: cookbook/src/git/README.md
+    - title: hello
+      path: cookbook/src/hello/README.md
     - title: ralph
       path: cookbook/src/ralph/README.md
 - section: Inside Cook
