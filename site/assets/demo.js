@@ -386,6 +386,5 @@
     });
   });
   render();
-  demo.hidden = false;
-  document.querySelector(".demo-caption").hidden = false;
+  demo.closest(".demo-section").hidden = false;
 })();

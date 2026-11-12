@@ -225,16 +225,19 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 
 .hero { background: #07080b; color: #e7e4dc; border-bottom: 1px solid #1d222d; }
 .hero-inner {
-  max-width: 1400px; margin: 0 auto; padding: 28px 20px 56px;
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px;
+  max-width: 1400px; margin: 0 auto; padding: 64px 20px 72px;
+  display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 48px; align-items: center;
 }
-.hero h1 { font: 700 clamp(34px, 4.2vw, 40px)/1.08 var(--font-body); letter-spacing: -1px; margin: 0 0 12px; }
+.hero h1 { font: 700 clamp(34px, 4.2vw, 40px)/1.08 var(--font-body); letter-spacing: -1px; margin: 0 0 20px; }
 .hero h1 em { font-style: normal; color: #f5c518; }
-.hero .lede { font-size: 18px; color: #c9ccd4; margin: 0; max-width: 900px; }
+.hero .lede { font-size: 18px; color: #c9ccd4; margin: 0 0 30px; }
 .hero .kicker { color: #f0a23a; }
-.hero .lab-map { border-color: #2a3040; box-shadow: 8px 8px 0 #000; max-width: 900px; }
-.hero-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 40px; }
-.hero-foot .hero-meta { margin: 0; flex-basis: 100%; }
+.hero .lab-map { border-color: #2a3040; box-shadow: 8px 8px 0 #000; }
+
+.demo-section { background: #07080b; color: #e7e4dc; border-bottom: 1px solid #1d222d; }
+.demo-section-inner { max-width: 1400px; margin: 0 auto; padding: 56px 20px; display: grid; gap: 24px; }
+.demo-section .kicker { color: #f0a23a; }
+.demo-section h2 { font: 700 clamp(28px, 3vw, 34px)/1.1 var(--font-body); letter-spacing: -1px; margin: 0; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
 .button {
@@ -255,14 +258,13 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .hero-meta .icon { width: 16px; height: 16px; color: #c9ccd4; }
 .hero-meta a { color: #c9ccd4; }
 
-/* The demo: a sample project in an editor window, beside the menu of recipes that change it. It sits in the hero, so
-   it keeps the hero's night colours in both schemes. */
+/* The demo: a sample project in an editor window, beside the menu of recipes that change it. It sits in a night band
+   under the hero, so it keeps the hero's night colours in both schemes. */
 .demo {
   --d-raised: #141821; --d-sunken: #0b0d12; --d-line: #262c39; --d-line-strong: #3a4254; --d-text: #e7e4dc;
   --d-muted: #a0a6b3; --d-add: #45d872; --d-del: #ff6b6b; --d-hunk: #6fb6ff;
   display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 40px; align-items: stretch; color: var(--d-text);
 }
-.demo[hidden] { display: none; }
 .demo :where(p, ul, dl, dd, pre) { margin: 0; padding: 0; }
 .demo :where(ul) { list-style: none; }
 .demo .icon { width: 16px; height: 16px; vertical-align: 0; }
@@ -620,6 +622,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .commands, .recipes { grid-template-columns: minmax(0, 1fr); }
   .examples > label { flex: 1 1 0; padding: 10px 8px; font-size: 10px; letter-spacing: 1px; text-align: center; }
   .hero-inner { padding: 40px 16px 48px; gap: 32px; }
+  .demo-section-inner { padding: 40px 16px; }
   .hero .lede { font-size: 17px; }
   .demo-stage { height: 590px; }
   .demo-work { grid-template-columns: 140px minmax(0, 1fr); height: 260px; }

@@ -13,8 +13,31 @@ description: A configuration manager for projects. A team settles its standards 
       <h1>Cook the best product <em>without any source of contamination.</em></h1>
       <p class="lede">Cook is a configuration manager for projects. Your team settles its standards once, replicates them to
         every project, every person and every agent, and improves them in one place.</p>
+      <div class="actions">
+        <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
+        <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
+      </div>
+      <ul class="hero-meta">
+        <li>{% include icons/apachegroovy.svg %}Groovy recipes</li>
+        <li>{% include icons/linux.svg %}Linux</li>
+        <li>{% include icons/apple.svg %}macOS</li>
+        <li>{% include icons/apache.svg %}Apache-2.0</li>
+        <li><a href="{{ site.source_url }}">{% include icons/github.svg %}lmarqs/the-cook</a></li>
+      </ul>
     </div>
-    <div class="demo" hidden>
+    <div class="lab-map">
+      <img src="{{ '/site/assets/the-lab-1536.webp' | relative_url }}" srcset="{{ '/site/assets/the-lab-768.webp' | relative_url }} 768w, {{ '/site/assets/the-lab-1536.webp' | relative_url }} 1536w" sizes="(min-width: 1400px) 775px, (min-width: 981px) 56vw, calc(100vw - 32px)" width="1536" height="1024" fetchpriority="high" decoding="async" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK.">
+    </div>
+  </div>
+</section>
+
+<section class="demo-section" id="try-it" hidden>
+  <div class="demo-section-inner">
+    <div>
+      <p class="kicker">Try it</p>
+      <h2>Cook recipes into a sample project</h2>
+    </div>
+    <div class="demo">
       <div class="demo-menu">
         <div class="demo-menu-head">
           <p class="demo-label">The menu</p>
@@ -93,25 +116,7 @@ description: A configuration manager for projects. A team settles its standards 
       <template data-icon="lock">{% include icons/lock.svg %}</template>
       <template data-icon="check">{% include icons/circle-check.svg %}</template>
     </div>
-    <noscript>
-      <div class="lab-map">
-    <img src="{{ '/site/assets/the-lab-1536.webp' | relative_url }}" srcset="{{ '/site/assets/the-lab-768.webp' | relative_url }} 768w, {{ '/site/assets/the-lab-1536.webp' | relative_url }} 1536w" sizes="(min-width: 940px) 900px, calc(100vw - 40px)" width="1536" height="1024" fetchpriority="high" decoding="async" alt="Pixel-art lab: workers in yellow hazmat suits work at their own benches, robot arms assemble parts, boxes ride a conveyor, and a man in a black pork-pie hat watches from a glass office marked THE COOK.">
-  </div>
-    </noscript>
-    <div class="hero-foot">
-      <div class="actions">
-      <a class="button primary" href="{{ '/docs/get-started.html' | relative_url }}">Cook your first recipe</a>
-      <a class="button ghost" href="{{ '/README.html' | relative_url }}">Read the docs</a>
-    </div>
-      <p class="demo-caption" hidden>The project above is a simulation: recipe names are shortened, and the versions and files are samples.</p>
-      <ul class="hero-meta">
-      <li>{% include icons/apachegroovy.svg %}Groovy recipes</li>
-      <li>{% include icons/linux.svg %}Linux</li>
-      <li>{% include icons/apple.svg %}macOS</li>
-      <li>{% include icons/apache.svg %}Apache-2.0</li>
-      <li><a href="{{ site.source_url }}">{% include icons/github.svg %}lmarqs/the-cook</a></li>
-    </ul>
-    </div>
+    <p class="demo-caption">The project above is a simulation: recipe names are shortened, and the versions and files are samples.</p>
   </div>
 </section>
 
