@@ -57,7 +57,7 @@ repositories = [
 ```
 
 The engine does not find recipes. People find them in a cookbook's repository, on an artifact host or through a
-teammate's link. Given the coordinates:
+teammate's link; `cook --help` names this cookbook's coordinates at the running release. Given the coordinates:
 
 ```sh
 cook help io.github.lmarqs.cookbook:agents:0.0.0           # the artifact's front page

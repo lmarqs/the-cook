@@ -189,6 +189,9 @@ coordinates. Explain that cooking evaluates supplied recipes, discard reads only
 named recipes again from recorded sources and arguments. Show replicate with a version-less lock name, and link to the
 [CLI reference](../features/cli.md) for details.
 
+End the usage with where recipes come from and a first recipe to run, named at the running release, because a
+reader who has only installed Cook, a person or a coding agent, has no coordinates to pass to `help` yet.
+
 Help advertises only the commands in the [command grammar](#command-grammar), because callers act on what help lists.
 
 ## Command set

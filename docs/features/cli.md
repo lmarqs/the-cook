@@ -26,6 +26,10 @@ cook --version
 Without a command word, `cook` cooks the recipes it is given. Running `cook` with no arguments, `cook help` or
 `cook --help` shows the usage. `--help` takes no other arguments. `cook --version` prints `cook <version>`, the
 version the build wrote into the engine, and takes no other arguments either.
+The usage ends with where recipes come from, the official cookbook's coordinates at that version, and the
+first recipes to try: `cook io.github.lmarqs.cookbook:hello:<version>#world` for a person, and
+`cook help io.github.lmarqs.cookbook:hello:<version>#agent` for a coding agent, which prints how an agent finds,
+cooks and keeps recipes.
 
 ## Commands
 

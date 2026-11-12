@@ -11,13 +11,38 @@ import picocli.CommandLine.Parameters
  * everything after a recipe is that recipe's arguments and is never read as a Cook option.
  */
 final class Grammar {
+  /** The release the build wrote, which `--version` prints and the usage names recipes at. */
+  static final String VERSION = Grammar.getResourceAsStream('version.txt').text.trim()
+
+  private static final String COOKBOOK = 'io.github.lmarqs.cookbook'
+  private static final String DOCS = 'https://lmarqs.github.io/the-cook/'
+
   private Grammar() {
   }
 
   static CommandLine commandLine() {
-    new CommandLine(new RootArgs())
+    def line = new CommandLine(new RootArgs())
         .setStopAtPositional(true)
         .setOverwrittenOptionsAllowed(false)
+    def usage = line.commandSpec.usageMessage()
+    usage.footer((usage.footer() + startHere()) as String[])
+    line
+  }
+
+  // The recipes are named at this release, so a person or an agent can run them as printed.
+  private static List<String> startHere() {
+    [
+      '',
+      "Recipes come from the repositories the kitchen's cook.toml lists, from Maven Central without one, or from " +
+      ".groovy files inside the kitchen, so a team cooks its own. The official cookbook is ${COOKBOOK}, with the " +
+      "artifacts agents, docs, git, hello and ralph; help lists an artifact's recipes:",
+      "  cook help ${COOKBOOK}:agents:${VERSION}",
+      'Start here: a person cooks hello#world, and a coding agent reads hello#agent:',
+      "  cook ${COOKBOOK}:hello:${VERSION}#world",
+      "  cook help ${COOKBOOK}:hello:${VERSION}#agent",
+      "Docs: ${DOCS}",
+      "CLI reference: ${DOCS}docs/features/cli.html",
+    ]*.toString()
   }
 }
 

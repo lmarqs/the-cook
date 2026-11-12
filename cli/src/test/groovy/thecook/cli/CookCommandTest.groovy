@@ -20,6 +20,19 @@ class CookCommandTest {
     .contains('cook a:b:1.0.0#x --name value ./setup.groovy')
   }
 
+  @Test void theUsageNamesTheFirstRecipesTheOfficialCookbookAndTheDocsAtThisRelease() {
+    def stdout = new ByteArrayOutputStream()
+    assert command(stdout, new ByteArrayOutputStream()).execute(['--help'] as String[]) == 0
+    def version = System.getProperty('cook.version')
+    def lines = stdout.toString('UTF-8').readLines()*.trim()
+    assert lines.containsAll([
+      "cook io.github.lmarqs.cookbook:hello:${version}#world".toString(),
+      "cook help io.github.lmarqs.cookbook:hello:${version}#agent".toString(),
+      "cook help io.github.lmarqs.cookbook:agents:${version}".toString(),
+      'Docs: https://lmarqs.github.io/the-cook/',
+    ])
+  }
+
   @Test void missingUnknownAndRemovedOptionsAreUsageErrors() {
     def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
     def cli = command(stdout, stderr)

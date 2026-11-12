@@ -32,7 +32,6 @@ final class CookCommand {
   ['-C', '--kitchen', '--dry-run', '--batch-approve', '--force', '--skip'] as Set
   private static final Map<String, String> STATUS =
   [create: 'Created', update: 'Updated', delete: 'Deleted', replace: 'Replaced', keep: 'Kept']
-  private static final String VERSION = CookCommand.getResourceAsStream('version.txt').text.trim()
 
   private final PrintWriter stdout
   private final PrintWriter stderr
@@ -111,7 +110,7 @@ final class CookCommand {
         throw new UsageError('--version takes no other arguments')
       }
 
-      return { -> stdout.println("cook ${VERSION}"); true }
+      return { -> stdout.println("cook ${Grammar.VERSION}"); true }
     }
 
     def chosen = parsed.subcommand()
