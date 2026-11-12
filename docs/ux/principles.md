@@ -89,8 +89,8 @@ Proposed replacements and deletions need visible scope and a way to recover. Why
 Use the CLI as the public cooking interface. Gradle builds and packages Cook and cookbooks. Why: users need one place to
 learn operation and approval semantics.
 
-Use `discard` and `help` as commands and `--batch-approve` as the preapproval spelling
-([entry points](cli-standards.md#entry-points)).
+An action other than cooking is a command of the [command set](cli-standards.md#command-set), and `--batch-approve`
+is the preapproval spelling ([batch review and approval](cli-standards.md#batch-review-and-approval)).
 
 Native configuration lives where its program reads it. Source recipes and templates retain their origins; ownership
 lives in the committed `cook.lock`. Use the

@@ -24,7 +24,7 @@ part belongs in the binary.
 
 | Destination | Responsibility | Maintainer |
 | --- | --- | --- |
-| Cook engine and CLI | Evaluation, ordered composition, diff presentation, approval, destination boundaries, recovery, writes, ownership in `cook.lock` and recorded-batch reversal | Cook contributors |
+| Cook engine and CLI | Evaluation, ordered composition, diff presentation, approval, destination boundaries, recovery, writes and ownership in `cook.lock` | Cook contributors |
 | Ingredient | Model a program's native files and configuration, including settings, ignore files or skills | Authors of the cookbook that holds it |
 | Recipe | Describe reusable requested file operations using program models and trusted Groovy code | Cookbook or repository authors |
 | Cookbook repository | Hold and ship ingredients and recipes; build them separately where appropriate | Cookbook authors |
@@ -65,11 +65,11 @@ choose declared targets and maintenance sources accordingly.
 
 ## Engine commands and recipe arguments
 
-The engine's commands are cooking, which takes no command word, `discard` and `help`
-([CLI reference](../features/cli.md)). A new engine command or flag requires its own decision when it changes that
-scope. Do not add a command for each program or organization, or invent
-a setting that bypasses the agreed review and recovery guarantees, because program and organization choices belong in
-cookbooks. Per-recipe choices use recipe arguments following that recipe
+The engine's commands are the [command set](cli-standards.md#command-set), which the
+[CLI reference](../features/cli.md#commands) describes. A new engine command or flag requires its own decision when it
+changes that scope. Do not add a command for each program or organization, or invent a setting that bypasses the
+agreed review and recovery guarantees, because program and organization choices belong in cookbooks. Per-recipe
+choices use recipe arguments following that recipe
 ([CLI reference](../features/cli.md#recipe-arguments-and-ordering)).
 
 ## Recipes
@@ -127,6 +127,9 @@ evidence should fit the task.
 | Pin or upgrade the Cook engine | The team's tool manager, such as `mise.toml`, or the person's installer | Engine and cookbook versions are separate choices; see [install](../features/install.md) |
 | Set up several repositories | Separate CLI invocations from each destination | Each has its own actual diff, approval and `cook.lock`; external tools select repositories and deliver changes |
 | Remove a recipe's output | Discard | Removes what the recipe owns; earlier content comes from the repository's history |
+| Fail CI when committed files no longer follow from `cook.lock` | Check | It writes nothing and reads its inputs from the lock; the team's CI runs it ([check](../features/cli.md#check)) |
+| Recreate output a clone does not commit | Replicate | Cooks again from the recorded sources and arguments, through the same diff and approval ([replicate](../features/replicate.md)) |
+| Move a recipe to a newer release | Update | Cook chooses a release only on request, and the move goes through the same diff and approval ([update](../features/update.md)) |
 
 ## Paths and distribution
 
