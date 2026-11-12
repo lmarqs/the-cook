@@ -475,7 +475,7 @@ brew install cook</code></pre></div></div>
         <div class="card">
           <h3>{% include icons/package.svg %}mise</h3>
           <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook</code></pre></div></div>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook@{{ version }}</code></pre></div></div>
           </div>
         </div>
         <div class="card">
@@ -484,6 +484,23 @@ brew install cook</code></pre></div></div>
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz \
   | tar -xz -C ~/.local/share
 export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
+          </div>
+        </div>
+      </div>
+      <p class="lede">Then cook a first recipe yourself, or hand the repository to a coding agent: <code>cook --help</code>
+        points the agent to <code>hello#agent</code>, whose help says where recipes live and to show you the diff before
+        anything is written.</p>
+      <div class="install">
+        <div class="card">
+          <h3>{% include icons/chef-hat.svg %}You</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cook io.github.lmarqs.cookbook:hello:{{ version }}#world</code></pre></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>{% include icons/bot.svg %}Coding agent</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cook help io.github.lmarqs.cookbook:hello:{{ version }}#agent</code></pre></div></div>
           </div>
         </div>
       </div>
