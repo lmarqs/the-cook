@@ -368,6 +368,65 @@ Updated cook.lock</pre>
   </div>
 </section>
 
+<section class="chapter" id="install">
+  <div class="wrap">
+    <p class="chapter-label">The start</p>
+    <div>
+      <h2>Start with one project</h2>
+      <p class="lede">Install Cook, cook one recipe and read the diff. The next project cooks the same recipes, at the versions <code>cook.lock</code> records.</p>
+      <ul class="platforms">
+        <li>{% include icons/linux.svg %}Linux x64</li>
+        <li>{% include icons/linux.svg %}Linux arm64</li>
+        <li>{% include icons/apple.svg %}macOS arm64</li>
+        <li>{% include icons/openjdk.svg %}Java runtime included</li>
+      </ul>
+      <div class="install">
+        <div class="card">
+          <h3>{% include icons/beer.svg %}Homebrew</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
+brew install cook</code></pre></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>{% include icons/package.svg %}mise</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook@{{ version }}</code></pre></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>{% include icons/download.svg %}Binary</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz \
+  | tar -xz -C ~/.local/share
+export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
+          </div>
+        </div>
+      </div>
+      <p class="lede">Then cook a first recipe, or ask your coding agent to set the project up.</p>
+      <div class="install start">
+        <div class="card">
+          <h3>{% include icons/chef-hat.svg %}In a terminal</h3>
+          <div class="prose">
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cook io.github.lmarqs.cookbook:hello:{{ version }}#world</code></pre></div></div>
+          </div>
+          <p>Writes only its own line in <code>cook.lock</code>, and what it prints says what to try next.</p>
+        </div>
+        <div class="card">
+          <h3>{% include icons/bot.svg %}In an agent chat</h3>
+          <div class="prose">
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>! mise use github:lmarqs/the-cook@{{ version }}
+Run cook --help and follow it to set this repository up with Cook. Show me each diff before approving.</code></pre></div></div>
+          </div>
+          <p>The agent finds the recipes from <code>cook --help</code>. Without a <code>!</code> command in your agent, run the first line in a terminal.</p>
+        </div>
+      </div>
+      <a class="next-step" href="{{ '/docs/features/install.html' | relative_url }}">{% include icons/download.svg %}<span><strong>Install</strong>
+        covers checksums, macOS paths, pinning a release for a team and building from source. Then run <code>cook --help</code>.</span></a>
+    </div>
+  </div>
+</section>
+
 <section class="chapter" id="commands">
   <div class="wrap">
     <p class="chapter-label">The procedures</p>
@@ -440,64 +499,6 @@ Updated cook.lock</pre>
       <a href="{{ '/docs/features/glossary.html' | relative_url }}">{% include icons/book-a.svg %}<strong>Glossary</strong><span>Recipe, ingredient, kitchen, lock and the rest of the vocabulary.</span></a>
       <a href="{{ '/docs/ux/' | relative_url }}">{% include icons/ruler.svg %}<strong>Standards</strong><span>How the CLI, messages, generated content and skills behave.</span></a>
       <a href="{{ '/docs/adrs/' | relative_url }}">{% include icons/gavel.svg %}<strong>Decisions</strong><span>The architecture decision records and the reasoning behind each one.</span></a>
-    </div>
-  </div>
-</section>
-
-<section class="chapter close" id="install">
-  <div class="wrap">
-    <p class="chapter-label">The start</p>
-    <div>
-      <h2>Start with one project</h2>
-      <p class="lede">Install Cook, cook one recipe and read the diff. The next project cooks the same recipes, at the versions <code>cook.lock</code> records.</p>
-      <ul class="platforms">
-        <li>{% include icons/linux.svg %}Linux x64</li>
-        <li>{% include icons/linux.svg %}Linux arm64</li>
-        <li>{% include icons/apple.svg %}macOS arm64</li>
-        <li>{% include icons/openjdk.svg %}Java runtime included</li>
-      </ul>
-      <div class="install">
-        <div class="card">
-          <h3>{% include icons/beer.svg %}Homebrew</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap lmarqs/the-cook https://github.com/lmarqs/the-cook
-brew install cook</code></pre></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>{% include icons/package.svg %}mise</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mise use github:lmarqs/the-cook@{{ version }}</code></pre></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>{% include icons/download.svg %}Binary</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -fsSL https://github.com/lmarqs/the-cook/releases/download/v{{ version }}/the-cook-{{ version }}-linux-x64.tar.gz \
-  | tar -xz -C ~/.local/share
-export PATH="$HOME/.local/share/cook/bin:$PATH"</code></pre></div></div>
-          </div>
-        </div>
-      </div>
-      <p class="lede">Then cook a first recipe yourself, or hand the repository to a coding agent: <code>cook --help</code>
-        points the agent to <code>hello#agent</code>, whose help says where recipes live and to show you the diff before
-        anything is written.</p>
-      <div class="install">
-        <div class="card">
-          <h3>{% include icons/chef-hat.svg %}You</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cook io.github.lmarqs.cookbook:hello:{{ version }}#world</code></pre></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>{% include icons/bot.svg %}Coding agent</h3>
-          <div class="prose">
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cook help io.github.lmarqs.cookbook:hello:{{ version }}#agent</code></pre></div></div>
-          </div>
-        </div>
-      </div>
-      <a class="next-step" href="{{ '/docs/features/install.html' | relative_url }}">{% include icons/download.svg %}<span><strong>Install</strong>
-        covers checksums, macOS paths, pinning a release for a team and building from source. Then run <code>cook --help</code>.</span></a>
     </div>
   </div>
 </section>

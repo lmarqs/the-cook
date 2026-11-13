@@ -528,6 +528,12 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .install h3 .icon { width: 20px; height: 20px; color: var(--link); }
 .install .prose { max-width: none; }
 .install .prose pre { margin: 0; font-size: 13px; white-space: pre; overflow-x: auto; }
+.install + .lede { margin-top: 40px; }
+.install.start { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.install.start .card { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; }
+.install.start .prose pre { white-space: pre-wrap; }
+.install.start .prose pre code { overflow-wrap: anywhere; }
+.install.start p { margin: 0; font-size: 14px; color: var(--text-muted); }
 
 /* The seam between the parts */
 .seam { background: #07080b; color: #e7e4dc; border-block: 1px solid #1d222d; padding: 72px 0; }
@@ -590,6 +596,7 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .legend li:nth-child(even) .scene { order: 0; }
   .legend .scene { aspect-ratio: 3 / 2; min-height: 0; border: 0 !important; border-bottom: 1px solid var(--line) !important; }
   .install .card { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .install.start { grid-template-columns: minmax(0, 1fr); }
   .formula { grid-template-columns: minmax(0, 1fr); gap: 28px; }
 }
 @media (max-width: 860px) {
