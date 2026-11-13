@@ -201,6 +201,10 @@ recipes. With names, an explicitly named unknown recipe refuses the whole reques
 exits 2. Use a repository that lists releases, or cook the exact release by its coordinates. A source directory
 still supplies its current files regardless of the version in those coordinates.
 
+An unnamed update that skipped an unknown recipe still exits 0, because an unknown recipe is a property of where the
+recipe is served, not a failure of the run. A scheduled job that must not pass without having looked at a recipe names
+it: `cook update <name>` exits 2 when that recipe is unknown.
+
 ### Arguments that no longer fit
 
 If recorded arguments no longer bind to a new release, update refuses the whole batch without writing anything.
