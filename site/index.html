@@ -175,190 +175,34 @@ description: A configuration manager for projects. A team settles its standards 
             <p>On yes, written and recorded in <code>cook.lock</code>. A failed write rolls back.</p></div></li>
         </ol>
       </div>
-      <div class="examples">
-        <input type="radio" name="example" id="example-file" checked><label for="example-file">A file and a section</label>
-        <input type="radio" name="example" id="example-key"><label for="example-key">A key in JSON</label>
-        <input type="radio" name="example" id="example-param"><label for="example-param">A parameter</label>
-        <div class="example ex-file">
-          <div class="cook">
-            <div class="terminal source" role="img" aria-label="The model recipes/Notes.groovy: its file member writes NOTES.md and its ignoredPaths member writes the scratch section of .gitignore.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Notes.groovy</b></div>
-<pre><span class="meta">/** A model: the files one program reads. */</span>
-<span class="prompt">@Ingredient</span>
-<span class="hunk">class</span> Notes {
-  <span class="hunk">private final</span> List&lt;String&gt; lines = [], ignored = []
-
-  <span class="hunk">void</span> add(String line) { lines &lt;&lt; line }
-  <span class="hunk">void</span> ignore(String path) { ignored &lt;&lt; path }
-
-  <span class="meta">/** Write a whole file. */</span>
-  <span class="prompt">@File</span>(path = <span class="add">'NOTES.md'</span>)
-  String file() {
-    lines ? lines.collect { <span class="add">"- ${it}\n"</span> }.join() : <span class="hunk">null</span>
-  }
-
-  <span class="meta">/** Write one marked section of a shared file. */</span>
-  <span class="prompt">@Section</span>(path = <span class="add">'.gitignore'</span>, id = <span class="add">'scratch'</span>)
-  List&lt;String&gt; ignoredPaths() { ignored ?: <span class="hunk">null</span> }
-}</pre>
-            </div>
-            <div class="terminal source" role="img" aria-label="The recipe recipes/notes.groovy: it asks for the Notes model, adds a line to the notes and keeps scratch/ out of Git.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/notes.groovy</b></div>
-<pre><span class="meta">// A recipe: what this project asks the model for.</span>
-<span class="prompt">@help</span>(<span class="add">'Adds a note and ignores scratch/.'</span>)
+      <div class="recipe-result">
+        <div class="recipe-in">
+          <p class="col-label">You write</p>
+          <h3>A recipe</h3>
+          <div class="terminal" role="img" aria-label="The recipe recipes/notes.groovy: it asks for the Notes model, adds a line to the notes and keeps scratch/ out of Git.">
+            <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/notes.groovy</b></div>
+<pre><span class="prompt">@help</span>(<span class="add">'Adds a note and ignores scratch/.'</span>)
 <span class="hunk">import</span> acme.notes.Notes
 
-<span class="meta">// Ask for the model. Cook writes what it declares,</span>
-<span class="meta">// and nothing else.</span>
 <span class="prompt">@ingredient</span>(Notes) <span class="hunk">def</span> notes
 
 notes.add(<span class="add">'Run the tests before committing.'</span>)
 notes.ignore(<span class="add">'scratch/'</span>)</pre>
-            </div>
-            <div class="terminal" role="img" aria-label="Terminal: cooking recipes/notes.groovy creates NOTES.md, adds a marked section to .gitignore and records both in cook.lock.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
-<pre><span class="prompt">$</span> cook recipes/notes.groovy
-<span class="meta">--- a/.gitignore</span>
-<span class="meta">+++ b/.gitignore</span>
-<span class="hunk">@@ -1,1 +1,4 @@</span>
- node_modules/
-<span class="add">+# cook:begin recipes/notes/scratch</span>
-<span class="add">+scratch/</span>
-<span class="add">+# cook:end recipes/notes/scratch</span>
-<span class="meta">--- /dev/null</span>
-<span class="meta">+++ b/NOTES.md</span>
-<span class="hunk">@@ -0,0 +1,1 @@</span>
-<span class="add">+- Run the tests before committing.</span>
-<span class="meta">--- /dev/null</span>
-<span class="meta">+++ b/cook.lock</span>
-<span class="meta">...</span>
-
-<span class="ask">Write these changes? [y/N]</span> y
-Updated .gitignore
-Created NOTES.md
-Created cook.lock</pre>
-            </div>
           </div>
         </div>
-        <div class="example ex-key">
-          <div class="cook">
-            <div class="terminal source" role="img" aria-label="The model recipes/Editor.groovy: its formatOnSaveKey member writes the key editor.formatOnSave in .vscode/settings.json.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Editor.groovy</b></div>
-<pre><span class="meta">/** A model: the files one program reads. */</span>
-<span class="prompt">@Ingredient</span>
-<span class="hunk">class</span> Editor {
-  <span class="hunk">private</span> Boolean format
-
-  <span class="hunk">void</span> formatOnSave() { format = <span class="hunk">true</span> }
-
-  <span class="meta">/** Write one key of a JSON file. Every other key stays put. */</span>
-  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>,
-       segments = [<span class="add">'editor.formatOnSave'</span>])
-  Boolean formatOnSaveKey() { format }
-}</pre>
-            </div>
-            <div class="terminal source" role="img" aria-label="The recipe recipes/editor.groovy: it asks for the Editor model and turns on format on save.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/editor.groovy</b></div>
-<pre><span class="meta">// A recipe: what this project asks the model for.</span>
-<span class="prompt">@help</span>(<span class="add">'Formats each file on save.'</span>)
-<span class="hunk">import</span> acme.editor.Editor
-
-<span class="prompt">@ingredient</span>(Editor) <span class="hunk">def</span> editor
-
-<span class="meta">// One key. cook discard takes out that key and nothing else.</span>
-editor.formatOnSave()</pre>
-            </div>
-            <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy adds editor.formatOnSave to .vscode/settings.json beside the team's editor.fontSize, and records the key in cook.lock.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
-<pre><span class="prompt">$</span> cook recipes/editor.groovy
-<span class="meta">--- a/.vscode/settings.json</span>
-<span class="meta">+++ b/.vscode/settings.json</span>
-<span class="hunk">@@ -1,3 +1,4 @@</span>
- {
-<span class="del">-  "editor.fontSize": 14</span>
-<span class="add">+  "editor.fontSize": 14,</span>
-<span class="add">+  "editor.formatOnSave": true</span>
- }
-<span class="meta">--- /dev/null</span>
-<span class="meta">+++ b/cook.lock</span>
-<span class="meta">...</span>
-<span class="add">+    owns:</span>
-<span class="add">+      keys:</span>
-<span class="add">+        - file: ".vscode/settings.json"</span>
-<span class="add">+          path: ["editor.formatOnSave"]</span>
-
-<span class="ask">Write these changes? [y/N]</span> y
-Updated .vscode/settings.json
-Created cook.lock</pre>
-            </div>
+        <div class="recipe-arrow" aria-hidden="true"><code>$ cook</code><span>&rarr;</span></div>
+        <div class="recipe-out">
+          <p class="col-label">The repo gets</p>
+          <h3>Two files, Cook's lines marked</h3>
+          <div class="repo-file">
+            <div class="repo-file-bar"><span>NOTES.md</span><em class="created">created</em></div>
+<pre><span class="written">- Run the tests before committing.</span></pre>
           </div>
-        </div>
-        <div class="example ex-param">
-          <div class="cook">
-            <div class="terminal source" role="img" aria-label="The model recipes/Editor.groovy with a second key: its tabSizeKey member writes editor.tabSize in .vscode/settings.json.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/Editor.groovy</b></div>
-<pre><span class="prompt">@Ingredient</span>
-<span class="hunk">class</span> Editor {
-  <span class="hunk">private</span> Boolean format
-  <span class="hunk">private</span> Integer tabSize
-
-  <span class="hunk">void</span> formatOnSave() { format = <span class="hunk">true</span> }
-  <span class="hunk">void</span> indent(<span class="hunk">int</span> spaces) { tabSize = spaces }
-
-  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>,
-       segments = [<span class="add">'editor.formatOnSave'</span>])
-  Boolean formatOnSaveKey() { format }
-
-  <span class="meta">/** A second key, written only when the recipe sets an indent. */</span>
-  <span class="prompt">@Key</span>(path = <span class="add">'.vscode/settings.json'</span>,
-       segments = [<span class="add">'editor.tabSize'</span>])
-  Integer tabSizeKey() { tabSize }
-}</pre>
-            </div>
-            <div class="terminal source" role="img" aria-label="The recipe recipes/editor.groovy with a param: indent, two spaces by default, passed to the Editor model.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>recipes/editor.groovy</b></div>
-<pre><span class="prompt">@help</span>(<span class="add">'Formats each file on save \
-and sets the indent.'</span>)
-<span class="hunk">import</span> acme.editor.Editor
-
-<span class="prompt">@ingredient</span>(Editor) <span class="hunk">def</span> editor
-
-<span class="meta">// Take --indent=4, 2 by default. cook.lock keeps the value,</span>
-<span class="meta">// so replicate and check cook with the same one.</span>
-<span class="prompt">@param</span>(value = <span class="add">'indent'</span>,
-       doc = <span class="add">'Spaces per indent'</span>,
-       default = <span class="add">'2'</span>) <span class="hunk">int</span> indent
-
-editor.formatOnSave()
-editor.indent(indent)</pre>
-            </div>
-            <div class="terminal" role="img" aria-label="Terminal: cooking recipes/editor.groovy with --indent=4 adds editor.tabSize 4 and records the argument in cook.lock.">
-              <div class="terminal-bar"><span></span><span></span><span></span><b>~/repo</b></div>
-<pre><span class="prompt">$</span> cook recipes/editor.groovy --indent=4
-<span class="meta">--- a/.vscode/settings.json</span>
-<span class="meta">+++ b/.vscode/settings.json</span>
-<span class="hunk">@@ -1,4 +1,5 @@</span>
- {
-   "editor.fontSize": 14,
-<span class="del">-  "editor.formatOnSave": true</span>
-<span class="add">+  "editor.formatOnSave": true,</span>
-<span class="add">+  "editor.tabSize": 4</span>
- }
-<span class="meta">--- a/cook.lock</span>
-<span class="meta">+++ b/cook.lock</span>
-<span class="meta">...</span>
-<span class="del">-    arguments: {}</span>
-<span class="add">+    arguments:</span>
-<span class="add">+      "indent": ["4"]</span>
-<span class="meta">...</span>
-<span class="add">+        - file: ".vscode/settings.json"</span>
-<span class="add">+          path: ["editor.tabSize"]</span>
-
-<span class="ask">Write these changes? [y/N]</span> y
-Updated .vscode/settings.json
-Updated cook.lock</pre>
-            </div>
+          <div class="repo-file">
+            <div class="repo-file-bar"><span>.gitignore</span><em class="updated">one section added</em></div>
+<pre><span class="kept">node_modules/</span><span class="written"># cook:begin recipes/notes/scratch</span><span class="written">scratch/</span><span class="written"># cook:end recipes/notes/scratch</span></pre>
           </div>
+          <p class="repo-note">Green lines belong to the recipe and are recorded in <code>cook.lock</code>. The team's <code>node_modules/</code> line is untouched.</p>
         </div>
       </div>
       <a class="next-step" href="{{ '/docs/write-a-recipe.html' | relative_url }}">{% include icons/book-open.svg %}<span><strong>Write a recipe</strong>

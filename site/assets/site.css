@@ -462,22 +462,21 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .command > code .icon { flex: none; width: 20px; height: 20px; }
 .command p { margin: 0; padding: 16px 20px 18px; font-size: 15.5px; }
 
-/* Steps beside a terminal */
-.examples { display: flex; flex-wrap: wrap; margin: 8px 0 0; }
-.examples > input { position: absolute; opacity: 0; pointer-events: none; }
-.examples > label {
-  padding: 12px 20px; cursor: pointer; font: 400 12px/1.2 var(--font-label); letter-spacing: 1.5px; text-transform: uppercase;
-  color: var(--text-muted); border: 1px solid var(--line); border-bottom: 0; background: var(--bg-sunken); margin-right: -1px;
-}
-.examples > label:hover { color: var(--text); }
-.examples > input:checked + label { color: var(--accent-ink); background: var(--accent); border-color: var(--accent-ink); }
-.examples > input:focus-visible + label { outline: 2px solid var(--link); outline-offset: 2px; }
-.example { display: none; flex: 0 0 100%; min-width: 0; padding: 28px 0 0; border-top: 3px solid var(--accent); }
-#example-file:checked ~ .ex-file, #example-key:checked ~ .ex-key, #example-param:checked ~ .ex-param { display: block; }
-.cook { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
-.cook > .source { display: flex; flex-direction: column; }
-.cook > .source > pre { flex: 1; }
-.cook > .terminal:not(.source) { grid-column: 1 / -1; }
+/* One recipe, and the files it leaves in the repo */
+.recipe-result { display: grid; grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1.15fr); align-items: center; margin: 8px 0 0; }
+.recipe-result h3 { margin: 4px 0 14px; font-size: 20px; }
+.col-label { margin: 0; font: 400 12px/1.4 var(--font-label); letter-spacing: 2px; text-transform: uppercase; color: var(--amber); }
+.recipe-arrow { display: grid; justify-items: center; gap: 2px; color: var(--amber); font-size: 26px; line-height: 1; }
+.recipe-arrow code { font-size: 12px; color: var(--link); background: none; border: 0; padding: 0; }
+.repo-file { margin: 0 0 16px; background: var(--bg-raised); border: 1px solid var(--line-strong); }
+.repo-file-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); font: 13px/1.4 var(--font-mono); }
+.repo-file-bar em { font: normal 11px/1.5 var(--font-mono); padding: 1px 7px; border: 1px solid; }
+.repo-file-bar .created { color: var(--diff-add); }
+.repo-file-bar .updated { color: var(--diff-hunk); }
+.repo-file pre { margin: 0; padding: 10px 14px; border: 0; background: none; font-size: 13px; line-height: 1.7; }
+.repo-file .kept { display: block; color: var(--text-muted); }
+.repo-file .written { display: block; margin: 0 -14px; padding: 0 14px 0 11px; border-left: 3px solid var(--diff-add); background: rgba(69, 216, 114, .12); color: var(--diff-add); }
+.repo-note { margin: 0; font-size: 13.5px; color: var(--text-muted); }
 .cook-line-up {
   list-style: none; margin: 0; padding: 8px 0; position: relative; align-self: stretch;
   display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
@@ -585,10 +584,13 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .toc { display: none; }
 }
 @media (max-width: 980px) {
-  .hero-inner, .cook, .opening-pair, .demo { grid-template-columns: minmax(0, 1fr); }
+  .hero-inner, .recipe-result, .opening-pair, .demo { grid-template-columns: minmax(0, 1fr); }
   .demo { gap: 24px; }
   .demo-stage { height: 540px; }
   .formula > .cook-line-up { min-height: 0; }
+  .recipe-result { gap: 24px; }
+  .recipe-arrow { grid-auto-flow: column; justify-content: start; gap: 10px; }
+  .recipe-arrow span { transform: rotate(90deg); }
   .opening-pair { gap: 32px; }
   .cook-line-up { margin: 28px 0; padding: 0; }
   .legend { grid-auto-rows: auto; }
@@ -627,7 +629,6 @@ a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
   .opening h2 { font-size: 26px; }
   .seam h2 { font-size: 36px; }
   .commands, .recipes { grid-template-columns: minmax(0, 1fr); }
-  .examples > label { flex: 1 1 0; padding: 10px 8px; font-size: 10px; letter-spacing: 1px; text-align: center; }
   .hero-inner { padding: 40px 16px 48px; gap: 32px; }
   .demo-section-inner { padding: 40px 16px; }
   .hero .lede { font-size: 17px; }
