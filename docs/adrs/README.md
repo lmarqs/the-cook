@@ -196,3 +196,4 @@ Must be maintained:
 | [0030](0030-recipe-connections.md) | How does a recipe connect to other recipes' files? | Recipes connect to other recipes' files only through parameters the person names |
 | [0031](0031-drift-check.md) | How does a team find committed files that no longer follow from cook.lock? | Check compares the kitchen with what cook.lock records |
 | [0032](0032-recipe-updates.md) | When may Cook choose a newer recipe release? | Cook moves a recipe to a newer release on request |
+| [0033](0033-existing-files.md) | What does Cook do with a template file that already exists? | Cook never replaces an existing template file without the caller's choice |
