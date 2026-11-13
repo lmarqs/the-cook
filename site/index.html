@@ -135,23 +135,20 @@ description: A configuration manager for projects. A team settles its standards 
     </div>
     <ol class="legend">
       <li><div class="scene" style="background-position: 100% 92%;"></div><div class="legend-body"><span class="num">1</span><div><h3>One version reaches every project</h3>
-        <p class="was"><span class="kind">Problem</span>The second project gets the standards by copying files, and the third copies whichever is newer.</p>
-        <p class="fix"><span class="kind">Solution</span>Every project gets a standard from one place, at one version.</p></div></div></li>
+        <p class="was"><span class="kind">Problem</span>Each project copies the standards from whichever copy is newest.</p>
+        <p class="fix"><span class="kind">Solution</span>Every project gets each standard from one place, at one version.</p></div></div></li>
       <li><div class="scene" style="background-position: 88% 8%;"></div><div class="legend-body"><span class="num">2</span><div><h3>An improvement reaches every project</h3>
-        <p class="was"><span class="kind">Problem</span>The team improves a standard in one project, and the improvement goes no further.</p>
-        <p class="fix"><span class="kind">Solution</span>One reviewed change reaches every project, and CI checks each is current with
-          <code>cook update --dry-run</code>.</p></div></div></li>
+        <p class="was"><span class="kind">Problem</span>An improvement made in one project stays in that project.</p>
+        <p class="fix"><span class="kind">Solution</span>One reviewed change reaches every project, and CI checks it with <code>cook update --dry-run</code>.</p></div></div></li>
       <li><div class="scene" style="background-position: 27% 77%;"></div><div class="legend-body"><span class="num">3</span><div><h3>The current standard is at every seat</h3>
-        <p class="was"><span class="kind">Problem</span>A new teammate clones a project and finds last month's version of how the team works.</p>
-        <p class="fix"><span class="kind">Solution</span>A new teammate finds the current standard in the project itself, on the first day.</p></div></div></li>
+        <p class="was"><span class="kind">Problem</span>A new teammate clones last month's version of how the team works.</p>
+        <p class="fix"><span class="kind">Solution</span>A new teammate finds the current standard in the project, on day one.</p></div></div></li>
       <li><div class="scene" style="background-position: 63% 40%;"></div><div class="legend-body"><span class="num">4</span><div><h3>What a standard wrote is marked</h3>
-        <p class="was"><span class="kind">Problem</span>Pasting the current files over a project's old ones carries a colleague's own settings along, and nobody can
-          say which lines are the standard.</p>
-        <p class="fix"><span class="kind">Solution</span>What a standard wrote is marked, so an update changes only those lines and the team's own stay as they were.</p></div></div></li>
+        <p class="was"><span class="kind">Problem</span>Pasting new files over old ones carries a colleague's own settings along.</p>
+        <p class="fix"><span class="kind">Solution</span>Cook marks what a standard wrote, so an update changes only those lines.</p></div></div></li>
       <li><div class="scene" style="background-position: 0% 33%;"></div><div class="legend-body"><span class="num">5</span><div><h3>A dropped standard takes everything it brought</h3>
-        <p class="was"><span class="kind">Problem</span>A standard writes lines into half a dozen files, and when the team drops it, what nobody finds stays behind.</p>
-        <p class="fix"><span class="kind">Solution</span>Dropping a standard removes what it wrote from every file it touched, and nothing else. Projects read its
-          files without Cook installed, so Cook does not stay behind either.</p></div></div></li>
+        <p class="was"><span class="kind">Problem</span>A dropped standard leaves its lines behind in half a dozen files.</p>
+        <p class="fix"><span class="kind">Solution</span>Dropping a standard removes what it wrote from every file, and nothing else.</p></div></div></li>
     </ol>
   </div>
 </section>
