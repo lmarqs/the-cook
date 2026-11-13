@@ -30,7 +30,7 @@ The section under the hero of `index.html` holds a sample project that a visitor
 and shows only when JavaScript runs. Cooking a recipe writes its files, updating it brings the lines a newer version
 added, and discarding it takes out what it wrote; the project's own lines stay through all three. The editor window shows the result as a developer sees it day to day: the
 explorer with Git's status letters, the open file with the recipe that wrote each line, and a terminal with the command
-and its diff. A fourth tab opens when every recipe is at its newest version, and links to Get started and Install.
+and its diff. A fourth tab opens when every recipe is at its newest version, and links to the start section of the page.
 
 Nothing in the demo runs Cook. `demo.js` holds the sample: each recipe's two versions and the files they write. The
 menu's markup, its texts and every icon are in `index.html`, where each card keeps one height in every state. The
