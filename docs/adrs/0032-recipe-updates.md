@@ -33,9 +33,9 @@ review its effect before accepting it. Their accepted setup remains identifiable
    or asks Cook to choose a newer release through `update`. The proposed change goes through cooking's review and
    approval ([0007](0007-ownership.md)); requesting release selection does not itself approve writes.
 2. Without `--major`, Cook chooses the newest listed release newer than the recorded version within its compatible
-   range: the same major at or above `1.0.0`, or the same `0.minor` below `1.0.0`. This uses npm's caret boundary for
-   versions at or above `0.1.0`; Cook also allows newer patches within `0.0`, where npm's caret is narrower.
-   `--major` chooses the newest listed release regardless of that boundary. Neither form downgrades a recipe.
+   range: the same major at or above `1.0.0`, or the same nonzero `0.minor` below `1.0.0`, and nothing from `0.0.x`.
+   This is npm's caret boundary. `--major` chooses the newest listed release regardless of that boundary. Neither
+   form downgrades a recipe.
 3. Available releases come from the listing a Maven-layout repository publishes for the artifact:
    `maven-metadata.xml`, or `maven-metadata-local.xml` in Maven local.
 4. A recipe served by a repository without a release listing, such as a cookbook source directory, has no known
@@ -49,10 +49,11 @@ review its effect before accepting it. Their accepted setup remains identifiable
   Reusing cooking's review lets maintainers accept the resulting changes, including the new recorded version,
   together. The trade is that requesting an update still requires trusting its sources before evaluation.
 - **2.** A bounded default lets maintainers request routine updates without also requesting the next compatibility
-  boundary. Below `1.0.0`, holding the minor version keeps the boundary useful before the first major release;
-  allowing patch updates within `0.0` keeps that rule uniform, at the cost of differing from npm's strict caret
-  behavior there. `--major` makes crossing the boundary explicit. Version numbering is the author's compatibility
-  claim, not proof that a recipe preserves output or accepts its previous arguments, so review remains necessary.
+  boundary. Below `1.0.0`, holding the minor version keeps the boundary useful before the first major release. At
+  `0.0.x` the author claims no compatibility between patches, so the default moves nothing and `--major` is how a
+  maintainer asks for the next release; the trade is that a maintainer on `0.0.x` must ask for every move. `--major`
+  makes crossing the boundary explicit. Version numbering is the author's compatibility claim, not proof that a recipe
+  preserves output or accepts its previous arguments, so review remains necessary.
 - **3.** The metadata model already represents available versions, so using the published listing works with the
   repositories cookbook authors publish to. The trade is reliance on that listing being present and current;
   serving an exact jar alone does not establish what other releases exist.
@@ -97,7 +98,8 @@ Costs:
 Must be maintained:
 
 - Release discovery for published Maven metadata and Maven local metadata.
-- Selection boundaries, including the same `0.minor` below `1.0.0`, and explicit approval of exact lock changes.
+- Selection boundaries, including the same nonzero `0.minor` below `1.0.0`, and explicit approval of exact lock
+  changes.
 - The separation between engine upgrades, replay of recorded inputs and requested recipe updates.
 
 ## Confirmation
@@ -105,7 +107,8 @@ Must be maintained:
 - In a worked acme example with recorded `1.2.3` and listed `1.2.4`, `1.9.0` and `2.0.0`, does an update propose
   `1.9.0`, and does `--major` propose `2.0.0`, with the exact version visible in the diff before approval?
 - With recorded `0.2.3` and listed `0.2.4`, `0.3.0` and `1.0.0`, is the default `0.2.4` and the opt-in `1.0.0`?
-  With recorded `0.0.3` and listed `0.0.4` and `0.1.0`, is the default `0.0.4`?
+  With recorded `0.0.3` and listed `0.0.4` and `0.1.0`, does the default move nothing, and does `--major` propose
+  `0.1.0`?
 - Do a dry run and declined approval leave the recorded version and output unchanged, and do ordinary replicate
   and an engine upgrade retain the recorded recipe version?
 - Does Maven local discover locally published releases, while a source directory with no release listing reports
