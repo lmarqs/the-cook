@@ -46,6 +46,9 @@ Sources:
 - [cookiecutter CLI options](https://cookiecutter.readthedocs.io/en/stable/cli_options.html)
 - [chezmoi `apply`](https://www.chezmoi.io/reference/commands/apply/)
 - [chezmoi global flags](https://www.chezmoi.io/reference/command-line-flags/global/)
+- [GNU Stow man page](https://manpages.debian.org/bookworm/stow/stow.8.en.html)
+- [Kubernetes server-side apply](https://kubernetes.io/docs/reference/using-api/server-side-apply/)
+- [Ansible `copy` module source](https://github.com/ansible/ansible/blob/devel/lib/ansible/modules/copy.py)
 
 ## Decision
 

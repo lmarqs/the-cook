@@ -123,7 +123,7 @@ Recipes and their operations compose left to right into one batch; the
 key or file wins.
 
 After `--name`, the next word is the argument's value unless it is a recipe operand or the param is yes-or-no, which
-takes no separate value ([prior art](../ux/cli-standards.md#prior-art)). A value that looks like a recipe
+takes no separate value ([command grammar](../ux/cli-standards.md#command-grammar)). A value that looks like a recipe
 operand is written with `=`:
 
 ```sh
@@ -180,8 +180,8 @@ AGENTS.md already exists; io.github.lmarqs.cookbook:agents#seed writes it from a
 ```
 
 When several recipes of one command meet such files, one refusal lists every file with its recipe, so `--force` never
-replaces a file the refusal did not name. The [prior art](../ux/cli-standards.md#prior-art) shows how other tools treat
-an existing file.
+replaces a file the refusal did not name. [0033](../adrs/0033-existing-files.md) gives the reasons and shows how other
+tools treat an existing file.
 
 | Option | Position | Effect |
 | --- | --- | --- |

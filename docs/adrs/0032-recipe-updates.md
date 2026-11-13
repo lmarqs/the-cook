@@ -24,7 +24,7 @@ review its effect before accepting it. Their accepted setup remains identifiable
 - A cookbook source directory serves its artifacts at any supplied version from its current files, rather than
   publishing a listing of releases ([0029](0029-cookbook-distribution.md), decision 2).
 - `--force` already means replacing an existing template file
-  ([CLI standard](../ux/cli-standards.md#prior-art)). Batch approval concerns declared file changes, while trust in
+  ([0033](0033-existing-files.md)). Batch approval concerns declared file changes, while trust in
   executable recipe sources precedes evaluation ([0026](0026-cookbook-trust.md)).
 
 ## Decision
@@ -85,7 +85,7 @@ change deliberately, including a new minor below `1.0.0`.
 ### Use --force to cross the compatibility boundary
 
 At its best, the flag is familiar as an override. It loses because `--force` already replaces an existing template
-file ([CLI standard](../ux/cli-standards.md#prior-art)); using it for release selection makes one flag express two
+file ([0033](0033-existing-files.md)); using it for release selection makes one flag express two
 independent choices. `--major` names the version-selection choice without changing template behavior.
 
 ## Consequences
