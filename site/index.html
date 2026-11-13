@@ -139,10 +139,9 @@ description: A configuration manager for projects. A team settles its standards 
         <p class="was"><span class="kind">Problem</span>The second project gets the standards by copying files, and the third copies whichever is newer.</p>
         <p class="fix"><span class="kind">Solution</span>Every project gets a standard from one place, at one version.</p></div></div></li>
       <li><div class="scene" style="background-position: 88% 8%;"></div><div class="legend-body"><span class="num">2</span><div><h3>An improvement reaches every project</h3>
-        <p class="was"><span class="kind">Problem</span>A month later the team improves one standard, and the improvement goes into one project and no further.</p>
-        <p class="fix"><span class="kind">Solution</span>When the team improves it, one person reads the change once, and it reaches every project as one change.
-          Whether a project still has the current version is something CI answers with
-          <code>cook update --dry-run</code>, not something a teammate notices months later.</p></div></div></li>
+        <p class="was"><span class="kind">Problem</span>The team improves a standard in one project, and the improvement goes no further.</p>
+        <p class="fix"><span class="kind">Solution</span>One reviewed change reaches every project, and CI checks each is current with
+          <code>cook update --dry-run</code>.</p></div></div></li>
       <li><div class="scene" style="background-position: 27% 77%;"></div><div class="legend-body"><span class="num">3</span><div><h3>The current standard is at every seat</h3>
         <p class="was"><span class="kind">Problem</span>The new teammate clones the first project and finds last month's version of how the team works, and asks.</p>
         <p class="fix"><span class="kind">Solution</span>A new teammate finds the current standard on the first day, in the project itself, with no older copy to ask
