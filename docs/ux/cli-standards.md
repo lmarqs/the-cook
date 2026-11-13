@@ -103,6 +103,9 @@ completed write ([streams and human output](#streams-and-human-output)).
 A dry run exits 0 whether or not it would change anything, because it did what it was asked; whether a kitchen
 matches its lock is the question `check` answers ([0031](../adrs/0031-drift-check.md)).
 
+`--dry-run` outranks `--batch-approve`: given both, nothing is written. A preview is never turned into a write by an
+option meant for a run that writes, so an existing command line becomes a preview by adding `--dry-run`.
+
 ## Output
 
 ### Streams and human output

@@ -188,8 +188,9 @@ an existing file.
 | `--force` | Before the first recipe | Writes the template over the file, or over a symbolic link at its path, and cooks the rest |
 | `--skip` | Before the first recipe | Leaves the file as it is, cooks the rest and records the recipe in `cook.lock` |
 
-The options act only the first time a recipe is cooked, take recipe coordinates and exclude each other. Later runs
-leave the file to whoever edits it.
+The options act only the first time a recipe is cooked, take recipe coordinates and exclude each other: giving both
+fails with `cook: --force and --skip exclude each other` and writes nothing. Later runs leave the file to whoever
+edits it.
 
 ```sh
 cook --force io.github.lmarqs.cookbook:agents:0.0.0#seed
@@ -216,6 +217,9 @@ cook: io.github.lmarqs.cookbook:agents:0.0.0#connect: .codex/config.toml link
 
 `--batch-approve` is the batch option and the only preapproval spelling. Without it, Cook asks before changing target
 files. Noninteractive execution without this flag does not silently authorize writes.
+
+Given together, `--dry-run` wins: Cook displays the final diff, writes nothing and exits as a dry run does, so a
+command written with `--batch-approve` previews by adding `--dry-run`.
 
 The review starts with a `Changed source` notice for each release whose sources differ from what `cook.lock` recorded
 under the same coordinates, as when a jar was republished under its version, with both sha256 values. The diff that
