@@ -97,8 +97,8 @@ Guidance intended for frequent loading should be short and state its scope early
 attention on every task. Link focused detail where useful. Text should remain clear when encountered twice, since an
 agent may discover it through several paths.
 
-Instructions that must remain readable without Cook belong in native files the program can read directly. Markdown
-section boundaries use HTML comments, and a pointer does not guarantee that an agent follows it. See [instruction
+Instructions that must remain readable without Cook belong in native files the program can read directly, and a
+pointer does not guarantee that an agent follows it. See [instruction
 files](generated-content-standards.md#instruction-files-and-conventions) and
 [coexistence](compatibility-standards.md#coexistence).
 

@@ -75,8 +75,7 @@ Proposed replacements and deletions need visible scope and a way to recover. Why
   preapproves the whole batch; noninteractive execution alone does not authorize writes
   ([batch approval](../architecture.md#batch-approval-and-failure-recovery)).
 - Whole-file targets affect the declared file; structured targets preserve unrelated keys; sections preserve text
-  outside their `cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>` markers. Use format-appropriate
-  comments, including HTML comments in Markdown.
+  outside their [markers](generated-content-standards.md#sections-and-markers).
 - Existing and edited content uses the same approval flow. Ownership never blocks a change, including a change to
   content a developer edited.
 - On write failure, roll back the changes already made by the batch and report the failure. This covers declared
