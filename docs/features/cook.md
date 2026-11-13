@@ -74,12 +74,9 @@ manual edit appears in the next diff like any other difference.
 
 A section is a marker-delimited part of a shared text file. Its markers name the recipe that owns it and the region
 within that recipe. A recipe can address a section of a shared file while preserving prose outside it, and several
-recipes can keep separate sections in one file. Markers use the file format's comment syntax:
-
-| File kind | Opening marker | Closing marker |
-| --- | --- | --- |
-| Markdown | `<!-- cook:begin <recipe>/<region> -->` | `<!-- cook:end <recipe>/<region> -->` |
-| Hash-comment formats: ignore files, YAML, TOML, and shell scripts | `# cook:begin <recipe>/<region>` | `# cook:end <recipe>/<region>` |
+recipes can keep separate sections in one file. Markers use the file format's comment syntax, which the
+[generated-content standard](../ux/generated-content-standards.md#sections-and-markers) gives for each format. In
+Markdown:
 
 ```markdown
 Text people wrote outside the section.
