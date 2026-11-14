@@ -62,6 +62,39 @@ recipes:
         - ".agents/skills/agents-layout/templates/AGENTS.template.md"
         - ".agents/skills/agents-layout/templates/README.template.md"
         - ".agents/skills/agents-layout/templates/policy.template.yaml"
+  - name: "io.github.lmarqs.cookbook:beads#tracker"
+    source: "io.github.lmarqs.cookbook:beads:0.0.0#tracker"
+    sha256: "7f225ec8337c8f67567bd20d12801a5993f8e70df030e8797cc7ba9f8481313c"
+    arguments:
+      "instructions": ["AGENTS.md"]
+    owns:
+      sections:
+        - file: ".gitignore"
+          id: "io.github.lmarqs.cookbook:beads#tracker/tracker"
+        - file: "AGENTS.md"
+          id: "io.github.lmarqs.cookbook:beads#tracker/tracker"
+      keys:
+        - file: ".beads/config.yaml"
+          path: ["dolt","auto-push"]
+        - file: ".beads/config.yaml"
+          path: ["dolt","local-only"]
+        - file: ".beads/config.yaml"
+          path: ["export","auto"]
+        - file: ".beads/config.yaml"
+          path: ["export","git-add"]
+        - file: ".beads/config.yaml"
+          path: ["no-git-ops"]
+  - name: "io.github.lmarqs.cookbook:beads#viewer"
+    source: "io.github.lmarqs.cookbook:beads:0.0.0#viewer"
+    sha256: "7f225ec8337c8f67567bd20d12801a5993f8e70df030e8797cc7ba9f8481313c"
+    arguments:
+      "instructions": ["AGENTS.md"]
+    owns:
+      sections:
+        - file: ".gitignore"
+          id: "io.github.lmarqs.cookbook:beads#viewer/viewer"
+        - file: "AGENTS.md"
+          id: "io.github.lmarqs.cookbook:beads#viewer/viewer"
   - name: "io.github.lmarqs.cookbook:docs#layout"
     source: "io.github.lmarqs.cookbook:docs:0.0.0#layout"
     sha256: "bc5ab118fee287f201b87b7da2993b4cbc670bda34ebd515ad80d4725ff3bb76"
