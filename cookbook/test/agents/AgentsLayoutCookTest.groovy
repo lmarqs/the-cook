@@ -76,6 +76,7 @@ recipes:
     owns:
       files:
         - ".agents/skills/agents-layout/SKILL.md"
+        - ".agents/skills/agents-layout/agents/openai.yaml"
         - ".agents/skills/agents-layout/references/adopt.md"
         - ".agents/skills/agents-layout/references/agents-md.md"
         - ".agents/skills/agents-layout/references/claude.md"
@@ -332,6 +333,7 @@ recipes:
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
       '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/agents/openai.yaml',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
       '.agents/skills/agents-layout/references/claude.md',
@@ -756,6 +758,7 @@ CLAUDE.local.md
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
       '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/agents/openai.yaml',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
       '.agents/skills/agents-layout/references/claude.md',
@@ -836,6 +839,7 @@ agents.connect([claude])
     def fewer = cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#skill-check', [:])
     assert fewer.changes == [
       '.agents/skills/agents-layout/SKILL.md',
+      '.agents/skills/agents-layout/agents/openai.yaml',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
       '.agents/skills/agents-layout/references/claude.md',
