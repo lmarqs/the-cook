@@ -1,6 +1,6 @@
 ---
 description: Runtime evidence and ownership inputs for Beads tracker, optional Viewer and ralph adoption.
-audience: Cook maintainers who know recipe ownership and need concrete inputs for US-004 and US-005.
+audience: Cook maintainers who know recipe ownership and need native contracts and cooked acceptance evidence.
 ---
 
 # Beads adoption runtime spike
@@ -11,9 +11,9 @@ Team publication requires a separate, deliberate `bd dolt push --yes`; its first
 also commits `sync.remote` to the source repository. A second clone recovers the same task graph after
 bootstrap. Both sharing modes resolve the main checkout's database from linked worktrees.
 
-The tracker experiments cover US-001. The Viewer and ralph experiments below cover US-002; cooked output,
-mode transitions and recipe discard remain acceptance work for later stories. No recipe or engine implementation
-changed in this spike. The [source research](beads-and-viewer.md) remains separate from these runtime results.
+The tracker experiments cover US-001 and the Viewer and ralph experiments cover US-002. The
+[cooked acceptance](#cooked-adoption-acceptance) exercises the implemented recipes, transitions, discard and native
+launchers for US-006. The [source research](beads-and-viewer.md) remains separate from these runtime results.
 
 ## Environment and retained evidence
 
@@ -530,5 +530,80 @@ Task 2 repository checks passed: `./gradlew -p docs check`, `./gradlew check cli
 `BUILD SUCCESSFUL`; no rule or warning was suppressed. No product module, recipe output or `cook.lock` changed.
 
 US-005 now has concrete instruction targets, the owned export-ignore path, native connection/refresh commands,
-failure diagnostics and the metadata limitation. Implement those bounded contributions; the cooked-output,
-transition, removal and final launcher acceptance scenarios remain US-004 through US-007 work.
+failure diagnostics and the metadata limitation. The implemented recipes' transition, removal and final launcher
+results follow in [cooked acceptance](#cooked-adoption-acceptance).
+
+## Cooked adoption acceptance
+
+The actual built Cook CLI cooked the completed tracker, Viewer and Ralph recipes into disposable repositories on
+2026-11-14. The same native pins passed: `bd` 1.3.1, `bv` 0.25.2 and ralph-tui 0.12.0. No production remotes,
+credentials, home-directory overrides or real AI agents were used. The repeatable opt-in
+[harness and procedure](../cookbook/test/beads/runtime-acceptance.md) require separately installed pins and a built
+CLI; normal Gradle tests never execute the harness or install native tools.
+
+The lifecycle evidence is retained at `/tmp/the-cook-beads-cooked-20261114c/` (281 commands and 135 assertions).
+A second full lifecycle replay at `/tmp/the-cook-beads-cooked-20261114d/` passed 177 assertions across 295 commands,
+adding explicit cooking-command guards, private task writes and native override/removal checks. Both roots use
+only a synthetic local `team.git` as their
+source and task-history destination. Every recorded command includes argv, cwd, status, stdout, stderr and timing;
+Git snapshots retain synthetic configuration, index, refs, commits and file diffs. Actual version output, platform
+and binary hashes are retained with the command evidence. These paths are local evidence, not prerequisites in
+another clone.
+
+Fresh team and clone repositories cooked tracker alone before native bootstrap and graph creation, then added
+Viewer. Existing team and clone repositories bootstrapped that published native graph before adoption, with
+unrelated instruction text, hooks, local exclusions, custom YAML and a team-owned seed. Both `origin` and
+`upstream` were present for existing bootstrap. All four cases preserved IDs, dependencies, titles and native
+content across repeated cooking, both sharing transitions and ordered removal. Configuration, instructions and
+`cook.lock` were byte-identical on repeat cooking, and `cook check` exited 0. Cooking initialized no native store.
+Mutating cooks emitted the final after-cooking guidance; no-op cooks correctly reported `Already cooked.` and
+retained their installed guidance.
+
+Team publication followed the final guidance: inspect the local origin, commit source setup, verify a clean index
+and worktree, run `bd dolt push --yes`, inspect its source commit and push the source branch. A second code clone
+then used `bd bootstrap --yes` to recover the full graph. Clone policy required effective `Remote sync: disabled`
+before writes; native push/pull skipped with exit 0 and remote addition failed. The second replay created private
+synthetic tasks and verified that those calls left the local team remote's refs unchanged. Environment and
+`config.local.yaml` overrides visibly changed effective policy, then were removed before further writes.
+
+Each mode's linked worktree resolved the same tracker graph without a second physical database. The exact final
+Viewer sequence explicitly exported and triaged the common-directory store from both main and linked checkout.
+An absolute external `BEADS_DIR` selected the other synthetic store for both commands. Existing exports survived
+failed refresh with partial/provisional, unsafe, stale source authority; missing export plus failure exited 1.
+Restoring successful explicit export recovered current output. Only these failure probes substituted an exporter;
+successful compatibility calls used the real pins.
+
+Team-to-clone transitions left previously tracked config tracked, as Git requires. The harness performed the
+documented deliberate `git rm --cached .beads/config.yaml` in disposable fixtures; ordinary staging then excluded
+all tracker runtime files. Returning to team restored owned policy without deleting local tasks or changing native
+remote history. Viewer discard removed only its independent lock entry and sections; tracker discard removed its
+five keys, sections and final engine lock. Native task graphs, metadata, exports, seeds and unrelated content
+remained. Removing clone's local-only gate can re-enable its preserved native remote; discard is no privacy gate
+and no remote-history rollback. Existing manual local excludes were preserved throughout.
+
+The controller ran the second phase with explicit filesystem approval for Ralph's native global session registry.
+It executed the actual cooked `.ralph-tui/bin/run` launcher, including its native worktree depth, selected-store
+connection and clone-only configuration/template copying. The only seeded runner edits added a synthetic fake
+agent and disabled auto-commit; no generated launcher or tracker directory was rewritten.
+
+| Share | Native tracker | Command evidence in root c | Selected and closed task |
+| --- | --- | --- | --- |
+| team | beads | `command-0294.json` | `empty-team-quick` |
+| team | beads-bv | `command-0305.json` | `empty-team-gate` |
+| clone | beads | `command-0316.json` | `empty-team-quick` |
+| clone | beads-bv | `command-0327.json` | `empty-team-gate` |
+| team | json, with bd and bv absent from PATH | `command-0334.json` | `US-001` |
+
+All five launchers exited 0 after exactly one completed serial iteration. Native `bd show` confirmed runner-owned
+closure with reason `Completed by agent`; trace records distinguish runner mutation PIDs from the fake worker,
+whose prompt retained the cooked prohibition on tracker calls. The JSON story's `passes` became true with both
+Beads binaries absent from its restricted PATH. The native runner phase passed 40 assertions. Existing global
+registry entries were unchanged; four new synthetic entries were added. Only preservation booleans and counts
+were retained, never prior registry contents. Ralph's measured `INTERRUPTED` final-summary quirk and legacy
+unsupported `bd sync --flush-only` remain the E9 limitations; task-state evidence establishes completion.
+
+Two early harness probes were corrected without product changes: synthetic explicit IDs must match the native
+repository-derived prefix, and no-op cooks do not repeat after-cooking output. The complete lifecycle replay and
+native launcher phase then passed. This acceptance covers local embedded Dolt and local Git transport on the
+recorded Linux platform, one serial runner iteration per case, and robot Viewer commands. It does not establish
+remote authentication, interactive Viewer TUI behavior, a whole completed epic or parallel runner execution.
