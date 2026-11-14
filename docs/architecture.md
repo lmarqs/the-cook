@@ -328,7 +328,8 @@ x64 and arm64 and macOS arm64 builds and their tests pass. A release publishes:
   package with its `.sha256`;
 - in this repository, [`Formula/cook.rb`](../Formula/cook.rb), the Homebrew formula naming the release and the sha256
   of each package;
-- on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:git`, `:beads` and `:ralph`.
+- on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:beads`, `:docs`, `:git`, `:hello` and
+  `:ralph`.
 
 People install `cook` on `PATH` with Homebrew, mise or the release package, and a team that wants one release
 everywhere pins it in its tool manager; [install](features/install.md) describes each.

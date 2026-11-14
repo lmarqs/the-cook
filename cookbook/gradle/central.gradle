@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 // Of the artifacts under src/, these are the ones released to Maven Central.
-def released = ['agents', 'docs', 'git', 'hello', 'ralph']
+def released = ['agents', 'beads', 'docs', 'git', 'hello', 'ralph']
 def packagePath = project.group.toString().replace('.', '/')
 def central = layout.buildDirectory.dir('central')
 def cleanCentral = tasks.register('cleanCentral', Delete) { delete central }
@@ -99,7 +99,8 @@ tasks.register('centralBundleTest') {
   inputs.file(bundle)
   doLast {
     def entries = new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip -> zip.entries()*.name }
-    def paths = released.collect { "${packagePath}/${it}/${v}/${it}-${v}" }
+    def expectedArtifacts = ['agents', 'beads', 'docs', 'git', 'hello', 'ralph']
+    def paths = expectedArtifacts.collect { "${packagePath}/${it}/${v}/${it}-${v}" }
     def expected = ['', '-sources', '-javadoc'].collectMany { suffix ->
       paths.collect { "${it}${suffix}.jar" }
     } + paths.collect { "${it}.pom" }
@@ -109,6 +110,40 @@ tasks.register('centralBundleTest') {
     if (files.sort() != expected*.toString().sort() || missing) {
       throw new GradleException("The Central bundle holds ${files}, with ${missing} missing a checksum; " +
       "expected ${expected}")
+    }
+
+    def beadsFiles = [
+      'README.md',
+      'BeadsTracker.groovy',
+      'BeadsViewer.groovy',
+      'tracker.groovy',
+      'viewer.groovy',
+      'instructions/team.md',
+      'instructions/clone.md',
+      'instructions/viewer.md'
+    ]
+    .collect { "${packagePath}/beads/${it}".toString() }
+    new java.util.zip.ZipFile(bundle.get().asFile).withCloseable { zip ->
+      ['', '-sources', '-javadoc'].each { suffix ->
+        def path = "${packagePath}/beads/${v}/beads-${v}${suffix}.jar"
+        def required = suffix == '-javadoc' ? ['README.md'] : beadsFiles
+        def contents = []
+        new java.util.zip.ZipInputStream(zip.getInputStream(zip.getEntry(path))).withCloseable { jar ->
+          def entry = jar.nextEntry
+
+          while (entry != null) {
+            if (!entry.directory) {
+              contents.add(entry.name)
+            }
+
+            entry = jar.nextEntry
+          }
+        }
+
+        if (!contents.containsAll(required)) {
+          throw new GradleException("${path} holds ${contents}; expected the Beads payload ${required}")
+        }
+      }
     }
   }
 }

@@ -1,12 +1,12 @@
 # Cookbook
 
-This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `git`, `docs`,
+This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `beads`, `git`, `docs`,
 `ralph` and `hello` artifacts.
 
 ## What runs today
 
-The `agents`, `git`, `docs` and `ralph` artifacts set a repository up for several coding agents and people at once.
-Each recipe's help, read with `cook help <coordinates>`, says what it writes.
+The `agents`, `beads`, `git`, `docs` and `ralph` artifacts set a repository up for several coding agents and people
+at once. Each recipe's help, read with `cook help <coordinates>`, says what it writes.
 
 | Need | What runs | Read |
 | --- | --- | --- |
@@ -14,6 +14,8 @@ Each recipe's help, read with `cook help <coordinates>`, says what it writes.
 | A fresh clone, a cloud session or CI that reads the setup without cooking | The `.claude/` and `.codex/` links into `.agents/` are committed, so a fresh checkout already holds each harness's settings, hooks and skills, and each harness reads `AGENTS.md` natively | [agents](src/agents/README.md) |
 | Context when a session starts | Both harnesses run `.agents/hooks/session-start`, which adds the output of each `session-start.d/*.sh` to the session | [agents](src/agents/README.md) |
 | A worktree for each agent | `git#worktrees` ignores `.worktrees/`, states the rule `.worktrees/<branch>` in `AGENTS.md` and seeds the `setup` and `teardown` scripts the team fills in. `agents#connect --worktree-setup=...` wires Claude Code's worktree hooks: a new worktree runs setup and is removed when setup fails, and removing one runs teardown and deletes its branch only once every commit on it has landed | [worktrees](src/git/worktrees.groovy), [connect](src/agents/connect.groovy) |
+| A shared or personal task graph | `beads#tracker` owns five native policy keys and root ignores, with `--share=team` by default or `--share=clone` for local-only tasks. After cooking, native Beads bootstraps and synchronizes task history separately from source commits | [beads](src/beads/README.md), [tracker help](src/beads/tracker.groovy) |
+| Optional graph recommendations | Independent `beads#viewer` owns its export ignore and explicitly named instruction sections. Native export creates a compatibility snapshot; Beads remains authoritative, and Viewer selection never claims a task | [viewer help](src/beads/viewer.groovy) |
 | Unattended loop runs | `ralph#ralph-tui` writes `.ralph-tui/bin/run`, which runs ralph-tui in `.worktrees/ralph/<name>` on the branch `ralph/<name>`, and `bin/clean`, which without `--force` refuses to delete commits that have not landed. With `--worker-check`, a task completes only once the team's check passes | [ralph](src/ralph/README.md) |
 | Output kept to one clone | With `--share=clone`, `ralph#ralph-tui` keeps ralph-tui's configuration out of commits. `replicate` cooks ralph-tui's configuration again in a fresh clone from the source and arguments `cook.lock` records | [replicate](../docs/features/replicate.md) |
 | A variant for one branch | Cooking a recipe with other arguments, or editing a seeded file, on a branch changes committed files and `cook.lock`, so the variant reaches every worktree of that branch and merges with it | [the lock](../docs/architecture.md#ownership-and-the-lock) |
@@ -32,8 +34,8 @@ Models may depend on other models for their types and on ordinary libraries. Rec
 A cookbook releases as jars in a Maven-layout repository, one jar with a POM per directory under `src/`. Each jar
 holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
 everything a reader needs without the source checkout. This cookbook's `build.gradle` writes them with plain Gradle. Each release of this repository publishes the `agents`,
-`docs`, `git`, `hello` and `ralph` artifacts to Maven Central as `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook
-with no `cook.toml`; the other directories are not published.
+`beads`, `docs`, `git`, `hello` and `ralph` artifacts to Maven Central as
+`io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook with no `cook.toml`; the other directories are not published.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
 `#recipe` the address names the artifact, which `cook help` describes and nothing cooks.
@@ -68,6 +70,44 @@ cook io.github.lmarqs.cookbook:agents:0.0.0#seed io.github.lmarqs.cookbook:agent
 `help` on `group:artifact:version` prints the artifact's front page; on `group:artifact:version#recipe` it prints
 that recipe's help. Recipes named in one invocation compose left to right by file content. Each recipe is evaluated
 in its own classloader. A recipe never composes another recipe.
+
+## Adopt Beads
+
+Choose the tracker policy, then optionally add Viewer. Replace `<version>` with an exact Cook release. Instruction
+files must already exist; create them yourself or cook the recipe that creates them earlier in the invocation.
+
+```sh
+# Team setup, with workflow guidance in an existing instruction file
+cook io.github.lmarqs.cookbook:beads:<version>#tracker --instructions=AGENTS.md
+# Personal tasks: native remote synchronization disabled, with the same explicit guidance target
+cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone --instructions=AGENTS.md
+# Optional Viewer, independently usable with either tracker policy or existing native setup
+cook io.github.lmarqs.cookbook:beads:<version>#viewer --instructions=AGENTS.md
+# In a new code clone, replay configuration; bootstrap the native store separately afterward
+cook replicate io.github.lmarqs.cookbook:beads#tracker
+```
+
+Cooking runs no native commands. Follow the chosen recipe's After cooking steps to install `bd` 1.3.1, bootstrap with
+`bd bootstrap --yes` and inspect `bd dolt status`; Viewer additionally uses `bv` 0.25.2. Team mode shares setup
+configuration through Git and task history through native Dolt synchronization. Clone mode ignores `.beads/` and
+requires effective `Remote sync: disabled` before personal writes; environment and local configuration can override
+that policy. Bootstrap can still read team history. Existing tracked files remain tracked across sharing changes.
+
+Viewer's help gives the explicit export and `--db` sequence for the main checkout, linked worktrees and an external
+store. A successful export is required before presenting current recommendations: Viewer can exit 0 with stale,
+provisional output after an automatic refresh fails. Its JSONL export is a compatibility snapshot, not task history.
+
+The recipes have separate entries in the engine's `cook.lock` and separate owned sections. Remove either independently:
+
+```sh
+cook discard io.github.lmarqs.cookbook:beads#viewer
+cook discard io.github.lmarqs.cookbook:beads#tracker
+```
+
+Discard preserves native tasks, remotes, exports and team-owned seeds. Removing clone's local-only key can re-enable
+its preserved native remote; inspect effective policy before using Beads again. It does not unpublish task history.
+Use [tracker help](src/beads/tracker.groovy) and [Viewer help](src/beads/viewer.groovy) for the complete ownership,
+transition, override and removal rules.
 
 ## Names
 
@@ -311,8 +351,6 @@ Recipes
 Models
   io.github.lmarqs.cookbook.ralph.RalphTui
 ````
-
-The artifact's front page introduces the topic. The explicit recipe address renders the recipe:
 
 ````text
 $ cook help io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui
@@ -628,6 +666,296 @@ After cooking
   `.ralph-tui/bin/run <name> --agent <entry> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch
   `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`,
   to give agents these commands, and with the agents layout, add them to the Launching table in `.agents/README.md`.
+````
+
+````text
+$ cook help io.github.lmarqs.cookbook:beads:0.0.0
+io.github.lmarqs.cookbook:beads:0.0.0
+
+Beads keeps a task graph in its native store and synchronizes task history separately from code commits. This artifact
+offers two independent recipes: `#tracker` sets team or clone policy, and optional `#viewer` documents exporting a
+compatibility snapshot for Beads Viewer to rank. Neither cooking nor discarding operates on task data. Start with
+`cook help` for the recipe you choose: its help names the tested runtimes, explicit connections, owned configuration,
+after-cooking commands and removal limits. Tracker works without Viewer or a loop runner; Viewer also works with an
+existing native Beads project that Cook did not configure.
+
+Recipes
+  io.github.lmarqs.cookbook:beads:0.0.0#tracker
+  io.github.lmarqs.cookbook:beads:0.0.0#viewer
+
+Models
+  io.github.lmarqs.cookbook.beads.BeadsTracker
+  io.github.lmarqs.cookbook.beads.BeadsViewer
+````
+
+````text
+$ cook help io.github.lmarqs.cookbook:beads:0.0.0#tracker
+io.github.lmarqs.cookbook:beads:0.0.0#tracker
+
+Sets up Beads tracker policy for a team or one clone: five native configuration keys, required root ignore rules,
+and workflow guidance in the instruction files you name. Cooking needs no Beads binary and creates no task store.
+
+## API
+
+```sh
+# Shared tracker configuration, with native task history published separately
+cook io.github.lmarqs.cookbook:beads:<version>#tracker
+# Personal tasks in this clone, with remote synchronization disabled
+cook io.github.lmarqs.cookbook:beads:<version>#tracker --share=clone
+# State the selected workflow in the files agents and people read
+cook io.github.lmarqs.cookbook:beads:<version>#tracker --instructions=AGENTS.md --instructions=README.md
+# Replay the source and arguments recorded in cook.lock in a new code clone
+cook replicate io.github.lmarqs.cookbook:beads#tracker
+```
+
+`--share` is `team` by default or `clone`. Team mode shares `.beads/config.yaml`; clone mode ignores all `.beads/`
+and sets the native local-only gate. `--instructions` repeats, naming existing Markdown files by their paths from
+the repository root. `.beads/` is the native store location; repository-linked worktrees share the main checkout's
+store without `BEADS_DIR`. No bootstrap, initialization or synchronization command runs while cooking.
+
+## Consumes
+
+- Git and `bd` 1.3.1 at run time; embedded Dolt needs no separate Dolt CLI or server for this workflow.
+- Existing `.beads/config.yaml`, merged through Cook's normal key edits, preserving `sync.remote` and unrelated keys.
+- Only the instruction files `--instructions` explicitly names; each must exist, written by the team or a recipe
+  cooked earlier in the invocation. Missing files are refused rather than created.
+- By hand after: install Beads and bootstrap the store as After cooking says. Code checkout alone has no task store.
+
+## Produces
+
+| Target | Part | When | Kind |
+| --- | --- | --- | --- |
+| `.beads/config.yaml` | `dolt.local-only=false` | `--share=team` | owned |
+| `.beads/config.yaml` | `dolt.local-only=true` | `--share=clone` | owned |
+| `.beads/config.yaml` | `dolt.auto-push=false`, `no-git-ops=true`, `export.auto=false`, `export.git-add=false`, as nested YAML keys | Always | owned |
+| Root `.gitignore` | `tracker` section with argument line, `/.beads/*`, `!/.beads/config.yaml` | `--share=team` | owned |
+| Root `.gitignore` | `tracker` section with argument line and `/.beads/` | `--share=clone` | owned |
+| Root `.gitignore` | In that section: `.dolt/`, `*.db`, `.beads-credential-key`, `.beads/proxieddb/`, `*.gate.lock*` | Always | owned |
+| Each `--instructions` file | `tracker` section with argument line and guidance for the selected mode | `--instructions` | owned |
+
+The root rules exclude native database, export, credential and lock files, including `.beads.gate.lock`.
+Native `.beads/.gitignore` is redundant bootstrap output. The engine alone records ownership in `cook.lock`.
+Never touches: task data, native metadata, native remotes, hooks, `core.hooksPath`, `.git/info/exclude`, tool pins,
+team-owned seeds, agent integrations, or unrelated ignore rules, YAML keys and instruction text.
+
+## Connections
+
+| Contact | Made by |
+| --- | --- |
+| Workflow guidance in the team's files | The person, by repeatable `--instructions` paths |
+| Task store creation and optional team synchronization | The person, with native commands after cooking |
+| Publication destination | The person, reviewing `origin` before consenting to first publication |
+| Coding agent integration | The team, separately using native `bd setup` if desired; never detected or installed |
+| Viewer or a loop runner | The person, separately selecting those tools and their store connections |
+
+Cook a recipe that creates an instruction file before this one, or create the file by hand first.
+
+## Re-cooking
+
+Repeat the arguments on the opening line of the root `.gitignore` tracker section, such as
+`# io.github.lmarqs.cookbook:beads#tracker --share=clone --instructions=AGENTS.md`. An upgrade reconciles the owned
+keys and sections. Cooking without an instruction path withdraws only its tracker section. `cook check` reports
+changes to owned policy or guidance without initializing or accessing the task store.
+
+Changing mode reconciles the local-only key, ignores and guidance; it preserves task data, native remotes and seeds.
+Before switching modes, review `bd dolt status`, configuration overrides and tracked files. Git keeps previously
+tracked files tracked despite new ignore rules: review `git ls-files .beads`, and deliberately remove private files
+from the index with `git rm --cached <path>` when appropriate, retaining their local copies. Changing mode never
+deletes tasks, unpublishes history or changes a native remote's destination.
+
+Discard removes only the five owned keys and tracker sections. Removing clone's local-only key can re-enable a
+preserved native remote; review effective policy before using `bd` again. Discard restores no earlier values.
+
+## Traps
+
+- `BD_DOLT_LOCAL_ONLY` and `.beads/config.local.yaml` can override repository policy. In clone mode, require the
+  effective `Remote sync: disabled` indication from `bd dolt status` before personal writes. Push/pull can exit 0
+  because they skipped synchronization; remote addition is refused. An ignore rule alone proves no sync policy.
+- Bootstrap can read team history, adopt its task prefix and persist `sync.remote` even in clone mode. Local-only
+  controls subsequent synchronization; it does not promise bootstrap reads no remote data.
+- Fresh local bootstrap can warn about absent native metadata and use the default database name `beads`. It also
+  leaves `beads.role` unset, so writes can suggest `git config beads.role maintainer` or `contributor`. Choose the
+  appropriate role yourself. Cloned directories can trigger `chmod 700 .beads` permission advice. Keep native
+  diagnostics visible; this recipe invents no metadata seed and makes no user-specific role or permission choice.
+- `bd init` and `--stealth` can add unmanaged excludes or stage/commit source files. Use `bd bootstrap --yes` here;
+  it preserves existing hooks, instruction files and `.git/info/exclude`, including with both origin and upstream.
+
+Parameters
+  --share=<String>
+      Who shares the tracker: team shares configuration; clone keeps tasks local with native sync disabled; default: team; choices: team, clone
+  --instructions=<String[]>
+      An existing Markdown file, from the repository root, where the recipe states the tracker workflow; optional; repeatable
+
+Ingredients
+  io.github.lmarqs.cookbook.beads.BeadsTracker
+
+After cooking
+  Install the tested runtime: `mise use -g aqua:steveyegge/beads@1.3.1`, then check `bd --version`. Without `-g`, mise
+  pins it in this project's mise.toml instead; the team chooses that. Embedded Dolt needs no separate Dolt install.
+
+  In the repository, run `bd bootstrap --yes`, then `bd dolt status`. Bootstrap creates or restores the native store;
+  it can read origin's team history, adopt its prefix and persist sync.remote in either mode. It preserves hooks,
+  instructions and .git/info/exclude, including when both origin and upstream exist. Do not replace it with bd init
+  or --stealth. Code checkout alone has no task store; a new code clone must bootstrap too.
+
+  With --share=clone, require `Remote sync: disabled` in `bd dolt status` before any personal writes. If absent,
+  resolve BD_DOLT_LOCAL_ONLY and .beads/config.local.yaml overrides first. Push/pull skip with exit 0; remote addition
+  is refused. Ignoring files proves no sync policy. Discarding the owned local-only key may re-enable a native remote.
+
+  With --share=team, review `git remote get-url origin` as the intended destination and publish the source branch
+  there first. Review `git status` for a clean index and worktree before `bd dolt push --yes`. That first consent
+  publishes the complete task history, persists sync.remote and creates a source commit under your Git identity.
+  Inspect `git diff --check` and `git log -1 --oneline`, then `git push origin <branch>` to share the configuration.
+  Subsequent team synchronization uses `bd dolt pull` and `bd dolt push`.
+
+  Fresh local bootstrap may warn about absent metadata; writes may suggest setting beads.role, and cloned directories
+  may prompt chmod 700 .beads. Keep these diagnostics visible and choose your own role and permissions. No metadata
+  seed is needed. Repository-linked worktrees use the main checkout's store without an extra BEADS_DIR.
+
+  Use `bd ready`, `bd create`, `bd update <id> --claim` and `bd close <id>` for ordinary task work. To publish workflow
+  guidance where people and agents read, cook again with --instructions=AGENTS.md, or another existing Markdown file;
+  repeat the argument for each file. Commit the owned root ignores and cook.lock; team mode also shares config.yaml.
+````
+
+````text
+$ cook help io.github.lmarqs.cookbook:beads:0.0.0#viewer
+io.github.lmarqs.cookbook:beads:0.0.0#viewer
+
+Sets up an independent Beads Viewer export ignore and workflow guidance in the instruction files you name.
+Cooking needs no Beads or Viewer binary and creates no database, metadata or export.
+
+## API
+
+```sh
+# Add Viewer to an existing native Beads project, with or without Cook tracker setup
+cook io.github.lmarqs.cookbook:beads:<version>#viewer
+# Publish guidance where people and agents read
+cook io.github.lmarqs.cookbook:beads:<version>#viewer --instructions=AGENTS.md --instructions=README.md
+# Replay the recorded Viewer recipe in another checkout
+cook replicate io.github.lmarqs.cookbook:beads#viewer
+```
+
+`--instructions` repeats, naming existing Markdown files from the repository root; the default is no targets.
+No tracker recipe, agent layout, native settings, workspace file or persistent environment setting is detected
+or installed. Runtime store selection uses native BEADS_DIR and explicit --db, separately from recipe arguments.
+
+## Consumes
+
+- At runtime: Git, `bd` 1.3.1, `bv` 0.25.2 and an initialized native Beads store. After cooking gives installation
+  and bootstrap steps. Embedded Dolt needs no separate Dolt CLI or server for this workflow.
+- Only existing instruction files explicitly named by `--instructions`; missing paths are refused. Create them
+  first, by hand or by cooking their recipe earlier in the invocation.
+- At runtime, an absolute native `BEADS_DIR` selects an external store; otherwise Git's common directory locates
+  the main checkout's `.beads`, including from linked worktrees. Export and Viewer use the same selected directory.
+
+## Produces
+
+| Target | Part | When | Kind |
+| --- | --- | --- | --- |
+| Root `.gitignore` | `viewer` section with argument line and `/.beads/issues.jsonl` | Always | owned |
+| Each `--instructions` file | `viewer` section with argument line and runtime guidance | `--instructions` | owned |
+
+The engine alone maintains `cook.lock`. The native exporter creates the compatibility snapshot at runtime.
+Never touches: tracker settings or sections, native metadata, tasks, runtime exports, team seeds, tool pins,
+hooks, `.git/info/exclude`, environment files, agent/runner settings or unrelated ignores and instructions.
+
+## Connections
+
+| Contact | Made by |
+| --- | --- |
+| Guidance in team or agent instruction files | The person, through repeatable `--instructions` paths |
+| Native local or external task store | The person, through native BEADS_DIR and explicit --db at runtime |
+| Tracker policy or loop runner | The team, through separately selected native setup or recipes |
+
+No Cook tracker setup is required. Tracker and Viewer sections have separate ownership and can be discarded
+independently. This repository's ignores do not control an external repository's staging or sync policy.
+
+## Re-cooking
+
+Repeat the arguments on the opening line of the Viewer ignore section, for example
+`# io.github.lmarqs.cookbook:beads#viewer --instructions=AGENTS.md`. New versions reconcile only owned Viewer
+sections. Dropping an instruction path withdraws its Viewer section. `cook check` compares owned output without
+accessing native stores. Discard removes the Viewer sections and keeps tracker configuration, tasks, native
+metadata, runtime exports, team-owned seeds and unrelated text. It restores no previous content.
+
+## Traps
+
+- A worktree-local `.beads/config.yaml` can shadow main-store discovery. Explicit Viewer --db overrides BEADS_DB,
+  which otherwise overrides BEADS_DIR; always export and triage the same selected directory.
+- Viewer can automatically refresh but exit 0 with stale data after export failure. Inspect source authority and
+  warnings; require successful explicit export before presenting current recommendations. Stale output is diagnostic.
+  A missing export plus failed refresh exits 1. After cooking names the measured authority fields.
+- Fresh local bootstrap may omit native metadata.json. Viewer still ranks but reports diagnostic_top_pick and a
+  message instead of an actionable top-level ID. Ralph 0.12.0 beads-bv falls back to bd ready in this case.
+  Native remote bootstrap can create metadata. Keep diagnostics visible; do not manufacture metadata or upgrade
+  the tool pins to hide this limit. A selection never reserves or claims a task.
+
+Parameters
+  --instructions=<String[]>
+      An existing Markdown file, from the repository root, where the recipe states the Viewer workflow; optional; repeatable
+
+Ingredients
+  io.github.lmarqs.cookbook.beads.BeadsViewer
+
+After cooking
+  Install the tested Beads runtime with `mise use -g aqua:steveyegge/beads@1.3.1`, then check `bd --version`.
+  Without -g, mise pins the tool in this project's mise.toml instead; the team chooses that. Embedded Dolt needs
+  no separate Dolt install. Install Viewer 0.25.2 from its pinned release:
+  https://github.com/Dicklesworthstone/beads_viewer/releases/tag/v0.25.2
+
+  For Linux amd64, with curl, tar and sha256sum available, download and verify the release archive:
+
+  ```sh
+  (
+    viewer_install="$(mktemp -d)" && cd "$viewer_install" &&
+    viewer_release=https://github.com/Dicklesworthstone/beads_viewer/releases/download/v0.25.2 &&
+    curl -fLO "$viewer_release/bv_0.25.2_linux_amd64.tar.gz" &&
+    curl -fLO "$viewer_release/checksums.txt" &&
+    sha256sum -c --ignore-missing checksums.txt &&
+    tar -xzf bv_0.25.2_linux_amd64.tar.gz &&
+    mkdir -p "$HOME/.local/bin" && install -m 755 bv "$HOME/.local/bin/bv"
+  )
+  export PATH="$HOME/.local/bin:$PATH"
+  bv --version
+  ```
+
+  For another platform, select its 0.25.2 archive on that release page and verify checksums.txt before extracting
+  and placing bv on PATH. Confirm bd 1.3.1 and bv 0.25.2 before using the workflow.
+
+  Use an existing initialized native Beads project. If its store is absent, review that project's sharing and sync
+  policy first; in the tested embedded Dolt workflow run `bd bootstrap --yes`, then `bd dolt status` there.
+  Bootstrap creates or restores the store, can read team history and persist sync.remote, and can emit metadata,
+  role and permission diagnostics. It preserves hooks, instruction files and .git/info/exclude. Keep diagnostics
+  visible. Code checkout alone does not provide the task store. Cook's optional #tracker recipe documents team
+  and clone policy setup; Viewer does not configure or initialize either mode.
+
+  In the checkout or linked worktree, resolve one store. To select an external native store, first set BEADS_DIR
+  to its absolute directory for this shell. Run export, then Viewer only if export succeeds:
+
+  ```sh
+  beads_dir="${BEADS_DIR:-$(dirname -- "$(git rev-parse --path-format=absolute --git-common-dir)")/.beads}"
+  bd --db "$beads_dir" export -o "$beads_dir/issues.jsonl" &&
+    bv --db "$beads_dir" --robot-triage
+  ```
+
+  Explicit Viewer --db overrides BEADS_DB, which otherwise overrides BEADS_DIR. A team worktree's local config.yaml
+  can shadow automatic main-store discovery. Exports stay in the selected store; this repository's ignores do
+  not control an external repository's staging or sync policy. Review that policy separately.
+
+  Keep export failures and Viewer diagnostics visible. Failed automatic refresh with an existing export can exit 0
+  with source_authority.state=partial, claim_safe=false, readiness=provisional, source stale=true and export warnings.
+  Missing export plus failed refresh exits 1. Inspect authority and warnings, require successful export before
+  presenting current recommendations, and retain stale output only as diagnostic information.
+
+  Without native metadata.json, Viewer can rank but emits diagnostic_top_pick and a message instead of an actionable
+  top-level ID; ralph 0.12.0 beads-bv then falls back to bd ready. Native remote bootstrap can create metadata.
+  Do not fabricate metadata or promise graph selection when the response cannot support it.
+
+  Agents use robot commands. People can replace --robot-triage with no robot flag for `bv --db "$beads_dir"` TUI use
+  after successful export. Selection never claims a task: check current state and claim explicitly with
+  `bd --db "$beads_dir" update <id> --claim`. Ordinary task mutation stays with bd; runner worker restrictions stay
+  in ralph prompts. Cook again with --instructions=AGENTS.md, repeated for each existing file needing this guidance.
+  Commit the owned ignores, instruction sections and cook.lock; keep runtime exports and task data under native policy.
 ````
 
 ## Layout

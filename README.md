@@ -176,8 +176,8 @@ notes.add('Run the tests before committing.')
 A path outside the kitchen, through a symbolic link too, is refused.
 [Write a recipe](docs/write-a-recipe.md) grows this example step by step, into a cookbook other repositories cook.
 
-Of the [cookbook](cookbook/README.md), the `agents`, `git`, `docs`, `ralph` and `hello` artifacts run. `./gradlew -p cookbook publishToMavenLocal` packages the
-cookbook with plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the
+Of the [cookbook](cookbook/README.md), the `agents`, `beads`, `git`, `docs`, `ralph` and `hello` artifacts run.
+`./gradlew -p cookbook publishToMavenLocal` packages the cookbook with plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the
 engine compiles an artifact's sources when one of its recipes is cooked. `./gradlew -p cookbook test` runs the recipes'
 tests, under `cookbook/test/`.
 
