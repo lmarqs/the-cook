@@ -32,7 +32,7 @@ CLAUDE.local.md
 /.worktrees/ralph/
 # cook:end io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui
 # cook:begin io.github.lmarqs.cookbook:beads#tracker/tracker
-# io.github.lmarqs.cookbook:beads#tracker --instructions=AGENTS.md
+# io.github.lmarqs.cookbook:beads#tracker --instructions=.agents/skills/beads/SKILL.md
 /.beads/*
 !/.beads/config.yaml
 .dolt/
@@ -42,6 +42,6 @@ CLAUDE.local.md
 *.gate.lock*
 # cook:end io.github.lmarqs.cookbook:beads#tracker/tracker
 # cook:begin io.github.lmarqs.cookbook:beads#viewer/viewer
-# io.github.lmarqs.cookbook:beads#viewer --instructions=AGENTS.md
+# io.github.lmarqs.cookbook:beads#viewer --instructions=.agents/skills/beads/SKILL.md
 /.beads/issues.jsonl
 # cook:end io.github.lmarqs.cookbook:beads#viewer/viewer
