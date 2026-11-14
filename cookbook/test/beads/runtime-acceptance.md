@@ -21,6 +21,17 @@ The harness isolates Git configuration with `GIT_CONFIG_GLOBAL=/dev/null` and `G
 `example.invalid` Git identity, and removes tracker routing and credential-shaped environment variables. It leaves
 `HOME` and user tool settings unchanged. Native Beads warnings remain in command records.
 
+## Check version parsing without native tools
+
+Run the focused standard-library regression tests explicitly; they do not install or execute native tools:
+
+```sh
+python3 -B -m unittest discover -s cookbook/test/beads -p 'test_*.py'
+```
+
+The tests accept the pinned tools' complete version output and reject prefix matches, prereleases and unrelated
+numeric tokens. Native acceptance still checks the installed binaries themselves before running its scenarios.
+
 ## Run the lifecycle before the runner
 
 From the repository root, choose a path that does not exist:

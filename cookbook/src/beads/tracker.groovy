@@ -4,7 +4,12 @@ and workflow guidance in the instruction files you name. Cooking needs no Beads 
 
 ## API
 
+Cook, recook and change tracker policy in the main checkout. One policy applies to all linked worktrees of this
+physical clone. For a normal Git checkout with linked worktrees, return there before these commands:
+
 ```sh
+main_checkout="$(dirname -- "$(git rev-parse --path-format=absolute --git-common-dir)")"
+cd "$main_checkout"
 # Shared tracker configuration, with native task history published separately
 cook io.github.lmarqs.cookbook:beads:<version>#tracker
 # Personal tasks in this clone, with remote synchronization disabled
@@ -14,6 +19,10 @@ cook io.github.lmarqs.cookbook:beads:<version>#tracker --instructions=AGENTS.md 
 # Replay the source and arguments recorded in cook.lock in a new code clone
 cook replicate io.github.lmarqs.cookbook:beads#tracker
 ```
+
+Separate team and private policies require separate physical clones or explicitly selected native stores.
+Tracker configures only its kitchen's `.beads`; it does not configure external stores. Cooking in a linked
+worktree does not establish an independent policy for that branch.
 
 `--share` is `team` by default or `clone`. Team mode shares `.beads/config.yaml`; clone mode ignores all `.beads/`
 and sets the native local-only gate. `--instructions` repeats, naming existing Markdown files by their paths from
@@ -63,7 +72,7 @@ Cook a recipe that creates an instruction file before this one, or create the fi
 
 ## Re-cooking
 
-Repeat the arguments on the opening line of the root `.gitignore` tracker section, such as
+From the main checkout, repeat the arguments on the opening line of the root `.gitignore` tracker section, such as
 `# io.github.lmarqs.cookbook:beads#tracker --share=clone --instructions=AGENTS.md`. An upgrade reconciles the owned
 keys and sections. Cooking without an instruction path withdraws only its tracker section. `cook check` reports
 changes to owned policy or guidance without initializing or accessing the task store.
@@ -79,6 +88,10 @@ preserved native remote; review effective policy before using `bd` again. Discar
 
 ## Traps
 
+- If you cooked in a linked worktree, return to the main checkout using the API commands and recook with the
+  recorded arguments from that cook's root `.gitignore` tracker section. Preserve `--share` and every
+  `--instructions` target. Then check effective policy before task writes; a worktree-local cook can leave the
+  main store's policy unchanged.
 - `BD_DOLT_LOCAL_ONLY` and `.beads/config.local.yaml` can override repository policy. In clone mode, require the
   effective `Remote sync: disabled` indication from `bd dolt status` before personal writes. Push/pull can exit 0
   because they skipped synchronization; remote addition is refused. An ignore rule alone proves no sync policy.
@@ -92,17 +105,32 @@ preserved native remote; review effective policy before using `bd` again. Discar
   it preserves existing hooks, instruction files and `.git/info/exclude`, including with both origin and upstream.
 ''')
 @yield('''
+Tracker policy must be cooked and recooked in the main checkout; one policy applies to all linked worktrees.
+In a normal Git checkout, locate it and return before setup or a policy change:
+
+```sh
+main_checkout="$(dirname -- "$(git rev-parse --path-format=absolute --git-common-dir)")"
+cd "$main_checkout"
+```
+
+If you cooked in a linked worktree, return here and recook with the recorded arguments from that cook's root
+.gitignore tracker section; preserve --share and every --instructions target. Separate team and private policies
+require separate physical clones or explicitly selected native stores. Tracker configures only its kitchen's
+.beads; it does not configure external stores. A branch-local cook does not establish an independent policy.
+
 Install the tested runtime: `mise use -g aqua:steveyegge/beads@1.3.1`, then check `bd --version`. Without `-g`, mise
 pins it in this project's mise.toml instead; the team chooses that. Embedded Dolt needs no separate Dolt install.
 
-In the repository, run `bd bootstrap --yes`, then `bd dolt status`. Bootstrap creates or restores the native store;
+In the main checkout, run `bd bootstrap --yes`, then `bd dolt status`. Bootstrap creates or restores the native store;
 it can read origin's team history, adopt its prefix and persist sync.remote in either mode. It preserves hooks,
 instructions and .git/info/exclude, including when both origin and upstream exist. Do not replace it with bd init
 or --stealth. Code checkout alone has no task store; a new code clone must bootstrap too.
 
 With --share=clone, require `Remote sync: disabled` in `bd dolt status` before any personal writes. If absent,
-resolve BD_DOLT_LOCAL_ONLY and .beads/config.local.yaml overrides first. Push/pull skip with exit 0; remote addition
-is refused. Ignoring files proves no sync policy. Discarding the owned local-only key may re-enable a native remote.
+return to main and recook with the recorded arguments if cooking happened in a linked worktree. Resolve
+BD_DOLT_LOCAL_ONLY and .beads/config.local.yaml overrides, then repeat the status check. Push/pull skip with exit 0;
+remote addition is refused. Ignoring files proves no sync policy. Discarding the owned local-only key may re-enable
+a native remote.
 
 With --share=team, review `git remote get-url origin` as the intended destination and publish the source branch
 there first. Review `git status` for a clean index and worktree before `bd dolt push --yes`. That first consent

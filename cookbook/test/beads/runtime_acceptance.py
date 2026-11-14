@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shlex
 import shutil
 import subprocess
@@ -460,6 +461,16 @@ skipPermissions = false
         (self.root / "lifecycle-complete.json").write_text(json.dumps({"assertions": len(self.results)}) + "\n")
 
 
+def matches_pinned_version(tool, output, expected):
+    patterns = {
+        "bd": r"bd version (\S+)(?: \([^()\r\n]+\))?",
+        "bv": r"bv v(\S+)",
+        "ralph-tui": r"ralph-tui (\S+)",
+    }
+    match = re.fullmatch(patterns[tool], output.strip())
+    return match is not None and match.group(1) == expected
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("phase", choices=["lifecycle", "runners"])
@@ -470,10 +481,11 @@ def main():
         args.root.mkdir(parents=True, exist_ok=False)
     else:
         assert (args.root / "lifecycle-complete.json").exists(), "Run lifecycle first"
-    for binary, version in ((suite.bd, "1.3.1"), (suite.bv, "0.25.2"), (suite.ralph, "0.12.0")):
+    for tool, binary, version in (("bd", suite.bd, "1.3.1"), ("bv", suite.bv, "0.25.2"),
+                                  ("ralph-tui", suite.ralph, "0.12.0")):
         assert binary, "Install pinned native prerequisites explicitly before running"
         proc = suite.run(args.root, [binary, "--version"])
-        suite.check("pinned version " + version, version in proc.stdout + proc.stderr)
+        suite.check("pinned version " + version, matches_pinned_version(tool, proc.stdout + proc.stderr, version))
     binaries = {str(Path(path).resolve()): hashlib.sha256(Path(path).read_bytes()).hexdigest()
                 for path in (suite.bd, suite.bv, suite.ralph)}
     (args.root / "binary-sha256.json").write_text(json.dumps(binaries, indent=2) + "\n")

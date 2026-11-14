@@ -1,4 +1,16 @@
-- Beads tasks: after installing `bd` 1.3.1, run `bd bootstrap --yes`, then `bd dolt status` in this repository.
+- Tracker policy: cook, recook and change policy in the main checkout; one policy applies to all linked worktrees
+  of this physical clone. In a normal Git checkout, return there before setup or a policy change:
+
+  ```sh
+  main_checkout="$(dirname -- "$(git rev-parse --path-format=absolute --git-common-dir)")"
+  cd "$main_checkout"
+  ```
+
+  If you cooked in a linked worktree, return here and recook with the recorded arguments from that cook's root
+  `.gitignore` tracker section; preserve `--share` and every `--instructions` target. Separate team and private
+  policies require separate physical clones or explicitly selected native stores. Tracker configures only its
+  kitchen's .beads; it does not configure external stores. A branch-local cook does not establish independent policy.
+- Beads tasks: after installing `bd` 1.3.1, run `bd bootstrap --yes`, then `bd dolt status` in the main checkout.
   Code checkout alone has no task store. Bootstrap can read published team history and persist `sync.remote`.
   Use `bd ready`, `bd create`, `bd update <id> --claim` and `bd close <id>` for ordinary task work.
   For first publication, review the intended `origin` with `git remote get-url origin`, publish the source branch,

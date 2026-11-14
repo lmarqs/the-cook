@@ -129,6 +129,46 @@ dolt:
     } == 2
   }
 
+  @Test void cookedModeGuidanceReturnsLinkedWorktreesToTheMainCheckoutBeforeSetup() {
+    def main = kitchen('main checkout')
+    assert ['git', 'init', '-q', main.path].execute().waitFor() == 0
+    assert [
+      'git',
+      '-C',
+      main.path,
+      '-c',
+      'user.name=Cook test',
+      '-c',
+      'user.email=cook@example.invalid',
+      'commit',
+      '-qm',
+      'Initial',
+      '--allow-empty'
+    ].execute().waitFor() == 0
+    def linked = new File(folder.root, 'linked checkout')
+    assert ['git', '-C', main.path, 'worktree', 'add', '-qb', 'linked', linked.path].execute().waitFor() == 0
+    write(main, 'AGENTS.md', '# Agents\n')
+
+    ['team', 'clone'].each { share ->
+      cook(main, TRACKER, [share: [share], instructions: ['AGENTS.md']]).commit()
+
+      def guidance = new File(main, 'AGENTS.md').text
+      def lines = guidance.readLines()
+      def locateMain = lines.find { it.startsWith('  main_checkout=') }?.trim()
+      assert locateMain
+      def process = ['sh', '-c', locateMain + '\ncd "$main_checkout" && pwd'].execute(null, linked)
+      assert process.text.trim() == main.canonicalPath
+      assert process.waitFor() == 0
+      assert guidance.indexOf(locateMain) < guidance.indexOf('bd bootstrap --yes')
+      assert guidance.contains('all linked worktrees')
+      assert guidance.contains('recook with the recorded arguments')
+      assert guidance.contains('separate physical clones')
+      assert guidance.contains('explicitly selected native stores')
+      assert guidance.contains("kitchen's .beads")
+      assert guidance.contains('does not configure external stores')
+    }
+  }
+
   @Test void droppingAnInstructionTargetWithdrawsOnlyItsTrackerSection() {
     def kitchen = kitchen()
     write(kitchen, 'AGENTS.md', '# Agents\n')
