@@ -164,16 +164,38 @@ tracker's lifecycle to Viewer.
 
 **Acceptance Criteria:**
 
-- [ ] Add `cookbook/src/beads/viewer.groovy` with only the reusable contributions established by the spike.
-- [ ] Support explicit instruction targets; any additional parameter names a demonstrated native choice or connection.
-  The recipe neither automatically cooks `#tracker` nor rewrites tracker-owned settings or sections.
-- [ ] Cooking Viewer works without its binary or a live database; its runtime prerequisites and install steps are stated.
-- [ ] Instructions distinguish human TUI use from agent robot commands, explain export freshness, and leave task
-  mutation and claiming with `bd`. Runtime failure behavior matches the pinned version's observed behavior.
-- [ ] Existing Beads users can cook Viewer without first cooking Cook's tracker recipe, by supplying any required
-  explicit connection. Both recipes together produce compatible output without taking ownership from each other.
-- [ ] Tests prove cooking either recipe again leaves the other's contributions unchanged, and discarding Viewer removes
-  its owned contributions while retaining tracker configuration, tasks and unrelated content.
+- [ ] Add `cookbook/src/beads/viewer.groovy` and its program model using the
+  [US-002 ownership inputs](../research/beads-adoption-spike.md#ownership-inputs-for-us-005).
+  Own a distinct root `.gitignore` Viewer section containing `/.beads/issues.jsonl`; preserve tracker rules
+  and unrelated content. Native Beads does not ignore that root export in its own ignore file (E1/E8).
+- [ ] Support repeatable `--instructions=<path>` with default `[]`, matching git/ralph recipes. Own a distinct
+  Viewer instruction section at each explicit target. No additional recipe parameter, native YAML key, hook,
+  `.bv/workspace.yaml` or persistent environment setting is required by the measured interface.
+  The recipe neither cooks `#tracker` nor takes ownership of tracker sections or settings.
+- [ ] Instructions resolve `beads_dir` from an explicitly supplied absolute native `BEADS_DIR`, or from the
+  parent of `git rev-parse --path-format=absolute --git-common-dir` plus `/.beads` for repository-linked
+  checkouts. Use the same selected directory for `bd --db "$beads_dir" export -o "$beads_dir/issues.jsonl"`
+  followed only on success by `bv --db "$beads_dir" --robot-triage`. Explain that explicit Viewer `--db`
+  overrides `BEADS_DB`, which otherwise overrides `BEADS_DIR`; a team worktree's local `.beads/config.yaml`
+  can shadow main-store discovery (E6). Do not write runtime exports while cooking.
+- [ ] State the tested runtime prerequisites `bd` 1.3.1 and `bv` 0.25.2, their install steps and native store
+  prerequisite. Cooking works without either binary or a live database. Distinguish human `bv --db <dir>`
+  TUI use from agent robot commands; exports are compatibility snapshots and selection never claims a task.
+  Leave ordinary task mutation and claiming with `bd`, and keep runner worker restrictions in ralph prompts.
+- [ ] Match E7 failure behavior: a failed refresh with an existing export can exit 0 while returning
+  `source_authority.state=partial`, `claim_safe=false`, `readiness=provisional`, source `stale=true` and
+  export warnings. Missing export plus failed refresh exits 1. Expose diagnostics, require successful export
+  before presenting current recommendations, and retain stale output only as diagnostic information.
+- [ ] Disclose E8's fresh-bootstrap metadata limit: Viewer can rank without native `metadata.json`, but emits
+  `diagnostic_top_pick` and a message instead of an actionable top-level ID; ralph 0.12.0 `beads-bv` then falls
+  back to `bd ready`. Native remote bootstrap can create metadata. Do not fabricate or recipe-own metadata,
+  promise graph selection when the response cannot support it, or upgrade pins to hide the measured limit.
+- [ ] Existing Beads users can cook Viewer without Cook's tracker. Native `BEADS_DIR` and explicit `--db`
+  connect an external store; exports stay in that store. Explain that cooking repository ignore rules does
+  not control the external repository's staging or sync policy. Preserve runtime export data on discard.
+- [ ] Tests prove instruction target validation, owned ignore/section records, idempotence and existing content;
+  recooking either recipe leaves the other's contributions unchanged. Discarding Viewer removes only its
+  sections while retaining tracker configuration, native metadata, runtime exports, tasks and unrelated text.
 
 ### US-006: Verify adoption and removal end to end
 
