@@ -137,7 +137,7 @@ Codex entry |
 | The tracker a run takes tasks from | The session: `--epic <id>` runs the Beads epic, `--prd <file>` the JSON PRD; \
 the person, by `--tracker=beads-bv`, has `bv` order the epic's beads |
 | Where a run's configuration and prompts come from | The team, by committing `.ralph-tui/` with `--share=team`; \
-the person, by `--share=clone` or by ignoring it in their clone, and `bin/run` copies it into each run |
+the person, by `--share=clone`, and `bin/run` copies it into each run |
 | Whether a task completes only once the checks pass | The person, by `--worker-check`; the team writes the \
 file, or points an entry's `command` at a wrapper of its own |
 | Where run worktrees go | The person, by `--worktree-root` |
@@ -168,7 +168,9 @@ missing, not executable or fails, leaving the worktree for `bin/clean`; without 
 When `ralph/<name>` has no committed `.ralph-tui/config.toml`, it copies the main checkout's `config.toml` and
 `templates/` into the worktree on every run, because ralph-tui reads them only from there. It first checks that Git
 ignores them and `session.json` in the worktree, because ralph-tui commits each task with `git add -A`; otherwise it
-refuses and prints the line that ignores `.ralph-tui/` in the clone. With a copy, it passes `--prompt` with the copied
+refuses and explains the team or `--share=clone` recipe setup. Commit the rules on the chosen base, clean the
+refused run and recreate it from that base; an existing run keeps its earlier ignore rules. Existing user-managed
+exclusions may satisfy the check; the launcher never writes them. With a copy, it passes `--prompt` with the copied
 prompt of the run's tracker, unless the run gives `--prompt`, because ralph-tui copies only `config.toml` into a
 parallel worker. It prints the worktree's path and branch, then runs `ralph-tui run --epic <id> --agent <entry>`, or
 `--prd` with the file's absolute path, in the worktree, with the remaining arguments, such as `--headless` or
@@ -203,9 +205,18 @@ io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --wor
 with another `--worktree-setup` or `--worktree-teardown`, or without one, rewrites the launcher, cooking with another
 `--worker-check`, or without one, rewrites the worker, and cooking without a file's `--instructions` removes its
 section. Cooking with another `--worktree-root` rewrites the launcher and the `.gitignore` section, which then look only
-under the new root, so clean every run before. Cooking with another `--share` rewrites the `.gitignore` section
-only: Git keeps tracking a `.ralph-tui/` committed before `--share=clone` until `git rm -r --cached .ralph-tui` removes
-it from the index. The seeds are never rewritten or removed, so a narrower `--tracker`
+under the new root, so clean every run before. Cooking with another `--share` rewrites the `.gitignore` rules
+and owned argument lines: Git keeps tracking a `.ralph-tui/` committed before `--share=clone` until
+`git rm -r --cached .ralph-tui` removes it from the index; review that staged removal before committing.
+To change sharing, repeat every other argument
+recorded in `cook.lock` or the `.gitignore` section, replacing only `--share`, so harnesses, trackers and connections
+stay selected. For example, a cook with `--harness=claude --harness=codex --tracker=beads --tracker=json` keeps all four
+arguments when adding `--share=clone`, or replacing it with `--share=team`.
+Inspect earlier manual exclusions with `git check-ignore -v --no-index .ralph-tui/config.toml` and read the file
+`git rev-parse --git-path info/exclude` names. Review obsolete rules there by hand, including when returning to team
+sharing: they remain user-owned and Cook never deletes them. `cook discard io.github.lmarqs.cookbook:ralph#ralph-tui`
+removes the owned scripts, ignore section and instruction sections; seeds, tasks and manual exclusions remain.
+The seeds are never rewritten or removed, so a narrower `--tracker`
 leaves a prompt seeded earlier in place, and a cook without `--tracker` takes `json`: re-cooking for `--epic` repeats
 `--tracker=beads` or `--tracker=beads-bv`, or the launcher's usage line and the instructions section offer only `--prd`.
 A cook whose arguments the existing `.ralph-tui/config.toml` lacks is refused and writes nothing: an agent entry for
@@ -287,9 +298,15 @@ the team's choice. With `--tracker=beads-bv`, install `bv` too, such as with `br
 Review `.ralph-tui/config.toml` and the prompts. Commit `.gitignore` and, with `--share=team`, `.ralph-tui/` to share
 them with the team; with `--share=clone`, `.gitignore` keeps `.ralph-tui/` out of commits. In a new clone, run
 `cook replicate io.github.lmarqs.cookbook:ralph#ralph-tui` to recreate it from the committed `cook.lock`. To keep
-`.ralph-tui/` to one clone of a team that shares it, ignore it with
-`echo /.ralph-tui/ >> "$(git rev-parse --git-path info/exclude)"`. `bin/run` copies an uncommitted `.ralph-tui/` into
-each run. `bin/run` refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
+`.ralph-tui/` to one clone, repeat all arguments recorded in `cook.lock` or the `.gitignore` section, changing
+only `--share=clone`. Keep every harness, tracker and connection argument; a cook without `--tracker` selects JSON.
+Commit `.gitignore` and `cook.lock`; this records the choice for that branch. Already tracked `.ralph-tui/` files
+stay tracked until `git rm -r --cached .ralph-tui` removes them from the index; review that staged removal.
+Inspect stale manual exclusions with `git check-ignore -v --no-index .ralph-tui/config.toml` and read the file
+`git rev-parse --git-path info/exclude` names. Review obsolete rules by hand; they remain user-owned on recook
+and discard. `bin/run` copies an uncommitted `.ralph-tui/` into each run, after checking the run ignores it.
+If refused, commit the recipe setup on the chosen base, clean the refused run and recreate it from that base.
+`bin/run` also refuses while `.ralph-tui` has changes Git neither commits nor ignores. Then run
 `.ralph-tui/bin/run <name> --agent <entry> --epic <id>`, with a Beads database holding the epic, or
 `.ralph-tui/bin/run <name> --agent <entry> --prd <file>`, and `.ralph-tui/bin/clean <name>` once the branch
 `ralph/<name>` is delivered. Cooked without `--instructions`, cook again with it, such as `--instructions=AGENTS.md`,

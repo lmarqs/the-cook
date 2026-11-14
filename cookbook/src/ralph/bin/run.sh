@@ -148,8 +148,11 @@ if ! git -C "$worktree" ls-files --error-unmatch .ralph-tui/config.toml >/dev/nu
     git -C "$worktree" check-ignore -q "$path" ||
       fail ".ralph-tui/config.toml is not committed on $branch, and Git does not ignore $path there" \
         'ralph-tui would commit a copy, and its session files, into the run' \
-        "commit .ralph-tui, or ignore it in this clone, then run again:" \
-        "echo /.ralph-tui/ >> $(git -C "$root" rev-parse --path-format=absolute --git-path info/exclude)"
+        'for team setup, commit .ralph-tui and the recipe-owned .gitignore rules on the selected base' \
+        'for clone setup, repeat all recorded recipe arguments, changing only --share=clone' \
+        'find the source and arguments in cook.lock or the ralph-tui section of .gitignore' \
+        'commit .gitignore and cook.lock, then use a base containing that commit' \
+        "clean this run with .ralph-tui/bin/clean $name before retrying"
   done
   rm -rf "$worktree/.ralph-tui/templates"
   mkdir -p "$worktree/.ralph-tui"

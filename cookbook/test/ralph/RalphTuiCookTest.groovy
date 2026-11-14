@@ -9,6 +9,7 @@ import static thecook.Kitchens.ignored
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import thecook.cookbook.CookbookDiscard
 import thecook.cookbook.RecipeSource
 
 import java.nio.file.Files
@@ -656,6 +657,72 @@ roles:
     assert fork.message == "${RALPH}: --share=fork is not one of: team, clone"
   }
 
+  @Test void sharingTransitionsAndDiscardPreserveUnownedContentAndSeeds() {
+    def kitchen = repository()
+    write(kitchen, '.gitignore', '/build/\n')
+    write(kitchen, 'AGENTS.md', '# Our instructions\n')
+    write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
+    new File(kitchen, '.git/info/exclude') << '/personal/\n'
+    def exclusions = new File(kitchen, '.git/info/exclude').text
+    def arguments = [harness: ['claude', 'codex'], tracker: ['beads', 'json'], instructions: ['AGENTS.md']]
+    cook(kitchen, RALPH, arguments).commit()
+    def seeds = ['.ralph-tui/config.toml', '.ralph-tui/templates/beads.hbs', '.ralph-tui/templates/json.hbs']
+    .collectEntries { [(it): new File(kitchen, it).text] }
+
+    ['clone', 'team'].each { share ->
+      def changed = cook(kitchen, RALPH, arguments + [share: [share]])
+      assert changed.actions == ['.gitignore': 'update', 'AGENTS.md': 'update', 'cook.lock': 'update']
+      changed.commit()
+      def lock = new File(kitchen, 'cook.lock').text
+      assert lock.contains('"harness": ["claude","codex"]')
+      assert lock.contains('"tracker": ["beads","json"]')
+      assert lock.contains('"share": ["' + share + '"]')
+      assert lock.contains('id: "io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui"')
+      assert new File(kitchen, '.gitignore').text.startsWith('/build/\n')
+      assert ignored(kitchen, '.ralph-tui/config.toml') == (share == 'clone')
+      assert ignored(kitchen, '.ralph-tui/session.json')
+      assert new File(kitchen, '.git/info/exclude').text == exclusions
+      seeds.each { path, text -> assert new File(kitchen, path).text == text }
+    }
+
+    new CookbookDiscard(kitchen).propose(['io.github.lmarqs.cookbook:ralph#ralph-tui']).commit()
+
+    assert new File(kitchen, '.gitignore').text == '/build/\n'
+    assert new File(kitchen, 'AGENTS.md').text == '# Our instructions\n'
+    assert new File(kitchen, '.git/info/exclude').text == exclusions
+    assert new File(kitchen, 'tasks/prd.json').text == '{"userStories":[]}\n'
+    seeds.each { path, text -> assert new File(kitchen, path).text == text }
+    ['run', 'clean', 'worker'].each { assert !new File(kitchen, ".ralph-tui/bin/${it}").exists() }
+    assert !new File(kitchen, 'cook.lock').exists()
+  }
+
+  @Test void recookingCloneSetupKeepsTheRecordedHarnessesAndTrackers() {
+    def kitchen = repository()
+    git(kitchen, 'branch', 'old')
+    def arguments = [harness: ['claude', 'codex'], tracker: ['beads', 'json']]
+    cook(kitchen, RALPH, arguments).commit()
+    write(kitchen, 'tasks/prd.json', '{"userStories":[]}\n')
+    commitAll(kitchen)
+    def refused = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'codex', '--base', 'old', '--epic', 'ep-1')
+    assert refused.exit == 1
+    assert refused.output.contains('repeat all recorded recipe arguments, changing only --share=clone')
+
+    cook(kitchen, RALPH, arguments + [share: ['clone']]).commit()
+    git(kitchen, 'rm', '-q', '-r', '--cached', '.ralph-tui')
+    commitAll(kitchen)
+    assert launch(kitchen, '.ralph-tui/bin/clean', 'demo').exit == 0
+
+    def epic = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'codex', '--epic', 'ep-1')
+    assert epic.exit == 0
+    assert epic.output.contains('ralph-tui run --epic ep-1 --agent codex --prompt ')
+    assert epic.output.contains('/.ralph-tui/templates/beads.hbs')
+    def prd = launch(kitchen, '.ralph-tui/bin/run', 'demo', '--agent', 'claude', '--prd', 'tasks/prd.json')
+    assert prd.exit == 0
+    assert prd.output.contains('--agent claude --prompt ')
+    assert prd.output.contains('/.ralph-tui/templates/json.hbs')
+    assert git(new File(kitchen, '.worktrees/ralph/demo'), 'status', '--porcelain') == ''
+  }
+
   @Test void theHelpFollowsTheRecipeDocumentationStandard() {
     def texts = RecipeSource.texts(new File(SOURCES, 'ralph-tui.groovy').text, 'ralph-tui.groovy')
 
@@ -822,7 +889,12 @@ roles:
     assert run.output.readLines()[1] ==
     'run: .ralph-tui/config.toml is not committed on ralph/demo, and Git does not ignore ' +
     '.ralph-tui/config.toml there'
-    assert run.output.contains("echo /.ralph-tui/ >> ${kitchen.canonicalPath}/.git/info/exclude")
+    assert run.output.contains('for team setup, commit .ralph-tui and the recipe-owned .gitignore rules')
+    assert run.output.contains('for clone setup, repeat all recorded recipe arguments, changing only --share=clone')
+    assert run.output.contains('find the source and arguments in cook.lock or the ralph-tui section of .gitignore')
+    assert run.output.contains('commit .gitignore and cook.lock, then use a base containing that commit')
+    assert run.output.contains('clean this run with .ralph-tui/bin/clean demo before retrying')
+    assert !run.output.contains('info/exclude')
     assert !new File(worktree, '.ralph-tui').exists()
   }
 
