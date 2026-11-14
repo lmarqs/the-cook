@@ -1,3 +1,8 @@
+---
+description: Install Cook and try recipes that manage repository configuration.
+audience: Developers familiar with Git who are evaluating Cook or trying it for the first time.
+---
+
 # the-cook
 
 [![release](https://github.com/lmarqs/the-cook/actions/workflows/release.yml/badge.svg)](https://github.com/lmarqs/the-cook/actions/workflows/release.yml)
@@ -7,20 +12,23 @@
 
 **The cook: cook the best product without any source of contamination.**
 
-the-cook is a configuration manager for repositories where people and coding agents work together. Your team's way
-of working becomes recipes: Groovy files that write each tool's own native files, the deterministic part, and skills
-that guide an agent through the part that needs judgment. Cook the recipes into a repository and read one diff before
-anything is written. Cook them into the next repository and get the same files. Move to a newer release and each
-repository gets one reviewed diff, discard a recipe and it leaves nothing behind, and `cook check` fails CI when a
-repository drifts from what it cooked. The output is plain native files, so a teammate without Cook, an agent and CI
-all read them. The recipe your team is missing is two files you [write yourself](docs/write-a-recipe.md).
-[Philosophy](docs/philosophy.md) says why it exists, what it is not and why a skill alone does not do it, and
-[the site](https://lmarqs.github.io/the-cook/) shows the docs of the latest release.
+the-cook manages repository configuration for teams working with coding agents. Recipes are Groovy files that
+write tools' native configuration files. Cook shows one diff for review before writing changes.
+
+Reuse the same recipes across repositories, reviewing the changes each repository needs. The output remains plain
+files that teammates, agents and CI can read without Cook. Recipes can also install skills: instructions that guide
+an agent through work that needs judgment.
+
+For developers familiar with Git, start below to install Cook and try a recipe. [Write a recipe](docs/write-a-recipe.md)
+covers authoring; [Developing Cook](DEVELOPMENT.md) covers building and contributing code.
+[Philosophy](docs/philosophy.md) explains why Cook exists, and [the site](https://lmarqs.github.io/the-cook/)
+contains the docs of the latest release.
 
 ## Quick start
 
-[Get started](docs/get-started.md) walks through a first cook with real output. In short, with `cook`
-[installed](#install), in a Git repository:
+Set up repository instructions and a starter permission policy for Claude. With `cook` [installed](#install), run
+these commands in a Git repository. The `seed` recipe creates the shared instructions and policy; `connect` connects
+Claude to that setup. The starter policy grants no permissions.
 
 ```sh
 agents=io.github.lmarqs.cookbook:agents:$(cook --version | cut -d' ' -f2)
@@ -28,7 +36,7 @@ cook $agents#seed $agents#connect --harness=claude
 ```
 
 Cook shows the diff of every file it would write and asks `Write these changes? [y/N]`. Run it again and it prints
-`Already cooked.`. To cook this checkout's recipes instead of a release, see [core verification](core/README.md#verification).
+`Already cooked.`. [Get started](docs/get-started.md) walks through the result and the next steps.
 
 ## Install
 
@@ -66,25 +74,7 @@ as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven Centr
 
 ### From source
 
-The [jpackage task](cli/gradle/jpackage.gradle) builds the same self-contained package for the machine that runs it,
-with a Java 17 JDK (including `jpackage`), and `jpackageArchive` packs it as the release's `.tar.gz` with its `.sha256`
-in `cli/build/distributions`:
-
-```sh
-./gradlew jpackage
-cli/build/jpackage/cook/bin/cook --help
-```
-
-The paths above are for Linux. The build defines `cook.app/Contents/MacOS/cook` on macOS and
-`cook/cook.exe` on Windows; releases ship Linux x64 and arm64 and macOS arm64 packages.
-
-`./gradlew jpackageTest` builds the image and tests the native launcher with Java and Gradle absent from `PATH`: help,
-cooking coordinates and a recipe path in one invocation, the refusal to write without a terminal, a repeated run, `-C`
-and a usage error. On Linux x64 and arm64 and macOS arm64 it also checks the archive: every entry under the image
-directory, a launcher that runs once the archive is unpacked, and a matching `.sha256`.
-
-For development, `./gradlew cliBuild` builds the regular JVM distribution used by this repository's `./cook` entry
-point; that distribution requires Java 17 on the user's machine.
+See [Build from source](DEVELOPMENT.md#build-from-source) for Java requirements, build commands and package checks.
 
 ## Current implementation
 
@@ -93,6 +83,9 @@ This section describes what runs on `main`. The [architecture](docs/architecture
 [the cookbook](cookbook/README.md#what-runs-today).
 
 ### What runs
+
+The **kitchen** is the directory Cook configures: the current directory by default, or the directory selected with
+`-C <dir>` / `--kitchen=<dir>`.
 
 `cook` cooks recipes left to right in one invocation, each named by coordinates,
 `group:artifact:version#recipe`, or by a `.groovy` path inside the kitchen:
@@ -139,68 +132,14 @@ A `.groovy` path inside the kitchen is a recipe like any other. Its short name, 
 its path in the kitchen without `.groovy`, so moving the file renames the recipe; the lock records its path and the
 sha256 of the recipe, the models beside it and its `@resource` files. It compiles against the models in its own
 directory, the upper-case `.groovy` files there, as a recipe in an artifact compiles against that artifact's models.
-`recipes/Notes.groovy` declares the model `acme.notes.Notes`:
 
-```groovy
-package acme.notes
-
-/** The team's notes, kept in NOTES.md. */
-@Ingredient
-class Notes {
-  private final List<String> lines = []
-
-  /** Adds a line to the notes. */
-  void add(String line) {
-    lines << line
-  }
-
-  /** NOTES.md, one bullet per line added. */
-  @File(path = 'NOTES.md')
-  String file() {
-    lines ? lines.collect { "- ${it}\n" }.join() : null
-  }
-}
-```
-
-and `recipes/notes.groovy`, cooked with `cook recipes/notes.groovy`, reads:
-
-```groovy
-@help('Adds a line to NOTES.md.')
-import acme.notes.Notes
-
-@ingredient(Notes) def notes
-
-notes.add('Run the tests before committing.')
-```
-
-A path outside the kitchen, through a symbolic link too, is refused.
-[Write a recipe](docs/write-a-recipe.md) grows this example step by step, into a cookbook other repositories cook.
-
-Of the [cookbook](cookbook/README.md), the `agents`, `beads`, `git`, `docs`, `ralph` and `hello` artifacts run.
-`./gradlew -p cookbook publishToMavenLocal` packages the cookbook with plain Gradle: a jar and a POM per directory under `cookbook/src/`. Packaging compiles nothing; the
-engine compiles an artifact's sources when one of its recipes is cooked. `./gradlew -p cookbook test` runs the recipes'
-tests, under `cookbook/test/`.
+A path outside the kitchen, including through a symbolic link, is refused.
+[Write a recipe](docs/write-a-recipe.md) walks through a complete example and moves it into a cookbook other
+repositories can use. See [the cookbook guide](cookbook/README.md) for available recipes, packaging and tests.
 
 ### Development tooling
 
-`./gradlew check` includes `spotlessCheck`, which enforces the format of Groovy and Gradle (Groovy-Eclipse, [settings](gradle/spotless/greclipse.properties)) and plain-text files, with 2-space indentation per [`.editorconfig`](.editorconfig). `./gradlew spotlessApply` fixes violations. On first use the formatter downloads Groovy-Eclipse from the Eclipse mirror that [`thecook.lint.gradle`](gradle/build-conventions/src/main/groovy/thecook.lint.gradle) names, into `~/.gradle/caches/p2-data`; when that mirror is down, name another Eclipse mirror there. The Groovy formatter on Java 17 cannot parse the `!in` operator or a GString nested inside another; write `!(a in b)` and build such strings with `+`.
-
-`./gradlew check` also lints Groovy and Gradle files with CodeNarc (`./gradlew codenarc`), using its `basic`, `braces`,
-`imports`, `unused` and `formatting` rulesets ([rules](gradle/lint/codenarc.groovy)). Every `if`/`else`/`for`/`while`
-body has braces, and Groovy-Eclipse moves braced bodies onto their own line. A statement with a block, such as `if`,
-`for` or `try`, has a blank line before and after it, except at the start or end of its own block
-([rule](gradle/lint/BlankLinesAroundBlocksRule.groovy)). A chain of more than two method calls puts each call on its own
-line ([rule](gradle/lint/ChainedCallsRule.groovy)). Both cover `cookbook/`, the uncompiled sketches included. A line
-over 120 characters inside a `'''` string, such as a Markdown table row in `@help`, continues on the next source line
-after a trailing `\`, which leaves the string's value unchanged.
-
-`docs/` is a project of the build. `./gradlew -p docs check`, which `./gradlew check` includes, fails on a relative link in
-`docs/` that points to a missing file or heading anchor; [`docs/build.gradle`](docs/build.gradle) defines the check.
-
-See [the core implementation](core/README.md) for how the engine cooks a recipe and how it differs from the
-intended architecture.
-[Infra](infra/README.md) reads the kitchen's `cook.toml` and fetches cookbook releases from Maven-layout repositories;
-the CLI hands its repositories to the core.
+See [Development tooling](DEVELOPMENT.md#development-tooling) for formatting, lint rules and documentation checks.
 
 ## Read next
 
