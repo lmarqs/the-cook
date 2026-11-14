@@ -95,7 +95,7 @@ recipes:
           id: "io.github.lmarqs.cookbook:git#worktrees/worktrees"
   - name: "io.github.lmarqs.cookbook:ralph#ralph-tui"
     source: "io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui"
-    sha256: "16ca2f9c816cf9da344f9c45c779f58358e906a33472b27d5f418e7b043f286b"
+    sha256: "543426c28b13a1d14b950b158a99ac3668785ca8565ded643a091b71892d6da9"
     arguments:
       "harness": ["claude","codex"]
       "worktree-setup": [".worktrees/setup"]
