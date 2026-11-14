@@ -178,7 +178,7 @@ batch diff and recovery guarantee. Commit and delivery decisions belong to the r
 
 ## Destination
 
-The current working directory is the destination, and declared writes and deletions stay within it
+The selected kitchen is the destination, and declared writes and deletions stay within it
 ([destination and source origins](../architecture.md#destination-and-source-origins)). See
 [configuration locations](configuration-standards.md#where-files-live).
 

@@ -38,7 +38,7 @@ The same rules apply to guidance read by coding agents, because ambiguity can be
   ([terminal presentation](cli-standards.md#color-emoji-and-terminal-control)).
 - Put supporting detail on indented lines. Identify the operation and affected file or source, because readers need
   to distinguish a recipe input failure from a target write failure.
-- Name destination files relative to the invocation directory, with `:line:column` when known. Identify source files
+- Name destination files relative to the selected kitchen, with `:line:column` when known. Identify source files
   by their original location or coordinates, because that is the source to edit.
 - Distinguish warnings from failures in words; the exit status tells a script the outcome
   ([errors](cli-standards.md#errors)).
@@ -63,7 +63,7 @@ cook: unknown option --batch-approve after ./recipe.groovy
 
 ```text
 cook: target ../shared/settings.toml is outside the destination
-  declared writes must stay inside the invocation directory, including symlink resolution
+  declared writes must stay inside the selected kitchen, including symlink resolution
   edit ./recipe.groovy to target a path inside the destination
 ```
 
@@ -96,7 +96,7 @@ cook: cannot write .codex/config.toml: permission denied
 ```
 
 When a target cannot be written or withdrawn, the first line names it as `cook.lock` records it, relative to the
-invocation directory: `<file> key <path>`, `<file> section <id>`, `<file>` or `<file> link`. Every line of the cause
+selected kitchen: `<file> key <path>`, `<file> section <id>`, `<file>` or `<file> link`. Every line of the cause
 follows indented two spaces beneath it, so a cause laid out as what, why and next keeps its why and next one level
 deeper. For example:
 

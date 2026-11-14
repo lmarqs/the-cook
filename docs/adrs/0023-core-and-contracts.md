@@ -14,8 +14,8 @@ of the mechanisms that read, present and write their inputs and results.
 - The [architecture](../architecture.md#evaluation-review-and-writes) defines the engine's work: evaluate trusted
   Groovy recipes, combine ordered file operations, show the final diff, obtain approval and perform
   writes (FR-1, FR-7 through FR-13).
-- The invocation directory is the destination. Source references resolve from the referencing recipe's original
-  location, including its URL for HTTPS sources. A local recipe or reference
+- The selected kitchen is the destination. Resources resolve from a local recipe's directory or from its
+  cookbook artifact. A local recipe or reference
   outside the repository is refused (FR-21, FR-22).
 - Cooking evaluates supplied recipes against current content and does not need `cook.lock` (FR-25). The committed
   `cook.lock` records each recipe's ownership (FR-14). Discard removes what the lock lists for a recipe rather than
@@ -36,7 +36,7 @@ of the mechanisms that read, present and write their inputs and results.
    contracts for version control or for running agents, and adds no external command execution to a batch. This
    decision does not enumerate or finalize method signatures, model APIs or a complete port inventory.
 3. The core is independent of any interface and writes and records only the changes it receives as accepted
-   ([0007](0007-ownership.md)). The destination is the invocation directory ([0012](0012-write-boundary.md)), not a
+   ([0007](0007-ownership.md)). The destination is the selected kitchen ([0012](0012-write-boundary.md)), not a
    root discovered by walking upward to a configuration directory or by consulting version control.
 4. What Cook writes in the destination follows [0014](0014-directory-layout.md).
 5. Distribution follows [0017](0017-engine-version.md) and [0021](0021-release-trust.md).
@@ -52,8 +52,8 @@ of the mechanisms that read, present and write their inputs and results.
   from the core.
 - **3.** FR-11 keeps acceptance outside the core, so another interface can choose individual changes without altering
   operation rules, and `cook.lock` describes only what was written. Upward root discovery could
-  redirect writes away from the invocation directory. The trade is that callers choose the destination by their
-  working directory, even when the executable or recipe lives elsewhere.
+  redirect writes away from the selected kitchen. The trade is that callers choose the destination by their
+  working directory or `-C`, even when the executable or recipe lives elsewhere.
 - **4, 5.** The destination layout and distribution are fixed independently of the internal boundary shape; the linked ADRs
   give their reasons.
 
@@ -88,7 +88,7 @@ Must be maintained:
 
 - Review `core/build.gradle` and `cli/build.gradle`: does `core/build.gradle` still declare no dependency on the CLI,
   and does a change to a core class import nothing from the CLI or from a connection?
-- Review against FR-21 and FR-22: does an HTTPS recipe still target the invocation directory, resolve its relative
-  sources against its URL, and is a local recipe outside the repository refused?
+- Review against FR-21 and FR-22: does a recipe cooked by coordinates target the selected kitchen and resolve
+  resources within its artifact, and is a local recipe outside the kitchen refused?
 - Review against FR-13, FR-15 and FR-25: does cooking work without `cook.lock`, does discard work from the lock alone,
   and does a failed batch leave the files as they were after rollback?

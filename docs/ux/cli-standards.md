@@ -29,7 +29,7 @@ this source repository's development launcher.
 The CLI is the public cooking interface. Gradle builds and packages the engine and cookbooks. Cookbook repositories and
 builds remain separate from engine releases.
 
-The invocation's current working directory is the destination, regardless of the executable or recipe location; see
+The selected kitchen is the destination, regardless of the executable or recipe location; see
 [destination and source paths](../features/cook.md#destination-and-source-paths) for the write boundary and how
 recipe and template references resolve.
 

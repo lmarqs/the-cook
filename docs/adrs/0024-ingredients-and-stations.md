@@ -1,6 +1,6 @@
 ---
-description: Records why ingredients model programs and stations hold reusable setup choices, kept apart.
-audience: Whoever writes an ingredient or a station
+description: Records why ingredients model programs and recipes hold reusable setup choices, kept apart.
+audience: Whoever writes an ingredient or a recipe
 ---
 # 0024. Program models remain distinct from reusable setup choices
 

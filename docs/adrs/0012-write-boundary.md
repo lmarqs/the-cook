@@ -25,7 +25,7 @@ and content outside their scope remains intact.
 
 ## Decision
 
-1. Declared writes and deletions stay within the invocation's current working directory, regardless of the recipe
+1. Declared writes and deletions stay within the selected kitchen, regardless of the recipe
    or executable location. Targets resolved through symlinks remain within that boundary. None targets the
    repository's `.git/` directory.
 2. Recipes come from paths inside the destination repository or by coordinates
@@ -48,7 +48,7 @@ and content outside their scope remains intact.
 
 ## Reasons
 
-- **1.** The invocation directory makes the destination explicit even for recipes cooked by coordinates. Resolving
+- **1.** The selected kitchen makes the destination explicit even for recipes cooked by coordinates. Resolving
   symlink targets within it prevents a declared path from redirecting a batch write elsewhere. A write under `.git/`
   would change the history, the index or a hook Git runs next, none of which the reviewed diff shows, as Context
   notes. The trade is that a recipe cannot set a clone's own Git state, such as an exclude entry or a hook; it states

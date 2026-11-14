@@ -171,9 +171,9 @@ With `--dry-run`, Cook shows the texts and the diff without asking, the lines re
 
 ## Existing files
 
-Some recipes write a file from a template the first time they are cooked, such as `AGENTS.md` in
-`io.github.lmarqs.cookbook:agents:0.0.0#seed`. When that file already exists, cooking the recipe the first time fails,
-writes nothing and names the file and the recipe:
+Some recipes seed a file from a template. By default, an existing file is kept. A recipe author can instead declare
+`existing = 'fail'`, as for `AGENTS.md` in `io.github.lmarqs.cookbook:agents:0.0.0#seed`. For such a file, cooking the
+recipe the first time fails when the file already exists, writes nothing and names the file and the recipe:
 
 ```text
 AGENTS.md already exists; io.github.lmarqs.cookbook:agents#seed writes it from a template the first time it is cooked. Run with --force to replace it, or --skip to keep it.

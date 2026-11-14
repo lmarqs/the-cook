@@ -133,7 +133,7 @@ evidence should fit the task.
 
 ## Paths and distribution
 
-Each invocation works on one destination, its current working directory, so setup across repositories means one
+Each invocation works on one destination, its selected kitchen, so setup across repositories means one
 invocation per repository ([destination and source origins](../architecture.md#destination-and-source-origins)). The engine
 release is the one installed on `PATH`, pinned for a team by its tool manager, and moves separately from cookbook and
 recipe versions ([install](../features/install.md)).

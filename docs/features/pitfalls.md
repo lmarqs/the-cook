@@ -245,9 +245,9 @@ commands in its task runner. These are project choices, and the programs that co
 ### Running from a subdirectory changes the destination
 
 - **Symptom.** A recipe targets files under a subdirectory when root configuration was intended.
-- **Why.** The current working directory is the destination.
+- **Why.** Without `-C`, the current working directory is the kitchen.
 - **Cook's responsibility.** Contain declared writes and deletions within that directory, including symlink resolution.
-- **What you do.** Invoke from the intended destination and inspect target paths. Separately check how programs discover
+- **What you do.** Invoke from the intended kitchen or select it with `-C`, and inspect target paths. Check how programs discover
   root or nested settings, for example in a monorepo. See
   [destination and source origins](../architecture.md#destination-and-source-origins).
 

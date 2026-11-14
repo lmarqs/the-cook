@@ -19,7 +19,7 @@ content follows the [generated-content standard](generated-content-standards.md)
 
 ## Where files live
 
-The current working directory is the destination, regardless of recipe and executable locations. Declared writes and
+The selected kitchen is the destination, regardless of recipe and executable locations. Declared writes and
 deletions stay within the destination, including paths resolved through symlinks. Why: a reviewer must know the boundary
 of the batch they approve.
 

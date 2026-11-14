@@ -64,7 +64,7 @@ translation:
 | Technical term | In the lab |
 | --- | --- |
 | A recipe, and the cookbook that ships it | The formula |
-| Replicate: the same recipes at the same versions give the same files in every clone | The same purity in every batch, in every lab |
+| Replicate: each clone cooks again from the sources and arguments recorded in `cook.lock` | The same purity in every batch, in every lab |
 | Drift: a hand edit or a copy that no longer follows from the record, caught by `check` | Contamination |
 | A worktree per branch, one worker in each | A bench, and the suit that keeps one worker's batch off another's |
 | The diff and the one approval before anything is written | The office |
@@ -91,7 +91,7 @@ repositories, harnesses and upgrades:
 
 | Cook | An agent with a skill | What backs it |
 | --- | --- | --- |
-| Reproducible: one recipe at one version with the same arguments gives the same files in every repository, and `replicate` rebuilds them in a fresh clone | Ten repositories set up from one skill are ten setups | [0007](adrs/0007-ownership.md), [replicate](features/replicate.md) |
+| Repeatable inputs: `replicate` cooks again from the sources and arguments recorded in `cook.lock`, using the same cooking process against the kitchen's current content | Ten repositories set up from one skill are ten setups | [0007](adrs/0007-ownership.md), [replicate](features/replicate.md) |
 | Provable: `check` fails CI when the committed files no longer follow from the lock, with no agent, model or credentials | No check says an agent did it right | [0031](adrs/0031-drift-check.md), [check](features/cli.md#check) |
 | Reversible: Cook marks what it owns, and `discard` removes exactly that | Nobody can later say which lines were the setup and which the team's | [0007](adrs/0007-ownership.md), [discard](features/discard.md) |
 | Upgradable: cook the newer release and read one diff per repository, within a compatible range | Run the agent again in every repository and reconcile by eye | [0032](adrs/0032-recipe-updates.md), [update](features/update.md) |

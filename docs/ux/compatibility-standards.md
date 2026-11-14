@@ -42,7 +42,7 @@ own pace.
 | Ordered operations | Reordering recipes, rejecting intentional overlap, skipping repeated evaluation, or removing output another recipe owns |
 | Native output | Changing a program's effective settings, replacing a broader target, losing unrelated keys or comments, or changing marker syntax |
 | Ownership | Changing a recipe's short name, which changes its markers and `cook.lock` entry |
-| Paths | Changing the invocation-directory destination or rebasing relative source references onto another location |
+| Paths | Changing how the kitchen is selected or rebasing relative source references onto another location |
 | Recovery | Changing what `cook.lock` records so that discard, replicate or check misreads an existing lock, or changing the rollback of a failed write |
 | Distribution | Changing package/runtime requirements, checksum verification or explicit pinning behavior |
 | Skill guidance | Teaching commands or prerequisites unavailable in the version the guidance describes |

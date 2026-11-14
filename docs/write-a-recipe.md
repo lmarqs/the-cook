@@ -145,8 +145,8 @@ cook recipes/notes.groovy --line='Ask before force-pushing.'
 +- Ask before force-pushing.
 ```
 
-The lock records the argument, so `cook replicate` and `cook check` use the same value. `cook help` now lists
-`--line` with its `doc` and default.
+The lock records the argument, so `cook replicate` and `cook check` use the same value. `cook help recipes/notes.groovy`
+now lists `--line` with its `doc` and default.
 
 ## 5. Move it into a cookbook
 

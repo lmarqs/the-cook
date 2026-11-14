@@ -122,7 +122,7 @@ operations; they are not a sandbox or protection against arbitrary side effects 
 
 ## Destination and source paths
 
-The invocation directory is the destination, regardless of the executable location. Declared writes and
+The selected kitchen is the destination, regardless of the executable location. Declared writes and
 deletions stay within it, including paths resolved through symlinks. A symlink cannot route a declared target outside
 that boundary.
 

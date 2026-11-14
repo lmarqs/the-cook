@@ -20,8 +20,8 @@ relocating unrelated files.
   predate a recipe invocation.
 - A repository commits its configuration, and its version control keeps every earlier version of it. Its current
   working directory is the destination, regardless of the recipe or executable location.
-- Sources have origins distinct from destination targets. A recipe served over HTTPS can refer to a template beside
-  itself at its URL while proposing output inside the destination.
+- Sources have origins distinct from destination targets. A recipe cooked by coordinates can read a template
+  from its cookbook artifact while proposing output inside the selected kitchen.
 - Cook is installed on `PATH` as a complete jpackage package containing Java. The installed package lives outside
   every destination.
 
@@ -99,6 +99,6 @@ Must be maintained:
 ## Confirmation
 
 - Review the two skills-layout examples: do declared changes preserve unrelated content in both?
-- Review an HTTPS recipe's batch: does the source URL stay the base for relative references, and is a local recipe
-  outside the repository refused?
+- Review a coordinate recipe's batch: do resources resolve within its cookbook artifact, and is a local recipe
+  outside the kitchen refused?
 - Review a new path Cook writes: is it either native output at a declared target or `cook.lock`?

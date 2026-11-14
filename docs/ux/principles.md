@@ -64,7 +64,7 @@ alone only when grammar, order and paths follow fixed rules.
   diff, because approval covers that combined result
   ([ordered composition](../architecture.md#ordered-composition-and-declared-targets)).
 - Cooking B never removes output A owns.
-- The invocation directory is the destination, and relative source references resolve from the referencing recipe
+- The selected kitchen is the destination, and relative source references resolve from the referencing recipe
   ([path resolution](../architecture.md#destination-and-source-origins)).
 
 ## 5. Show changes, obtain approval and prepare recovery
@@ -98,7 +98,7 @@ descriptions.
 
 ## 7. Approval has a defined boundary
 
-Declared writes and deletions stay inside the invocation directory, including paths resolved through symlinks.
+Declared writes and deletions stay inside the selected kitchen, including paths resolved through symlinks.
 Review, approval and rollback govern those operations. Why: a user needs to know exactly what the batch review covers.
 
 Recipes are trusted executable code. They can cause side effects, including network calls or external commands, outside

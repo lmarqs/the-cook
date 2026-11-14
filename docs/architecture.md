@@ -129,26 +129,9 @@ Targets have three forms (FR-10):
 | Structured content | File path and key path | The declared key, preserving unrelated keys |
 | Section in a shared text file | File path and begin/end markers | The bounded section, preserving text outside it |
 
-A section's markers name the recipe that owns it and the region within that recipe:
-`cook:begin <recipe>/<region>` and `cook:end <recipe>/<region>`. The recipe's short name precedes the last `/` and
-the region follows it. Several recipes can therefore keep separate sections in one file. Markers use the file format's comment syntax: HTML comments in Markdown, and hash comments in ignore
-files, YAML, TOML, and shell scripts. For example:
-
-```markdown
-Text outside the section stays in place.
-
-<!-- cook:begin recipes/setup/commands -->
-Run the project's build command.
-<!-- cook:end recipes/setup/commands -->
-
-More unrelated text stays in place.
-```
-
-```gitignore
-# cook:begin git/ignore
-/.claude/settings.local.json
-# cook:end git/ignore
-```
+A section's markers name the recipe that owns it and the region within that recipe, so several recipes can keep
+separate sections in one file. The [generated-content standard](ux/generated-content-standards.md#sections-and-markers)
+defines their syntax in each file format.
 
 Ownership decides what a recipe's later versions update and remove. It does not block changes: Cook proposes the
 requested changes against current content, and a manual edit inside an owned section or key appears in the next diff
@@ -275,7 +258,8 @@ texts or approval, and exits 1 when anything would change, so a CI step fails on
 
 ## Destination and source origins
 
-The invocation's current working directory is the destination, regardless of where the Cook executable lives. Cook
+The selected kitchen is the destination: the current working directory by default, or the directory selected with
+`-C <dir>` or `--kitchen=<dir>`, regardless of where the Cook executable lives. Cook
 never searches parent directories or asks version control for the destination
 ([core and contracts ADR](adrs/0023-core-and-contracts.md)). An existing directory inside the destination is a valid
 target even when Cook did not create it ([directory layout ADR](adrs/0014-directory-layout.md)).
@@ -437,8 +421,9 @@ Other documents cite these requirements by number.
 
 ### Paths
 
-- **FR-21:** The current working directory is the destination, regardless of the executable location. Declared writes
-  and deletions stay within that directory, including paths resolved through symlinks.
+- **FR-21:** The selected kitchen is the destination, defaulting to the current working directory; `-C <dir>` or
+  `--kitchen=<dir>` selects another directory. Declared writes and deletions stay within that directory, including
+  paths resolved through symlinks, regardless of the executable location.
 - **FR-22:** A recipe reads a file through `@resource`, resolved from a recipe path's directory inside the repository
   or from the recipe's artifact. A local operand or resource outside the repository is refused. A recipe compiles
   against the models of its own artifact, or for a recipe path, the models in its directory.

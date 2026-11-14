@@ -34,7 +34,7 @@ native configuration change without losing unrelated settings or obscuring the c
    [0007](0007-ownership.md). In a native file, removing a key a recipe no longer declares removes its current value.
 4. Personal override files are affected only when recipes explicitly declare them as targets. Their mere presence does
    not authorize writing them or importing their contents into shared configuration. Declared operations remain within
-   the invocation directory, including symlink resolution ([0012](0012-write-boundary.md)).
+   the selected kitchen, including symlink resolution ([0012](0012-write-boundary.md)).
 
 Native settings can configure permissions, skills or a program's own hooks; the trust limits of declared operations
 follow [0011](0011-safety-invariants.md).
