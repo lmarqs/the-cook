@@ -122,6 +122,10 @@ jobs:
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      - name: Prepare cookbook downloads
+        run: |
+          cp cookbook/build/central-bundle/central-bundle.zip "dist/cookbook-$VERSION.zip"
+          find cookbook/build/central -type f ! -name 'maven-metadata.xml*' -exec cp {} dist/ \;
       - name: Release on GitHub
         run: $SEMANTIC_RELEASE
         env:
