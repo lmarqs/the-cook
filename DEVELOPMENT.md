@@ -33,6 +33,11 @@ point; that distribution requires Java 17 on the user's machine.
 
 ## Development tooling
 
+Tests that compare paths returned by Git with temporary fixture paths must account for symbolic links. Git resolves
+the checkout's physical path, while JUnit's temporary directory can retain a symlink path on macOS. Derive the
+expected discovered store from the fixture's `canonicalFile`; keep explicitly supplied paths as supplied. The
+Beads Viewer test covers a symlinked checkout as well as a linked worktree so Linux runs catch this mismatch too.
+
 `./gradlew check` includes `spotlessCheck`, which enforces the format of Groovy and Gradle (Groovy-Eclipse, [settings](gradle/spotless/greclipse.properties)) and plain-text files, with 2-space indentation per [`.editorconfig`](.editorconfig). `./gradlew spotlessApply` fixes violations. On first use the formatter downloads Groovy-Eclipse from the Eclipse mirror that [`thecook.lint.gradle`](gradle/build-conventions/src/main/groovy/thecook.lint.gradle) names, into `~/.gradle/caches/p2-data`; when that mirror is down, name another Eclipse mirror there. The Groovy formatter on Java 17 cannot parse the `!in` operator or a GString nested inside another; write `!(a in b)` and build such strings with `+`.
 
 `./gradlew check` also lints Groovy and Gradle files with CodeNarc (`./gradlew codenarc`), using its `basic`, `braces`,

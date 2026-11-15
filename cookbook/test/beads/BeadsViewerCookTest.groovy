@@ -4,6 +4,8 @@ import static thecook.Cookbook.publishDirectory
 import static thecook.Kitchens.cook
 import static thecook.Kitchens.ignored
 
+import java.nio.file.Files
+
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -169,10 +171,17 @@ class BeadsViewerCookTest {
     def external = folder.newFolder('external store')
     cook(kitchen, VIEWER, [instructions: ['AGENTS.md']]).commit()
     def command = refreshCommand(new File(kitchen, 'AGENTS.md').text)
-    def nativeStore = new File(kitchen, '.beads')
+    def nativeStore = new File(kitchen, '.beads').canonicalFile
     nativeStore.mkdirs()
+    def alias = new File(folder.root, 'main alias')
+    Files.createSymbolicLink(alias.toPath(), kitchen.toPath())
 
-    def cases = [[kitchen, null, nativeStore], [worktree, null, nativeStore], [worktree, external.path, external]]
+    def cases = [
+      [kitchen, null, nativeStore],
+      [alias, null, nativeStore],
+      [worktree, null, nativeStore],
+      [worktree, external.path, external],
+    ]
     cases.each { directory, selected, expected ->
       def result = refresh(directory, command, selected, 0)
 
