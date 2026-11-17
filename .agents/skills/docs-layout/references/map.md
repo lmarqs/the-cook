@@ -10,6 +10,12 @@ the made-up `acme`, the session timeout is a feature rule, the shared session st
 sessions is a runbook. Each fact has one owner; other pages link it, since a copy drifts, with link text that names
 the fact, as `wait out [the rate limit](api/orders.md)`.
 
+## Foundation
+
+Architecture, decisions and philosophy are the foundation: agreed design that may lead the code. Features,
+interfaces, runbooks and observability describe what is built; where one differs from the foundation, correct it or
+change the foundation first. Unbuilt behavior waits in its issue.
+
 ## What a page holds
 
 - What the repository shows nowhere else: a reason, a rule, a convention and its scope. Code, contracts and history

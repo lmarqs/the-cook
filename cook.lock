@@ -42,7 +42,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "dad8240e2658b050b40b6646019dd5532af547ccf66ea95d952dd46168390ced"
+    sha256: "69ed1e592c9b0ea74e1847db1418f89ac16e0f57527eb0c261b6aae2dc58d42a"
     arguments: {}
     owns:
       files:
@@ -55,6 +55,7 @@ recipes:
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/glossary.md"
         - ".agents/skills/agents-layout/references/investigate.md"
+        - ".agents/skills/agents-layout/references/memory.md"
         - ".agents/skills/agents-layout/references/policy.md"
         - ".agents/skills/agents-layout/references/review.md"
         - ".agents/skills/agents-layout/references/subagents.md"
@@ -97,7 +98,7 @@ recipes:
           id: "io.github.lmarqs.cookbook:beads#viewer/viewer"
   - name: "io.github.lmarqs.cookbook:docs#layout"
     source: "io.github.lmarqs.cookbook:docs:0.0.0#layout"
-    sha256: "bc5ab118fee287f201b87b7da2993b4cbc670bda34ebd515ad80d4725ff3bb76"
+    sha256: "ad848206d96fe0bccb2a02a8451d0c739619544c6110a216dd2e54aad7f0fe11"
     arguments:
       "skills-root": [".agents/skills"]
     owns:

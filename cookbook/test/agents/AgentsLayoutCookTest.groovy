@@ -84,6 +84,7 @@ recipes:
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/glossary.md"
         - ".agents/skills/agents-layout/references/investigate.md"
+        - ".agents/skills/agents-layout/references/memory.md"
         - ".agents/skills/agents-layout/references/policy.md"
         - ".agents/skills/agents-layout/references/review.md"
         - ".agents/skills/agents-layout/references/subagents.md"
@@ -341,6 +342,7 @@ recipes:
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
@@ -419,7 +421,8 @@ class PolicyCheck {
     def entries = { Map<String, List<Command>> byName ->
       byName.collect { name, list -> "${name} ${list.collect { it.claude ? "claude ${it.claude}" : it.prefix }}" }
     }
-    ([policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') } + "bypass ${policy.bypass}")
+    ([policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') } +
+        "bypass ${policy.bypass}; auto ${policy.auto}")
         .join('\\n') + '\\n'
   }
 }
@@ -436,7 +439,7 @@ check.policy = agents.policy()
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:]).commit()
     assert policy.text == new File(TEMPLATES, 'policy.template.yaml').text
     assert new File(kitchen, 'POLICY.txt').text ==
-    'allow []; ask []; deny []\nallow []; ask []; deny []\n\nbypass refuse\n'
+    'allow []; ask []; deny []\nallow []; ask []; deny []\n\nbypass refuse; auto allow\n'
 
     // The starter's commented example, uncommented, is a valid policy.
     def commented = policy.readLines().findAll { it.startsWith('#   ') }
@@ -448,6 +451,7 @@ check.policy = agents.policy()
 
     policy.text = '''version: 2
 bypass: allow
+auto: refuse
 commands:
   allow:
     - [git, status]
@@ -469,7 +473,7 @@ roles:
 allow [[git, status], [gh, pr, [view, list]]]; ask [[git, push]]; deny [claude git push * --force*]
 allow [claude WebFetch(domain:docs.gradle.org)]; ask []; deny []
 worker [[git, [commit, push]]]
-bypass allow
+bypass allow; auto refuse
 '''
 
     def entry = 'is not an entry; write the literal words a command starts with, a nested list for alternatives of ' +
@@ -478,6 +482,7 @@ bypass allow
       'version: 1\n': 'version must be 2',
       'version: 2\ninstructions: []\n': 'unknown field [instructions]',
       'version: 2\nbypass: maybe\n': 'bypass must be refuse or allow',
+      'version: 2\nauto: maybe\n': 'auto must be allow or refuse',
       'version: 2\ncommands:\n  maybe: []\n': 'commands has unknown decision [maybe]; use allow, ask or deny',
       'version: 2\ncommands:\n  allow:\n    - [git, "a b"]\n': "commands.allow: [git, a b] ${entry}",
       'version: 2\ncommands:\n  deny:\n    - [git, []]\n': "commands.deny: [git, []] ${entry}",
@@ -522,6 +527,12 @@ bypass allow
     // A later cook lays the changed value out as the first cook did.
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text ==
     fixture('claude-settings.json').replace('],\n    "disableBypassPermissionsMode": "disable"', ']')
+
+    policy.text = policy.text.replaceFirst('bypass: allow\n', 'auto: refuse\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
+    assert new File(kitchen, '.agents/adapters/claude/settings.json').text == fixture('claude-settings.json')
+    .replace('"disableBypassPermissionsMode": "disable"',
+    '"disableBypassPermissionsMode": "disable",\n    "disableAutoMode": "disable"')
   }
 
   @Test void rendersThePolicyIntoCodexRulesAndNamesWhatCodexCannotEnforce() {
@@ -545,6 +556,11 @@ bypass allow
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
     def allowed = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
     assert allowed[1..-2] == [rules[1]] + rules[3..-2]
+
+    // Auto mode is Claude's; Codex renders the same rules whether the policy allows it or refuses it.
+    policy.text = policy.text.replaceFirst('bypass: allow\n', 'auto: refuse\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+    assert new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines() == rules
   }
 
   @Test void theLayoutCheckOnlyRecommendsOnAFreshSeedAndOnAFilledAgentsMdNamingWhatIsNotInTheTree() {
@@ -647,6 +663,49 @@ bypass allow
 
     assert status == 0
     assert output.readLines().findAll { it.contains('REVIEW.md') || it.contains('templates/x.json') } == []
+  }
+
+  @Test void theLayoutCheckWarnsOnAMemoryFileNoAgentsMdNames() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def run = runner(kitchen)
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    def check = ['sh', '.agents/skills/agents-layout/scripts/check.sh']
+    def stage = ['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock']
+    def named = 'ok every file in .agents/memory/ is named in an AGENTS.md'
+    assert run(stage)[0] == 0
+    assert run(check)[1].readLines().contains(named)
+
+    new File(kitchen, '.agents/memory/migrations.md').text = '# Migrations\n'
+    assert run(stage)[0] == 0
+    def (status, output) = run(check)
+
+    assert status == 0
+    assert output.readLines().findAll { it.contains('memory') } == [
+      'WARN .agents/memory/migrations.md is named in no AGENTS.md -- name it under Deep dive with the question it ' +
+      'answers, or move its entries where references/memory.md says',
+    ]
+
+    new File(kitchen, 'AGENTS.md') << '\n- Migrations: [.agents/memory/migrations.md](.agents/memory/migrations.md)\n'
+    assert run(stage)[0] == 0
+    assert run(check)[1].readLines().contains(named)
+  }
+
+  @Test void theLayoutCheckDoesNotTakeATextThatContainsAMemoryPathForANaming() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def run = runner(kitchen)
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    new File(kitchen, '.agents/memory/notes.md').text = '# Notes\n'
+    new File(kitchen, 'AGENTS.md') << '\n- Old: docs/old-memory/notes.md.bak\n'
+    assert run(['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock'])[0] == 0
+
+    assert run(['sh', '.agents/skills/agents-layout/scripts/check.sh'])[1].readLines()
+    .any { it.startsWith('WARN .agents/memory/notes.md is named in no AGENTS.md') }
   }
 
   @Test void theLayoutCheckWarnsOnARealFileTrackedInAHarnessDirectory() {
@@ -766,6 +825,7 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
@@ -847,6 +907,7 @@ agents.connect([claude])
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
