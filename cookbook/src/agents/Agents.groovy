@@ -514,9 +514,15 @@ class Policy {
   String bypass = 'refuse'
 
   /**
+   * `allow`, the default, leaves Claude's auto mode available, where a classifier decides each command no entry
+   * lists; `refuse` turns it off, so a person answers for those commands.
+   */
+  String auto = 'allow'
+
+  /**
    * Parses YAML policy text; rejects a version other than 2, unknown fields, decisions other than `allow`, `ask` and
    * `deny`, invalid entries, tool entries that are not harness entries, roles that do more than deny, and a `bypass`
-   * other than `refuse` or `allow`.
+   * or an `auto` other than `refuse` or `allow`.
    */
   static Policy parse(String text) {
     def data = new YamlSlurper().parseText(text)
@@ -529,7 +535,7 @@ class Policy {
       fail('version must be 2')
     }
 
-    def unknown = data.keySet() - ['version', 'bypass', 'commands', 'tools', 'roles']
+    def unknown = data.keySet() - ['version', 'bypass', 'auto', 'commands', 'tools', 'roles']
 
     if (unknown) {
       fail("unknown field ${unknown}")
@@ -539,8 +545,12 @@ class Policy {
       fail('bypass must be refuse or allow')
     }
 
+    if (!(data.auto in [null, 'allow', 'refuse'])) {
+      fail('auto must be allow or refuse')
+    }
+
     new Policy(commands: decisions(data, 'commands', false), tools: decisions(data, 'tools', true),
-    roles: roles(data.roles), bypass: data.bypass ?: 'refuse')
+    roles: roles(data.roles), bypass: data.bypass ?: 'refuse', auto: data.auto ?: 'allow')
   }
 
   private static Map<String, List<Command>> decisions(Map data, String field, boolean toolsOnly) {

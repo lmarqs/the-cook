@@ -60,8 +60,8 @@ beside them |
 - Claude Code and Codex read what it writes; written for Claude Code 2.1.304 and Codex 0.160.1, with the session-start
   hooks tested on Claude Code 2.1.306.
 - `.agents/permission/policy.yaml` in the draft, the team's: its `commands` render into each harness's settings, its
-  `tools` and `roles` into Claude's, and its `bypass` decides whether Claude's bypass mode is refused. When absent, the
-  starter is seeded, which grants nothing.
+  `tools` and `roles` into Claude's, and its `bypass` and `auto` decide whether Claude's bypass and auto modes are
+  refused. When absent, the starter is seeded, which grants nothing.
 - `.agents/agents/*.md` in the draft, the team's: one subagent each, with `name`, `description` and a `claude` and a
   `codex` map in its front matter, then the prompt. A file that breaks this, or a directory there, is refused, and
   nothing is written; the `agents-layout` skill's `references/subagents.md` gives the schema.
@@ -83,7 +83,7 @@ beside them |
 | `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories | Always, when absent | seed |
 | `.agents/hooks/session-start` | The session-start dispatcher, mode 0755 | Always | owned |
 | `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's \
-`bypass` is `refuse` | `--harness=claude` | owned |
+`bypass` is `refuse` and `disableAutoMode` while its `auto` is `refuse` | `--harness=claude` | owned |
 | `.agents/adapters/claude/settings.json` | `hooks.SessionStart`, running \
 `"$CLAUDE_PROJECT_DIR"/.agents/hooks/session-start claude` | `--harness=claude` | owned |
 | `.agents/hooks/worktree` | The worktree hook, mode 0755, with the `--worktree-*` settings | A `--worktree-*` \

@@ -419,7 +419,7 @@ class PolicyCheck {
     def entries = { Map<String, List<Command>> byName ->
       byName.collect { name, list -> "${name} ${list.collect { it.claude ? "claude ${it.claude}" : it.prefix }}" }
     }
-    ([policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') } + "bypass ${policy.bypass}")
+    ([policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') } + "bypass ${policy.bypass}; auto ${policy.auto}")
         .join('\\n') + '\\n'
   }
 }
@@ -436,7 +436,7 @@ check.policy = agents.policy()
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#policy-check', [:]).commit()
     assert policy.text == new File(TEMPLATES, 'policy.template.yaml').text
     assert new File(kitchen, 'POLICY.txt').text ==
-    'allow []; ask []; deny []\nallow []; ask []; deny []\n\nbypass refuse\n'
+    'allow []; ask []; deny []\nallow []; ask []; deny []\n\nbypass refuse; auto allow\n'
 
     // The starter's commented example, uncommented, is a valid policy.
     def commented = policy.readLines().findAll { it.startsWith('#   ') }
@@ -448,6 +448,7 @@ check.policy = agents.policy()
 
     policy.text = '''version: 2
 bypass: allow
+auto: refuse
 commands:
   allow:
     - [git, status]
@@ -469,7 +470,7 @@ roles:
 allow [[git, status], [gh, pr, [view, list]]]; ask [[git, push]]; deny [claude git push * --force*]
 allow [claude WebFetch(domain:docs.gradle.org)]; ask []; deny []
 worker [[git, [commit, push]]]
-bypass allow
+bypass allow; auto refuse
 '''
 
     def entry = 'is not an entry; write the literal words a command starts with, a nested list for alternatives of ' +
@@ -478,6 +479,7 @@ bypass allow
       'version: 1\n': 'version must be 2',
       'version: 2\ninstructions: []\n': 'unknown field [instructions]',
       'version: 2\nbypass: maybe\n': 'bypass must be refuse or allow',
+      'version: 2\nauto: maybe\n': 'auto must be allow or refuse',
       'version: 2\ncommands:\n  maybe: []\n': 'commands has unknown decision [maybe]; use allow, ask or deny',
       'version: 2\ncommands:\n  allow:\n    - [git, "a b"]\n': "commands.allow: [git, a b] ${entry}",
       'version: 2\ncommands:\n  deny:\n    - [git, []]\n': "commands.deny: [git, []] ${entry}",
@@ -522,6 +524,12 @@ bypass allow
     // A later cook lays the changed value out as the first cook did.
     assert new File(kitchen, '.agents/adapters/claude/settings.json').text ==
     fixture('claude-settings.json').replace('],\n    "disableBypassPermissionsMode": "disable"', ']')
+
+    policy.text = policy.text.replaceFirst('bypass: allow\n', 'auto: refuse\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude']]).commit()
+    assert new File(kitchen, '.agents/adapters/claude/settings.json').text == fixture('claude-settings.json')
+    .replace('"disableBypassPermissionsMode": "disable"',
+    '"disableBypassPermissionsMode": "disable",\n    "disableAutoMode": "disable"')
   }
 
   @Test void rendersThePolicyIntoCodexRulesAndNamesWhatCodexCannotEnforce() {
