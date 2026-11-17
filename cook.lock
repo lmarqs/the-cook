@@ -42,7 +42,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "69ed1e592c9b0ea74e1847db1418f89ac16e0f57527eb0c261b6aae2dc58d42a"
+    sha256: "d80619b010f2960474d18cd8b4451971d8c50d279c6a74e52ffe638668db9410"
     arguments: {}
     owns:
       files:
@@ -50,6 +50,7 @@ recipes:
         - ".agents/skills/agents-layout/agents/openai.yaml"
         - ".agents/skills/agents-layout/references/adopt.md"
         - ".agents/skills/agents-layout/references/agents-md.md"
+        - ".agents/skills/agents-layout/references/changes.md"
         - ".agents/skills/agents-layout/references/claude.md"
         - ".agents/skills/agents-layout/references/codex.md"
         - ".agents/skills/agents-layout/references/design.md"
@@ -98,7 +99,7 @@ recipes:
           id: "io.github.lmarqs.cookbook:beads#viewer/viewer"
   - name: "io.github.lmarqs.cookbook:docs#layout"
     source: "io.github.lmarqs.cookbook:docs:0.0.0#layout"
-    sha256: "ad848206d96fe0bccb2a02a8451d0c739619544c6110a216dd2e54aad7f0fe11"
+    sha256: "4a92c310c0b9f5133c526adae8ee53afa674a32ef0d4e9705acc12b962fe7c27"
     arguments:
       "skills-root": [".agents/skills"]
     owns:

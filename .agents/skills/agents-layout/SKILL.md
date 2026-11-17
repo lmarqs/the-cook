@@ -38,17 +38,7 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | Each person | `.claude/settings.local.json` | Nobody else; Cook never writes it and git ignores it |
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
 
-```text
-AGENTS.md                         instructions for every agent; each harness reads it directly
-.agents/
-  README.md                       what lives where, and the command line for each kind of run
-  permission/policy.yaml          what agents may run; the one file to edit for permissions
-  adapters/<harness>/             each harness's settings: the policy as Cook renders it, other keys the team's
-  skills/ hooks/ memory/ agents/
-.claude/  .codex/                 committed links into .agents/, plus each person's local files
-```
-
-Cook's `io.github.lmarqs.cookbook:agents` recipes write it: `#seed` creates it, this skill included, and `#connect`
+Cook's `io.github.lmarqs.cookbook:agents` recipes write the layout: `#seed` creates it, this skill included, and `#connect`
 renders the policy and makes the links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
 `cook --help` lists Cook's options and commands, and
 `cook help io.github.lmarqs.cookbook:agents:<version>#<recipe>` prints a recipe's help with each parameter, its
@@ -94,47 +84,9 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | An agent ignores the instructions, asks when it should not, or runs what it should not | [references/investigate.md](references/investigate.md) |
 | Set up a loop runner, or decide where worktrees go | [references/design.md](references/design.md#worktrees-and-loop-runners) |
 | Know what Claude Code or Codex reads, trusts and enforces here, and how it was tested | [references/claude.md](references/claude.md), [references/codex.md](references/codex.md) |
+| Make a change: which file to edit for it, and what to run after | [references/changes.md](references/changes.md) |
 | Understand why the layout is shaped this way, or argue for changing it | [references/design.md](references/design.md) |
 | Know what a term of the layout means, such as role, subagent or adapter | [references/glossary.md](references/glossary.md) |
-
-## Where a change goes
-
-| To | Edit | Then |
-| --- | --- | --- |
-| Tell every agent something | `AGENTS.md` | Commit |
-| Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
-| Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
-| Share a skill, hook script or memory file | `.agents/skills/`, `hooks/` or `memory/` | Commit; the links expose it |
-| Share a subagent | `.agents/agents/<name>.md` | Cook `#connect`, review, commit |
-| Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; Codex runs it once the hooks are trusted in the main checkout, its worktrees included, [codex.md](references/codex.md#trust) |
-| Run a shared hook script on another harness event | The `hooks` key of `.agents/adapters/claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |
-| Change another shared harness setting, such as `env` or an MCP server | That key in `.agents/adapters/claude/settings.json` or `.agents/adapters/codex/config.toml` | Commit |
-| Change something for yourself | `.claude/settings.local.json` | Nothing to commit |
-| Choose the harness, model, mode or role of one run | The launch command, from Launching in `.agents/README.md` | Nothing to commit |
-
-For example, to let every agent run the test suite:
-
-```yaml
-# .agents/permission/policy.yaml
-commands:
-  allow:
-    - [./gradlew, test]
-```
-
-```sh
-cook --dry-run io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
-cook --batch-approve io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
-git status --short
-git add AGENTS.md .agents .claude .codex .gitignore cook.lock
-git commit
-```
-
-Read the diff the dry run prints before approving: an agent has no terminal to answer Cook's prompt, so without
-`--batch-approve` Cook writes nothing.
-
-The diff adds `Bash(./gradlew test *)` to `.agents/adapters/claude/settings.json` and a `prefix_rule` to
-`.agents/adapters/codex/rules/cook.rules`, and `cook.lock` records them. The first command entry also creates that
-rules file and its `.codex/rules` link.
 
 ## Guidance
 

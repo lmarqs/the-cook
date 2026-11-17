@@ -79,6 +79,7 @@ recipes:
         - ".agents/skills/agents-layout/agents/openai.yaml"
         - ".agents/skills/agents-layout/references/adopt.md"
         - ".agents/skills/agents-layout/references/agents-md.md"
+        - ".agents/skills/agents-layout/references/changes.md"
         - ".agents/skills/agents-layout/references/claude.md"
         - ".agents/skills/agents-layout/references/codex.md"
         - ".agents/skills/agents-layout/references/design.md"
@@ -337,6 +338,7 @@ recipes:
       '.agents/skills/agents-layout/agents/openai.yaml',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
+      '.agents/skills/agents-layout/references/changes.md',
       '.agents/skills/agents-layout/references/claude.md',
       '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
@@ -820,6 +822,7 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/agents/openai.yaml',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
+      '.agents/skills/agents-layout/references/changes.md',
       '.agents/skills/agents-layout/references/claude.md',
       '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
@@ -902,6 +905,7 @@ agents.connect([claude])
       '.agents/skills/agents-layout/agents/openai.yaml',
       '.agents/skills/agents-layout/references/adopt.md',
       '.agents/skills/agents-layout/references/agents-md.md',
+      '.agents/skills/agents-layout/references/changes.md',
       '.agents/skills/agents-layout/references/claude.md',
       '.agents/skills/agents-layout/references/codex.md',
       '.agents/skills/agents-layout/references/design.md',
