@@ -147,6 +147,28 @@ check_harness_files() {
   [ "$found" -eq 0 ] && ok 'every tracked path in .claude/ and .codex/ is a link'
 }
 
+check_memory() {
+  # An agent reads a memory file only when an AGENTS.md names it, so an unnamed one is knowledge nobody finds.
+  guides=$(git ls-files | grep -E '(^|/)AGENTS\.md$')
+  files=$(git -c core.quotePath=false ls-files -- '.agents/memory/*.md')
+  found=0
+  saved_ifs=$IFS
+  IFS=$newline
+  for file in $files; do
+    named=0
+    for guide in $guides; do
+      [ -f "$guide" ] && grep -qF "memory/${file##*/}" "$guide" && named=1
+    done
+    if [ "$named" -eq 0 ]; then
+      warn "$file is named in no AGENTS.md" \
+        'name it under Deep dive with the question it answers, or move its entries where references/memory.md says'
+      found=1
+    fi
+  done
+  IFS=$saved_ifs
+  [ "$found" -eq 0 ] && ok 'every file in .agents/memory/ is named in an AGENTS.md'
+}
+
 if [ -f AGENTS.md ]; then
   check_agents_md
 else
@@ -156,5 +178,6 @@ check_agents_bytes
 check_claude_files
 check_links
 check_harness_files
+check_memory
 
 exit "$status"
