@@ -1,24 +1,24 @@
 class Cook < Formula
   desc "Recipe driven configuration tool for the files a repository shares"
   homepage "https://lmarqs.github.io/the-cook/"
-  version "12.2.0"
+  version "12.3.0"
   license "Apache-2.0"
 
   on_macos do
     on_arm do
       url "https://github.com/lmarqs/the-cook/releases/download/v#{version}/the-cook-#{version}-macos-arm64.tar.gz"
-      sha256 "c23e6c24f7cc4048945a5ce241bb026e3125bbf866aa2b6acf7497e696a2429c"
+      sha256 "4eaa0c80d3527efa8e6a6a683bd6224593fe9cdd41d8569c8335cb466b46fec0"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/lmarqs/the-cook/releases/download/v#{version}/the-cook-#{version}-linux-x64.tar.gz"
-      sha256 "4c9d4593e36c98320f97ad4a60f090b1aaee48f62c27cd5a711a61225764af74"
+      sha256 "92e77d9ed47a648ecf7c315a51e32b874f1fb66624ff2893afdbaefff6661859"
     end
     on_arm do
       url "https://github.com/lmarqs/the-cook/releases/download/v#{version}/the-cook-#{version}-linux-arm64.tar.gz"
-      sha256 "7585cc49bd1b10bc188ca6f18ec36d418d85d7f953c96ca055a56b3b4630050e"
+      sha256 "06abd130683785e93a5390b2bb147e9ea0ebc7485a171efd6e2aee46e4500e0e"
     end
   end
 
