@@ -12,9 +12,9 @@ the fact, as `wait out [the rate limit](api/orders.md)`.
 
 ## Foundation
 
-Architecture and decisions state the agreed design and may lead the code. Features, interfaces and runbooks describe
-what is built and follow them; where they differ, fix the page or change the foundation first. Unbuilt behavior waits
-in its issue.
+Architecture, decisions and philosophy are the foundation: agreed design that may lead the code. Features,
+interfaces, runbooks and observability describe what is built; where one differs from the foundation, correct it or
+change the foundation first. Unbuilt behavior waits in its issue.
 
 ## What a page holds
 
