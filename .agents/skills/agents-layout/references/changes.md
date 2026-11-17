@@ -1,7 +1,6 @@
 # Where a change goes
 
-Which file a change to the layout is made in, and what follows it. Commands write the recipe version as
-`<version>`; use the one in `cook.lock`.
+Which file a change to the layout is made in, and what follows it.
 
 | To | Edit | Then |
 | --- | --- | --- |

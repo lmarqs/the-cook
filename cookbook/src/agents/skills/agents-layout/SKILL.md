@@ -38,9 +38,9 @@ Every file here has one owner. Most surprises come from editing a file someone e
 | Each person | `.claude/settings.local.json` | Nobody else; Cook never writes it and git ignores it |
 | A loop runner | Its own configuration and the worktrees it creates | Whoever sets it up; it reads the layout through [the contract](references/design.md#worktrees-and-loop-runners) |
 
-Cook's `io.github.lmarqs.cookbook:agents` recipes write the layout: `#seed` creates it, this skill included, and `#connect`
-renders the policy and makes the links. Commands here write the recipe version as `<version>`; use the one in `cook.lock`.
-`cook --help` lists Cook's options and commands, and
+Cook's `io.github.lmarqs.cookbook:agents` recipes write the layout: `#seed` creates it, this skill included, and
+`#connect` renders the policy and makes the links. Commands here and in the references write the recipe version as
+`<version>`; use the one in `cook.lock`. `cook --help` lists Cook's options and commands, and
 `cook help io.github.lmarqs.cookbook:agents:<version>#<recipe>` prints a recipe's help with each parameter, its
 values and default, without running it. Read it before cooking with a parameter this skill does not show, such as
 `#connect`'s `--worktree-*`.

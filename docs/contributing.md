@@ -75,9 +75,10 @@ of working. See the [dependence on the binary](adrs/0010-dependence-on-the-binar
 
 ### Guide in recipes, leave rules to the project
 
-**Problem.** A recipe's skill once held every documentation page to the code, so a repository that agreed its design
-ahead of the code had to override the skill by hand, and a review reported the agreed design as an error.
+**Problem.** A skill that rules where it could guide overrides a decision only the team can weigh, so a repository
+that decided otherwise must work around the skill, and its reviews report the team's own choice as an error.
 
 **Tenet.** A recipe's skills recommend: where a fact goes, what a good file achieves, what a check found. A rule only
 the team can weigh, such as whether a page may describe what is not built yet, stays the project's, stated in its own
-map or `AGENTS.md`. A layout check reports a gap in guidance as a warning, never a failure.
+map or `AGENTS.md`. A layout check fails only on a setup a program cannot read, and reports a gap in guidance as a
+warning. See the [docs recipe's principles](../cookbook/src/docs/principles.md).

@@ -46,9 +46,9 @@ Most misplaced facts are one of these:
 
 ## A new kind
 
-Which part of each kind's description do the facts miss? Do they have another owner, as an FAQ's answers
-belong to the features they explain? Are they shown nowhere else? Can a good page of the kind be
-described, so a review can compare a page with it?
+Which part of each kind's description do the facts miss? Do they have another owner, as an FAQ's answers belong to
+the features they explain? Are they shown nowhere else? Can a good page of the kind be described, so a review can
+compare a page with it?
 
 ## A good map
 

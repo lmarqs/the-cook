@@ -104,8 +104,8 @@ anyone who changes it can steer the programs that read it, and review who suppli
 
 Memory files hold the traps sessions met in one area: how to work there, learned from a correction or a failure, that
 no other file owns. One file per area, such as `.agents/memory/migrations.md`, named in `AGENTS.md` with the question
-it answers. Most of what a session learns has another owner, the tracker, a check, `AGENTS.md`, a skill or the
-documentation, and the `agents-layout` skill's `references/memory.md` routes each fact to it. Maintain references to
+it answers. Most of what a session learns has another owner, and the `agents-layout` skill's `references/memory.md`
+says which. Maintain references to
 guidance and memory files when files are added, renamed, moved or removed, because a stale reference leads readers to
 the wrong file.
 Cooking a new version of a recipe removes the memory content its previous version owned and the new version omits,
