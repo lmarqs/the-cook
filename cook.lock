@@ -42,7 +42,7 @@ recipes:
         - ".codex/rules"
   - name: "io.github.lmarqs.cookbook:agents#seed"
     source: "io.github.lmarqs.cookbook:agents:0.0.0#seed"
-    sha256: "14c569d7822daad37c70d2724f57f49fd3548188a0044e1e2cb7dd6044d2d30d"
+    sha256: "f48f470bf106ccc87ebef4bc6bcb8fe45ff290e52bca9544c58cc57ade42133c"
     arguments: {}
     owns:
       files:

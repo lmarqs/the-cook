@@ -7,10 +7,11 @@
 Run `sh .agents/skills/agents-layout/scripts/check.sh` from the repository root. It writes nothing, prints one line
 per check, `ok <what>`, `WARN <what> -- <next>` or `FAIL <what> -- <next>`, and exits 1 when a check fails. A `FAIL`
 is a setup a harness cannot read: `AGENTS.md` missing, a `CLAUDE.md` that hides it, or a link missing, broken or
-ignored. A `WARN` is a recommendation to weigh, such as the word budget or a tracked file in `.claude/` or `.codex/`
+ignored. A `WARN` is a recommendation to weigh, such as the word budget, a tracked file in `.claude/` or `.codex/`
 that is not a link, or a memory file no `AGENTS.md` names; a name `AGENTS.md` gives that is not in the tree may be a
-stale path, or a git ref or a file made at run time. It reads the links, the tracked files of `.claude/` and `.codex/` and the tracked `AGENTS.md` files
-from the index, so stage the layout before running it on uncommitted work.
+stale path, or a git ref or a file made at run time. It reads the links, the tracked files of `.claude/` and
+`.codex/` and the tracked `AGENTS.md` files from the index, so stage the layout before running it on uncommitted
+work.
 
 Then make the checks a script cannot:
 
@@ -25,7 +26,7 @@ Then make the checks a script cannot:
 6. `cook check io.github.lmarqs.cookbook:agents#connect` exits 0 with `Already cooked.`, and `cook.lock` records every
    harness the team uses; exit 1 and a diff mean the adapters or links no longer match `policy.yaml`.
 
-The review is done when every line `check.sh` printed and each of the six checks above has a verdict: `ok`, or a
+The review is done when every line `check.sh` printed and each numbered check above has a verdict: `ok`, or a
 finding with what, where, and the step that closes it. Report the findings in that form.
 
 ## Review --fix

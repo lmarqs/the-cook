@@ -29,8 +29,7 @@ Cook refuses another version or any other top-level field, naming it.
 When several entries match one command, `deny` wins over `ask` and `ask` over `allow`, in both harnesses and across
 every settings file. A command that no entry matches gets the harness's own behavior for unlisted commands: Codex
 follows its approval policy, and Claude asks, or in [auto mode](claude.md#auto-mode), where its interactive sessions
-start, lets its classifier decide. An `ask` entry is therefore the one way to have a person approve a command in
-every Claude session, and a broad `allow` entry, such as `[python3]` or `[npm, run]`, stops applying there.
+start, lets its classifier decide, which changes what `ask` and a broad `allow` entry do there.
 
 ## Entries
 

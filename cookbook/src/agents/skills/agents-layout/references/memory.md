@@ -1,9 +1,9 @@
 # Memory
 
-`.agents/memory/` holds what a session learned about working in one area of the repository, that a later session
-needs and no other file owns. One file per area, as `.agents/memory/migrations.md`, read only when a task touches the
-area: `AGENTS.md` names each file under Deep dive with the question it answers, and a file no `AGENTS.md` names is
-never read.
+`.agents/memory/` holds traps: how to work in one area of the repository, learned from a correction or a failure,
+that a later session needs and no other file owns. One file per area, as `.agents/memory/migrations.md`, read only
+when a task touches the area: `AGENTS.md` names each file under Deep dive with the question it answers, and a file
+no `AGENTS.md` names is never read.
 
 ## Where a learned fact goes
 
@@ -20,26 +20,21 @@ fits:
 | Needed by every task | `AGENTS.md`: a rule, or one of its five gotchas |
 | A procedure an agent repeats | A skill in `.agents/skills/` |
 | What a person changing the code needs too: a decision, how a feature behaves, a standard, a trap of the product | The repository's documentation, where it keeps some; the page owns it and memory links it |
-| How to work in one area, learned from a correction or a failure, that nobody would look up in the documentation | `.agents/memory/<area>.md` |
+| A trap nobody would look up in the documentation | `.agents/memory/<area>.md` |
 
-The last row is narrow on purpose. In a repository with documentation, memory holds mostly how agents go wrong
-there: the command that looks right and is not, the file that must change with another, the generated directory
-that must not be edited. In a repository without it, memory also holds the decisions and traps a page would own,
-until the team writes that page.
+In a repository with documentation, the traps left for memory are how agents go wrong there: the command that
+looks right and is not, the file that must change with another, the generated directory that must stay unedited. In
+a repository without it, memory also holds the decisions and product traps a page would own, until the team writes
+that page.
 
 ## What earns an entry
 
-An entry is worth its place when each answer is yes:
+A trap the table sends to memory earns its entry when each answer is yes:
 
-- Would a fresh session make the mistake again without it?
-- Is it still true once this task is merged?
-- Is it true for everyone who works here, with any harness?
-- Did it come from something that happened: a person's correction, a failed check, a command's output? A guess
-  about why something works stays out.
+- Would a fresh session fall into it again without the entry?
+- Did it happen: a person's correction, a failed check, a command's output? A guess about why something works
+  waits for one of those.
 - Does it name the area it applies to, so a reader outside that area can skip it?
-
-One benchmark run with no `AGENTS.md` wrote its session note into a versioned memory file
-([agents-md.md](agents-md.md)). A note of what a session did fails the second question, and the tracker owns it.
 
 ## How an entry reads
 
@@ -76,9 +71,9 @@ line in `AGENTS.md`.
 
 ## Who writes it
 
-An agent proposes an entry when a person corrects it, or when a failure reveals a trap the next session would meet,
-and says so in its report. The entry is committed and reviewed like every file the team owns: whoever changes it
-steers every agent that reads it.
+An agent writes the entry in the change where a person corrects it, or where a failure reveals a trap the next
+session would meet, and names the entry in its report. The entry is committed and reviewed like every file the
+team owns: whoever changes it steers every agent that reads it.
 
 A harness's own memory is another thing. Claude Code's auto memory is written by Claude under
 `~/.claude/projects/<project>/memory/` and stays on one person's machine (Claude's docs; not tested), so nothing

@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Shared .agents/ layout that gives every harness in a repository the same instructions, permissions, skills and subagents. Use it to adopt the layout; change agent instructions, permissions, roles, skills or subagents; investigate an agent that ignores the setup or runs what the team did not expect; or learn why the layout is shaped this way. Not for the repository's own code, or a person's harness settings outside this repository.
+description: Shared .agents/ layout that gives every harness in a repository the same instructions, permissions, skills and subagents. Use it to adopt the layout; change agent instructions, permissions, roles, skills, subagents or memory; investigate an agent that ignores the setup or runs what the team did not expect; or learn why the layout is shaped this way. Not for the repository's own code, or a person's harness settings outside this repository.
 argument-hint: "[adopt | review [--fix]]"
 ---
 
@@ -67,7 +67,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | --- | --- | --- | --- |
 | `skills/` | One directory per skill: `SKILL.md`, whose frontmatter `name` and `description` say when to use it, and the files it refers to | Through the `.claude/skills` link | Natively |
 | `hooks/` | Scripts that hook settings run, by their path from the repository root, and the files they load | The `hooks` key of `.claude/settings.json` | `.codex/hooks.json` |
-| `memory/` | Durable facts about the repository that the code and `README.md` do not show; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
+| `memory/` | One file per area, holding the traps sessions met there, as [memory.md](references/memory.md) describes; never secrets or personal data | When `AGENTS.md` points to a file | When `AGENTS.md` points to a file |
 | `agents/` | One Markdown file per subagent, as [subagents.md](references/subagents.md) describes | Through `.claude/agents`, rendered by `#connect` | Through `.codex/agents`, rendered by `#connect` |
 
 - **A skill** is for knowledge an agent needs only for some tasks: it loads when its description matches, so it costs
@@ -78,10 +78,9 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
   is shared; when it runs is set per harness, because the events and their input differ. Session start is the
   exception: a script in `hooks/session-start.d/` that prints text reaches every connected harness as session
   context, and gets the harness name as `$1`.
-- **Memory** holds what a session learned about working in one area, that a later one needs and no other file
-  owns: most learned facts belong to the tracker, a check, `AGENTS.md`, a skill or the documentation.
-  [references/memory.md](references/memory.md) says which, what earns an entry and when one leaves. List each file
-  in `AGENTS.md` with the question it answers, so agents know when to read it.
+- **Memory** holds traps: how to work in one area, learned from a correction or a failure, that no other file owns.
+  Most of what a session learns has another owner, and [references/memory.md](references/memory.md) routes each
+  fact to it. List each file in `AGENTS.md` with the question it answers, so agents know when to read it.
 
 ## Pick the task
 
@@ -90,7 +89,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Set the layout up, or move an existing `CLAUDE.md`, `.claude/` or `.codex/` setup into it | [references/adopt.md](references/adopt.md) |
 | Fill in or review `AGENTS.md` | [references/agents-md.md](references/agents-md.md) |
 | Write or review `policy.yaml` | [references/policy.md](references/policy.md) |
-| Record something a session learned, or review `.agents/memory/` | [references/memory.md](references/memory.md) |
+| Record a trap or anything else a session learned, or review `.agents/memory/` | [references/memory.md](references/memory.md) |
 | Write or review a shared subagent | [references/subagents.md](references/subagents.md) |
 | An agent ignores the instructions, asks when it should not, or runs what it should not | [references/investigate.md](references/investigate.md) |
 | Set up a loop runner, or decide where worktrees go | [references/design.md](references/design.md#worktrees-and-loop-runners) |
@@ -105,7 +104,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Tell every agent something | `AGENTS.md` | Commit |
 | Allow, ask before or deny a command in every session | `commands` in `.agents/permission/policy.yaml` | Cook `#connect`, review, commit |
 | Deny a command in one kind of run, such as unattended workers | `roles.<role>.deny` in the same file | Cook `#connect`, review, commit |
-| Share a skill, hook script or durable fact | `.agents/skills/`, `hooks/` or `memory/` | Commit; the links expose it |
+| Share a skill, hook script or memory file | `.agents/skills/`, `hooks/` or `memory/` | Commit; the links expose it |
 | Share a subagent | `.agents/agents/<name>.md` | Cook `#connect`, review, commit |
 | Give every agent context as its session starts | A script in `.agents/hooks/session-start.d/` that prints it, named with a number first to set its order, such as `10-status.sh`; the harness name is `$1` | Commit; Codex runs it once the hooks are trusted in the main checkout, its worktrees included, [codex.md](references/codex.md#trust) |
 | Run a shared hook script on another harness event | The `hooks` key of `.agents/adapters/claude/settings.json`, and `.agents/adapters/codex/hooks.json`; `SessionStart` is Cook's in both | Commit |

@@ -11,7 +11,7 @@ rest to each run.
 
 | Axis | Examples | Decided | Lives in |
 | --- | --- | --- | --- |
-| Knowledge | Instructions, skills, hook scripts, durable facts | By the team, in review | `AGENTS.md`, `.agents/skills/`, `hooks/`, `memory/` |
+| Knowledge | Instructions, skills, hook scripts, traps by area | By the team, in review | `AGENTS.md`, `.agents/skills/`, `hooks/`, `memory/` |
 | Policy | What may run without asking, what asks, what never runs | By the team, in review | `.agents/permission/policy.yaml`, rendered to `.agents/adapters/` |
 | Harness | Claude Code, Codex | Per person, or per role in a loop runner | Which program is started |
 | Mode | Attended, unattended | Per run | Launch flags |
