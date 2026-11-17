@@ -10,17 +10,10 @@ the made-up `acme`, the session timeout is a feature rule, the shared session st
 sessions is a runbook. Each fact has one owner; other pages link it, since a copy drifts, with link text that names
 the fact, as `wait out [the rate limit](api/orders.md)`.
 
-## Foundation
-
-Architecture, decisions and philosophy are the foundation: agreed design that may lead the code. Features,
-interfaces, runbooks and observability describe what is built; where one differs from the foundation, correct it or
-change the foundation first. Unbuilt behavior waits in its issue.
-
 ## What a page holds
 
 - What the repository shows nowhere else: a reason, a rule, a convention and its scope. Code, contracts and history
   hold their own facts, and a page links them.
-- What is true now. A tracker holds plans and state that change faster than a page.
 - Reasons told as **what happened**: the situation, what it cost, what was tried, then the conclusion. "We need a
   queue" is a conclusion; "the payment call timed out and customers who retried were charged twice" is a reason a
   reader can test.
@@ -54,7 +47,7 @@ Most misplaced facts are one of these:
 ## A new kind
 
 Which part of each kind's description do the facts miss? Do they have another owner, as an FAQ's answers
-belong to the features they explain? Are they true now, and shown nowhere else? Can a good page of the kind be
+belong to the features they explain? Are they shown nowhere else? Can a good page of the kind be
 described, so a review can compare a page with it?
 
 ## A good map

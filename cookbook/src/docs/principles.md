@@ -3,7 +3,7 @@
 What the recipe stands for, each principle with its reason and the sources behind it, then the register of the
 choices made from them. The `docs-layout` skill is built from this page: the skill carries the rules, the questions
 and the giveaways an agent applies, and this page carries why. A change to the skill that breaks a principle here is
-a change to this page first. The design is on issues #90, #101 and #131 of `lmarqs/the-cook`, and its full decision
+a change to this page first. The design is on issues #90, #101 and #133 of `lmarqs/the-cook`, and its full decision
 register on #90.
 
 ## A fact carries its story
@@ -28,22 +28,6 @@ sessions feature and the timeout rule under the decisions. Diátaxis names the s
 other" when sorted by form rather than by the reader's need, and its fix is a question put to each fact. The skill
 therefore describes each kind by when a fact belongs there and by the misfilings with their giveaways, never by a
 sorting rule.
-
-## The foundation leads, and behavior is described as built
-
-The repository this recipe is built in agreed its architecture ahead of its code, and its map had to say so by hand:
-the skill held every page to what is true now and every claim to the code, so a review reported an agreed design as
-an error, and a reader could not tell from a page whether a command existed. The kind now carries the difference.
-Architecture, decision records and philosophy state the agreed design and may lead the code; features, interfaces,
-runbooks and observability describe what is built and hold against the code. A reader learns from where a statement
-sits whether to act on it or to build it. Standards bodies draw the same line between normative and informative
-text (ISO/IEC Directives, Part 2).
-
-Where a behavior page and the foundation differ, one of them is wrong: the page is corrected, or the foundation is
-changed first when the team decided so, and a page's age gives it no authority. How one unit will behave, agreed
-ahead of the code, waits in the issue that builds it and reaches the feature page in the change that builds it; a
-team that designs units long before building them declares a kind for those designs in its map. The skill states
-this in one paragraph of its map reference, since its word budget leaves the reasons to this page.
 
 ## Teach by criteria and one example, never by a form
 
@@ -111,9 +95,7 @@ Each choice, its reason and its source.
 | One kind of standards, a page per sort of artifact, each practice with its reason | Standards split by category overlap, as a log record is both output and code; a practice sits where the person writing the artifact looks, and its reason lets a reader apply the intent to cases its words leave open | W3C "Why care?"; Google style guides; the repository owner's decision |
 | A good standard makes what must not vary unmistakable, as BCP 14 keywords do | A reader tells a practice that admits exceptions from one that breaks something when it varies | RFC 2119, RFC 8174 |
 | A standard holds what no check enforces | A check states its practice where it is enforced; a page restating it drifts | One owner per fact; the repository owner's decision |
-| Architecture, decisions and philosophy state the agreed design and may lead the code; features, interfaces, runbooks and observability describe what is built | A page held to the code cannot carry a design agreed before it is built, and a reader cannot tell an agreed command from a built one by its wording | The repository owner's decision, issue #131; ISO/IEC Directives, Part 2, normative and informative elements |
-| A statement ahead of the code carries no mark; what is built is the tracker's | A status field or a link to the building issue changes when the code does, in another change, and goes stale; a whole tree read as intent leaves no page a reader can act on | Issue #131; MADR ADR-0013 on a status field that "pretends to be more accurate than it can be" |
-| A unit's design agreed ahead of the code goes in the issue that builds it, or in a kind the team declares | Written on the feature page it reads as built; written as a decision, its options have to be invented | Issue #131; the misfilings of the map |
+| The skill sets no rule on whether a page matches the code | Drift between pages and code is a problem of its own, and whether a page may describe what is not built is the team's to decide; the recipe guides and leaves that rule to the project | The repository owner's decision, issue #133 |
 | Architecture is one page: its parts and how they connect | It holds the shape no single file shows, and leaves practices, behavior and reasons to their kinds | arc42 building block and runtime views; the repository owner's decision |
 | Philosophy is one page of tenets, each ruling something out and linking the records that apply it | A tenet that rules nothing out cannot guide a decision; the links show it applied | The repository owner's decision |
 | A team declares a kind of its own in its map, after the questions | A kind that overlaps another gives a fact two owners; questions apply to any candidate, where a list of exclusions never ends | The map's own descriptions applied to a kind; the repository owner's decision |

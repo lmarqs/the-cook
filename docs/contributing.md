@@ -72,3 +72,12 @@ restores nothing; earlier content belongs to the repository's history. See
 **Tenet.** Programs read the native files Cook writes directly, and teammates keep their own editors, agents and ways
 of working. See the [dependence on the binary](adrs/0010-dependence-on-the-binary.md) and
 [place of the tool](adrs/0028-place-of-the-tool.md) ADRs.
+
+### Guide in recipes, leave rules to the project
+
+**Problem.** A recipe's skill once held every documentation page to the code, so a repository that agreed its design
+ahead of the code had to override the skill by hand, and a review reported the agreed design as an error.
+
+**Tenet.** A recipe's skills recommend: where a fact goes, what a good file achieves, what a check found. A rule only
+the team can weigh, such as whether a page may describe what is not built yet, stays the project's, stated in its own
+map or `AGENTS.md`. A layout check reports a gap in guidance as a warning, never a failure.
