@@ -156,8 +156,9 @@ check_memory() {
   IFS=$newline
   for file in $files; do
     named=0
+    path=$(printf '%s' "${file#.agents/memory/}" | sed 's/[.]/[.]/g')
     for guide in $guides; do
-      [ -f "$guide" ] && grep -qF "memory/${file##*/}" "$guide" && named=1
+      [ -f "$guide" ] && grep -qE "(^|[^A-Za-z0-9_-])memory/${path}([^A-Za-z0-9_.-]|\\.([^A-Za-z0-9_.-]|$)|$)" "$guide" && named=1
     done
     if [ "$named" -eq 0 ]; then
       warn "$file is named in no AGENTS.md" \

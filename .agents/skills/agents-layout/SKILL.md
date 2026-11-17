@@ -146,12 +146,13 @@ rules file and its `.codex/rules` link.
   commits; a local one still affects whoever has it.
 - **Widen in `commands`, narrow in roles.** A role only adds denies, so a worker never gets more than a person at the
   keyboard. When a role needs something `commands` lacks, that is a change for everyone; agree it with the team.
-- **Use `ask` for the commands a person must approve, and for nothing else.** A Claude session starts in auto mode,
-  where a classifier decides each command the policy does not list, so `ask` is what brings a person in
+- **Use `ask` for the commands a person must approve, and for nothing else.** An interactive Claude session
+  starts in auto mode, where a classifier decides each command the policy does not list, so `ask` is what brings a
+  person in
   ([references/claude.md](references/claude.md#auto-mode)). Nobody answers in an unattended run, so an `ask` refuses
   there, and every unattended run that reaches it stops.
-- **Keep `allow` entries narrow.** Claude's auto mode drops an entry broad enough to run anything, such as
-  `[python3]` or `[npm, run]`; `[npm, run, test]` stays.
+- **Keep `allow` entries narrow.** Claude's docs say auto mode drops an entry broad enough to run anything, such as
+  `[python3]` or `[npm, run]`, and keeps `[npm, run, test]`; not tested.
 - **Leave models out of shared settings.** A run's model is a person's or a loop runner's choice; a model in the
   shared settings overrides everyone's. A subagent may name its own, which applies only while it runs.
 - **Cook every harness the team uses.** `#connect` removes what it wrote for harnesses left out, and those files are

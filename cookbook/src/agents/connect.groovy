@@ -58,7 +58,7 @@ beside them |
 ## Consumes
 
 - Claude Code and Codex read what it writes; written for Claude Code 2.1.304 and Codex 0.160.1, with the session-start
-  hooks tested on Claude Code 2.1.306.
+  hooks tested on Claude Code 2.1.306 and auto mode on 2.1.326.
 - `.agents/permission/policy.yaml` in the draft, the team's: its `commands` render into each harness's settings, its
   `tools` and `roles` into Claude's, and its `bypass` and `auto` decide whether Claude's bypass and auto modes are
   refused. When absent, the starter is seeded, which grants nothing.

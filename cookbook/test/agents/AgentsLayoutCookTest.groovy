@@ -556,6 +556,11 @@ bypass allow; auto refuse
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
     def allowed = new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines()
     assert allowed[1..-2] == [rules[1]] + rules[3..-2]
+
+    // Auto mode is Claude's; Codex renders the same rules whether the policy allows it or refuses it.
+    policy.text = policy.text.replaceFirst('bypass: allow\n', 'auto: refuse\n')
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['codex']]).commit()
+    assert new File(kitchen, '.agents/adapters/codex/rules/cook.rules').readLines() == rules
   }
 
   @Test void theLayoutCheckOnlyRecommendsOnAFreshSeedAndOnAFilledAgentsMdNamingWhatIsNotInTheTree() {
@@ -686,6 +691,21 @@ bypass allow; auto refuse
     new File(kitchen, 'AGENTS.md') << '\n- Migrations: [.agents/memory/migrations.md](.agents/memory/migrations.md)\n'
     assert run(stage)[0] == 0
     assert run(check)[1].readLines().contains(named)
+  }
+
+  @Test void theLayoutCheckDoesNotTakeATextThatContainsAMemoryPathForANaming() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def run = runner(kitchen)
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    new File(kitchen, '.agents/memory/notes.md').text = '# Notes\n'
+    new File(kitchen, 'AGENTS.md') << '\n- Old: docs/old-memory/notes.md.bak\n'
+    assert run(['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock'])[0] == 0
+
+    assert run(['sh', '.agents/skills/agents-layout/scripts/check.sh'])[1].readLines()
+    .any { it.startsWith('WARN .agents/memory/notes.md is named in no AGENTS.md') }
   }
 
   @Test void theLayoutCheckWarnsOnARealFileTrackedInAHarnessDirectory() {
