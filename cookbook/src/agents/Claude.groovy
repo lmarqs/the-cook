@@ -7,8 +7,9 @@ package io.github.lmarqs.cookbook.agents
  *
  * The Claude Code settings schema in `.agents/adapters/claude/settings.json`, which `.claude/settings.json` links to:
  * top-level JSON keys, including hooks and `permissions` with `allow`, `ask` and `deny` lists of `Bash(<prefix> *)`
- * rules and tool patterns, `disableBypassPermissionsMode` and `disableAutoMode`; `hooks.SessionStart` alone, a command hook whose
- * printed `hookSpecificOutput.additionalContext` Claude Code adds to the session; and `hooks.WorktreeCreate` and
+ * rules and tool patterns, `disableBypassPermissionsMode` and `disableAutoMode`; `hooks.SessionStart` alone, a
+ * command hook whose printed `hookSpecificOutput.additionalContext` Claude Code adds to the session; and
+ * `hooks.WorktreeCreate` and
  * `hooks.WorktreeRemove` alone, command hooks that replace how Claude Code 2.1.308 makes and removes its worktrees: the
  * first prints the worktree's path as its last line, and the second removes it. One file per policy role under
  * `.agents/adapters/claude/roles/`, holding only that role's `permissions.deny`, which a run adds with
@@ -74,9 +75,9 @@ class Claude implements Harness {
    * combination of a command entry's alternatives, `Bash(<pattern>)` for a Claude-only command entry, and each tool
    * pattern as it is, then `disableBypassPermissionsMode: "disable"` while the policy's `bypass` is `refuse`, so no
    * launch flag starts a run in bypass mode, and `disableAutoMode: "disable"` while its `auto` is `refuse`, so no
-   * session hands unlisted commands to Claude's classifier. Writes one deny file per role. Sets no `defaultMode`: how a session asks
-   * is each person's choice. Replaces any permissions supplied by an earlier `settings` call. `cookedWith` is unused:
-   * Claude's settings are JSON keys, which have no comment syntax.
+   * session hands unlisted commands to Claude's classifier. Writes one deny file per role. Sets no `defaultMode`:
+   * how a session asks is each person's choice. Replaces any permissions supplied by an earlier `settings` call.
+   * `cookedWith` is unused: Claude's settings are JSON keys, which have no comment syntax.
    */
   @Override
   void permit(Policy policy, String cookedWith = null) {

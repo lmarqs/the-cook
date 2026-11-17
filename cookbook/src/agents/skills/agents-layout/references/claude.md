@@ -2,8 +2,8 @@
 
 What Claude Code reads in this layout, how the policy reaches it, and what it trusts. Tested with Claude Code 2.1.303
 or 2.1.304 (2.1.304 for skill arguments, worktrees, bypass flags and `--setting-sources`), 2.1.306 for the session
-start and 2.1.326 for auto mode, except where a line says it was not tested. [design.md](design.md) says why the layout is shaped around these
-facts; [codex.md](codex.md) holds the same facts for Codex.
+start and 2.1.326 for auto mode, except where a line says it was not tested. [design.md](design.md) says why the
+layout is shaped around these facts; [codex.md](codex.md) holds the same facts for Codex.
 
 ## What it reads
 
@@ -99,7 +99,9 @@ checkout's `.claude/settings.local.json` (tested, with a deny, in a worktree tha
 `claude -p --permission-prompts none` refuses whatever would ask, so an `ask` entry stops an unattended run; a worker
 adds its role's `--settings`. `claude -p` with no mode starts in `default`, not in auto mode (tested with 2.1.326).
 With `--permission-mode auto` the classifier decides each unlisted command instead of refusing it, an `ask` entry is
-still refused (tested), and a command the classifier blocks does not run while the run goes on (Claude's docs). While the policy's `bypass` is `refuse`, or absent, `#connect` writes
+still refused (tested), and a command the classifier blocks does not run while the run goes on (Claude's docs).
+
+While the policy's `bypass` is `refuse`, or absent, `#connect` writes
 `permissions.disableBypassPermissionsMode: "disable"`. Tested in an untrusted workspace, and the first row in a trusted
 one too:
 

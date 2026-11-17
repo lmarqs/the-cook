@@ -2,7 +2,8 @@
 
 `.agents/permission/policy.yaml` says which commands and tools coding agents may use in this repository. Cooking
 `io.github.lmarqs.cookbook:agents#connect` renders it into each harness's own settings under `.agents/adapters/`. It is the only
-file to edit for permissions. Tested with Claude Code 2.1.303 and Codex 0.160.1, and `auto` with Claude Code 2.1.326.
+file to edit for permissions. Tested with Claude Code 2.1.303 and Codex 0.160.1, and `auto` with Claude Code
+2.1.326.
 
 ## Top level
 
