@@ -78,8 +78,10 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
   is shared; when it runs is set per harness, because the events and their input differ. Session start is the
   exception: a script in `hooks/session-start.d/` that prints text reaches every connected harness as session
   context, and gets the harness name as `$1`.
-- **Memory** holds what a past session learned and every later one needs, such as why a dependency is pinned. List
-  each file in `AGENTS.md` with the question it answers, so agents know when to read it.
+- **Memory** holds what a session learned about working in one area, that a later one needs and no other file
+  owns: most learned facts belong to the tracker, a check, `AGENTS.md`, a skill or the documentation.
+  [references/memory.md](references/memory.md) says which, what earns an entry and when one leaves. List each file
+  in `AGENTS.md` with the question it answers, so agents know when to read it.
 
 ## Pick the task
 
@@ -88,6 +90,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Set the layout up, or move an existing `CLAUDE.md`, `.claude/` or `.codex/` setup into it | [references/adopt.md](references/adopt.md) |
 | Fill in or review `AGENTS.md` | [references/agents-md.md](references/agents-md.md) |
 | Write or review `policy.yaml` | [references/policy.md](references/policy.md) |
+| Record something a session learned, or review `.agents/memory/` | [references/memory.md](references/memory.md) |
 | Write or review a shared subagent | [references/subagents.md](references/subagents.md) |
 | An agent ignores the instructions, asks when it should not, or runs what it should not | [references/investigate.md](references/investigate.md) |
 | Set up a loop runner, or decide where worktrees go | [references/design.md](references/design.md#worktrees-and-loop-runners) |

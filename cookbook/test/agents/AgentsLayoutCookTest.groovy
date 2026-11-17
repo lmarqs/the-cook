@@ -84,6 +84,7 @@ recipes:
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/glossary.md"
         - ".agents/skills/agents-layout/references/investigate.md"
+        - ".agents/skills/agents-layout/references/memory.md"
         - ".agents/skills/agents-layout/references/policy.md"
         - ".agents/skills/agents-layout/references/review.md"
         - ".agents/skills/agents-layout/references/subagents.md"
@@ -341,6 +342,7 @@ recipes:
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
@@ -419,7 +421,8 @@ class PolicyCheck {
     def entries = { Map<String, List<Command>> byName ->
       byName.collect { name, list -> "${name} ${list.collect { it.claude ? "claude ${it.claude}" : it.prefix }}" }
     }
-    ([policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') } + "bypass ${policy.bypass}; auto ${policy.auto}")
+    ([policy.commands, policy.tools, policy.roles].collect { entries(it).join('; ') } +
+        "bypass ${policy.bypass}; auto ${policy.auto}")
         .join('\\n') + '\\n'
   }
 }
@@ -657,6 +660,34 @@ bypass allow; auto refuse
     assert output.readLines().findAll { it.contains('REVIEW.md') || it.contains('templates/x.json') } == []
   }
 
+  @Test void theLayoutCheckWarnsOnAMemoryFileNoAgentsMdNames() {
+    def kitchen = kitchen()
+    publishDirectory(kitchen, 'agents')
+    def run = runner(kitchen)
+    assert run(['git', 'init', '-q'])[0] == 0
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#seed', [:]).commit()
+    cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: ['claude', 'codex']]).commit()
+    def check = ['sh', '.agents/skills/agents-layout/scripts/check.sh']
+    def stage = ['git', 'add', 'AGENTS.md', '.agents', '.claude', '.codex', '.gitignore', 'cook.lock']
+    def named = 'ok every file in .agents/memory/ is named in an AGENTS.md'
+    assert run(stage)[0] == 0
+    assert run(check)[1].readLines().contains(named)
+
+    new File(kitchen, '.agents/memory/migrations.md').text = '# Migrations\n'
+    assert run(stage)[0] == 0
+    def (status, output) = run(check)
+
+    assert status == 0
+    assert output.readLines().findAll { it.contains('memory') } == [
+      'WARN .agents/memory/migrations.md is named in no AGENTS.md -- name it under Deep dive with the question it ' +
+      'answers, or move its entries where references/memory.md says',
+    ]
+
+    new File(kitchen, 'AGENTS.md') << '\n- Migrations: [.agents/memory/migrations.md](.agents/memory/migrations.md)\n'
+    assert run(stage)[0] == 0
+    assert run(check)[1].readLines().contains(named)
+  }
+
   @Test void theLayoutCheckWarnsOnARealFileTrackedInAHarnessDirectory() {
     def kitchen = kitchen()
     publishDirectory(kitchen, 'agents')
@@ -774,6 +805,7 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
@@ -855,6 +887,7 @@ agents.connect([claude])
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
       '.agents/skills/agents-layout/references/subagents.md',
