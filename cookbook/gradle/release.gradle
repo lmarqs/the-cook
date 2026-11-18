@@ -37,7 +37,7 @@ def releaseAssets = tasks.register('releaseAssets', Sync) {
 
 tasks.register('releaseAssetsTest') {
   group = 'verification'
-  description = 'Check that the release assets hold exactly the released jars, each with a sha256 that sha256sum -c accepts.'
+  description = 'Check that the release assets hold exactly the released jars, each with a sha256 for sha256sum -c.'
   def assets = releaseAssets.map { releaseAssetsDir.get() }
   inputs.dir(assets)
   doLast {
