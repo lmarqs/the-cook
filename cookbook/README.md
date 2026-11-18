@@ -37,18 +37,6 @@ everything a reader needs without the source checkout. This cookbook's `build.gr
 `beads`, `docs`, `git`, `hello` and `ralph` artifacts to Maven Central as
 `io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook with no `cook.toml`; the other directories are not published.
 
-The same artifacts are also served from a Maven repository on this project's site,
-`https://lmarqs.github.io/the-cook/maven/`, from release 12.2.0 on. A release reaches it as soon as the site deploys,
-without waiting for Maven Central's mirrors. To cook from it, list it in the kitchen's `cook.toml` ahead of Maven
-Central, which still supplies the releases before 12.2.0:
-
-```toml
-repositories = [
-  "https://lmarqs.github.io/the-cook/maven/",
-  "https://repo.maven.apache.org/maven2/",
-]
-```
-
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
 `#recipe` the address names the artifact, which `cook help` describes and nothing cooks.
 Only exact release versions are accepted; branches, commits, snapshots and version ranges are refused. `cook.lock`

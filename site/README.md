@@ -39,9 +39,7 @@ the caption under the demo says.
 
 ## Publishing
 
-`.github/workflows/pages.yml` checks out a release tag, runs `site/prepare <tag>`, lays out `maven/`, the Maven
-repository of the cookbook artifacts, from the `cookbook-<version>.zip` of every release that has one, and builds. The
-site serves it at `/maven/`. The `release` workflow
+`.github/workflows/pages.yml` checks out a release tag, runs `site/prepare <tag>` and builds. The `release` workflow
 calls it with each new tag; a manual run publishes the tag it names, or the latest release. A change here reaches the
 site with the next release.
 

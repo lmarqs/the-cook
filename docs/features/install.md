@@ -12,8 +12,7 @@ this way.
 
 The release also includes the cookbook JARs, POMs, signatures and checksums, and `cookbook-<version>.zip` with their
 Maven repository layout. Extract that archive into `~/.m2/repository` to install all released cookbook artifacts
-locally without waiting for Maven Central's public mirrors to update, or list the site's Maven repository in
-`cook.toml`, as [the cookbook guide](../../cookbook/README.md#units) shows.
+locally without waiting for Maven Central's public mirrors to update.
 
 ## Homebrew
 
