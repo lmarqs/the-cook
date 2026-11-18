@@ -4,7 +4,7 @@ def packagePath = project.group.toString().replace('.', '/')
 def v = project.version.toString()
 def releaseAssetsDir = layout.buildDirectory.dir('release-assets')
 
-// The sha256 file holds the lowercase hex digest alone, so a client compares it with the digest it computes.
+// A sha256 file reads `<hex digest>  <file name>`, as the engine package's does, so `sha256sum -c` checks the jar.
 def sha256Hex = { File file ->
   def digest = java.security.MessageDigest.getInstance('SHA-256')
   file.withInputStream { stream ->
@@ -30,14 +30,14 @@ def releaseAssets = tasks.register('releaseAssets', Sync) {
   doLast {
     def written = outputDir.get().asFile.listFiles()
     written.findAll { it.name.endsWith('.jar') }.each {
-      new File(it.parentFile, "${it.name}.sha256").text = sha256Hex(it)
+      new File(it.parentFile, "${it.name}.sha256").text = "${sha256Hex(it)}  ${it.name}\n"
     }
   }
 }
 
 tasks.register('releaseAssetsTest') {
   group = 'verification'
-  description = 'Check that the release assets hold exactly the released jars, each with a matching sha256.'
+  description = 'Check that the release assets hold exactly the released jars, each with a sha256 that sha256sum -c accepts.'
   def assets = releaseAssets.map { releaseAssetsDir.get() }
   inputs.dir(assets)
   doLast {
@@ -52,11 +52,11 @@ tasks.register('releaseAssetsTest') {
     }
 
     jars.each { jar ->
-      def digest = new File(dir, "${jar}.sha256").text
-      def actual = sha256Hex(new File(dir, jar))
+      def recorded = new File(dir, "${jar}.sha256").text
+      def actual = "${sha256Hex(new File(dir, jar))}  ${jar}\n".toString()
 
-      if (digest != actual) {
-        throw new GradleException("${jar}.sha256 holds ${digest}; the jar's digest is ${actual}")
+      if (recorded != actual) {
+        throw new GradleException("${jar}.sha256 holds ${recorded}; expected ${actual}")
       }
     }
 
