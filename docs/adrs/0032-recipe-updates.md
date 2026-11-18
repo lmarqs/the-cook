@@ -20,7 +20,8 @@ review its effect before accepting it. Their accepted setup remains identifiable
 - Maven 3.9.11's repository metadata model lists available artifact versions in `versioning/versions`
   ([metadata model](https://maven.apache.org/ref/3.9.11/maven-repository-metadata/repository-metadata.html)).
   Maven-layout repositories publish that listing as `maven-metadata.xml`; Maven local uses
-  `maven-metadata-local.xml` for locally published releases.
+  `maven-metadata-local.xml` for locally published releases. A GitHub repository's latest release carries it as
+  `<artifact>-maven-metadata.xml` ([0029](0029-cookbook-distribution.md), decision 2).
 - A cookbook source directory serves its artifacts at any supplied version from its current files, rather than
   publishing a listing of releases ([0029](0029-cookbook-distribution.md), decision 2).
 - `--force` already means replacing an existing template file
@@ -36,8 +37,9 @@ review its effect before accepting it. Their accepted setup remains identifiable
    range: the same major at or above `1.0.0`, or the same nonzero `0.minor` below `1.0.0`, and nothing from `0.0.x`.
    This is npm's caret boundary. `--major` chooses the newest listed release regardless of that boundary. Neither
    form downgrades a recipe.
-3. Available releases come from the listing a Maven-layout repository publishes for the artifact:
-   `maven-metadata.xml`, or `maven-metadata-local.xml` in Maven local.
+3. Available releases come from the listing a repository publishes for the artifact: `maven-metadata.xml`, or
+   `maven-metadata-local.xml` in Maven local, and `<artifact>-maven-metadata.xml` on a GitHub repository's latest
+   release.
 4. A recipe served by a repository without a release listing, such as a cookbook source directory, has no known
    newer release. Cook does not infer one from the ability to serve arbitrary version coordinates.
 5. The selected version recorded in the lock remains exact ([0029](0029-cookbook-distribution.md), decision 5).

@@ -27,7 +27,7 @@ repositories = ["repository"]
 For this example, that repository holds sample releases `8.0.0`, `8.2.0` and `9.0.0` of
 `io.github.lmarqs.cookbook:git`, with all three listed in Maven metadata. They package the same worktrees recipe
 sources, so updates change only the lock. These are controlled example releases, not a claim about the releases
-available from Maven Central. In your kitchen, the configured repositories determine the available versions.
+of this repository's cookbook. In your kitchen, the configured repositories determine the available versions.
 
 Start by cooking the worktrees recipe at `8.0.0`:
 
@@ -183,9 +183,11 @@ the CLI prints a `Holding` line naming that release and `--major`.
 
 ### Where releases come from
 
-Update combines release listings from all cookbook repositories configured in the kitchen's `cook.toml`, or Maven
-Central when there is no `cook.toml`. Maven repositories read the artifact's `maven-metadata.xml`; when that file is
-absent they try `maven-metadata-local.xml`. An absent listing contributes no releases. Cook accepts only numeric
+Update combines release listings from all cookbook repositories configured in the kitchen's `cook.toml`, or the
+GitHub releases of `lmarqs/the-cook` when there is no `cook.toml`. Maven repositories read the artifact's
+`maven-metadata.xml`; when that file is absent they try `maven-metadata-local.xml`. A `github:<owner>/<repo>` entry
+reads `<artifact>-maven-metadata.xml` from the repository's latest release, which lists every release that carries the
+artifact's jar. An absent listing contributes no releases. Cook accepts only numeric
 `major.minor.patch` releases and compares the three components numerically, ignoring snapshots, prereleases and
 other strings. After selection, the first configured repository holding the chosen artifact supplies its sources,
 as in ordinary cooking.

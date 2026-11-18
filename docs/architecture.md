@@ -310,13 +310,11 @@ x64 and arm64 and macOS arm64 builds and their tests pass. A release publishes:
 
 - on GitHub, `the-cook-<version>-<platform>.tar.gz` for `linux-x64`, `linux-arm64` and `macos-arm64`, each a complete
   package with its `.sha256`;
+- on GitHub, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:beads`, `:docs`, `:git`, `:hello` and
+  `:ralph`, each as `<artifact>-<version>.jar` with its `.sha256`, and `<artifact>-maven-metadata.xml`, the listing of
+  every release that carries the artifact's jar;
 - in this repository, [`Formula/cook.rb`](../Formula/cook.rb), the Homebrew formula naming the release and the sha256
-  of each package;
-- on Maven Central, the cookbook artifacts `io.github.lmarqs.cookbook:agents`, `:beads`, `:docs`, `:git`, `:hello` and
-  `:ralph`;
-- on the GitHub Pages site, the same artifacts in a Maven repository at `https://lmarqs.github.io/the-cook/maven/`,
-  which the `pages` workflow lays out again on each deploy from the `cookbook-<version>.zip` of every release that
-  carries one.
+  of each package.
 
 People install `cook` on `PATH` with Homebrew, mise or the release package, and a team that wants one release
 everywhere pins it in its tool manager; [install](features/install.md) describes each.
@@ -331,8 +329,11 @@ The root README's [install section](../README.md#install) describes installing a
 ## Cookbook distribution
 
 A cookbook releases as one jar per artifact, holding its sources, resources and README, in a Maven-layout
-repository; the build that publishes a release sets its version. The destination's committed `cook.toml` lists the
-Maven-layout repositories coordinates resolve from, in order; without a `cook.toml`, Maven Central. A path entry
+repository or attached to a GitHub release; the build that publishes a release sets its version. The destination's
+committed `cook.toml` lists the repositories coordinates resolve from, in order: a Maven-layout repository by URL or
+path, or `github:<owner>/<repo>`, the releases of that GitHub repository. Without a `cook.toml`, or with one that lists
+no `repositories`, coordinates resolve from `github:lmarqs/the-cook`; releases of this repository's cookbook before
+12.2.0 are on Maven Central only, which a kitchen lists as `https://repo.maven.apache.org/maven2/`. A path entry
 starting with `~/` is relative to the user's home, so a developer lists `~/.m2/repository`, last, to cook their own
 cookbooks published to Maven local. A path entry to a cookbook's source directory, the one holding `cookbook.toml`,
 serves that cookbook's artifacts at any version straight from their files under `src/<artifact>/`, so its author

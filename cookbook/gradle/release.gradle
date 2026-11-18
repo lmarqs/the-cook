@@ -1,0 +1,74 @@
+// Of the artifacts under src/, these are the ones released: each is a jar and its sha256 on a GitHub release.
+def released = ['agents', 'beads', 'docs', 'git', 'hello', 'ralph']
+def packagePath = project.group.toString().replace('.', '/')
+def v = project.version.toString()
+def releaseAssetsDir = layout.buildDirectory.dir('release-assets')
+
+// A sha256 file reads `<hex digest>  <file name>`, as the engine package's does, so `sha256sum -c` checks the jar.
+def sha256Hex = { File file ->
+  def digest = java.security.MessageDigest.getInstance('SHA-256')
+  file.eachByte(1 << 16) { byte[] buffer, int length -> digest.update(buffer, 0, length) }
+  digest.digest().encodeHex()
+}
+
+def releaseAssets = tasks.register('releaseAssets', Sync) {
+  group = 'distribution'
+  description = 'Collect the released jars, each with its sha256, as the GitHub release assets.'
+  def jars = released.collect { tasks.named("${it}Jar", Jar) }
+  into(releaseAssetsDir)
+  jars.each { jar -> from(jar.flatMap { it.archiveFile }) }
+  doLast {
+    def written = releaseAssetsDir.get().asFile.listFiles()
+    written.findAll { it.name.endsWith('.jar') }.each {
+      new File(it.parentFile, "${it.name}.sha256").text = "${sha256Hex(it)}  ${it.name}\n"
+    }
+  }
+}
+
+tasks.register('releaseAssetsTest') {
+  group = 'verification'
+  description = 'Check that the release assets hold exactly the released jars, each with a sha256 for sha256sum -c.'
+  def assets = releaseAssets.map { releaseAssetsDir.get() }
+  inputs.dir(assets)
+  doLast {
+    def dir = assets.get().asFile
+    def jars = released.collect { "${it}-${v}.jar".toString() }
+    def expected = (jars + jars.collect { "${it}.sha256".toString() }).sort()
+    def files = dir.list() as List
+    files.sort()
+
+    if (files != expected) {
+      throw new GradleException("The release assets hold ${files}; expected ${expected}")
+    }
+
+    jars.each { jar ->
+      def recorded = new File(dir, "${jar}.sha256").text
+      def actual = "${sha256Hex(new File(dir, jar))}  ${jar}\n".toString()
+
+      if (recorded != actual) {
+        throw new GradleException("${jar}.sha256 holds ${recorded}; expected ${actual}")
+      }
+    }
+
+    def beadsFiles = [
+      'README.md',
+      'BeadsTracker.groovy',
+      'BeadsViewer.groovy',
+      'tracker.groovy',
+      'viewer.groovy',
+      'instructions/team.md',
+      'instructions/clone.md',
+      'instructions/viewer.md'
+    ]
+    .collect { "${packagePath}/beads/${it}".toString() }
+    def contents = new java.util.zip.ZipFile(new File(dir, "beads-${v}.jar")).withCloseable { zip ->
+      zip.entries().findAll { !it.directory }*.name
+    }
+
+    if (!contents.containsAll(beadsFiles)) {
+      throw new GradleException("beads-${v}.jar holds ${contents}; expected the Beads payload ${beadsFiles}")
+    }
+  }
+}
+
+tasks.named('check') { dependsOn 'releaseAssetsTest' }

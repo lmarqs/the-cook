@@ -33,9 +33,9 @@ final class Grammar {
   private static List<String> startHere() {
     [
       '',
-      "Recipes come from the repositories the kitchen's cook.toml lists, from Maven Central without one, or from " +
-      ".groovy files inside the kitchen, so a team cooks its own. The official cookbook is ${COOKBOOK}, with the " +
-      "artifacts agents, docs, git, hello and ralph; help lists an artifact's recipes:",
+      "Recipes come from the repositories the kitchen's cook.toml lists, from the GitHub releases of lmarqs/the-cook " +
+      "without one, or from .groovy files inside the kitchen, so a team cooks its own. The official cookbook is " +
+      "${COOKBOOK}, with the artifacts agents, beads, docs, git, hello and ralph; help lists an artifact's recipes:",
       "  cook help ${COOKBOOK}:agents:${VERSION}",
       'Start here: a person cooks hello#world, and a coding agent reads hello#agent:',
       "  cook ${COOKBOOK}:hello:${VERSION}#world",

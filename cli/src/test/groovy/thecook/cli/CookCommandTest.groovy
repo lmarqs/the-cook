@@ -35,6 +35,21 @@ class CookCommandTest {
     ])
   }
 
+  @Test void theUsageSaysRecipesComeFromTheGithubReleasesOfThisProjectWithoutACookToml() {
+    def stdout = new ByteArrayOutputStream()
+    assert command(stdout, new ByteArrayOutputStream()).execute(['--help'] as String[]) == 0
+    def usage = stdout.toString('UTF-8').replaceAll(/\s+/, ' ')
+    assert usage.contains('from the GitHub releases of lmarqs/the-cook without one')
+    assert !usage.contains('Maven')
+  }
+
+  @Test void theUsageListsEveryReleasedCookbookArtifact() {
+    def stdout = new ByteArrayOutputStream()
+    assert command(stdout, new ByteArrayOutputStream()).execute(['--help'] as String[]) == 0
+    def usage = stdout.toString('UTF-8').replaceAll(/\s+/, ' ')
+    assert usage.contains('with the artifacts agents, beads, docs, git, hello and ralph;')
+  }
+
   @Test void missingUnknownAndRemovedOptionsAreUsageErrors() {
     def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
     def cli = command(stdout, stderr)

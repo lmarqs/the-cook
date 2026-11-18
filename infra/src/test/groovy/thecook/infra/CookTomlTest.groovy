@@ -113,8 +113,66 @@ class CookTomlTest {
     assert artifact.recipeSource('notes') == 'published notes'
   }
 
-  @Test void withoutCookTomlTheRepositoryIsMavenCentral() {
-    assert repositories(folder.newFolder('kitchen')).repositories*.toString() == [CookToml.CENTRAL.toString()]
+  @Test void withoutCookTomlTheRepositoryIsTheGithubReleasesOfTheCook() {
+    def kitchen = folder.newFolder('kitchen')
+
+    def repositories = repositories(kitchen)
+
+    assert repositories.repositories*.toString() == ['github:lmarqs/the-cook']
+    assert repositories.repositories*.class == [GithubReleaseRepository]
+    assert repositories.origin ==
+    "GitHub releases of lmarqs/the-cook; no cook.toml in ${kitchen} lists other repositories"
+  }
+
+  @Test void withoutRepositoriesInCookTomlTheRepositoryIsTheGithubReleasesOfTheCook() {
+    def kitchen = folder.newFolder('kitchen')
+    new File(kitchen, 'cook.toml').text = '# no repositories\n'
+
+    def repositories = repositories(kitchen)
+
+    assert repositories.repositories*.toString() == ['github:lmarqs/the-cook']
+    assert repositories.origin ==
+    "GitHub releases of lmarqs/the-cook; ${new File(kitchen, 'cook.toml')} lists no repositories"
+  }
+
+  @Test void readsAGithubEntryAsTheReleasesOfThatRepository() {
+    def kitchen = folder.newFolder('kitchen')
+    new File(kitchen, 'cook.toml').text = 'repositories = ["github:acme/notes", "github:acme/the.book_1"]\n'
+
+    def repositories = repositories(kitchen).repositories
+
+    assert repositories*.class == [GithubReleaseRepository, GithubReleaseRepository]
+    assert repositories*.toString() == ['github:acme/notes', 'github:acme/the.book_1']
+  }
+
+  @Test void refusesAGithubEntryThatIsNotOwnerSlashRepo() {
+    def kitchen = folder.newFolder('kitchen')
+    [
+      'github:acme',
+      'github:acme/notes/extra',
+      'github:',
+      'github:acme/',
+      'github:ac_me/notes',
+      'github://acme/notes',
+      'github:acme/..',
+      'github:acme/.'
+    ]
+    .each { entry ->
+      new File(kitchen, 'cook.toml').text = "repositories = [\"${entry}\"]\n"
+      def error = shouldFail(IllegalArgumentException) { repositories(kitchen) }
+      assert error.message ==
+      "${new File(kitchen, 'cook.toml')}: repository ${entry} must be written github:<owner>/<repo>"
+    }
+  }
+
+  @Test void stillReadsAnHttpsMavenRepository() {
+    def kitchen = folder.newFolder('kitchen')
+    new File(kitchen, 'cook.toml').text = 'repositories = ["https://repo.maven.apache.org/maven2/"]\n'
+
+    def repositories = repositories(kitchen).repositories
+
+    assert repositories*.class == [MavenRepository]
+    assert repositories*.toString() == ['https://repo.maven.apache.org/maven2/']
   }
 
   @Test void readsPathsStartingWithTildeSlashFromTheUsersHome() {
@@ -136,7 +194,8 @@ class CookTomlTest {
     def kitchen = folder.newFolder('kitchen')
     new File(kitchen, 'cook.toml').text = 'repositories = ["http://example.com/maven2"]\n'
     def error = shouldFail(IllegalArgumentException) { repositories(kitchen) }
-    assert error.message.endsWith('repository http://example.com/maven2 must be an https:// URL or a path')
+    assert error.message.endsWith(
+    'repository http://example.com/maven2 must be an https:// URL, a path or github:<owner>/<repo>')
     [
       'repositories = "repository"\n',
       '[[repositories]]\ngit = "https://github.com/acme/book"\ndir = "cookbook"\n',
@@ -144,7 +203,8 @@ class CookTomlTest {
       new File(kitchen, 'cook.toml').text = manifest
       error = shouldFail(IllegalArgumentException) { repositories(kitchen) }
       assert error.message ==
-      "${new File(kitchen, 'cook.toml')}: repositories must be a list of https:// URLs and paths"
+      "${new File(kitchen, 'cook.toml')}: repositories must be a list of " +
+      'https:// URLs, paths and github:<owner>/<repo>'
     }
   }
 

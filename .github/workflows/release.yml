@@ -86,13 +86,37 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: Bundle for Maven Central
-        run: ./gradlew centralBundle "-PreleaseVersion=$VERSION"
+      - name: Build the cookbook release assets
+        run: |
+          ./gradlew -p cookbook releaseAssets "-PreleaseVersion=$VERSION"
+          cp cookbook/build/release-assets/* dist/
+      # A kitchen lists versions from the latest release, so each release carries a listing of every release that has
+      # the artifact's jar, plus this one, which does not exist on GitHub yet.
+      - name: List the released versions of each cookbook artifact
+        run: |
+          set -o pipefail
+          [ -n "$VERSION" ] || { echo "::error::VERSION is empty"; exit 1; }
+          assets=$(mktemp)
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '.[] | select(.draft | not) | (.tag_name | ltrimstr("v")) as $v | .assets[].name | "\($v) \(.)"' >"$assets"
+          updated=$(date -u +%Y%m%d%H%M%S)
+          for jar in cookbook/build/release-assets/*-"$VERSION".jar; do
+            [ -f "$jar" ] || { echo "::error::No cookbook jar of $VERSION in cookbook/build/release-assets"; exit 1; }
+            artifact=$(basename "$jar" "-$VERSION.jar")
+            versions=$({ awk -v artifact="$artifact" '$2 == artifact "-" $1 ".jar" { print $1 }' "$assets"; echo "$VERSION"; } | sort -uV)
+            latest=$(printf '%s\n' "$versions" | tail -n 1)
+            {
+              printf '<?xml version="1.0" encoding="UTF-8"?>\n<metadata>\n'
+              printf '  <groupId>io.github.lmarqs.cookbook</groupId>\n  <artifactId>%s</artifactId>\n' "$artifact"
+              printf '  <versioning>\n    <latest>%s</latest>\n    <release>%s</release>\n    <versions>\n' "$latest" "$latest"
+              printf '      <version>%s</version>\n' $versions
+              printf '    </versions>\n    <lastUpdated>%s</lastUpdated>\n  </versioning>\n</metadata>\n' "$updated"
+            } >"dist/$artifact-maven-metadata.xml"
+          done
         env:
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
-      # semantic-release tags nothing once main has moved past the commit it was started on, and Central cannot take a
-      # release back, so the bundle goes up only while main still points at this commit.
+          GH_TOKEN: ${{ github.token }}
+      # semantic-release tags nothing once main has moved past the commit the run started on, and exits without an error.
+      # The Homebrew formula and the site would then point at a release that does not exist.
       - name: Check that main has not moved
         run: |
           main=$(git ls-remote origin refs/heads/main | cut -f 1)
@@ -100,32 +124,6 @@ jobs:
             echo "main moved to $main after the release started at $GITHUB_SHA; start release again" >&2
             exit 1
           fi
-      # The GitHub release follows only once Central has validated the bundle, so a refused bundle tags nothing.
-      - name: Publish to Maven Central
-        run: |
-          auth="Authorization: Bearer $(printf '%s:%s' "$MAVEN_CENTRAL_USERNAME" "$MAVEN_CENTRAL_PASSWORD" | base64 -w 0)"
-          deployment=$(curl --fail-with-body -sS -X POST -H "$auth" \
-            -F bundle=@cookbook/build/central-bundle/central-bundle.zip \
-            "https://central.sonatype.com/api/v1/publisher/upload?name=the-cook-$VERSION&publishingType=AUTOMATIC")
-          for _ in $(seq 90); do
-            state=$(curl --fail-with-body -sS -X POST -H "$auth" \
-              "https://central.sonatype.com/api/v1/publisher/status?id=$deployment" | jq -r .deploymentState)
-            echo "Deployment $deployment is $state"
-            case "$state" in
-              PUBLISHING | PUBLISHED) exit 0 ;;
-              FAILED) exit 1 ;;
-            esac
-            sleep 10
-          done
-          echo "Deployment $deployment was not validated in 15 minutes" >&2
-          exit 1
-        env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-      - name: Prepare cookbook downloads
-        run: |
-          cp cookbook/build/central-bundle/central-bundle.zip "dist/cookbook-$VERSION.zip"
-          find cookbook/build/central -type f ! -name 'maven-metadata.xml*' -exec cp {} dist/ \;
       - name: Release on GitHub
         run: $SEMANTIC_RELEASE
         env:

@@ -66,8 +66,9 @@ A recipe operand is a path inside the destination repository or a recipe's coord
 ordinary relative path such as `recipe.groovy` is one; a recipe file with none of these marks is given as `./notes`.
 Cook refuses an operand outside the repository, and a URL with a message that points to `cook.toml`: a recipe shared
 beyond one repository is published in a cookbook and cooked by its coordinates. Coordinates resolve from the
-repositories that the destination's `cook.toml` lists, or from Maven Central without one. A recipe compiles against its
-artifact's models; a recipe path, against the upper-case `.groovy` files in its directory.
+repositories that the destination's `cook.toml` lists, or from the GitHub releases of `lmarqs/the-cook` without one;
+[the cookbook guide](../../cookbook/README.md#units) gives the entries. A recipe compiles against its artifact's
+models; a recipe path, against the upper-case `.groovy` files in its directory.
 
 ```sh
 cook recipe.groovy

@@ -1,5 +1,8 @@
 package thecook.infra
 
+import groovy.transform.PackageScope
+import org.w3c.dom.Document
+import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import thecook.cookbook.Coordinates
 import thecook.cookbook.CookbookArtifact
@@ -40,7 +43,20 @@ final class MavenRepository implements CookbookRepository {
     uri.toString()
   }
 
-  private static List<String> parseVersions(byte[] metadata) {
+  @PackageScope static List<String> parseVersions(byte[] metadata) {
+    def xpath = XPathFactory.newInstance().newXPath()
+    def document = parse(metadata)
+    def nodes = xpath.evaluate('/metadata/versioning/versions/version', document, XPathConstants.NODESET) as NodeList
+    (0..<nodes.length).collect { nodes.item(it).textContent }
+  }
+
+  @PackageScope static String parseGroupId(byte[] metadata) {
+    def xpath = XPathFactory.newInstance().newXPath()
+    def node = xpath.evaluate('/metadata/groupId', parse(metadata), XPathConstants.NODE) as Node
+    node?.textContent
+  }
+
+  private static Document parse(byte[] metadata) {
     def factory = DocumentBuilderFactory.newInstance()
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
     factory.setFeature('http://xml.org/sax/features/external-general-entities', false)
@@ -50,13 +66,10 @@ final class MavenRepository implements CookbookRepository {
     factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, '')
     factory.setXIncludeAware(false)
     factory.setExpandEntityReferences(false)
-    def document = factory.newDocumentBuilder().parse(new ByteArrayInputStream(metadata))
-    def xpath = XPathFactory.newInstance().newXPath()
-    def nodes = xpath.evaluate('/metadata/versioning/versions/version', document, XPathConstants.NODESET) as NodeList
-    (0..<nodes.length).collect { nodes.item(it).textContent }
+    factory.newDocumentBuilder().parse(new ByteArrayInputStream(metadata))
   }
 
-  private static byte[] read(URI resource) {
+  @PackageScope static byte[] read(URI resource) {
     try {
       def connection = resource.toURL().openConnection()
       connection.connectTimeout = TIMEOUT_MILLIS

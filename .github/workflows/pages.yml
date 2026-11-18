@@ -59,38 +59,6 @@ jobs:
           fi
         env:
           TAG: ${{ steps.tag.outputs.tag }}
-      # The site also serves the cookbook artifacts of every release as a Maven repository at /maven/. Each deploy
-      # replaces the whole site, so the tree is laid out again from the cookbook-<version>.zip of each release that has
-      # one, the same Central bundle, with a maven-metadata.xml per artifact for listing releases. Jekyll copies it as
-      # it is, since the files have no front matter.
-      - name: Lay out the Maven repository
-        run: |
-          mkdir -p maven "$RUNNER_TEMP/bundles"
-          gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName -q '.[].tagName' | while read -r tag; do
-            bundle="cookbook-${tag#v}.zip"
-            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' | grep -qxF "$bundle"; then
-              gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$bundle" --dir "$RUNNER_TEMP/bundles"
-              unzip -q -o "$RUNNER_TEMP/bundles/$bundle" -d maven
-            fi
-          done
-          updated=$(date -u +%Y%m%d%H%M%S)
-          find maven -name '*.pom' -exec dirname {} \; | xargs -r -n 1 dirname | sort -u | while read -r dir; do
-            versions=$(find "$dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -V)
-            latest=$(printf '%s\n' "$versions" | tail -n 1)
-            group=$(dirname "${dir#maven/}" | tr / .)
-            {
-              printf '<?xml version="1.0" encoding="UTF-8"?>\n<metadata>\n'
-              printf '  <groupId>%s</groupId>\n  <artifactId>%s</artifactId>\n' "$group" "$(basename "$dir")"
-              printf '  <versioning>\n    <latest>%s</latest>\n    <release>%s</release>\n    <versions>\n' "$latest" "$latest"
-              printf '      <version>%s</version>\n' $versions
-              printf '    </versions>\n    <lastUpdated>%s</lastUpdated>\n  </versioning>\n</metadata>\n' "$updated"
-            } >"$dir/maven-metadata.xml"
-            md5sum "$dir/maven-metadata.xml" | cut -d ' ' -f 1 >"$dir/maven-metadata.xml.md5"
-            sha1sum "$dir/maven-metadata.xml" | cut -d ' ' -f 1 >"$dir/maven-metadata.xml.sha1"
-          done
-          test -n "$(find maven -name maven-metadata.xml)" || { echo '::error::No release carries a cookbook bundle'; exit 1; }
-        env:
-          GH_TOKEN: ${{ github.token }}
       - uses: actions/configure-pages@v6
       - uses: actions/jekyll-build-pages@v1
         with:
