@@ -21,7 +21,7 @@ fits:
 | Needed by every task | `AGENTS.md`: a rule, or one of its five gotchas |
 | A procedure an agent repeats | A skill in `.agents/skills/` |
 | About the product, so people need it too: a decision, how a feature behaves, a standard, a trap of the product | The repository's documentation; the page owns it and memory links it. With no documentation, memory holds it until the team writes the page |
-| A trap of working in one area: its commands, its files, its checks, its settings, including one a check could catch once someone builds that check | `.agents/memory/<area>.md` |
+| A trap of working in one area: its commands, its files, its checks, its settings, including one whose check is more work than this change | `.agents/memory/<area>.md` |
 | Anything else | Nowhere yet: the report asks the team where it goes |
 
 ## How to recognize a trap
