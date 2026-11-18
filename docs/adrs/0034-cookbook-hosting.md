@@ -52,9 +52,11 @@ and find its newer releases, with no account and no setup, and a release reaches
   listing from the releases before it, and `releases/latest/download/` always serves the newest one, so `update`
   reads one file per artifact through the listing it already understands. The trade is a listing that is only as
   current as the latest release, and none at all until the first release that attaches one.
-- **2.** The jar URLs are on `github.com`, not the REST API, whose unauthenticated limit and `raw.githubusercontent.com`
-  are what GitHub tightened in 2025, so a kitchen reads them with no token and no API quota. The trade is a host whose
-  download limits GitHub does not publish.
+- **2.** A kitchen reads the jar and the listing through release download URLs, not the REST API, so it needs no token
+  and spends no API quota. GitHub tightened its 2025 limits on unauthenticated REST API requests and on
+  `raw.githubusercontent.com`. A `releases/download/` URL redirects to an asset host on `*.githubusercontent.com`
+  (`release-assets.githubusercontent.com`), and GitHub has not documented whether those limits apply there. The trade
+  is a download limit GitHub does not publish.
 - **3.** A kitchen without a `cook.toml` cooks the official cookbook with no setup, and the commands `cook --help`
   prints work as written. The trade is that a kitchen depends on GitHub.com being reachable, as installing Cook from
   its release already does ([0017](0017-engine-version.md)).
