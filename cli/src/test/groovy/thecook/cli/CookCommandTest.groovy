@@ -43,6 +43,13 @@ class CookCommandTest {
     assert !usage.contains('Maven')
   }
 
+  @Test void theUsageListsEveryReleasedCookbookArtifact() {
+    def stdout = new ByteArrayOutputStream()
+    assert command(stdout, new ByteArrayOutputStream()).execute(['--help'] as String[]) == 0
+    assert stdout.toString('UTF-8').replaceAll(/\s+/, ' ')
+    .contains('with the artifacts agents, beads, docs, git, hello and ralph;')
+  }
+
   @Test void missingUnknownAndRemovedOptionsAreUsageErrors() {
     def stdout = new ByteArrayOutputStream(); def stderr = new ByteArrayOutputStream()
     def cli = command(stdout, stderr)
