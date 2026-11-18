@@ -18,7 +18,7 @@ final class CookToml {
   private static final String DEFAULT_OWNER = 'lmarqs'
   private static final String DEFAULT_REPO = 'the-cook'
   private static final String FORMS = 'an https:// URL, a path or github:<owner>/<repo>'
-  private static final Pattern GITHUB = ~/^github:([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/
+  private static final Pattern GITHUB = ~/^github:([A-Za-z0-9-]+)\/(?!\.\.?$)([A-Za-z0-9._-]+)$/
 
   private CookToml() {
   }

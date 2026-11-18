@@ -7,28 +7,18 @@ def releaseAssetsDir = layout.buildDirectory.dir('release-assets')
 // A sha256 file reads `<hex digest>  <file name>`, as the engine package's does, so `sha256sum -c` checks the jar.
 def sha256Hex = { File file ->
   def digest = java.security.MessageDigest.getInstance('SHA-256')
-  file.withInputStream { stream ->
-    byte[] buffer = new byte[8192]
-    int read
-
-    while ((read = stream.read(buffer)) != -1) {
-      digest.update(buffer, 0, read)
-    }
-  }
-  def bytes = digest.digest()
-  bytes.collect { String.format('%02x', it) }.join()
+  file.eachByte(1 << 16) { byte[] buffer, int length -> digest.update(buffer, 0, length) }
+  digest.digest().encodeHex()
 }
 
 def releaseAssets = tasks.register('releaseAssets', Sync) {
   group = 'distribution'
   description = 'Collect the released jars, each with its sha256, as the GitHub release assets.'
   def jars = released.collect { tasks.named("${it}Jar", Jar) }
-  def outputDir = releaseAssetsDir
-  inputs.property('released', released)
-  into(outputDir)
+  into(releaseAssetsDir)
   jars.each { jar -> from(jar.flatMap { it.archiveFile }) }
   doLast {
-    def written = outputDir.get().asFile.listFiles()
+    def written = releaseAssetsDir.get().asFile.listFiles()
     written.findAll { it.name.endsWith('.jar') }.each {
       new File(it.parentFile, "${it.name}.sha256").text = "${sha256Hex(it)}  ${it.name}\n"
     }

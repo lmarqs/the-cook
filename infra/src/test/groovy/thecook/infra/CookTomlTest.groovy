@@ -147,7 +147,16 @@ class CookTomlTest {
 
   @Test void refusesAGithubEntryThatIsNotOwnerSlashRepo() {
     def kitchen = folder.newFolder('kitchen')
-    ['github:acme', 'github:acme/notes/extra', 'github:', 'github:acme/', 'github:ac_me/notes', 'github://acme/notes']
+    [
+      'github:acme',
+      'github:acme/notes/extra',
+      'github:',
+      'github:acme/',
+      'github:ac_me/notes',
+      'github://acme/notes',
+      'github:acme/..',
+      'github:acme/.'
+    ]
     .each { entry ->
       new File(kitchen, 'cook.toml').text = "repositories = [\"${entry}\"]\n"
       def error = shouldFail(IllegalArgumentException) { repositories(kitchen) }

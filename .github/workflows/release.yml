@@ -97,11 +97,12 @@ jobs:
           set -o pipefail
           [ -n "$VERSION" ] || { echo "::error::VERSION is empty"; exit 1; }
           assets=$(mktemp)
-          gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 1000 --json tagName -q '.[].tagName' | while read -r tag; do
-            gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' | sed "s/^/${tag#v} /"
-          done >"$assets"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '.[] | select(.draft | not) | (.tag_name | ltrimstr("v")) as $v | .assets[].name | "\($v) \(.)"' >"$assets"
           updated=$(date -u +%Y%m%d%H%M%S)
-          for artifact in agents beads docs git hello ralph; do
+          for jar in cookbook/build/release-assets/*-"$VERSION".jar; do
+            [ -f "$jar" ] || { echo "::error::No cookbook jar of $VERSION in cookbook/build/release-assets"; exit 1; }
+            artifact=$(basename "$jar" "-$VERSION.jar")
             versions=$({ awk -v artifact="$artifact" '$2 == artifact "-" $1 ".jar" { print $1 }' "$assets"; echo "$VERSION"; } | sort -uV)
             latest=$(printf '%s\n' "$versions" | tail -n 1)
             {
@@ -111,9 +112,6 @@ jobs:
               printf '      <version>%s</version>\n' $versions
               printf '    </versions>\n    <lastUpdated>%s</lastUpdated>\n  </versioning>\n</metadata>\n' "$updated"
             } >"dist/$artifact-maven-metadata.xml"
-          done
-          for artifact in agents beads docs git hello ralph; do
-            grep -q '<version>[^<]' "dist/$artifact-maven-metadata.xml" || { echo "::error::No versions listed for $artifact"; exit 1; }
           done
         env:
           GH_TOKEN: ${{ github.token }}
