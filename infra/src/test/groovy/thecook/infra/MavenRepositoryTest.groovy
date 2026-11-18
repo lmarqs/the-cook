@@ -70,6 +70,18 @@ class MavenRepositoryTest {
     assert repository().versions('org.acme', 'notes') == ['1.2.3']
   }
 
+  @Test void parsesTheGroupIdOfMavenMetadata() {
+    def metadata = '<metadata><groupId>org.acme</groupId><artifactId>notes</artifactId></metadata>'
+
+    assert MavenRepository.parseGroupId(metadata.bytes) == 'org.acme'
+  }
+
+  @Test void parsesNoGroupIdWhenMavenMetadataHasNone() {
+    def metadata = '<metadata><artifactId>notes</artifactId></metadata>'
+
+    assert MavenRepository.parseGroupId(metadata.bytes) == null
+  }
+
   private MavenRepository repository() {
     new MavenRepository(folder.root.toURI())
   }
