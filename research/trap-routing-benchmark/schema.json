@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "destination": {
+      "type": "string",
+      "enum": [
+        "not_in_repository",
+        "tracker_or_commit",
+        "personal_settings",
+        "nowhere_already_shown",
+        "check_hook_or_policy",
+        "agents_md",
+        "skill",
+        "documentation",
+        "memory",
+        "none_of_these"
+      ]
+    },
+    "reason": { "type": "string" }
+  },
+  "required": ["destination", "reason"],
+  "additionalProperties": false
+}

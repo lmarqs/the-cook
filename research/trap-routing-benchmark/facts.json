@@ -1,0 +1,173 @@
+{
+  "repository": "The repository has an AGENTS.md that every agent run reads, documentation pages in docs/, skills in .agents/skills/, memory files in .agents/memory/, a permission policy that allows, asks for or denies shell commands by their leading words (it cannot restrict file edits), and a CI check on every pull request. The person working with the agent is one member of a team.",
+  "facts": [
+    {
+      "id": "secret",
+      "group": "control",
+      "text": "While debugging, the run found the staging database password, and the person said to use it for local tests.",
+      "gold": "not_in_repository",
+      "reason": "A secret."
+    },
+    {
+      "id": "person",
+      "group": "control",
+      "text": "The person said they joined the team last week and have not worked with Kotlin before.",
+      "gold": "not_in_repository",
+      "reason": "About a person."
+    },
+    {
+      "id": "plan",
+      "group": "control",
+      "text": "The run finished two of the four steps of a refactor; renaming OrderService is left for tomorrow.",
+      "gold": "tracker_or_commit",
+      "reason": "What a run did and what is left."
+    },
+    {
+      "id": "preference",
+      "group": "control",
+      "text": "The person corrected the run: they want explanations as bullet lists, not paragraphs. Nobody else on the team has said so.",
+      "gold": "personal_settings",
+      "reason": "One person's preference."
+    },
+    {
+      "id": "shown",
+      "group": "control",
+      "text": "The run learned that the HTTP handlers are in src/api/handlers/, one file per route, as the directory listing shows to anyone who opens it.",
+      "gold": "nowhere_already_shown",
+      "reason": "A run on the task sees it by listing the directory it changes."
+    },
+    {
+      "id": "enforced",
+      "group": "control",
+      "text": "The run tried `git push origin main`; the permission policy refused it, as it refuses every `git push`.",
+      "gold": "check_hook_or_policy",
+      "reason": "Already enforced by the policy; nothing to add."
+    },
+    {
+      "id": "every_task",
+      "group": "control",
+      "text": "A change is done only when `./gradlew check` passes. AGENTS.md does not say so, and a run stopped after the code compiled.",
+      "gold": "agents_md",
+      "reason": "Every task needs it."
+    },
+    {
+      "id": "procedure",
+      "group": "control",
+      "text": "To release, a run had to bump the version in three files, tag the commit and run scripts/publish, in that order. The team releases every two weeks.",
+      "gold": "skill",
+      "reason": "A procedure agents repeat."
+    },
+    {
+      "id": "product_decision",
+      "group": "control",
+      "text": "The person explained that the public API returns dates in UTC because the mobile clients convert them; a run had changed an endpoint to return local times.",
+      "gold": "documentation",
+      "reason": "A decision about the product that people need too."
+    },
+    {
+      "id": "migration_number",
+      "group": "example",
+      "text": "Two branches each added a database migration numbered 0042; both passed their checks and the deploy applied only one. A new migration must take the next number after main's last one.",
+      "gold": "memory",
+      "reason": "A check could catch it, but that check is more than the change that met the trap can add, so memory holds it until the check exists."
+    },
+    {
+      "id": "db_reset",
+      "group": "example",
+      "text": "`make db-reset` drops the local database without asking. A run used it to apply new migrations and lost an afternoon of hand-entered test data; `make db-migrate` applies migrations.",
+      "gold": "check_hook_or_policy",
+      "reason": "An ask entry for `make db-reset` in the policy enforces it, and this change can add one."
+    },
+    {
+      "id": "db_migrate_exit",
+      "group": "example",
+      "text": "`make db-migrate` exits 0 when the database is down and applies nothing. A run reported a migration as tested that had never run.",
+      "gold": "memory",
+      "reason": "A false success signal in one area that no file shows and no small check catches."
+    },
+    {
+      "id": "lint_fixes",
+      "group": "recognition",
+      "text": "`make lint` also rewrites files in place, though its name suggests it only reports. A run used it to check one file and committed formatting changes to 40 unrelated files.",
+      "gold": "memory",
+      "reason": "A command that looks right and is not; the policy cannot stop it without stopping linting."
+    },
+    {
+      "id": "coupled_proto",
+      "group": "recognition",
+      "text": "Adding a field to proto/order.proto also needs clients/ts/order.ts regenerated with `make gen-ts`. A run's backend tests passed, and the web client broke in staging.",
+      "gold": "memory",
+      "reason": "Files that must change together with nothing pointing between them; a CI check for stale generated code is more than this change can add."
+    },
+    {
+      "id": "generated_file",
+      "group": "recognition",
+      "text": "A run fixed a typo in src/generated/api.ts. The next build regenerated the file from openapi.yaml and the fix vanished. The generated file has no header saying so.",
+      "gold": "memory",
+      "reason": "A file something else writes; the policy cannot restrict edits."
+    },
+    {
+      "id": "false_done",
+      "group": "recognition",
+      "text": "scripts/sync-fixtures prints 'done' and exits 0 when the fixture server is unreachable, and copies nothing. A run's tests then passed against month-old fixtures.",
+      "gold": "memory",
+      "reason": "A success signal that is false."
+    },
+    {
+      "id": "overridden_setting",
+      "group": "recognition",
+      "text": "A run set `timeout = 30` in config/local.toml, and the service still timed out after 10 seconds: config/env.toml loads after it and overrides the value.",
+      "gold": "memory",
+      "reason": "A setting another file overrides."
+    },
+    {
+      "id": "narrow_guard",
+      "group": "recognition",
+      "text": "The permission policy denies `git push`, and a run pushed with `git -C . push`, which the rule does not match.",
+      "gold": "check_hook_or_policy",
+      "reason": "A guard narrower than it reads; this change can add the missing policy entry."
+    },
+    {
+      "id": "flaky_test",
+      "group": "contested",
+      "text": "OrderIntegrationTest fails about one run in five with a timeout, on main too, and passes when rerun. A run spent an hour debugging its own change because of it.",
+      "gold": "memory",
+      "reason": "A check that looks right and is not, in one area; it leaves memory when the test is fixed. Contested: tracker is defensible."
+    },
+    {
+      "id": "needs_flag",
+      "group": "contested",
+      "text": "For local work, `make db-migrate` must be run as `make db-migrate ENV=test`; without it, it targets the development database the team shares. The Makefile sets ENV=dev by default, in a variable 200 lines above the target.",
+      "gold": "memory",
+      "reason": "A command that looks right and is not; the default is in the Makefile, but not where a run on the task reads. Contested: nowhere_already_shown is defensible."
+    },
+    {
+      "id": "hard_to_find",
+      "group": "slow",
+      "text": "A run took 20 minutes to find that payment retries live in billing/jobs/retry_worker.py; the payments/ directory suggested they were elsewhere. Nothing went wrong.",
+      "gold": "agents_md",
+      "reason": "Slow, not wrong: a line under Where things go in AGENTS.md."
+    },
+    {
+      "id": "costly_lookup",
+      "group": "slow",
+      "text": "To find which service owns an endpoint, a run searched the whole repository three times, about 200,000 tokens. tools/owner <path> answers it in one call. Nothing went wrong.",
+      "gold": "skill",
+      "reason": "Slow, not wrong: a costly routine becomes a skill."
+    },
+    {
+      "id": "external_tracker",
+      "group": "no_row",
+      "text": "Bugs for this repository are tracked in the Jira project PAY, not in GitHub issues; a run opened a GitHub issue.",
+      "gold": "none_of_these",
+      "reason": "No row fits: a pointer outside the repository. The report asks where the team keeps it."
+    },
+    {
+      "id": "deadline",
+      "group": "no_row",
+      "text": "The team freezes releases from December 15 to January 5.",
+      "gold": "none_of_these",
+      "reason": "No row fits: a date about the team's schedule. The report asks where the team keeps it."
+    }
+  ]
+}
