@@ -1,11 +1,10 @@
 # Memory
 
 `.agents/memory/` holds traps. A trap is something in the repository that looks right and is not: a command, a
-file, a check or a setting that gives a wrong result to a run that does the plain thing. Memory holds the traps of
-working in one area, learned from a correction or a failure, that a later run needs and no other file owns. An
-area is a part of the repository a task touches: a directory, a module or a tool. One file per area, as
-`.agents/memory/migrations.md`, read only when a task touches the area: `AGENTS.md` names each file under Deep dive
-with the question it answers, and a file no `AGENTS.md` names is never read.
+file, a check or a setting that gives a wrong result to a run that does the plain thing. Memory keeps the traps of
+one area, a directory, a module or a tool a task touches, in one file per area, as `.agents/memory/migrations.md`.
+A run reads the file only when its task touches the area: `AGENTS.md` names each file under Deep dive with the
+question it answers, and a file no `AGENTS.md` names is never read.
 
 ## Where a learned fact goes
 
@@ -18,18 +17,12 @@ fits:
 | What this run did, what is left to do, or a plan | The tracker, or the commit message |
 | One person's preference | That person's harness settings, outside the repository |
 | Shown where a run on the task reads anyway: the code it changes, a config file, the README, the history | Nowhere; name the file where a reader needs it |
-| Something a check, a hook or the policy enforces, or can once this change adds it | The check, the hook or `policy.yaml` |
+| Enforced by a check, a hook or the policy that exists now or that this change adds | The check, the hook or `policy.yaml` |
 | Needed by every task | `AGENTS.md`: a rule, or one of its five gotchas |
 | A procedure an agent repeats | A skill in `.agents/skills/` |
-| About the product, so people need it too: a decision, how a feature behaves, a standard, a trap of the product | The repository's documentation, where it keeps some; the page owns it and memory links it |
-| A trap of working in one area: its commands, its files, its checks, its settings | `.agents/memory/<area>.md` |
-
-A trap that a check could catch, where the check is more than this change can add, goes to memory and leaves when
-the check arrives. A fact no row fits is no trap: it stays out of memory, and the report asks where the team keeps
-it.
-
-A repository without documentation is the one exception. There, memory also holds the decisions and product traps
-a page would own, until the team writes that page.
+| About the product, so people need it too: a decision, how a feature behaves, a standard, a trap of the product | The repository's documentation; the page owns it and memory links it. With no documentation, memory holds it until the team writes the page |
+| A trap of working in one area: its commands, its files, its checks, its settings, including one a check could catch once someone builds that check | `.agents/memory/<area>.md` |
+| Anything else | Nowhere yet: the report asks the team where it goes |
 
 ## How to recognize a trap
 
