@@ -5,26 +5,35 @@ import thecook.cookbook.CookbookRepositories
 import thecook.cookbook.CookbookRepository
 
 import java.nio.file.Path
+import java.util.regex.Pattern
 
 /**
- * The kitchen's `cook.toml`, which lists the repositories cookbook artifacts resolve from, or Maven Central when the
- * kitchen has none. An entry is an `https://` URL or a path to a Maven-layout repository, or a path to a cookbook's
- * source directory, the one holding `cookbook.toml`. A path starting with `~/` is relative to the user's home, any
- * other path to the kitchen.
+ * The kitchen's `cook.toml`, which lists the repositories cookbook artifacts resolve from, or the GitHub releases of
+ * `lmarqs/the-cook` when the kitchen has none. An entry is `github:<owner>/<repo>`, the releases of that GitHub
+ * repository, an `https://` URL or a path to a Maven-layout repository, or a path to a cookbook's source directory,
+ * the one holding `cookbook.toml`. A path starting with `~/` is relative to the user's home, any other path to the
+ * kitchen.
  */
 final class CookToml {
-  static final URI CENTRAL = URI.create('https://repo.maven.apache.org/maven2/')
+  private static final String DEFAULT_OWNER = 'lmarqs'
+  private static final String DEFAULT_REPO = 'the-cook'
+  private static final String FORMS = 'an https:// URL, a path or github:<owner>/<repo>'
+  private static final Pattern GITHUB = ~/^github:([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/
 
   private CookToml() {
   }
 
-  /** The repositories that `cook.toml` in `kitchen` lists, or Maven Central without that file; `~/` is `home`. */
+  /**
+   * The repositories that `cook.toml` in `kitchen` lists, or the GitHub releases of lmarqs/the-cook without that file;
+   * `~/` is `home`.
+   */
   static CookbookRepositories repositories(File kitchen, File home) {
     def manifest = new File(kitchen, 'cook.toml')
-    def central = [new MavenRepository(CENTRAL)] as List<CookbookRepository>
+    def github = [new GithubReleaseRepository(DEFAULT_OWNER, DEFAULT_REPO)] as List<CookbookRepository>
+    def origin = "GitHub releases of ${DEFAULT_OWNER}/${DEFAULT_REPO}"
 
     if (!manifest.isFile()) {
-      return new CookbookRepositories(central, "Maven Central; no cook.toml in ${kitchen} lists other repositories")
+      return new CookbookRepositories(github, "${origin}; no cook.toml in ${kitchen} lists other repositories")
     }
 
     def toml = Toml.parse(manifest.toPath())
@@ -34,7 +43,7 @@ final class CookToml {
     }
 
     if (!toml.contains('repositories')) {
-      return new CookbookRepositories(central, "Maven Central; ${manifest} lists no repositories")
+      return new CookbookRepositories(github, "${origin}; ${manifest} lists no repositories")
     }
 
     if (!toml.isArray('repositories')) {
@@ -55,14 +64,25 @@ final class CookToml {
   }
 
   private static IllegalArgumentException misshapen(File manifest) {
-    new IllegalArgumentException("${manifest}: repositories must be a list of https:// URLs and paths")
+    new IllegalArgumentException(
+        "${manifest}: repositories must be a list of https:// URLs, paths and github:<owner>/<repo>")
   }
 
   private static CookbookRepository repository(String entry, File kitchen, File home, File manifest) {
+    if (entry.startsWith('github:')) {
+      def matcher = GITHUB.matcher(entry)
+
+      if (!matcher.matches()) {
+        throw new IllegalArgumentException("${manifest}: repository ${entry} must be written github:<owner>/<repo>")
+      }
+
+      return new GithubReleaseRepository(matcher.group(1), matcher.group(2))
+    }
+
     def uri = entry.contains('://') ? URI.create(slashed(entry)) : directory(entry, kitchen, home)
 
     if (!(uri.scheme in ['https', 'file'])) {
-      throw new IllegalArgumentException("${manifest}: repository ${entry} must be an https:// URL or a path")
+      throw new IllegalArgumentException("${manifest}: repository ${entry} must be ${FORMS}")
     }
 
     if (uri.scheme == 'file' && CookbookDirectory.isCookbook(new File(uri))) {
