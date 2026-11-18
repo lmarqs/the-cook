@@ -58,8 +58,8 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
   design is [docs/architecture.md](docs/architecture.md).
 - Tests: `<module>/src/test/groovy/thecook/`, one `<Subject>Test.groovy` per subject, as
   `core/src/test/groovy/thecook/CoordinatesTest.groovy`; recipe tests in `cookbook/test/<artifact>/`, never in core.
-- Settings: build options are Gradle `-P` properties, as `releaseVersion`; release secrets are the GitHub Actions
-  secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and `SIGNING_PASSWORD`.
+- Settings: build options are Gradle `-P` properties, as `releaseVersion`; the release workflow needs no secret
+  beyond its `GITHUB_TOKEN`.
 - Decisions, feature behavior, standards and pitfalls: where [docs/README.md](docs/README.md) says, by the
   `docs-layout` skill.
 - A procedure an agent repeats: a skill in `.agents/skills/`.
