@@ -68,7 +68,8 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
   is shared; when it runs is set per harness, because the events and their input differ. Session start is the
   exception: a script in `hooks/session-start.d/` that prints text reaches every connected harness as session
   context, and gets the harness name as `$1`.
-- **Memory** holds traps: how to work in one area, learned from a correction or a failure, that no other file owns.
+- **Memory** holds traps: what looks right in one area and is not, learned from a correction or a failure, that no
+  other file owns.
   Most of what a session learns has another owner, and [references/memory.md](references/memory.md) routes each
   fact to it. List each file in `AGENTS.md` with the question it answers, so agents know when to read it.
 
