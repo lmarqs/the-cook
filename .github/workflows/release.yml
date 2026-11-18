@@ -116,6 +116,15 @@ jobs:
           done
         env:
           GH_TOKEN: ${{ github.token }}
+      # semantic-release tags nothing once main has moved past the commit the run started on, and exits without an error.
+      # The Homebrew formula and the site would then point at a release that does not exist.
+      - name: Check that main has not moved
+        run: |
+          main=$(git ls-remote origin refs/heads/main | cut -f 1)
+          if [ "$main" != "$GITHUB_SHA" ]; then
+            echo "main moved to $main after the release started at $GITHUB_SHA; start release again" >&2
+            exit 1
+          fi
       - name: Release on GitHub
         run: $SEMANTIC_RELEASE
         env:
