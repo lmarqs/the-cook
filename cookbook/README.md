@@ -52,8 +52,7 @@ A committed `cook.toml` at the destination lists the repositories to resolve fro
 to the destination. `github:<owner>/<repo>` names the releases of that GitHub repository, a URL or path names a
 Maven-layout repository, and a path can also name a cookbook's source directory, the one holding `cookbook.toml`.
 Without a `cook.toml`, or with one that lists no `repositories`, Cook resolves from `github:lmarqs/the-cook`.
-[ADR 0029](../docs/adrs/0029-cookbook-distribution.md) and [ADR 0034](../docs/adrs/0034-cookbook-hosting.md) record
-the reasons.
+[ADR 0029](../docs/adrs/0029-cookbook-distribution.md) records the reasons.
 
 ```toml
 repositories = [

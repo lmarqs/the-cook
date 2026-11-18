@@ -342,8 +342,7 @@ Coordinates name exact releases only.
 
 `cook.lock` records a hash of the artifact's sources, so two builds of one release have one hash, and a different
 hash under a recorded version shows as a changed source before the diff. The
-[cookbook distribution ADR](adrs/0029-cookbook-distribution.md) records the reasons, and the
-[cookbook hosting ADR](adrs/0034-cookbook-hosting.md) why this repository's cookbook is on GitHub.
+[cookbook distribution ADR](adrs/0029-cookbook-distribution.md) records the reasons.
 
 ## Requirements
 

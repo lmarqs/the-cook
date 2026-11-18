@@ -21,7 +21,7 @@ review its effect before accepting it. Their accepted setup remains identifiable
   ([metadata model](https://maven.apache.org/ref/3.9.11/maven-repository-metadata/repository-metadata.html)).
   Maven-layout repositories publish that listing as `maven-metadata.xml`; Maven local uses
   `maven-metadata-local.xml` for locally published releases. A GitHub repository's latest release carries it as
-  `<artifact>-maven-metadata.xml` ([0034](0034-cookbook-hosting.md)).
+  `<artifact>-maven-metadata.xml` ([0029](0029-cookbook-distribution.md), decision 2).
 - A cookbook source directory serves its artifacts at any supplied version from its current files, rather than
   publishing a listing of releases ([0029](0029-cookbook-distribution.md), decision 2).
 - `--force` already means replacing an existing template file
