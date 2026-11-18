@@ -95,8 +95,9 @@ jobs:
       - name: List the released versions of each cookbook artifact
         run: |
           set -o pipefail
+          [ -n "$VERSION" ] || { echo "::error::VERSION is empty"; exit 1; }
           assets=$(mktemp)
-          gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName -q '.[].tagName' | while read -r tag; do
+          gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 1000 --json tagName -q '.[].tagName' | while read -r tag; do
             gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' | sed "s/^/${tag#v} /"
           done >"$assets"
           updated=$(date -u +%Y%m%d%H%M%S)
@@ -112,7 +113,7 @@ jobs:
             } >"dist/$artifact-maven-metadata.xml"
           done
           for artifact in agents beads docs git hello ralph; do
-            grep -q '<version>' "dist/$artifact-maven-metadata.xml" || { echo "::error::No versions listed for $artifact"; exit 1; }
+            grep -q '<version>[^<]' "dist/$artifact-maven-metadata.xml" || { echo "::error::No versions listed for $artifact"; exit 1; }
           done
         env:
           GH_TOKEN: ${{ github.token }}
