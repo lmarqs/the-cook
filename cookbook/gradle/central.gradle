@@ -79,13 +79,14 @@ if (findProperty('signingKey')) {
   }
 }
 
-// The Maven Central Portal takes one zip of a Maven-layout tree for a release.
+// The Maven Central Portal takes one zip of a Maven-layout tree for a release. Central requires only md5 and sha1
+// checksums and counts every file against a monthly publishing limit, so the sha256 and sha512 Gradle writes stay out.
 def centralBundle = tasks.register('centralBundle', Zip) {
   group = 'publishing'
   description = 'Bundle the released artifacts, with their checksums, for the Central Portal.'
   dependsOn released.collect { "publish${it.capitalize()}PublicationToCentralRepository" }
   from(central)
-  exclude '**/maven-metadata.xml*'
+  exclude '**/maven-metadata.xml*', '**/*.sha256', '**/*.sha512'
   includeEmptyDirs = false
   archiveFileName = 'central-bundle.zip'
   destinationDirectory = layout.buildDirectory.dir('central-bundle')
@@ -110,6 +111,12 @@ tasks.register('centralBundleTest') {
     if (files.sort() != expected*.toString().sort() || missing) {
       throw new GradleException("The Central bundle holds ${files}, with ${missing} missing a checksum; " +
       "expected ${expected}")
+    }
+
+    def optional = entries.findAll { it ==~ /.*\.(sha256|sha512)/ }
+
+    if (optional) {
+      throw new GradleException("The Central bundle holds the optional checksums ${optional}")
     }
 
     def beadsFiles = [
