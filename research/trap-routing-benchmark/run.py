@@ -105,7 +105,7 @@ def main():
             done.add((r['fact'], r['arm'], r['harness'], r['run']))
     cells = [(f, arm, h, n) for n in range(1, args.runs + 1) for h in args.harness for arm in args.arms for f in facts
              if (f['id'], arm, h, n) not in done]
-    print(f'{len(cells)} runs to make, {len(done)} already in {out}', file=sys.stderr)
+    print(f'{len(cells)} runs to make, {len(done)} already in {os.path.relpath(out, HERE)}', file=sys.stderr)
 
     lock = threading.Lock()
     workdir = tempfile.mkdtemp(prefix='trap-routing-')
