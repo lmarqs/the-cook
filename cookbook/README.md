@@ -31,11 +31,13 @@ A directory under the cookbook's `src/` is one artifact holding its models, reci
 how a program reads its files, or supplies content another model consumes; a recipe chooses a setup through models.
 Models may depend on other models for their types and on ordinary libraries. Recipes depend on models.
 
-A cookbook releases as jars in a Maven-layout repository, one jar with a POM per directory under `src/`. Each jar
-holds the directory's sources, resources and README under its package path, such as `io/github/lmarqs/cookbook/ralph/`:
-everything a reader needs without the source checkout. This cookbook's `build.gradle` writes them with plain Gradle. Each release of this repository publishes the `agents`,
-`beads`, `docs`, `git`, `hello` and `ralph` artifacts to Maven Central as
-`io.github.lmarqs.cookbook:<artifact>:<version>`, so they cook with no `cook.toml`; the other directories are not published.
+A cookbook releases as one jar per directory under `src/`, in a Maven-layout repository or attached to a GitHub
+release. Each jar holds the directory's sources, resources and README under its package path, such as
+`io/github/lmarqs/cookbook/ralph/`: everything a reader needs without the source checkout. This cookbook's
+`build.gradle` writes them with plain Gradle. Each release of this repository attaches to its GitHub release, for the
+`agents`, `beads`, `docs`, `git`, `hello` and `ralph` artifacts, `<artifact>-<version>.jar`, its `.sha256` and
+`<artifact>-maven-metadata.xml`, the listing of every release that carries the artifact's jar. They cook as
+`io.github.lmarqs.cookbook:<artifact>:<version>` with no `cook.toml`; the other directories are not released.
 
 A recipe is addressed as `group:artifact:version#recipe`, such as `io.github.lmarqs.cookbook:ralph:0.0.0#ralph-tui`. Without
 `#recipe` the address names the artifact, which `cook help` describes and nothing cooks.
@@ -46,14 +48,26 @@ A loose recipe compiles against the models in its own directory, the upper-case 
 recipe in an artifact compiles against that artifact's models.
 
 A committed `cook.toml` at the destination lists the repositories to resolve from, in order, as `repositories`: each
-an `https://` URL or a path, one starting with `~/` relative to the user's home and any other to the destination. A
-URL or path names a Maven-layout repository, or a path names a cookbook's source directory, the one holding
-`cookbook.toml`. Without a `cook.toml`, Cook resolves from Maven Central.
-[ADR 0029](../docs/adrs/0029-cookbook-distribution.md) records the reasons.
+`github:<owner>/<repo>`, an `https://` URL or a path, one starting with `~/` relative to the user's home and any other
+to the destination. `github:<owner>/<repo>` names the releases of that GitHub repository, a URL or path names a
+Maven-layout repository, and a path can also name a cookbook's source directory, the one holding `cookbook.toml`.
+Without a `cook.toml`, or with one that lists no `repositories`, Cook resolves from `github:lmarqs/the-cook`.
+[ADR 0029](../docs/adrs/0029-cookbook-distribution.md) and [ADR 0034](../docs/adrs/0034-cookbook-hosting.md) record
+the reasons.
 
 ```toml
 repositories = [
+  "github:lmarqs/the-cook",
   "https://maven.example.com/releases/",
+]
+```
+
+Releases of this cookbook before 12.2.0 are on Maven Central only, and 8.1.1 and 9.1.0 have no GitHub release. A
+kitchen that cooks one of them lists Maven Central after the GitHub releases:
+
+```toml
+repositories = [
+  "github:lmarqs/the-cook",
   "https://repo.maven.apache.org/maven2/",
 ]
 ```
@@ -1070,7 +1084,7 @@ cooks from there lists it in its `cook.toml`, last so that shared repositories c
 
 ```toml
 repositories = [
-  "https://repo.maven.apache.org/maven2/",
+  "github:lmarqs/the-cook",
   "~/.m2/repository",
 ]
 ```

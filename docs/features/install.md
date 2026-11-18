@@ -10,9 +10,10 @@ platform is `linux-x64`, `linux-arm64` or `macos-arm64`. The package is a `jpack
 runtime, so the machine needs no Java or Gradle. [0017](../adrs/0017-engine-version.md) records why Cook installs
 this way.
 
-The release also includes the cookbook JARs, POMs, signatures and checksums, and `cookbook-<version>.zip` with their
-Maven repository layout. Extract that archive into `~/.m2/repository` to install all released cookbook artifacts
-locally without waiting for Maven Central's public mirrors to update.
+The release also carries the cookbook artifacts, each as `<artifact>-<version>.jar` with its `.sha256`, and
+`<artifact>-maven-metadata.xml`, the listing of every release that carries the artifact's jar. A kitchen without a
+`cook.toml` cooks them from there; [the cookbook guide](../../cookbook/README.md#units) shows how to list other
+repositories, and Maven Central for releases before 12.2.0.
 
 ## Homebrew
 

@@ -70,7 +70,7 @@ export PATH="$HOME/.local/share/cook/bin:$PATH"
 
 Then `cook --help`. A team that wants every machine and CI on one release pins it in `mise.toml`;
 [install](docs/features/install.md) covers pinning, upgrades and macOS paths. Without a `cook.toml`, coordinates such
-as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from Maven Central.
+as `io.github.lmarqs.cookbook:agents:<version>#connect` resolve from this repository's GitHub releases.
 
 ### From source
 
@@ -116,9 +116,12 @@ The **kitchen** is the directory Cook configures: the current directory by defau
 - `help` on an artifact, a recipe or a recipe path, read without running it.
 
 Coordinates resolve from the first repository of the kitchen's `cook.toml` `repositories` list that holds them, and
-from Maven Central when the kitchen has no `cook.toml`. An entry is an `https://` URL or a path to a Maven-layout
-repository of jars, where `~/` starts from the user's home as in `~/.m2/repository`, or a path to a cookbook's source
-directory, which serves its artifacts at any version as they are, with no build ([cookbook](cookbook/README.md)).
+from the GitHub releases of `lmarqs/the-cook` when the kitchen has no `cook.toml` or it lists no `repositories`. An
+entry is `github:<owner>/<repo>`, the releases of that GitHub repository; an `https://` URL or a path to a
+Maven-layout repository of jars, where `~/` starts from the user's home as in `~/.m2/repository`; or a path to a
+cookbook's source directory, which serves its artifacts at any version as they are, with no build
+([cookbook](cookbook/README.md#units)). Releases of this repository's cookbook before 12.2.0 are on Maven Central only,
+which a kitchen lists as `https://repo.maven.apache.org/maven2/` after `github:lmarqs/the-cook` to cook them.
 Arguments follow their recipe as `--name=value` or `--name value`, and a yes-or-no argument as a bare `--name` or
 `--name=false`. A word that contains `/` or `:` or ends with `.groovy` starts the next recipe, so a value shaped like
 one is written `--name=value`.

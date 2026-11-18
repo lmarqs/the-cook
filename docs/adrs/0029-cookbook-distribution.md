@@ -1,8 +1,8 @@
 ---
-description: Records why cookbooks release as jars in Maven-layout repositories, Maven Central by default.
+description: Records why cookbooks release as versioned jars that resolve from the repositories a kitchen lists.
 audience: Whoever publishes a cookbook or changes how one is fetched
 ---
-# 0029. Cookbooks release as jars in Maven-layout repositories, Maven Central by default
+# 0029. Cookbooks release as versioned jars resolved from the kitchen's repositories
 
 A cookbook author shares models and recipes with other repositories. People who cook a public cookbook should not need
 an account or credentials to fetch it, and an organization needs to serve its own cookbooks. A repository that cooks a
@@ -21,22 +21,20 @@ under that release changes.
   `maven-publish` plugin ([cookbook](../../cookbook/README.md)). The build that publishes them sets their version.
 - Maven-layout repositories are what build tools publish to and package hosts serve: Maven Central, Maven local at
   `~/.m2/repository`, and the package repositories organizations run. Maven Central serves artifacts over `https://`
-  to anyone, without credentials, and never replaces a released version. Its `io.github.<user>` namespaces are
-  verified through the GitHub account of that name.
-- GitHub Packages' Maven registry needs an access token to install any package, public ones included.
+  to anyone, without credentials, and never replaces a released version.
 - Two builds of one jar can differ in bytes, such as entry timestamps, while holding the same sources.
-- This repository publishes its cookbook artifacts to Maven Central under `io.github.lmarqs` when the maintainer
-  starts a release.
 
 ## Decision
 
-1. A cookbook release is one jar per artifact in a Maven-layout repository, at `<group>:<artifact>:<version>`. The
-   cookbook's `cookbook.toml` names its group, and the build that publishes the release sets the version.
+1. A cookbook release is one jar per artifact, at `<group>:<artifact>:<version>`, in a Maven-layout repository or
+   attached to a GitHub release ([0034](0034-cookbook-hosting.md)). The cookbook's `cookbook.toml` names its group,
+   and the build that publishes the release sets the version.
 2. A repository entry in the kitchen's `cook.toml` is an `https://` URL or a path to a Maven-layout repository, or a
-   path to a cookbook's source directory, the one holding `cookbook.toml`. A source directory serves each artifact of
+   path to a cookbook's source directory, the one holding `cookbook.toml`, or `github:<owner>/<repo>`, the releases
+   of that GitHub repository ([0034](0034-cookbook-hosting.md)). A source directory serves each artifact of
    its group, at any version, from the files of `src/<artifact>/`. A path starting with `~/` is relative to the
    user's home, any other path to the kitchen. Entries are tried in order.
-3. Without a `cook.toml`, the engine resolves from Maven Central.
+3. Without a `cook.toml`, the engine resolves from the repository [0034](0034-cookbook-hosting.md) names.
 4. `cook.lock` records the sha256 of the artifact's sources: each path and its content, in path order. A different
    hash under a version the lock records is shown as a changed source before the diff.
 5. Coordinates name exact releases. Branches, commits, snapshots and version ranges are refused.
@@ -54,12 +52,12 @@ under that release changes.
   is an entry that ignores the version, so the lock shows each edit as a changed source under the same version.
   Serving `src/<artifact>/` keeps the cookbook's tests, under `test/`, and its build files out of every artifact, so an
   edit cooks exactly what a release of it would hold. The trade is one more directory level in every cookbook path.
-- **3.** Maven Central serves public artifacts to anyone without credentials, so a kitchen without a `cook.toml` cooks
-  published cookbooks with no setup.
+- **3.** A kitchen without a `cook.toml` cooks published cookbooks with no setup; [0034](0034-cookbook-hosting.md)
+  gives the reasons for the repository it uses.
 - **4.** A jar's bytes identify more than the artifact: two builds of one release can differ in bytes. A hash of the
-  artifact's sources identifies exactly what the engine compiles. A repository other than Maven Central can replace a
-  jar under its version, so comparing that hash with the lock is how a repository notices that a release's content
-  changed. The trade is a hash that no other tool computes.
+  artifact's sources identifies exactly what the engine compiles. A repository other than Maven Central, such as a
+  GitHub release whose asset is uploaded again, can replace a jar under its version, so comparing that hash with the
+  lock is how a repository notices that a release's content changed. The trade is a hash that no other tool computes.
 - **5.** A branch or a range selects different content over time under the same coordinates, so the lock could not
   say which content produced the ownership it records ([0025](0025-recipes.md)).
 
@@ -78,12 +76,6 @@ At its best, a cookbook author applies one plugin and every artifact is packaged
 because an artifact's jar is files under a path with a POM, which a build writes in a few lines, while a published
 plugin is a second release to version, sign and keep working across Gradle versions, and ties cookbook authors to
 Gradle.
-
-### GitHub Packages
-
-At its best, a cookbook's packages live beside its repository, with no other account. It loses because its Maven
-registry needs an access token even for public packages, so every kitchen cooking a public cookbook would need
-credentials.
 
 ### A branch or commit as the version
 
@@ -105,17 +97,13 @@ Costs:
 - Publishing a cookbook needs a build that writes Maven-layout jars, such as the Gradle build
   [A cookbook outside this repository](../../cookbook/README.md#a-cookbook-outside-this-repository) shows.
 - The lock's source hash differs from the jar sha256 that package tools report.
-- Publishing to Maven Central needs a verified namespace, a signing key and the Central Portal credentials.
 
 Must be maintained:
 
 - The source hash definition.
-- The `io.github.lmarqs` namespace and the release workflow's credentials.
 
 ## Confirmation
 
-- Review a kitchen without a `cook.toml`: does a recipe of this repository's cookbook, addressed by its
-  `io.github.lmarqs.cookbook` coordinates and a released version, cook from Maven Central?
 - Review a jar republished under the same version in Maven local: does the next run show a changed source before the
   diff?
 - Review a kitchen that lists `~/.m2/repository`: does a cookbook its developer published to Maven local cook by its
