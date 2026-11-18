@@ -93,4 +93,4 @@ tasks.named('test') {
   doFirst { systemProperty 'cook.helloJar', helloJar.get().archiveFile.get().asFile.absolutePath }
 }
 
-apply from: 'gradle/central.gradle'
+apply from: 'gradle/release.gradle'
