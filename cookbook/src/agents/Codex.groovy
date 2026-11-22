@@ -104,6 +104,11 @@ class Codex implements Harness {
     config = config.findAll { key, value -> !(key == NETWORK_ACCESS && 'sandbox_workspace_write' in more) } + more
   }
 
+  /** Adds each shared MCP server as a separately owned entry in the project configuration. */
+  void shareMcpServers(Map entries) {
+    entries.each { name, server -> config[['mcp_servers', name]] = server }
+  }
+
   /** Adds top-level hooks keys; a supplied key replaces its earlier value whole. */
   void hooks(Map more) {
     hooks += more

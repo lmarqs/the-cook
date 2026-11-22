@@ -28,9 +28,9 @@ described in `.agents/README.md` |
 ## Consumes
 
 - Claude Code and Codex read the skill and the instructions; written for Claude Code 2.1.304 and Codex 0.160.1.
-- Whether `AGENTS.md`, the policy, `.agents/README.md` and each `.gitkeep` exist in the draft: each absent one is
-  seeded. The first time the recipe is cooked, an existing `AGENTS.md` refuses the cook unless Cook runs with
-  `--force` or `--skip`.
+- Whether `AGENTS.md`, the policy, the MCP server file, `.agents/README.md` and each `.gitkeep` exist in the draft.
+  Each absent file is seeded. On the first cook, an existing `AGENTS.md` refuses the cook unless Cook runs
+  with `--force` or `--skip`.
 - By hand first: nothing.
 
 ## Produces
@@ -39,6 +39,7 @@ described in `.agents/README.md` |
 | --- | --- | --- | --- |
 | `AGENTS.md` | Section template, written the first time the recipe is cooked | Always | seed |
 | `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
+| `.agents/mcp/servers.yaml` | Empty map of shared MCP servers | Always, when absent | seed |
 | `.agents/README.md` | What each shared path holds | Always, when absent | seed |
 | `.agents/skills/`, `hooks/`, `memory/`, `agents/` | An empty `.gitkeep` each | Always, when absent | seed |
 | `.agents/skills/agents-layout/` | Whole files of the skill that explains the layout, with the templates of the \

@@ -27,7 +27,7 @@ An agent has no terminal to answer Cook's prompt, so without `--batch-approve` C
    cook --batch-approve io.github.lmarqs.cookbook:agents:<version>#seed
    ```
 
-   It writes `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml`, the shared directories and this
+   It writes `AGENTS.md`, `.agents/README.md`, `.agents/permission/policy.yaml`, the empty MCP server map, the shared directories and this
    skill, in `.agents/skills/agents-layout/`. When `AGENTS.md` already exists, Cook refuses; follow
    [An existing AGENTS.md](#an-existing-agentsmd).
 5. **Fill in `AGENTS.md`** as the note at its top says, or merge the old file as
@@ -423,3 +423,5 @@ Mechanical moves do not cover every existing setup. These fail loudly; each has 
   table, a `[k.sub]` table, a `[[k]]` array of tables or dotted keys `k.x`, saying the key `is written as` that
   shape, and writes nothing. Check: `grep -n '^[[:space:]]*\[' .agents/adapters/codex/config.toml` lists the tables.
   Rewrite the key inline, as the message says, or remove it and let the cook write it.
+
+For a repository with existing project MCP servers, follow [Migrate and verify](mcp.md#migrate-and-verify) to share selected entries.

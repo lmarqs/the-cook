@@ -62,6 +62,9 @@ beside them |
 - `.agents/permission/policy.yaml` in the draft, the team's: its `commands` render into each harness's settings, its
   `tools` and `roles` into Claude's, and its `bypass` and `auto` decide whether Claude's bypass and auto modes are
   refused. When absent, the starter is seeded, which grants nothing.
+- `.agents/mcp/servers.yaml` in the draft, when present. Each top-level name defines one HTTP or stdio server.
+  The agents-layout skill's `references/mcp.md` gives the fields and migration steps. The MCP configuration formats
+  were checked against Claude Code 2.1.330 and Codex 0.171.0.
 - `.agents/agents/*.md` in the draft, the team's: one subagent each, with `name`, `description` and a `claude` and a
   `codex` map in its front matter, then the prompt. A file that breaks this, or a directory there, is refused, and
   nothing is written; the `agents-layout` skill's `references/subagents.md` gives the schema.
@@ -81,6 +84,9 @@ beside them |
 | --- | --- | --- | --- |
 | `.agents/permission/policy.yaml` | Starter policy | Always, when absent | seed |
 | `.agents/README.md`, `.agents/<directory>/.gitkeep` | The shared directories | Always, when absent | seed |
+| `.mcp.json` | One `mcpServers.<name>` entry per shared MCP server | `--harness=claude` | owned |
+| `.agents/adapters/codex/config.toml` | One `mcp_servers.<name>` entry per shared MCP server | `--harness=codex` | \
+owned |
 | `.agents/hooks/session-start` | The session-start dispatcher, mode 0755 | Always | owned |
 | `.agents/adapters/claude/settings.json` | `permissions`, with `disableBypassPermissionsMode` while the policy's \
 `bypass` is `refuse` and `disableAutoMode` while its `auto` is `refuse` | `--harness=claude` | owned |
@@ -122,7 +128,7 @@ such as `.claude/settings.local.json`, stays out of Git, so a file the team shar
 `agents-layout` skill's `references/design.md` gives the reason and its cost.
 
 Never touches: `AGENTS.md`; every other key in the adapter files, such as the other events under `hooks`, `env` or
-`[mcp_servers]`, which the team writes in the file and cooking keeps; the scripts in `.agents/hooks/session-start.d/`;
+independently configured MCP servers; the scripts in `.agents/hooks/session-start.d/`;
 the `--worktree-setup` and `--worktree-teardown` executables;
 `.claude/settings.local.json` and anything else a harness writes in its own directory.
 
@@ -292,6 +298,8 @@ import io.github.lmarqs.cookbook.agents.Codex
 def selected = [claude, codex].findAll { it.name in harness }
 agents.seedLayout()
 agents.permit(selected, cookedWith)
+def servers = agents.mcpServers()
+selected.each { it.shareMcpServers(servers[it.name]) }
 agents.connect(selected)
 agents.worktrees(selected, [root: worktreeRoot, setup: worktreeSetup, teardown: worktreeTeardown, base: worktreeBase,
   fetch: worktreeFetch, remote: worktreeRemote, 'branch-prefix': worktreeBranchPrefix])

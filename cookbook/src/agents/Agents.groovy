@@ -65,6 +65,7 @@ class Agents {
   private List<String> instructions = []
   private List<String> skills = []
   private boolean instructionsUsed = false
+  private boolean seedMcp = false
   private boolean policyUsed = false
   private boolean layoutUsed = false
   private boolean sessionStarted = false
@@ -77,6 +78,7 @@ class Agents {
    * and never owned.
    */
   void seed() {
+    seedMcp = true
     seedInstructions()
     seedLayout()
     policyUsed = true
@@ -118,6 +120,17 @@ class Agents {
       }
     }
     skills += names.toList()
+  }
+
+  /** Seeds the team's optional MCP server definitions when adopting the layout. */
+  @Seed(path = McpServers.PATH)
+  String mcpSeed() {
+    seedMcp ? '{}\n' : null
+  }
+
+  /** Reads the shared servers from the draft so other recipes can supply them in the same cook. */
+  Map mcpServers() {
+    McpServers.parse(current(McpServers.PATH))
   }
 
   /** The shared agent policy at `.agents/permission/policy.yaml`, or the packaged starter when the file is absent. */

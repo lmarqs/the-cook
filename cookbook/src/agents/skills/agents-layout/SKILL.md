@@ -1,6 +1,6 @@
 ---
 name: agents-layout
-description: Shared .agents/ layout that gives every harness in a repository the same instructions, permissions, skills and subagents. Use it to adopt the layout; change agent instructions, permissions, roles, skills, subagents or memory; investigate an agent that ignores the setup or runs what the team did not expect; or learn why the layout is shaped this way. Not for the repository's own code, or a person's harness settings outside this repository.
+description: Shared .agents/ layout that gives every harness in a repository the same instructions, permissions, skills and subagents. Use it to adopt the layout; change agent instructions, permissions, roles, shared MCP servers, skills, subagents or memory; investigate an agent that ignores the setup or runs what the team did not expect; or learn why the layout is shaped this way. Not for the repository's own code, or a person's harness settings outside this repository.
 argument-hint: "[adopt | review [--fix]]"
 ---
 
@@ -30,7 +30,7 @@ Every file here has one owner. Most surprises come from editing a file someone e
 
 | Owner | Files | Changed by |
 | --- | --- | --- |
-| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/skills/`, `hooks/` with its own session-start scripts in `hooks/session-start.d/`, `memory/`, `agents/`, `.agents/README.md`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
+| The team | `AGENTS.md`, `.agents/permission/policy.yaml`, `.agents/mcp/servers.yaml`, `.agents/skills/`, `hooks/` with its own session-start scripts in `hooks/session-start.d/`, `memory/`, `agents/`, `.agents/README.md`, and every key in the adapter files that Cook does not own | Editing and committing, through review |
 | Cook | `.agents/skills/agents-layout/` | Cooking `io.github.lmarqs.cookbook:agents#seed` with a new release |
 | A tool's recipe | A script in `.agents/hooks/session-start.d/`, at the path the person names by a parameter of that recipe | Cooking that recipe with that parameter |
 | Cook | The renders: from the policy, `permissions` in `.agents/adapters/claude/settings.json`, `sandbox_mode`, `approval_policy` and `sandbox_workspace_write.network_access` in `.agents/adapters/codex/config.toml`, `.agents/adapters/codex/rules/cook.rules` and `.agents/adapters/claude/roles/`; from `.agents/agents/`, `.agents/adapters/<harness>/agents/` | Cooking `io.github.lmarqs.cookbook:agents#connect` after a team file changes |
@@ -81,6 +81,7 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 | Fill in or review `AGENTS.md` | [references/agents-md.md](references/agents-md.md) |
 | Write or review `policy.yaml` | [references/policy.md](references/policy.md) |
 | Record a trap or anything else a session learned, or review `.agents/memory/` | [references/memory.md](references/memory.md) |
+| Add, migrate or remove an MCP server shared by Claude Code and Codex | [references/mcp.md](references/mcp.md) |
 | Write or review a shared subagent | [references/subagents.md](references/subagents.md) |
 | An agent ignores the instructions, asks when it should not, or runs what it should not | [references/investigate.md](references/investigate.md) |
 | Set up a loop runner, or decide where worktrees go | [references/design.md](references/design.md#worktrees-and-loop-runners) |
@@ -91,8 +92,10 @@ Everything the team shares with agents, apart from `AGENTS.md` and the policy, g
 
 ## Guidance
 
+- **Edit shared MCP servers in `.agents/mcp/servers.yaml`.** Re-cook `#connect` for the team’s harnesses. Cook owns each
+  rendered server entry in the root `.mcp.json` and the Codex adapter.
 - **Edit the policy, not what is rendered from it.** The keys Cook owns come from `policy.yaml`: a hand edit to one
-  reaches one harness only, and the next cook proposes undoing it. Every other key in the harness files is the
+  reaches one harness only, and the next cook proposes undoing it. Every key outside the paths Cook owns is the
   team's: edit it in place, and cooking keeps it.
 - **Keep `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` out of the repository.** While any of them exists in
   the directory of an `AGENTS.md` or one above, Claude stops reading that `AGENTS.md`. `.gitignore` keeps them out of

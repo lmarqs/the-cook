@@ -85,6 +85,7 @@ recipes:
         - ".agents/skills/agents-layout/references/design.md"
         - ".agents/skills/agents-layout/references/glossary.md"
         - ".agents/skills/agents-layout/references/investigate.md"
+        - ".agents/skills/agents-layout/references/mcp.md"
         - ".agents/skills/agents-layout/references/memory.md"
         - ".agents/skills/agents-layout/references/policy.md"
         - ".agents/skills/agents-layout/references/review.md"
@@ -331,6 +332,7 @@ recipes:
       '.agents/agents/.gitkeep',
       '.agents/hooks/.gitkeep',
       '.agents/hooks/session-start',
+      '.agents/mcp/servers.yaml',
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
@@ -344,6 +346,7 @@ recipes:
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/mcp.md',
       '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
@@ -815,6 +818,7 @@ CLAUDE.local.md
       '.agents/README.md',
       '.agents/agents/.gitkeep',
       '.agents/hooks/.gitkeep',
+      '.agents/mcp/servers.yaml',
       '.agents/memory/.gitkeep',
       '.agents/permission/policy.yaml',
       '.agents/skills/.gitkeep',
@@ -828,6 +832,7 @@ CLAUDE.local.md
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/mcp.md',
       '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',
@@ -911,6 +916,7 @@ agents.connect([claude])
       '.agents/skills/agents-layout/references/design.md',
       '.agents/skills/agents-layout/references/glossary.md',
       '.agents/skills/agents-layout/references/investigate.md',
+      '.agents/skills/agents-layout/references/mcp.md',
       '.agents/skills/agents-layout/references/memory.md',
       '.agents/skills/agents-layout/references/policy.md',
       '.agents/skills/agents-layout/references/review.md',

@@ -48,6 +48,8 @@ class Claude implements Harness {
   final String name = 'claude'
   /** `.claude`, which holds only links Cook makes and files Claude Code writes locally. */
   final String localDirectory = '.claude'
+  private Map servers = [:]
+
   private Map settings = [:]
   private Map<String, List<String>> roleDenies = [:]
   private Map<String, String> directoryLinks = [:]
@@ -153,6 +155,17 @@ class Claude implements Harness {
   @Files(path = '.agents/adapters/claude/agents')
   Map<String, String> agentDefinitions() {
     agentFiles ?: null
+  }
+
+  /** Owns each shared server separately so other project servers survive a re-cook. */
+  void shareMcpServers(Map entries) {
+    entries.each { name, server -> servers[['mcpServers', name]] = server }
+  }
+
+  /** The project-scoped MCP server entries Claude Code reads from the repository root. */
+  @Keys(path = '.mcp.json')
+  Map mcpKeys() {
+    servers ?: null
   }
 
   /**
