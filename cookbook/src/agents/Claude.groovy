@@ -159,7 +159,25 @@ class Claude implements Harness {
 
   /** Owns each shared server separately so other project servers survive a re-cook. */
   void shareMcpServers(Map entries) {
-    entries.each { name, server -> servers[['mcpServers', name]] = server }
+    entries.each { name, server -> servers[['mcpServers', name]] = mcpEntry(server) }
+  }
+
+  private static Map mcpEntry(Map server) {
+    def entry = server.findAll { key, value -> !(key in ['envFrom', 'bearerTokenEnv']) }
+
+    if (server.containsKey('envFrom')) {
+      entry.env = (server.env ?: [:]) + server.envFrom.collectEntries { [(it): '${' + it + '}'] }
+    }
+
+    if (server.bearerTokenEnv) {
+      entry.headers = (server.headers ?: [:]) + [Authorization: 'Bearer ${' + server.bearerTokenEnv + '}']
+    }
+
+    if (server.oauth?.scopes) {
+      entry.oauth = server.oauth + [scopes: server.oauth.scopes.join(' ')]
+    }
+
+    entry
   }
 
   /** The project-scoped MCP server entries Claude Code reads from the repository root. */

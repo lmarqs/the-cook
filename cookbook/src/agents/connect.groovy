@@ -299,7 +299,7 @@ def selected = [claude, codex].findAll { it.name in harness }
 agents.seedLayout()
 agents.permit(selected, cookedWith)
 def servers = agents.mcpServers()
-selected.each { it.shareMcpServers(servers[it.name]) }
+selected.each { it.shareMcpServers(servers) }
 agents.connect(selected)
 agents.worktrees(selected, [root: worktreeRoot, setup: worktreeSetup, teardown: worktreeTeardown, base: worktreeBase,
   fetch: worktreeFetch, remote: worktreeRemote, 'branch-prefix': worktreeBranchPrefix])

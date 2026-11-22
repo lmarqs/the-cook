@@ -1,8 +1,9 @@
 # Share an MCP server
 
-Edit `.agents/mcp/servers.yaml`, then re-cook `#connect` with every harness your team uses. Each top-level key names
-one server. `#seed` creates the file with `{}`. Projects upgrading an existing layout can create it when they add
-their first shared server.
+Add, change, or remove the server by name in `.agents/mcp/servers.yaml`. Each top-level key is one server.
+`#seed` starts the file with `{}`. In an existing layout, create the file when adding the first server.
+
+## Choose the transport and credentials
 
 ```yaml
 reports:
@@ -36,18 +37,26 @@ Claude Code 2.1.330 and Codex 0.171.0, including the per-server `oauth.callback_
 [Claude Code MCP configuration](https://code.claude.com/docs/en/mcp) ·
 [Codex 0.171.0 schema](https://github.com/openai/codex/blob/rust-v0.171.0/codex-rs/core/config.schema.json)
 
-## Migrate and verify
+## Adopt an existing native entry
 
-1. Copy each Claude entry you want to share from the root `.mcp.json`'s `mcpServers` object into the YAML, using
-   the server name as a top-level key. Convert a space-separated OAuth scopes string to a YAML list.
-2. If Codex already has a `[mcp_servers.<name>]` table for that same server, rewrite it as one inline value
-   under `[mcp_servers]`, such as `reports = { url = "https://reports.example.org/mcp" }`. Include its existing
-   fields so the dry run shows any differences. Cook owns the named value as a whole. Other servers can keep
-   their table headers.
-3. Run `cook --dry-run io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex`
-   with the version in `cook.lock` and the other arguments your team uses. Review the proposed server entries.
-4. Apply the same cook without `--dry-run`. Commit the YAML, root `.mcp.json`, Codex adapter and updated
-   `cook.lock` together. In a trusted project, open `/mcp` in each client to see the servers and their status.
+1. For Claude, copy the named entry from the `mcpServers` map in the root `.mcp.json` into the YAML.
+   Convert a space-separated OAuth scopes string to a list. Convert bearer-token references to
+   `bearerTokenEnv` and forwarded stdio variables to `envFrom`.
+2. For Codex, if the same name already has a `[mcp_servers.<name>]` table, rewrite that table as an inline
+   value under `[mcp_servers]` before cooking. For example, use `reports = { url = "https://reports.example.org/mcp" }`.
+   Keep all existing fields so the dry run exposes differences. Cook owns the entire named entry.
+   Other servers can keep their table headers.
 
-Cook tracks each rendered server under its own name. To change or remove one, edit the YAML and re-cook.
-Servers independently configured under other names stay in the native files.
+## Apply and verify a change
+
+1. Find the team's `#connect` version and arguments in `cook.lock`. Preview the cook with every harness the
+   team uses. For a two-client project, use the following form.
+
+   ```sh
+   cook --dry-run io.github.lmarqs.cookbook:agents:<version>#connect --harness=claude --harness=codex
+   ```
+
+2. Check each selected client's diff for the intended additions, changes, or removals. Entries under other
+   names should be preserved. Apply the same command without `--dry-run`.
+3. Commit the YAML, rendered client files, and updated `cook.lock` together. Open `/mcp` in each client
+   from a trusted project and check each expected server's status.

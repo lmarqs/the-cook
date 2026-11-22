@@ -106,7 +106,37 @@ class Codex implements Harness {
 
   /** Adds each shared MCP server as a separately owned entry in the project configuration. */
   void shareMcpServers(Map entries) {
-    entries.each { name, server -> config[['mcp_servers', name]] = server }
+    entries.each { name, server -> config[['mcp_servers', name]] = mcpEntry(server) }
+  }
+
+  private static Map mcpEntry(Map server) {
+    Map entry = [:]
+    [command: 'command', args: 'args', env: 'env', envFrom: 'env_vars', url: 'url', headers: 'http_headers',
+      bearerTokenEnv: 'bearer_token_env_var'].each { shared, nativeKey ->
+      if (server.containsKey(shared)) {
+        entry[nativeKey] = server[shared]
+      }
+    }
+
+    Map oauth = [:]
+
+    if (server.oauth?.clientId) {
+      oauth.client_id = server.oauth.clientId
+    }
+
+    if (server.oauth?.callbackPort) {
+      oauth.callback_port = server.oauth.callbackPort
+    }
+
+    if (oauth) {
+      entry.oauth = oauth
+    }
+
+    if (server.oauth?.scopes) {
+      entry.scopes = server.oauth.scopes
+    }
+
+    entry
   }
 
   /** Adds top-level hooks keys; a supplied key replaces its earlier value whole. */
