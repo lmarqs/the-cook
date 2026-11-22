@@ -2,15 +2,34 @@ package io.github.lmarqs.cookbook.agents
 
 import groovy.yaml.YamlSlurper
 
-/** Validates shared MCP definitions and resolves their transport. */
-class McpServers {
+/** One shared MCP server from `.agents/mcp/servers.yaml`, reached over HTTP or by running a stdio command. */
+class McpServer {
   static final String PATH = '.agents/mcp/servers.yaml'
   private static final List<String> HTTP = ['type', 'url', 'headers', 'bearerTokenEnv', 'oauth']
   private static final List<String> STDIO = ['type', 'command', 'args', 'env', 'envFrom']
 
-  static Map parse(String text) {
+  /** The name each client lists the server by. */
+  String name
+
+  /** `http` or `stdio`; `http` when `type` is absent and `url` is set. */
+  String type
+
+  /** The HTTP endpoint, with the literal request headers, the variable holding a bearer token, and OAuth settings. */
+  String url
+  Map<String, String> headers
+  String bearerTokenEnv
+  McpOAuth oauth
+
+  /** The stdio executable and its arguments, literal environment values, and variables forwarded from the developer. */
+  String command
+  List<String> args
+  Map<String, String> env
+  List<String> envFrom
+
+  /** The servers `text` defines, in file order; none for absent, empty or comment-only text. */
+  static List<McpServer> parse(String text) {
     if (text == null || text.readLines().every { !it.trim() || it.trim().startsWith('#') }) {
-      return [:]
+      return []
     }
 
     def servers
@@ -25,7 +44,7 @@ class McpServers {
       fail('', 'expected a YAML map of server names to definitions')
     }
 
-    servers.each { name, server ->
+    servers.collect { name, server ->
       if (!(name instanceof String) || !(name ==~ /[A-Za-z0-9_-]+/) || !(server instanceof Map)) {
         fail(name.toString(), 'expected a server name of letters, digits, _ or - with a definition')
       }
@@ -45,10 +64,9 @@ class McpServers {
           fail("${name}.type", 'expected http or stdio')
       }
 
-      server.type = type
+      new McpServer(server.findAll { key, value -> key != 'oauth' } + [name: name, type: type,
+        oauth: server.containsKey('oauth') ? new McpOAuth(server.oauth) : null])
     }
-
-    servers
   }
 
   private static void http(String name, Map server) {
@@ -183,4 +201,11 @@ class McpServers {
   private static void fail(String field, String message) {
     throw new IllegalArgumentException("${PATH}: ${field ? field + ': ' : ''}${message}")
   }
+}
+
+/** The OAuth settings of an HTTP server: a public client ID, its fixed callback port and the requested scopes. */
+class McpOAuth {
+  String clientId
+  Integer callbackPort
+  List<String> scopes
 }

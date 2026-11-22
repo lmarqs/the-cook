@@ -123,14 +123,14 @@ class Agents {
   }
 
   /** Seeds the team's optional MCP server definitions when adopting the layout. */
-  @Seed(path = McpServers.PATH)
+  @Seed(path = McpServer.PATH)
   String mcpSeed() {
     seedMcp ? '{}\n' : null
   }
 
-  /** Reads the shared servers from the draft so other recipes can supply them in the same cook. */
-  Map mcpServers() {
-    McpServers.parse(current(McpServers.PATH))
+  /** The shared MCP servers in `.agents/mcp/servers.yaml`, in file order; none when the file is absent. */
+  List<McpServer> mcpServers() {
+    McpServer.parse(current(McpServer.PATH))
   }
 
   /** The shared agent policy at `.agents/permission/policy.yaml`, or the packaged starter when the file is absent. */
@@ -153,8 +153,8 @@ class Agents {
   /**
    * Points each harness at the shared directories, by paths relative to where it sits: every directory once the layout
    * is seeded, otherwise `.agents/skills` once skills are added. Each harness reads `AGENTS.md` natively. Once the
-   * layout is seeded, also makes each harness run the session-start dispatcher at session start. Call it after adding
-   * skills.
+   * layout is seeded, also renders the shared subagents and MCP servers in each harness and makes each harness run the
+   * session-start dispatcher at session start. Call it after adding skills.
    */
   void connect(Collection<Harness> harnesses) {
     def shared = layoutUsed ? DIRECTORIES : skills ? ['skills'] : []
@@ -173,6 +173,8 @@ class Agents {
 
     def agents = subagents()
     harnesses.each { it.shareAgents(agents) }
+    def servers = mcpServers()
+    harnesses.each { it.shareMcpServers(servers) }
 
     sessionStarted = true
     harnesses.each { it.startSession(reach(it, SESSION_START)) }
@@ -424,6 +426,9 @@ interface Harness {
    * agent directory to them; renders nothing when `agents` is empty.
    */
   void shareAgents(List<Subagent> agents)
+
+  /** Renders each shared MCP server in the harness's own configuration, one owned entry per server name. */
+  void shareMcpServers(List<McpServer> servers)
 
   /**
    * Makes the harness create and remove its worktrees by running `hook`, a path relative to its directory, with

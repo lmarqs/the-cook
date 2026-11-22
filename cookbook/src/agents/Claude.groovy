@@ -48,12 +48,11 @@ class Claude implements Harness {
   final String name = 'claude'
   /** `.claude`, which holds only links Cook makes and files Claude Code writes locally. */
   final String localDirectory = '.claude'
-  private Map servers = [:]
-
   private Map settings = [:]
   private Map<String, List<String>> roleDenies = [:]
   private Map<String, String> directoryLinks = [:]
   private Map<String, String> agentFiles = [:]
+  private Map<List<String>, Map> mcpEntries = [:]
   private List sessionStart = []
   private Map<List<String>, List> worktreeHooks = [:]
 
@@ -157,33 +156,32 @@ class Claude implements Harness {
     agentFiles ?: null
   }
 
-  /** Owns each shared server separately so other project servers survive a re-cook. */
-  void shareMcpServers(Map entries) {
-    entries.each { name, server -> servers[['mcpServers', name]] = mcpEntry(server) }
+  /**
+   * Renders each shared server as its own `mcpServers.<name>` key of `.mcp.json`, so servers the team adds there by
+   * hand survive a re-cook: forwarded variables and the bearer token become `${VAR}` references, and OAuth scopes one
+   * space-separated string.
+   */
+  @Override
+  void shareMcpServers(List<McpServer> servers) {
+    mcpEntries = servers.collectEntries { [['mcpServers', it.name], mcpEntry(it)] }
   }
 
-  private static Map mcpEntry(Map server) {
-    def entry = server.findAll { key, value -> !(key in ['envFrom', 'bearerTokenEnv']) }
-
-    if (server.containsKey('envFrom')) {
-      entry.env = (server.env ?: [:]) + server.envFrom.collectEntries { [(it): '${' + it + '}'] }
-    }
-
-    if (server.bearerTokenEnv) {
-      entry.headers = (server.headers ?: [:]) + [Authorization: 'Bearer ${' + server.bearerTokenEnv + '}']
-    }
-
-    if (server.oauth?.scopes) {
-      entry.oauth = server.oauth + [scopes: server.oauth.scopes.join(' ')]
-    }
-
-    entry
+  private static Map mcpEntry(McpServer server) {
+    def env = server.envFrom == null ? server.env :
+        (server.env ?: [:]) + server.envFrom.collectEntries { [it, '${' + it + '}'] }
+    def headers = server.bearerTokenEnv == null ? server.headers :
+        (server.headers ?: [:]) + [Authorization: 'Bearer ${' + server.bearerTokenEnv + '}']
+    def oauth = server.oauth == null ? null :
+        [clientId: server.oauth.clientId, callbackPort: server.oauth.callbackPort,
+          scopes: server.oauth.scopes?.join(' ')].findAll { key, value -> value != null }
+    [type: server.type, url: server.url, headers: headers, oauth: oauth, command: server.command, args: server.args,
+      env: env].findAll { key, value -> value != null }
   }
 
   /** The project-scoped MCP server entries Claude Code reads from the repository root. */
   @Keys(path = '.mcp.json')
   Map mcpKeys() {
-    servers ?: null
+    mcpEntries ?: null
   }
 
   /**

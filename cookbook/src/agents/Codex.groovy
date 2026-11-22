@@ -104,39 +104,21 @@ class Codex implements Harness {
     config = config.findAll { key, value -> !(key == NETWORK_ACCESS && 'sandbox_workspace_write' in more) } + more
   }
 
-  /** Adds each shared MCP server as a separately owned entry in the project configuration. */
-  void shareMcpServers(Map entries) {
-    entries.each { name, server -> config[['mcp_servers', name]] = mcpEntry(server) }
+  /**
+   * Renders each shared server as its own `mcp_servers.<name>` key of `config.toml`, so servers the team adds there by
+   * hand survive a re-cook.
+   */
+  @Override
+  void shareMcpServers(List<McpServer> servers) {
+    servers.each { config[['mcp_servers', it.name]] = mcpEntry(it) }
   }
 
-  private static Map mcpEntry(Map server) {
-    Map entry = [:]
-    [command: 'command', args: 'args', env: 'env', envFrom: 'env_vars', url: 'url', headers: 'http_headers',
-      bearerTokenEnv: 'bearer_token_env_var'].each { shared, nativeKey ->
-      if (server.containsKey(shared)) {
-        entry[nativeKey] = server[shared]
-      }
-    }
-
-    Map oauth = [:]
-
-    if (server.oauth?.clientId) {
-      oauth.client_id = server.oauth.clientId
-    }
-
-    if (server.oauth?.callbackPort) {
-      oauth.callback_port = server.oauth.callbackPort
-    }
-
-    if (oauth) {
-      entry.oauth = oauth
-    }
-
-    if (server.oauth?.scopes) {
-      entry.scopes = server.oauth.scopes
-    }
-
-    entry
+  private static Map mcpEntry(McpServer server) {
+    def oauth = [client_id: server.oauth?.clientId, callback_port: server.oauth?.callbackPort]
+    .findAll { key, value -> value != null }
+    [command: server.command, args: server.args, env: server.env, env_vars: server.envFrom, url: server.url,
+      http_headers: server.headers, bearer_token_env_var: server.bearerTokenEnv, oauth: oauth ?: null,
+      scopes: server.oauth?.scopes].findAll { key, value -> value != null }
   }
 
   /** Adds top-level hooks keys; a supplied key replaces its earlier value whole. */
