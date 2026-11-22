@@ -118,6 +118,25 @@ remote:
     }
   }
 
+  @Test void rejectsServerNamesTheClientsRefuse() {
+    ['my.server', "'my server'"].each { name ->
+      write(SOURCE, "${name}: { url: https://example.org }\n")
+      def error = assertThrows(IllegalArgumentException) { connect() }
+      assert error.message.contains('expected a server name')
+      assert !file('.mcp.json').exists()
+      assert !file(CONFIG).exists()
+    }
+  }
+
+  @Test void treatsAnEmptyOrCommentOnlyFileAsNoServers() {
+    ['', '# no shared servers yet\n'].each { text ->
+      write(SOURCE, text)
+      connect().commit()
+      assert !file('.mcp.json').exists()
+      assert !codexServers()
+    }
+  }
+
   private def connect(List<String> harnesses = ['claude', 'codex']) {
     cook(kitchen, 'io.github.lmarqs.cookbook:agents:0.1.0#connect', [harness: harnesses])
   }

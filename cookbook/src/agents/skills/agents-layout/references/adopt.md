@@ -424,4 +424,4 @@ Mechanical moves do not cover every existing setup. These fail loudly; each has 
   shape, and writes nothing. Check: `grep -n '^[[:space:]]*\[' .agents/adapters/codex/config.toml` lists the tables.
   Rewrite the key inline, as the message says, or remove it and let the cook write it.
 
-For a repository with existing project MCP servers, follow [Migrate and verify](mcp.md#migrate-and-verify) to share selected entries.
+For a repository with existing project MCP servers, follow [Adopt an existing native entry](mcp.md#adopt-an-existing-native-entry) to share selected entries.

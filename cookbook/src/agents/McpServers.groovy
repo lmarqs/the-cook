@@ -9,7 +9,7 @@ class McpServers {
   private static final List<String> STDIO = ['type', 'command', 'args', 'env', 'envFrom']
 
   static Map parse(String text) {
-    if (text == null) {
+    if (text == null || text.readLines().every { !it.trim() || it.trim().startsWith('#') }) {
       return [:]
     }
 
@@ -26,8 +26,8 @@ class McpServers {
     }
 
     servers.each { name, server ->
-      if (!name.trim() || !(server instanceof Map)) {
-        fail(name, 'expected a named server definition')
+      if (!(name instanceof String) || !(name ==~ /[A-Za-z0-9_-]+/) || !(server instanceof Map)) {
+        fail(name.toString(), 'expected a server name of letters, digits, _ or - with a definition')
       }
 
       def type = server.containsKey('type') ? server.type : server.containsKey('url') ? 'http' : 'stdio'
