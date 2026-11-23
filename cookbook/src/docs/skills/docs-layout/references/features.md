@@ -5,7 +5,8 @@ do, and why is it so?"
 
 A fact belongs here when it states what a unit owes its users and the code cannot be read for it: a threshold, a
 rule, who may do what. A limit an interface's callers rely on is the interface's; a reason that meets the decision
-bar is a record, and one below it stays here; operating the unit is a runbook.
+bar is a record, and one below it stays here; operating the unit is a runbook. A trap of the product, a behavior
+that looks right to its users and is not, is one of these facts: the unit's page names it.
 
 What makes a good feature page:
 
