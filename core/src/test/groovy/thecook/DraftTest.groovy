@@ -12,12 +12,12 @@ class DraftTest {
   @Rule public TemporaryFolder folder = new TemporaryFolder()
 
   @Test void listsADirectorysEntriesAsTheInvocationLeftThem() {
-    def destination = folder.newFolder()
-    write(destination, 'agents/kept.md', 'kept\n')
-    write(destination, 'agents/gone.md', 'gone\n')
-    write(destination, 'agents/nested/inner.md', 'inner\n')
-    Files.createSymbolicLink(new File(destination, 'agents/linked.md').toPath(), Paths.get('kept.md'))
-    def draft = new Draft(destination)
+    def kitchen = folder.newFolder()
+    write(kitchen, 'agents/kept.md', 'kept\n')
+    write(kitchen, 'agents/gone.md', 'gone\n')
+    write(kitchen, 'agents/nested/inner.md', 'inner\n')
+    Files.createSymbolicLink(new File(kitchen, 'agents/linked.md').toPath(), Paths.get('kept.md'))
+    def draft = new Draft(kitchen)
     draft.delete('agents/gone.md')
     draft.write('agents/added.md', 'added\n')
     draft.write('agents/fresh/deep/file.md', 'deep\n')
@@ -35,25 +35,25 @@ class DraftTest {
   }
 
   @Test void listsNothingForAnAbsentDirectoryOrAFile() {
-    def destination = folder.newFolder()
-    write(destination, 'NOTES.md', 'notes\n')
-    def draft = new Draft(destination)
+    def kitchen = folder.newFolder()
+    write(kitchen, 'NOTES.md', 'notes\n')
+    def draft = new Draft(kitchen)
 
     assert draft.entries('missing') == [:]
     assert draft.entries('NOTES.md') == [:]
   }
 
   @Test void listsTheDestinationRoot() {
-    def destination = folder.newFolder()
-    write(destination, 'NOTES.md', 'notes\n')
-    def draft = new Draft(destination)
+    def kitchen = folder.newFolder()
+    write(kitchen, 'NOTES.md', 'notes\n')
+    def draft = new Draft(kitchen)
     draft.write('README.md', 'readme\n')
 
     assert draft.entries('.') == ['NOTES.md': 'file', 'README.md': 'file']
   }
 
-  private static void write(File destination, String path, String text) {
-    def file = new File(destination, path)
+  private static void write(File kitchen, String path, String text) {
+    def file = new File(kitchen, path)
     file.parentFile.mkdirs()
     file.text = text
   }

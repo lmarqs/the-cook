@@ -8,7 +8,7 @@ import thecook.model.Diagnostic
 import java.nio.file.Paths
 
 /**
- * A part of a destination file that a recipe owns: it writes the part, withdraws it, and is what `cook.lock` records.
+ * A part of a kitchen file that a recipe owns: it writes the part, withdraws it, and is what `cook.lock` records.
  * Two targets are the same when the lock records them the same.
  */
 abstract class Target {

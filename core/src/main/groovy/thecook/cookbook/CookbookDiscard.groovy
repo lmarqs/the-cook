@@ -8,20 +8,20 @@ import thecook.model.Diagnostic
  * once it lists no recipe. Earlier content is not restored; the kitchen's version control holds it.
  */
 final class CookbookDiscard {
-  private final File destination
+  private final File kitchen
 
-  CookbookDiscard(File destination) {
-    this.destination = destination
+  CookbookDiscard(File kitchen) {
+    this.kitchen = kitchen
   }
 
   /** The changes that discard recipes by their lock names; only `Proposal.commit` writes them. */
   Proposal propose(List<String> operands) {
-    def kitchen = destination.toPath().toRealPath()
-    def draft = new Draft(destination)
+    def kitchenPath = kitchen.toPath().toRealPath()
+    def draft = new Draft(kitchen)
     def ownership = new Ownership(draft)
     Set<String> discarded = []
     operands.each { operand ->
-      def name = RecipeLoader.lockName(kitchen, operand)
+      def name = RecipeLoader.lockName(kitchenPath, operand)
 
       if (!discarded.add(name)) {
         throw new IllegalArgumentException(

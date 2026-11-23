@@ -40,11 +40,11 @@ final class CookbookCompiler {
   static ClassLoader models(CookbookArtifact artifact) {
     def config = configuration()
     config.addCompilationCustomizers(new ModelSuperclass())
-    ClassLoader engine = CookbookCompiler.classLoader
-    def unit = new CompilationUnit(config, null, new GroovyClassLoader(engine, config))
+    ClassLoader core = CookbookCompiler.classLoader
+    def unit = new CompilationUnit(config, null, new GroovyClassLoader(core, config))
     artifact.models.each { unit.addSource("${it}.groovy", artifact.modelSource(it)) }
     unit.compile(Phases.CLASS_GENERATION)
-    new DefinedClasses(unit.classes.collectEntries { [(it.name): it.bytes] }, engine)
+    new DefinedClasses(unit.classes.collectEntries { [(it.name): it.bytes] }, core)
   }
 
   /**
@@ -67,7 +67,7 @@ final class CookbookCompiler {
     config
   }
 
-  /** Gives each `@Ingredient` class without a superclass the engine's `CookbookModel`. */
+  /** Gives each `@Ingredient` class without a superclass the core's `CookbookModel`. */
   private static final class ModelSuperclass extends CompilationCustomizer {
     ModelSuperclass() {
       super(CompilePhase.CONVERSION)

@@ -2,7 +2,7 @@ package thecook.filesystem
 
 import groovy.transform.EqualsAndHashCode
 
-/** A path a recipe writes: relative, inside the destination, and outside `.git`. */
+/** A path a recipe writes: relative, inside the kitchen, and outside `.git`. */
 @EqualsAndHashCode
 final class TargetPath {
   final String value

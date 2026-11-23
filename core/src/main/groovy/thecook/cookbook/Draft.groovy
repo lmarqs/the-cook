@@ -8,7 +8,7 @@ import java.nio.file.Files
 import java.nio.file.LinkOption
 
 /**
- * The destination as the recipes of one invocation leave it, held in memory. Recipes read and write it in order, so
+ * The kitchen as the recipes of one invocation leave it, held in memory. Recipes read and write it in order, so
  * each one sees what the ones before it wrote; nothing reaches the disk until `commit`.
  */
 final class Draft {
@@ -19,8 +19,8 @@ final class Draft {
   private final Map<String, Map> before = [:]
   private final Map<String, Map> after = [:]
 
-  Draft(File destination) {
-    repository = new Repository(destination)
+  Draft(File kitchen) {
+    repository = new Repository(kitchen)
   }
 
   /** The file's text, or a link's target, as the invocation left it so far; `null` when absent. */

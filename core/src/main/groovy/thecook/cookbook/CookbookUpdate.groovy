@@ -4,11 +4,11 @@ import thecook.model.Diagnostic
 
 /** Selects newer releases for the recipes and arguments recorded in `cook.lock`. */
 final class CookbookUpdate {
-  private final File destination
+  private final File kitchen
   private final CookbookRepositories repositories
 
-  CookbookUpdate(File destination, CookbookRepositories repositories) {
-    this.destination = destination
+  CookbookUpdate(File kitchen, CookbookRepositories repositories) {
+    this.kitchen = kitchen
     this.repositories = repositories
   }
 
@@ -18,8 +18,8 @@ final class CookbookUpdate {
    * explicitly.
    */
   List<RecipeUpdate> plan(List<String> operands, boolean major = false) {
-    def kitchen = destination.toPath().toRealPath()
-    def recipes = LockedRecipe.select(readLock(), kitchen, operands, 'can be updated')
+    def kitchenPath = kitchen.toPath().toRealPath()
+    def recipes = LockedRecipe.select(readLock(), kitchenPath, operands, 'can be updated')
     def unversioned = recipes.find { !Coordinates.valid(it.source) }
 
     if (operands && unversioned) {
@@ -43,11 +43,11 @@ final class CookbookUpdate {
   /** Cooks only moves, with their recorded arguments, in plan order; only `Proposal.commit` writes changes. */
   Proposal propose(List<RecipeUpdate> updates) {
     def requests = updates.findAll { it.to != null }.collect { it.recipe.replay(it.source.at(it.to).toString()) }
-    new CookbookCook(destination, repositories).propose(requests)
+    new CookbookCook(kitchen, repositories).propose(requests)
   }
 
   private CookLock readLock() {
-    def text = new Draft(destination).read(CookLock.PATH)
+    def text = new Draft(kitchen).read(CookLock.PATH)
 
     if (text == null) {
       throw new IllegalArgumentException(Diagnostic.text("there is no ${CookLock.PATH}",

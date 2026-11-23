@@ -44,7 +44,7 @@ import java.lang.annotation.Target
   boolean path() default false
 }
 
-/** An injected model instance, at the destination root or at the directory `at`. */
+/** An injected model instance, at the kitchen root or at the directory `at`. */
 @Target([ElementType.FIELD, ElementType.LOCAL_VARIABLE])
 @Retention(RetentionPolicy.RUNTIME)
 @interface ingredient {

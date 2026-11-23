@@ -24,7 +24,7 @@ final class Declarations {
 
   private Declarations() { }
 
-  /** `path` below `directory`, the instance base with `.` at the destination root. */
+  /** `path` below `directory`, the instance base with `.` at the kitchen root. */
   static String join(String directory, String path) {
     if (path == '.') {
       return directory

@@ -216,7 +216,7 @@ final class LoadedRecipe {
 
   /**
    * Runs the recipe with `arguments` against `draft`, which its models read as the recipes before it left the
-   * destination, and returns what it declares; the draft does not change.
+   * kitchen, and returns what it declares; the draft does not change.
    */
   Evaluation evaluate(List<Argument> arguments, Draft draft) {
     RecipeRun.run(CookbookCompiler.recipe(source, fileName, models), name, arguments, resources, modelFiles, draft)

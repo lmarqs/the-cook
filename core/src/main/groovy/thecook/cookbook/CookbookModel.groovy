@@ -4,12 +4,12 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
 /**
- * The superclass the engine gives every `@Ingredient` model that declares none: the instance's `directory` and the
- * reads a model may make, from its own artifact and from the destination as the recipes before it left it.
+ * The superclass Cook gives every `@Ingredient` model that declares none: the instance's `directory` and the
+ * reads a model may make, from its own artifact and from the kitchen as the recipes before it left it.
  */
 @CompileStatic
 abstract class CookbookModel {
-  /** The instance's base inside the destination, with `.` at its root. */
+  /** The instance's base inside the kitchen, with `.` at its root. */
   String directory = '.'
 
   // Private and read statically: dynamic lookup from a model, in another package, would not find these fields.
@@ -20,7 +20,7 @@ abstract class CookbookModel {
   @SuppressWarnings('UnusedPrivateField')
   private Draft engineDraft
 
-  /** Places `model` at `directory`, reading `files` as its artifact's and `draft` as the destination. */
+  /** Places `model` at `directory`, reading `files` as its artifact's and `draft` as the kitchen. */
   @PackageScope
   static void attach(CookbookModel model, String directory, ModelFiles files, Draft draft) {
     model.directory = directory
@@ -38,13 +38,13 @@ abstract class CookbookModel {
     this.@engineFiles.resources(dir)
   }
 
-  /** The destination file at `path` below `directory`, as the recipes before this one left it; `null` when absent. */
+  /** The kitchen file at `path` below `directory`, as the recipes before this one left it; `null` when absent. */
   String current(String path) {
     this.@engineDraft.read(Declarations.join(directory, path))
   }
 
   /**
-   * The entries directly under the destination directory at `path` below `directory`, by name, each with its kind,
+   * The entries directly under the kitchen directory at `path` below `directory`, by name, each with its kind,
    * `file`, `symlink` or `directory`, as the recipes before this one left them; empty when there are none.
    */
   Map<String, String> currentEntries(String path) {

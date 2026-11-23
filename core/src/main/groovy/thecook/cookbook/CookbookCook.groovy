@@ -5,12 +5,12 @@ import thecook.model.Diagnostic
 import java.lang.reflect.InvocationTargetException
 
 /**
- * Cooks recipes, by coordinates or by path, left to right, into one draft of the destination: each recipe withdraws
+ * Cooks recipes, by coordinates or by path, left to right, into one draft of the kitchen: each recipe withdraws
  * what it owned and no longer declares, then writes what it declares, taking ownership from the recipes that held it.
  * `cook.lock` records the result.
  */
 final class CookbookCook {
-  private final File destination
+  private final File kitchen
   private final CookbookRepositories repositories
   private final ExistingSeed existing
 
@@ -18,16 +18,16 @@ final class CookbookCook {
    * Coordinates resolve from `repositories`; `existing` decides what cooking a recipe the first time does with a
    * file its `existing = 'fail'` seed writes.
    */
-  CookbookCook(File destination, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE) {
-    this.destination = destination
+  CookbookCook(File kitchen, CookbookRepositories repositories, ExistingSeed existing = ExistingSeed.REFUSE) {
+    this.kitchen = kitchen
     this.repositories = repositories
     this.existing = existing
   }
 
   /** Evaluates `requests` in order and returns the proposed changes, written only by `Proposal.commit`. */
   Proposal propose(List<RecipeRequest> requests) {
-    def loader = new RecipeLoader(destination, repositories)
-    def draft = new Draft(destination)
+    def loader = new RecipeLoader(kitchen, repositories)
+    def draft = new Draft(kitchen)
     def ownership = new Ownership(draft, existing)
     Set<String> named = []
     List<CookedRecipe> recipes = []

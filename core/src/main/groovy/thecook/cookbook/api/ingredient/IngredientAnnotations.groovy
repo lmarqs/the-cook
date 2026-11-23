@@ -1,7 +1,7 @@
 package thecook.cookbook.api.ingredient
 
-// The author's API: the only engine types a recipe or ingredient reaches. These annotations mark an ingredient and name
-// the part of a file each of its members declares; recipe annotations live in `thecook.cookbook.api.recipe`. The engine
+// The author's API: the only Cook types a recipe or ingredient reaches. These annotations mark an ingredient and name
+// the part of a file each of its members declares; recipe annotations live in `thecook.cookbook.api.recipe`. Cook
 // imports both packages into every unit, so recipes write `@param` and ingredients write `@Section` without an import.
 
 import java.lang.annotation.ElementType
@@ -9,7 +9,7 @@ import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 
-/** Marks a model class. The engine gives it `directory`, `resource`, `resources` and `current`. */
+/** Marks a model class. Cook gives it `directory`, `resource`, `resources` and `current`. */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @interface Ingredient {}

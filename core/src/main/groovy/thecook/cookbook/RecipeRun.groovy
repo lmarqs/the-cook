@@ -25,7 +25,7 @@ final class RecipeRun {
    * A bare `--name` is `true` for a yes-or-no param and an error for any other.
    * `resources` holds the text of each `@resource` path.
    * `name` is the recipe's own name, for its `@recipe` fields and markers. Each ingredient reads `files` as its
-   * artifact's and `draft` as the destination. A model that declares anything on a new instance is refused.
+   * artifact's and `draft` as the kitchen. A model that declares anything on a new instance is refused.
    */
   static Evaluation run(CompiledRecipe recipe, String name, List<Argument> arguments, Map<String, String> resources,
       ModelFiles files, Draft draft) {
