@@ -24,7 +24,7 @@ notification; Cook's batch changes its configuration, rather than sending the no
    applicable. Cook does not execute external commands, HTTP requests or agent launches as batch actions.
 2. Recipes and their operations compose in declared order against current content. Cook presents the final combined
    diff for whole-batch approval and rolls back the batch's completed writes on a write failure.
-3. Approval, destination boundaries and rollback govern declared operations. They do not sandbox trusted recipe
+3. Approval, the kitchen boundary and rollback govern declared operations. They do not sandbox trusted recipe
    evaluation or cover arbitrary side effects caused by recipe code.
 4. Configuring a program through native files does not make Cook that program's runner
    ([0022](0022-tool-integration.md)).

@@ -13,7 +13,7 @@ understand the release range and review the proposed changes before approving th
 Update moves [recipes](glossary.md) recorded in `cook.lock` to newer releases on request, using their recorded
 arguments. [Replicate](replicate.md) cooks the recorded versions again; update chooses newer versions first, then
 uses the same cooking review. It evaluates trusted recipe code. Recipe updates leave the installed
-[engine release](install.md#upgrading) as it is.
+[Cook release](install.md#upgrading) as it is.
 
 ### From 8.0.0 to the newest 8.x, then the newest release
 

@@ -15,8 +15,8 @@ recipes, programs and the repository can be read from the arguments a recipe was
 - `cook.lock` records each recipe's source and normalized supplied arguments, which replicate replays
   ([0007](0007-ownership.md)). Every owned section also opens with a comment line naming the recipe and those
   arguments ([generated content](../ux/generated-content-standards.md)), so a reader sees them beside the output.
-  Re-cooking repeats those arguments, and `cook check` compares the result with the destination.
-- A model can read the current content of any file in the destination, including a file another recipe in the same
+  Re-cooking repeats those arguments, and `cook check` compares the result with the kitchen.
+- A model can read the current content of any file in the kitchen, including a file another recipe in the same
   invocation writes.
 - Worked example: acme cooks a tracker recipe that adds a session-start script whenever it finds an agents layout's
   hooks directory. A later commit adds the layout. `cook check` with the tracker's unchanged arguments now reports

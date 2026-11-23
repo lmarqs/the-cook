@@ -77,5 +77,5 @@ select the kitchen. It does not accept `--force` or `--skip`. The [CLI reference
 options and their scope.
 
 Replicate uses cooking's confirm texts, terminal diff, whole-batch approval, yield texts and write-failure rollback;
-see [review and recovery](cook.md#review-and-recovery). Approval, destination boundaries and rollback cover declared
+see [review and recovery](cook.md#review-and-recovery). Approval, the kitchen boundary and rollback cover declared
 file operations, not arbitrary effects of trusted recipe code.

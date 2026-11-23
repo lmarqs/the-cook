@@ -14,23 +14,23 @@ unattended callers explicitly preapprove it.
 Command details are in the [CLI reference](../features/cli.md) and vocabulary in the
 [glossary](../features/glossary.md).
 
-Approval, destination boundaries and rollback cover
+Approval, the kitchen boundary and rollback cover
 declared batch operations, not arbitrary side effects of recipe code. Trusting a recipe is separate from approving the
 changes it proposes.
 
 ## Entry points
 
 Document Cook invocations as `cook`, the command Homebrew, mise or the release package puts on `PATH`, because one
-spelling copies and pastes the same way whichever installer put it there ([0017](../adrs/0017-engine-version.md)). The
+spelling copies and pastes the same way whichever installer put it there ([0017](../adrs/0017-cook-version.md)). The
 [install](../features/install.md) page covers installing, pinning and upgrading; the root README's
 [install section](../../README.md#install) covers installing a release and building from source. `./cook` names only
 this source repository's development launcher.
 
-The CLI is the public cooking interface. Gradle builds and packages the engine and cookbooks. Cookbook repositories and
-builds remain separate from engine releases.
+The CLI is the public cooking interface. Gradle builds and packages Cook and cookbooks. Cookbook repositories and
+builds remain separate from Cook releases.
 
-The selected kitchen is the destination, regardless of the executable or recipe location; see
-[destination and source paths](../features/cook.md#destination-and-source-paths) for the write boundary and how
+The kitchen is the boundary, regardless of the executable or recipe location; see
+[kitchen and source paths](../features/cook.md#kitchen-and-source-paths) for the write boundary and how
 recipe and template references resolve.
 
 ## Command grammar
@@ -182,7 +182,7 @@ Exit 0 when the command did what it was asked, 1 when nothing was written becaus
 
 Noninteractive execution alone does not authorize target writes. Without `--batch-approve`, do not change batch
 targets or wait indefinitely for an unavailable answer; explain that approval is required. With that flag, display
-the actual diff and proceed without prompting, using the same operations and destination boundaries as interactive
+the actual diff and proceed without prompting, using the same operations and kitchen boundary as interactive
 execution. Do not open a pager or editor that an unattended caller would have to close.
 
 ## Help text

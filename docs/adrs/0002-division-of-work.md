@@ -34,7 +34,7 @@ Developers can review the concrete effect of shared setup while retaining contro
 ## Reasons
 
 - **1.** Mechanical composition gives the acme example a defined result: later instructions replace earlier values at
-  an overlapping target. Authors retain choices that depend on project intent. The trade: the engine does not decide
+  an overlapping target. Authors retain choices that depend on project intent. The trade: Cook does not decide
   which recipe or configuration is appropriate.
 - **2.** The actual diff exposes changes to current content, including manual edits, so the developer sees the
   concrete effect of the shared setup before it is written. The trade: reviewers must assess the proposed changes;
@@ -56,7 +56,7 @@ cannot justify skipping an invocation as already cooked.
 
 ### Setup entirely by hand or by a coding agent
 
-At its best, every repository gets tailored choices with no configuration engine to maintain. It loses the common
+At its best, every repository gets tailored choices with no shared tool to maintain. It loses the common
 path for ordered composition, combined file review and recorded recovery. People or agents can author content while
 Cook handles the declared file operations.
 
@@ -64,7 +64,7 @@ Cook handles the declared file operations.
 
 Costs:
 
-- Reviewers assess every proposed change; the engine does not judge which recipe or configuration is appropriate.
+- Reviewers assess every proposed change; Cook does not judge which recipe or configuration is appropriate.
 - Recipe authors who want reproducible results control the inputs their code uses.
 
 Must be maintained:

@@ -25,7 +25,7 @@ explain the actual setup readers encounter.
 
 1. Recipe-declared instruction text states the repository's conventions as they hold for a reader without Cook: it
    describes the configured program or the repository's practice directly, and names Cook only where a reader needs
-   to invoke it. The engine enforces no length bound on that text; its wording and length follow the
+   to invoke it. Cook enforces no length bound on that text; its wording and length follow the
    [generated-content standard](../ux/generated-content-standards.md#instruction-files-and-conventions).
 2. Instruction text and ignore entries in shared files are [sections](../features/glossary.md) bounded by markers
    that name the owning recipe and region ([0007](0007-ownership.md)). Text outside a section is preserved
@@ -71,7 +71,7 @@ At its best, cleanup can keep conventions while removing instructions tied to th
 requires a stored class for every section and a separate reconciliation step. Removal by a recipe's new version and
 discard of a recipe instead expose exactly what will change for approval.
 
-### Enforce a fixed instruction-size budget in the engine
+### Enforce a fixed instruction-size budget in Cook
 
 At its best, every session gets a bounded amount of generated text. It loses because it adds an unrequested enforcement
 system and cannot decide which repository instructions are useful. Concision remains authoring guidance.

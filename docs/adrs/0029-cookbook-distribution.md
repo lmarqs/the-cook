@@ -15,7 +15,7 @@ under that release changes.
 - A [cookbook](../features/glossary.md) is a repository, or a directory in one, with `cookbook.toml` at its root
   naming its `group`; each directory under its `src/` is one artifact holding models, recipes, resources and a
   README, and its tests sit apart under `test/` ([cookbook](../../cookbook/README.md)).
-- The engine compiles an artifact's sources when one of its recipes is cooked. An artifact's jar holds those sources,
+- Cook compiles an artifact's sources when one of its recipes is cooked. An artifact's jar holds those sources,
   resources and README under the artifact's package path, `<group path>/<artifact>/`, not compiled classes. A jar of
   files and a POM is what any build tool writes: `cookbook/build.gradle` writes them with Gradle's `Jar` task and its
   `maven-publish` plugin ([cookbook](../../cookbook/README.md)). The build that publishes them sets their version.
@@ -47,7 +47,7 @@ under that release changes.
    `<artifact>-maven-metadata.xml` its latest release carries. A source directory serves each artifact of its group,
    at any version, from the files of `src/<artifact>/`. A path starting with `~/` is relative to the user's home,
    any other path to the kitchen. Entries are tried in order.
-3. Without a `cook.toml`, the engine resolves from `github:lmarqs/the-cook`, where this repository releases its
+3. Without a `cook.toml`, Cook resolves from `github:lmarqs/the-cook`, where this repository releases its
    cookbook.
 4. `cook.lock` records the sha256 of the artifact's sources: each path and its content, in path order. A different
    hash under a version the lock records is shown as a changed source before the diff.
@@ -55,7 +55,7 @@ under that release changes.
 
 ## Reasons
 
-- **1.** The jar carries the sources the engine compiles, and Maven-layout repositories are what existing tools
+- **1.** The jar carries the sources Cook compiles, and Maven-layout repositories are what existing tools
   publish to and hosts serve, so one resolution path covers public, private and local cookbooks. The version comes
   from the release, so no commit exists only to change a version number. The trade is a build to package a cookbook,
   though a jar of files needs only the packaging steps every build tool has.
@@ -75,10 +75,10 @@ under that release changes.
   `cook --help` prints work as written. This repository releases on GitHub because Maven Central's publishing limits
   can refuse a release and need a signing key and Portal credentials, while a GitHub release needs only the token the
   workflow has. The trades are a kitchen that depends on GitHub.com, as installing Cook already does
-  ([0017](0017-engine-version.md)), and the releases before 12.2.0, which only Maven Central holds
+  ([0017](0017-cook-version.md)), and the releases before 12.2.0, which only Maven Central holds
   ([cookbook](../../cookbook/README.md#units)).
 - **4.** A jar's bytes identify more than the artifact: two builds of one release can differ in bytes. A hash of the
-  artifact's sources identifies exactly what the engine compiles. A repository other than Maven Central, such as a
+  artifact's sources identifies exactly what Cook compiles. A repository other than Maven Central, such as a
   GitHub release whose asset is uploaded again, can replace a jar under its version, so comparing that hash with the
   lock is how a repository notices that a release's content changed. The trade is a hash that no other tool computes.
 - **5.** A branch or a range selects different content over time under the same coordinates, so the lock could not

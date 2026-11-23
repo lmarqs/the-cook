@@ -85,11 +85,11 @@ defaults:
   - scope:
       path: core/README.md
     values:
-      description: Describes how the core engine, thecook.cookbook, cooks recipes named by coordinates or by a Groovy path in the kitchen.
+      description: Describes how the core, thecook.cookbook, cooks recipes named by coordinates or by a Groovy path in the kitchen.
   - scope:
       path: infra/README.md
     values:
-      description: Describes how infra connects the core engine to the places cookbook releases come from, such as Maven repositories and local paths.
+      description: Describes how infra connects the core to the places cookbook releases come from, such as Maven repositories and local paths.
   # A page's own front matter takes only description, audience and keywords, so a moved page's old URL is kept here.
   - scope:
       path: docs/features/traps.md

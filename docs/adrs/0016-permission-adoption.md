@@ -32,9 +32,9 @@ configuration through a separate import step.
    alias. Cook does not silently drop rules to enforce a built-in minimum permission set, nor prescribe a universal
    cross-program rule grammar or precedence.
 3. Personal settings are not implicitly imported into shared configuration. A recipe that explicitly copies choices into
-   a declared destination file exposes that output in the same batch review. Recipe and template references come from
-   inside the destination repository or by coordinates; declared writes and deletions remain
-   within the destination ([0012](0012-write-boundary.md)).
+   a declared file in the kitchen exposes that output in the same batch review. Recipe and template references come from
+   inside the kitchen or by coordinates; declared writes and deletions remain
+   within the kitchen ([0012](0012-write-boundary.md)).
 4. The permission rules and keys a recipe writes are recorded as its own in the committed `cook.lock`
    ([0007](0007-ownership.md)). That ownership decides which rules the recipe's later versions update and remove; it
    never vetoes a change to an edited rule and never extends to rules the recipe did not write. Discarding the recipe
@@ -48,7 +48,7 @@ configuration through a separate import step.
 - **2.** The actual diff exposes additions, replacements and deletions for the requested operation. Requiring proof of
   equivalence before writing would introduce a separate import contract and refuse deliberate permission changes. Native
   output review does not prove equivalent effective access across programs or across settings outside the batch.
-- **3.** Personal settings carry choices a team may not share. Making the destination change explicit lets a reviewer
+- **3.** Personal settings carry choices a team may not share. Making the kitchen change explicit lets a reviewer
   decide whether to share them. Cook does not discover or publish those choices automatically.
 - **4.** A recipe's later version can stop declaring a permission rule; without a record of what it wrote, that rule
   would linger with no recipe responsible for it. Recording only what the recipe wrote leaves the example's domain and

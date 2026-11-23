@@ -1,10 +1,10 @@
 ---
 description: Maps Cook's responsibilities, operations, boundaries and distribution, and numbers the requirements other pages cite.
-audience: Whoever changes the engine or cites a requirement
+audience: Whoever changes Cook or cites a requirement
 ---
 # Cook architecture
 
-Cook is a recipe driven configuration engine. It evaluates trusted Groovy [recipes](features/glossary.md) into an
+Cook is a recipe driven configuration tool. It evaluates trusted Groovy [recipes](features/glossary.md) into an
 ordered batch of file operations, presents the resulting diff, obtains approval, and performs the writes.
 
 This document states the intended architecture. Supporting design and reference documents follow it; descriptions of
@@ -20,7 +20,7 @@ and recipes that describe the setup.
 
 | Area | Responsibility | Requirement |
 | --- | --- | --- |
-| Cook engine | Evaluate trusted Groovy recipes, assemble their ordered file operations, present the diff, obtain approval, and perform the writes. | FR-1 |
+| Cook | Evaluate trusted Groovy recipes, assemble their ordered file operations, present the diff, obtain approval, and perform the writes. | FR-1 |
 | Ingredients and cookbooks | Model programs' native files and configuration in ingredients; hold and ship ingredients and recipes through cookbook repositories, with builds that can be separate from Cook's build. | FR-2 |
 | Batch | Contain file operations, including directory and symlink operations where applicable. | FR-3 |
 | Trust boundary | Govern declared batch operations with approval, output boundaries, and rollback. Recipe execution is trusted code, outside any sandbox guarantee. | FR-4 |
@@ -32,17 +32,17 @@ An ingredient is a program data model: it models the files and configuration a p
 include Git's ignore file and Codex's configuration and skills. The ingredient concept preserves program knowledge.
 
 A recipe is trusted executable Groovy code that describes requested file operations using these models. Evaluating
-recipes produces the batch that Cook reviews and writes. The models describe program configuration; the engine
+recipes produces the batch that Cook reviews and writes. The models describe program configuration; Cook
 handles the resulting file operations. Each recipe has a short name that markers and the lock use to identify it. A
 recipe cooked from a path is named by its place in the repository without `.groovy`, such as `recipes/setup`. A recipe
 cooked by its coordinates is named by its address without the version, such as `io.github.lmarqs.cookbook:agents#connect`,
 so cooking a new version keeps the same owner. Moving a recipe file renames it: cooking the new name and discarding the
 old one moves the ownership ([discard](features/discard.md)).
 
-A cookbook repository holds and distributes ingredients and recipes. Cookbook distribution is separate from engine
+A cookbook repository holds and distributes ingredients and recipes. Cookbook distribution is separate from Cook
 distribution: a cookbook releases as jars of its sources in Maven-layout repositories
 ([cookbook distribution](#cookbook-distribution)). Keeping program models in cookbooks lets their authors maintain
-program-specific setup separately from the engine's evaluation, review, and writing responsibilities.
+program-specific setup separately from Cook's evaluation, review, and writing responsibilities.
 
 Cook writes native files so the configured programs consume their own configuration directly. A recipe may describe
 agent settings, ignore rules, or build and CI files.
@@ -50,15 +50,15 @@ agent settings, ignore rules, or build and CI files.
 ```mermaid
 flowchart LR
     book["Cookbook repositories: ingredients and Groovy recipes"]
-    engine["Cook engine, invoked through the CLI"]
+    cook["Cook, invoked through the CLI"]
     files["Native program files"]
     programs["Configured programs"]
-    book -->|"Supply models and recipes"| engine
-    engine -->|"Review and write declared operations"| files
+    book -->|"Supply models and recipes"| cook
+    cook -->|"Review and write declared operations"| files
     files -->|"Consumed directly"| programs
 ```
 
-*Figure 1. System context: cookbook content, the engine, and configured programs. Answers FR-1, FR-2, and FR-5.*
+*Figure 1. System context: cookbook content, Cook, and configured programs. Answers FR-1, FR-2, and FR-5.*
 
 ## Evaluation, review, and writes
 
@@ -256,19 +256,19 @@ produce different output.
 texts or approval, and exits 1 when anything would change, so a CI step fails on a kitchen that differs from its lock
 ([0031](adrs/0031-drift-check.md)).
 
-## Destination and source origins
+## Kitchen and source origins
 
-The selected kitchen is the destination: the current working directory by default, or the directory selected with
+The kitchen is the current working directory by default, or the directory selected with
 `-C <dir>` or `--kitchen=<dir>`, regardless of where the Cook executable lives. Cook
-never searches parent directories or asks version control for the destination
-([core and contracts ADR](adrs/0023-core-and-contracts.md)). An existing directory inside the destination is a valid
+never searches parent directories or asks version control for the kitchen
+([core and contracts ADR](adrs/0023-core-and-contracts.md)). An existing directory inside the kitchen is a valid
 target even when Cook did not create it ([directory layout ADR](adrs/0014-directory-layout.md)).
 Declared writes and deletions stay within that directory, including paths resolved through symlinks. A target that
-reaches outside the destination through a symlink is outside the permitted output boundary (FR-21). See the
+reaches outside the kitchen through a symlink is outside the permitted output boundary (FR-21). See the
 [write boundary ADR](adrs/0012-write-boundary.md).
 
-Recipes come from two places: a path inside the destination repository, or coordinates resolved from the
-repositories the destination's `cook.toml` lists ([cookbook distribution](#cookbook-distribution)). A URL is not a
+Recipes come from two places: a path inside the kitchen, or coordinates resolved from the
+repositories the kitchen's `cook.toml` lists ([cookbook distribution](#cookbook-distribution)). A URL is not a
 recipe operand; a recipe shared beyond one repository is published in a cookbook and cooked by its coordinates.
 A recipe reads a file, such as a template, through a `@resource('<path>')` line, which gives it the file's text. For a
 recipe path, the path resolves from the recipe's directory, and a file outside the repository, directly or through a
@@ -299,9 +299,9 @@ commands. Replicate cooks from recorded sources and arguments; update requests n
 their recipe when cooking; check, update, discard and replicate take none. The [CLI reference](features/cli.md) defines the
 syntax, recipe operands, argument scope, and batch options (FR-17 through FR-20).
 
-## Engine distribution
+## Cook distribution
 
-Cook uses JVM-based distribution with `jpackage`. Each platform-specific package contains the engine and a
+Cook uses JVM-based distribution with `jpackage`. Each platform-specific package contains Cook and a
 bundled Java runtime. Distribute the complete package, including its runtime (FR-26).
 
 A release is cut when the maintainer pushes to `main` a commit whose message holds `#release`, or starts the `release`
@@ -319,17 +319,17 @@ x64 and arm64 and macOS arm64 builds and their tests pass. A release publishes:
 People install `cook` on `PATH` with Homebrew, mise or the release package, and a team that wants one release
 everywhere pins it in its tool manager; [install](features/install.md) describes each.
 
-Engine releases supply the packaged runtime. Cookbook repositories hold and ship ingredients and recipes, with
-builds that can be independent of the engine build. Users supply an exact recipe version when cooking or ask Cook
+Cook releases supply the packaged runtime. Cookbook repositories hold and ship ingredients and recipes, with
+builds that can be independent of the Cook build. Users supply an exact recipe version when cooking or ask Cook
 to choose a newer release ([0032](adrs/0032-recipe-updates.md)); `cook.lock` records which exact version produced the
-current ownership. An engine upgrade does not move recipe versions.
+current ownership. A Cook upgrade does not move recipe versions.
 
 The root README's [install section](../README.md#install) describes installing a release.
 
 ## Cookbook distribution
 
 A cookbook releases as one jar per artifact, holding its sources, resources and README, in a Maven-layout
-repository or attached to a GitHub release; the build that publishes a release sets its version. The destination's
+repository or attached to a GitHub release; the build that publishes a release sets its version. The kitchen's
 committed `cook.toml` lists the repositories coordinates resolve from, in order: a Maven-layout repository by URL or
 path, or `github:<owner>/<repo>`, the releases of that GitHub repository. Without a `cook.toml`, or with one that lists
 no `repositories`, coordinates resolve from `github:lmarqs/the-cook`; releases of this repository's cookbook before
@@ -407,8 +407,8 @@ Other documents cite these requirements by number.
   of exactly `check`, `update`, `discard`, `replicate` or `help` selects that command; a recipe file with one of those
   names is supplied as a path, such as `./replicate`. Cook exits 0 when it did what was asked, 1 when nothing was written
   because approval was declined or missing or `check` found a difference, and 2 on an error.
-- **FR-18:** Recipe operands are paths inside the destination repository, or coordinates
-  `group:artifact:version#recipe` resolved from the repositories the destination's `cook.toml` lists. An operand
+- **FR-18:** Recipe operands are paths inside the kitchen, or coordinates
+  `group:artifact:version#recipe` resolved from the repositories the kitchen's `cook.toml` lists. An operand
   containing `://` is refused. A word is a
   recipe operand when it contains `/` or `:` or ends with `.groovy`, as `recipe.groovy` does; a recipe file with none
   of these marks is given with `./`, such as `./notes`.
@@ -425,7 +425,7 @@ Other documents cite these requirements by number.
 
 ### Paths
 
-- **FR-21:** The selected kitchen is the destination, defaulting to the current working directory; `-C <dir>` or
+- **FR-21:** The kitchen defaults to the current working directory; `-C <dir>` or
   `--kitchen=<dir>` selects another directory. Declared writes and deletions stay within that directory, including
   paths resolved through symlinks, regardless of the executable location.
 - **FR-22:** A recipe reads a file through `@resource`, resolved from a recipe path's directory inside the repository

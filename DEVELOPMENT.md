@@ -52,7 +52,7 @@ after a trailing `\`, which leaves the string's value unchanged.
 `docs/` is a project of the build. `./gradlew -p docs check`, which `./gradlew check` includes, fails on a relative link in
 `docs/` that points to a missing file or heading anchor; [`docs/build.gradle`](docs/build.gradle) defines the check.
 
-See [the core implementation](core/README.md) for how the engine cooks a recipe and how it differs from the
+See [the core implementation](core/README.md) for how Cook cooks a recipe and how it differs from the
 intended architecture.
 [Infra](infra/README.md) reads the kitchen's `cook.toml` and fetches cookbook releases from Maven-layout repositories;
 the CLI hands its repositories to the core.

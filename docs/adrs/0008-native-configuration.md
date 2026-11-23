@@ -11,7 +11,7 @@ native configuration change without losing unrelated settings or obscuring the c
 ## Context
 
 - [Ingredients](../features/glossary.md) model programs' native files and configuration; cookbook repositories hold
-  and ship ingredients and recipes separately from the engine
+  and ship ingredients and recipes separately from Cook
   ([architecture](../architecture.md#ingredients-recipes-and-cookbooks)).
 - Native configuration can be structured content, shared text, or separate files in a directory. Where a program
   supports separate files or inclusion, a recipe can use that facility. A single shared file still needs targeted edits.
@@ -54,7 +54,7 @@ follow [0011](0011-safety-invariants.md).
   away.
 - **4.** A personal choice is not automatically a team choice, as the override example shows. Requiring an explicit
   target makes that scope visible in review without permanently forbidding recipes from configuring local files.
-  Destination containment limits declared writes; it is not a restriction on everything trusted recipe code can do.
+  Kitchen containment limits declared writes; it is not a restriction on everything trusted recipe code can do.
 
 ## Rejected alternatives
 
@@ -96,5 +96,5 @@ Must be maintained:
 - A permission-key update preserves the example's hook, environment setting, unknown fields and unrelated formatting.
 - A targeted change preserves unrelated key order and TOML comments; a whole-file declaration shows its full diff.
 - A separate-file target leaves neighboring configuration files intact.
-- Personal overrides are not implicitly written or imported; an explicit in-destination target follows normal review.
+- Personal overrides are not implicitly written or imported; an explicit target in the kitchen follows normal review.
 - A manually edited key can be updated or deleted through batch review.

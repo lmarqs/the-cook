@@ -62,7 +62,7 @@ define ordered file changes, review, recorded ownership and discard.
   cookbook that holds the source keeps its history. [0014](0014-directory-layout.md) gives the reasons.
 - **5.** FR-22: every target writes text, and a recipe by coordinates has no file on disk, so text is the one value
   that reads the same from a path and from an artifact. Declaring the file on a recipe line, as `@param` and
-  `@ingredient` declare inputs, lets the engine read it, refuse a path outside the repository and hash it before the
+  `@ingredient` declare inputs, lets Cook read it, refuse a path outside the repository and hash it before the
   body runs. The trade is that a recipe reads only files it names with a constant path.
 - **6.** A recipe and the models it was written against travel together, as an artifact or as a directory, so a recipe
   declares nothing about where its models come from, and its sha256 covers the models it compiles against. `#` keeps
@@ -80,10 +80,10 @@ At its best, one workflow combines generation, an agent's judgment, verification
 guarantees require launching agents, recording their results and resuming interrupted sessions, outside Cook's
 file-operation responsibility.
 
-### Copy every recipe into the destination and merge later versions
+### Copy every recipe into the kitchen and merge later versions
 
 At its best, source copies can be adapted locally, and a merge can help incorporate upstream changes. It loses
-because making this the engine's contract would add recipe identity tracking, stored copies of previous versions for
+because making this Cook's contract would add recipe identity tracking, stored copies of previous versions for
 merging, and version management. Users can manage their sources without Cook mandating a copy or merge protocol.
 
 ### Rename detection by sha256
@@ -104,7 +104,7 @@ models come from, and two releases of one cookbook in one recipe need a rule of 
 At its best, a `File` or a stream gives a recipe binary content and lazy reads, and a `resource('<path>')` call in the
 body reads a path computed at run time. They lose because a recipe by coordinates has no file to hand over, a `File`
 lets the recipe read past the repository check and outside the sha256, a stream must be closed, and a call in the body
-is a second way to declare an input that the engine cannot see before the recipe runs.
+is a second way to declare an input that Cook cannot see before the recipe runs.
 
 ## Consequences
 

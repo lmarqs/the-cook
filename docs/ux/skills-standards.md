@@ -28,7 +28,7 @@ file:
 ```
 
 This standard follows the [architecture](../architecture.md); the [glossary](../features/glossary.md) defines recipe,
-ingredient, cookbook and batch. See [where new behavior goes](when-cli-when-skill.md) for the engine, cookbook and
+ingredient, cookbook and batch. See [where new behavior goes](when-cli-when-skill.md) for Cook, cookbook and
 guidance boundaries.
 
 ## Sources and maintenance
@@ -41,7 +41,7 @@ guidance boundaries.
 
 `.agents/skills/<name>/` is a useful shared location where native programs support it. Sources may be local or external;
 document which copy to edit and how updates reach users, because competing maintenance processes can overwrite each
-other. Engine upgrades do not automatically refresh cookbook or repository guidance.
+other. Cook upgrades do not automatically refresh cookbook or repository guidance.
 
 Committing skill content makes it reviewable and available in each clone without running an installer. Where an
 installer uses a lock file as part of the team's chosen process, commit it and review it with the content it describes.
@@ -62,7 +62,7 @@ discovers the skill.
 
 A skill should state its audience and scope rather than assume that every repository uses one organization, stack or
 agent. Program-specific guidance can name the program it serves; ingredient models and cookbook content carry that
-knowledge separately from the engine.
+knowledge separately from Cook.
 
 ## Structure
 
@@ -90,7 +90,7 @@ For programs that use a `SKILL.md` convention, this is a useful layout:
 Inspect the consuming program's locations, metadata, links and project trust rules. A symlinked skills directory exposes
 whatever its link target contains, an individual skill link exposes one skill, and a real directory exposes only its own
 files. Declare individual skill targets rather than replacing a directory that contains unrelated skills, because a
-directory operation affects every skill in it. Declared writes stay inside the destination ([where files
+directory operation affects every skill in it. Declared writes stay inside the kitchen ([where files
 live](configuration-standards.md#where-files-live)).
 
 Guidance intended for frequent loading should be short and state its scope early, because unrelated always-on text uses

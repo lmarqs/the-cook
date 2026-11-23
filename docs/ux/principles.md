@@ -11,8 +11,8 @@ whose files are affected.
 
 ## Overview
 
-The [glossary](../features/glossary.md) defines the engine terms used here, such as ingredient, cookbook, batch and
-destination. Apply the principles when a specific interaction rule leaves a question open, and record the reason in
+The [glossary](../features/glossary.md) defines the terms used here, such as ingredient, cookbook, batch and
+kitchen. Apply the principles when a specific interaction rule leaves a question open, and record the reason in
 the relevant standard ([changing a standard](README.md#changing-a-standard)).
 
 ## 1. Optional and transparent
@@ -22,12 +22,12 @@ invoke Cook to read them or perform their ordinary work. Why: teammates share co
 choosing the tool that produced it.
 
 - [Ingredients](../features/glossary.md) model native program files; cookbooks hold and ship ingredients and recipes
-  separately from the engine. Recipes can configure build, test or CI files when requested; those programs run their
+  separately from Cook. Recipes can configure build, test or CI files when requested; those programs run their
   own workflows.
-- Personal settings are not implicitly imported or changed. An explicitly declared target inside the destination
+- Personal settings are not implicitly imported or changed. An explicitly declared target inside the kitchen
   uses the same review flow as any other target ([configuration](configuration-standards.md#where-files-live)).
 - Keeping native configuration means leaving it in place; removal is the explicit discard operation (principle 5).
-- Cook installs on `PATH`, and a team pins its release in its own tool manager; engine upgrades are separate from
+- Cook installs on `PATH`, and a team pins its release in its own tool manager; Cook upgrades are separate from
   cookbook and recipe versions ([install](../features/install.md)).
 
 ## 2. People judge; Cook presents the requested changes
@@ -45,13 +45,13 @@ information rather than asking them to infer a result from configuration.
 
 ## 3. Configure programs through files
 
-Cook is a recipe driven configuration engine. It evaluates trusted Groovy recipes, obtains approval for an ordered
+Cook is a recipe driven configuration tool. It evaluates trusted Groovy recipes, obtains approval for an ordered
 batch, records ownership and performs declared writes. Why: program configuration can be reused without
 placing the program's execution under Cook's control.
 
 Ingredients are program data models, including native settings, ignore files and skills. Recipes may declare prose,
 skill content or existing native configuration as targets. Program knowledge belongs with cookbook models and recipes;
-the engine handles file operations. Executing external commands is not a batch action.
+Cook handles file operations. Executing external commands is not a batch action.
 
 ## 4. Least surprise
 
@@ -64,8 +64,8 @@ alone only when grammar, order and paths follow fixed rules.
   diff, because approval covers that combined result
   ([ordered composition](../architecture.md#ordered-composition-and-declared-targets)).
 - Cooking B never removes output A owns.
-- The selected kitchen is the destination, and relative source references resolve from the referencing recipe
-  ([path resolution](../architecture.md#destination-and-source-origins)).
+- Writes stay in the kitchen, and relative source references resolve from the referencing recipe
+  ([path resolution](../architecture.md#kitchen-and-source-origins)).
 
 ## 5. Show changes, obtain approval and prepare recovery
 
@@ -102,7 +102,7 @@ Declared writes and deletions stay inside the selected kitchen, including paths 
 Review, approval and rollback govern those operations. Why: a user needs to know exactly what the batch review covers.
 
 Recipes are trusted executable code. They can cause side effects, including network calls or external commands, outside
-the batch; approval is not a sandbox or a guarantee that nothing leaves the destination. Review those sources before
+the batch; approval is not a sandbox or a guarantee that nothing leaves the kitchen. Review those sources before
 evaluation. A diff of native hook settings reviews the configuration, not the later effects of the configured program.
 
 ## 8. Conventions outlive the tool
@@ -118,7 +118,7 @@ place; removal follows principle 5
 
 ## 9. Sources and effects are reviewable
 
-Cook accepts recipe paths inside the destination repository and coordinates. Users supply the recipe
+Cook accepts recipe paths inside the kitchen and coordinates. Users supply the recipe
 versions they intend to cook, and the committed `cook.lock` records which source and sha256 produced the current
 ownership ([the lock](../architecture.md#ownership-and-the-lock)). A repository commit alone does not determine the
 effects of trusted recipe code. Why: a reviewer can trust or question only a source they can identify.

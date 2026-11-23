@@ -7,7 +7,7 @@ audience: Whoever installs Cook, upgrades it or runs it in CI
 Cook runs as `cook` on `PATH`. Each [release](https://github.com/lmarqs/the-cook/releases) publishes a complete
 package for Linux x64 and arm64 and macOS arm64, `the-cook-<version>-<platform>.tar.gz` with its `.sha256`, where the
 platform is `linux-x64`, `linux-arm64` or `macos-arm64`. The package is a `jpackage` image that carries its own Java
-runtime, so the machine needs no Java or Gradle. [0017](../adrs/0017-engine-version.md) records why Cook installs
+runtime, so the machine needs no Java or Gradle. [0017](../adrs/0017-cook-version.md) records why Cook installs
 this way.
 
 The release also carries the cookbook artifacts, each as `<artifact>-<version>.jar` with its `.sha256`, and
@@ -56,7 +56,7 @@ On macOS the image is `cook.app` and its launcher `cook.app/Contents/MacOS/cook`
 
 ## Pinning a release for a team
 
-`cook.lock` records recipe versions, not the engine's. A team that wants every developer and CI on one release pins
+`cook.lock` records recipe versions, not Cook's. A team that wants every developer and CI on one release pins
 it in its tool manager's committed file. With mise:
 
 ```sh
@@ -69,7 +69,7 @@ A pin change is a dependency change: review it like one.
 ## Upgrading
 
 Upgrade with the installer that put `cook` there: `brew upgrade cook`, a new version in `mise.toml`, or another
-release package. An engine upgrade does not move recipe versions, fetch cookbook updates or cook anything. Recipe
+release package. A Cook upgrade does not move recipe versions, fetch cookbook updates or cook anything. Recipe
 versions move on request under [update](update.md).
 
 ## Where Cook writes

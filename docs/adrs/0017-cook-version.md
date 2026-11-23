@@ -1,23 +1,23 @@
 ---
-description: Records why Cook installs on PATH through package and tool managers, and how a team pins the engine release.
+description: Records why Cook installs on PATH through package and tool managers, and how a team pins the Cook release.
 audience: Whoever changes how Cook is installed, released or upgraded
 ---
 # 0017. Cook installs on PATH, and a team pins its release with the tool manager it already uses
 
 A newcomer should run Cook with the install command they already know, without Java, Gradle or a script of Cook's own in
-the repository. A team whose developers and CI must run the same engine release needs a way to say which one, reviewed
+the repository. A team whose developers and CI must run the same Cook release needs a way to say which one, reviewed
 like any other dependency change.
 
 ## Context
 
-- The [architecture](../architecture.md#engine-distribution) retains JVM distribution using `jpackage`: a complete
+- The [architecture](../architecture.md#cook-distribution) retains JVM distribution using `jpackage`: a complete
   platform package containing Java ([0004](0004-runtime-dependencies.md)). The release workflow builds it on Linux x64
   and arm64 and macOS arm64 and publishes each image as `the-cook-<version>-<platform>.tar.gz` with its sha256.
 - Because the package carries its own runtime, a package manager or tool manager installs it like any other
   self-contained binary: unpack it and put its launcher on `PATH`.
 - Developers work in several repositories, and some teams already pin their tools in a committed file, such as
   `mise.toml`.
-- Recipe ownership lives in the committed `cook.lock`, the only file of Cook's own in a destination
+- Recipe ownership lives in the committed `cook.lock`, the only file of Cook's own in a kitchen
   ([0014](0014-directory-layout.md)).
 - This source repository's own [`cook` script](../../cook) launches a locally built JVM distribution for development.
 
@@ -29,11 +29,11 @@ like any other dependency change.
    workflow commits each new version and its package checksums to it.
 3. Documentation and messages invoke Cook as `cook`.
 4. A team that wants every machine and CI on one release pins it in its tool manager's committed file, such as
-   `mise.toml`. Cook does not check which engine release runs it.
+   `mise.toml`. Cook does not check which Cook release runs it.
 5. An upgrade is the installer's own: `brew upgrade cook`, a new version in `mise.toml`, or another release package.
-   An engine upgrade does not rewrite project files, update cookbooks or choose a recipe version; requested recipe
+   A Cook upgrade does not rewrite project files, update cookbooks or choose a recipe version; requested recipe
    updates follow [0032](0032-recipe-updates.md).
-6. The invocation's current working directory, or the directory `-C` names, is the destination, regardless of where
+6. The invocation's current working directory, or the directory `-C` names, is the kitchen, regardless of where
    the executable is installed.
 
 ## Reasons
@@ -43,16 +43,16 @@ like any other dependency change.
   second repository or token; the cost is a two-line `brew tap` and a release commit on `main`.
 - **3.** One spelling for every machine: examples copy and paste the same way whichever installer put `cook` there.
 - **4.** A tool manager already records versions for a team's other tools, and its file is reviewed like any other
-  change. A team that does not pin lets each person keep their own release, which the engine tolerates because
-  `cook.lock` records recipe versions, not engine versions.
-- **5.** Engine and cookbook releases evolve separately; moving one never moves the other.
+  change. A team that does not pin lets each person keep their own release, which Cook tolerates because
+  `cook.lock` records recipe versions, not Cook versions.
+- **5.** Cook and cookbook releases evolve separately; moving one never moves the other.
 - **6.** Locating an executable must not change output paths.
 
 ## Rejected alternatives
 
 ### A committed wrapper script in each repository
 
-At its best, every clone carries its engine version and package checksums, and a newcomer needs nothing installed but
+At its best, every clone carries its Cook version and package checksums, and a newcomer needs nothing installed but
 `curl`. It loses because Cook then maintains its own download, verify and cache script per platform, duplicating what
 package managers do; each repository commits a second file of Cook's own beside `cook.lock`; and every example is
 written for a path, `./cook`, that only works from the repository root.
@@ -64,7 +64,7 @@ another repository needs a token with push access stored as a secret, and a seco
 
 ### Container as the required entry point
 
-At its best, an image carries the engine and its runtime together and suits an existing container-based CI workflow. It
+At its best, an image carries Cook and its runtime together and suits an existing container-based CI workflow. It
 loses because requiring it for every invocation adds a container runtime and working-directory integration to every
 user's setup. The jpackage distribution supplies Java directly without that requirement.
 
@@ -72,7 +72,7 @@ user's setup. The jpackage distribution supplies Java directly without that requ
 
 Costs:
 
-- A repository does not, by itself, say which engine release runs it; a team that needs that pins it in its tool
+- A repository does not, by itself, say which Cook release runs it; a team that needs that pins it in its tool
   manager.
 - First install needs access to the release, through Homebrew, mise or a download.
 - Maintainers distribute complete packages and checksums for the platforms they support, and keep the formula's

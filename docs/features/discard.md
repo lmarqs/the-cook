@@ -126,8 +126,8 @@ discarding a recipe. Cook does not delete recipe sources.
 ## Approval, boundaries, and recovery
 
 Discard uses the same terminal diff, whole-batch approval, `--dry-run` and write-failure rollback as cooking; see
-[review and recovery](cook.md#review-and-recovery). The destination boundary is described in
-[destination and source paths](cook.md#destination-and-source-paths).
+[review and recovery](cook.md#review-and-recovery). The kitchen boundary is described in
+[kitchen and source paths](cook.md#kitchen-and-source-paths).
 
 Recipes are trusted executable code. Discard runs none, and it does not undo what a recipe's evaluation did outside
 its declared files.

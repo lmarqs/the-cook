@@ -1,12 +1,12 @@
 ---
-description: Records why organization choices travel in cookbooks, separate from the engine's releases.
-audience: Whoever decides whether a choice belongs in the engine or a cookbook
+description: Records why organization choices travel in cookbooks, separate from Cook's releases.
+audience: Whoever decides whether a choice belongs in Cook or a cookbook
 ---
-# 0013. Cookbooks carry organization choices separately from the engine
+# 0013. Cookbooks carry organization choices separately from Cook
 
 Organizations reuse setup across repositories, but their services, permissions and conventions differ. Putting those
-choices in a shared engine couples its releases to individual teams; copying setup by hand makes improvements hard to
-share and review. Teams share setup without forking the engine, and reviewers can see the configuration changes each
+choices in Cook couples its releases to individual teams; copying setup by hand makes improvements hard to
+share and review. Teams share setup without forking Cook, and reviewers can see the configuration changes each
 repository accepts while preserving choices outside those changes.
 
 ## Context
@@ -16,24 +16,24 @@ repository accepts while preserving choices outside those changes.
 - [Ingredients](../features/glossary.md) model programs' native files and configuration, including an organization's
   own program. Cookbook repositories hold and ship ingredients and trusted Groovy recipes; cookbook builds can be
   separate from Cook's build ([architecture](../architecture.md#ingredients-recipes-and-cookbooks)).
-- Recipes come from paths inside the destination repository or from coordinates resolved from
-  the cookbook repositories the destination lists ([0029](0029-cookbook-distribution.md)); a local recipe or reference
-  outside the repository is refused ([source origins](../architecture.md#destination-and-source-origins)). Relative
+- Recipes come from paths inside the kitchen or from coordinates resolved from
+  the cookbook repositories the kitchen lists ([0029](0029-cookbook-distribution.md)); a local recipe or reference
+  outside the repository is refused ([source origins](../architecture.md#kitchen-and-source-origins)). Relative
   recipe and template references resolve from the referencing recipe's original location.
 - Cook evaluates supplied recipes against current content in declared order and shows one final batch diff.
   `cook.lock` records each cooked recipe's source, sha256, normalized supplied arguments and owned targets
   ([0007](0007-ownership.md)).
-- The engine's jpackage distribution and committed version and checksum pin are separate from cookbook and recipe
-  versions ([distribution](../architecture.md#engine-distribution)).
+- Cook's jpackage distribution and committed version and checksum pin are separate from cookbook and recipe
+  versions ([distribution](../architecture.md#cook-distribution)).
 
 ## Decision
 
 1. Organization choices and program-specific models belong in cookbook content and supplied recipes, rather than
-   becoming engine policy. Cook handles recipe evaluation and the ordered file-operation batch, review, recovery
+   becoming Cook policy. Cook handles recipe evaluation and the ordered file-operation batch, review, recovery
    and writes; ingredients model native program configuration.
 2. Cookbooks distribute their ingredients and recipes through their repositories and may build independently.
-   An engine upgrade does not move recipe versions.
-3. Reused content can participate in recipe evaluation from paths inside the destination repository or by
+   A Cook upgrade does not move recipe versions.
+3. Reused content can participate in recipe evaluation from paths inside the kitchen or by
    coordinates from a cookbook release ([0029](0029-cookbook-distribution.md)). Requested recipe-version changes
    follow [0032](0032-recipe-updates.md); replicate repeats the inputs recorded in `cook.lock`
    ([0007](0007-ownership.md)).
@@ -44,13 +44,13 @@ repository accepts while preserving choices outside those changes.
 ## Reasons
 
 - **1, 2.** Separate cookbook responsibility lets teams maintain native program knowledge and shared choices without
-  making every change an engine release or organization-specific fork. Cookbook content is still executable or
+  making every change a Cook release or organization-specific fork. Cookbook content is still executable or
   consumed input that users must trust.
-- **3.** Shared sources address hand-copying without forcing all inputs into each destination repository. Limiting
+- **3.** Shared sources address hand-copying without forcing all inputs into each kitchen. Limiting
   local sources to the repository keeps every local input visible in the same clone, while cookbook releases carry
   content shared between repositories. Recording each recipe's source, sha256 and supplied arguments lets a reviewer
   find its source inputs and repeat the invocation through replicate.
-  Trusted code may use changing inputs, so engine pinning alone is not a promise of identical output across machines
+  Trusted code may use changing inputs, so Cook pinning alone is not a promise of identical output across machines
   or days.
 - **4.** Review exposes what the requested setup changes in this repository, and a shared recipe overridden by a
   later, repository-specific one shows the override in the same diff. [0007](0007-ownership.md) gives the reasons.
@@ -59,16 +59,16 @@ repository accepts while preserving choices outside those changes.
 
 ## Rejected alternatives
 
-### Organization choices maintained in engine releases
+### Organization choices maintained in Cook releases
 
-At its best, every user gets shared setup from one release. It loses because engine releases become coupled to
+At its best, every user gets shared setup from one release. It loses because Cook releases become coupled to
 organization-specific choices and teams must fork or wait for changes. Cookbook authors can maintain those choices
 separately.
 
 ### Only copied repository content may affect evaluation
 
 At its best, all source material is visible in one checkout. It loses because it prohibits cookbook releases cooked
-by coordinates and turns copying and merge management into engine responsibilities. Native output, the reviewed diff
+by coordinates and turns copying and merge management into Cook responsibilities. Native output, the reviewed diff
 and captured consumed sources provide distinct views without forbidding composition.
 
 ### Add-only templates and three-way recipe merges
@@ -84,7 +84,7 @@ Costs:
 
 - Reviewers may need the cookbook sources named in `cook.lock` to explain how output was produced. Native output
   alone does not describe every dependency or arbitrary side effect of executable recipes.
-- Engine version and checksum pinning protects the selected engine download; it does not authenticate every recipe
+- Cook version and checksum pinning protects the selected Cook download; it does not authenticate every recipe
   source or sandbox recipe execution. [0026](0026-cookbook-trust.md) explains cookbook trust.
 
 Must be maintained:

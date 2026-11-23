@@ -13,7 +13,7 @@ user runs Cook on a machine that has no Java installation and none of the tools 
 - A repository's existing runtimes follow its own stack. Worked example: acme's Node service, Python service and
   Terraform repository do not share a Java installation requirement.
 - Cook retains the [JVM stack](0003-implementation-language.md). The
-  [architecture](../architecture.md#engine-distribution) specifies jpackage packages containing Java, installed on
+  [architecture](../architecture.md#cook-distribution) specifies jpackage packages containing Java, installed on
   `PATH` with Homebrew, mise or the release package.
 - A launcher is one part of that complete package; distributing only the launcher omits the runtime and application
   files it needs. The root README's [install section](../../README.md#install) and the
@@ -24,10 +24,10 @@ user runs Cook on a machine that has no Java installation and none of the tools 
 ## Decision
 
 1. The complete platform-specific jpackage package contains Cook and its Java runtime. Package users do not install
-   Java or Gradle separately. The runtime is a bundled engine dependency.
+   Java or Gradle separately. The runtime is a bundled Cook dependency.
 2. Homebrew, mise or the person installs the complete platform package on `PATH`, checked against its published
-   sha256 ([0017](0017-engine-version.md)).
-3. Cookbook repositories ship ingredients and recipes separately from engine releases, and engine releases do not select
+   sha256 ([0017](0017-cook-version.md)).
+3. Cookbook repositories ship ingredients and recipes separately from Cook releases, and Cook releases do not select
    recipe versions ([0013](0013-organization-content.md)).
 4. Batch operations execute no external commands ([0019](0019-action-kinds.md)). Trusted recipe code can still reach
    external resources; batch approval and rollback do not govern those effects ([0026](0026-cookbook-trust.md)).
@@ -39,8 +39,8 @@ user runs Cook on a machine that has no Java installation and none of the tools 
   rather than a statically linked executable that needs only the operating system.
 - **2.** A self-contained package installs the way people already install tools, and runs without repeated
   downloads. The trade: first install needs access to the release.
-- **3.** Program models and recipes evolve separately from the engine. Separate builds preserve that responsibility.
-  The trade: upgrading the engine does not update recipes; users and cookbook authors manage the supplied content.
+- **3.** Program models and recipes evolve separately from Cook. Separate builds preserve that responsibility.
+  The trade: upgrading Cook does not update recipes; users and cookbook authors manage the supplied content.
 - **4.** The package bundles the runtime Cook needs, not everything a recipe may call: a recipe may reach network
   services or local tools that the package does not include. The trade: trusting a recipe includes assessing what it
   needs and does beyond its declared batch, independently of reviewing the final file diff.
@@ -66,7 +66,7 @@ Costs:
 
 Must be maintained:
 
-- The bundled Java runtime and complete platform packages in each engine release.
+- The bundled Java runtime and complete platform packages in each Cook release.
 - Delivery instructions that distribute the complete package and keep first-use requirements distinct from
   development tooling.
 

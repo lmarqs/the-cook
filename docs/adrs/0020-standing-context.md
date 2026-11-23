@@ -32,7 +32,7 @@ and a SQL review skill through a cookbook while choosing which native files each
 ## Reasons
 
 - **1.** FR-2 keeps reusable program knowledge with cookbook authors, while projects choose their instructions. The
-  trade is maintaining native formats as programs evolve rather than one engine-owned context protocol. Native content
+  trade is maintaining native formats as programs evolve rather than one Cook-owned context protocol. Native content
   remains usable without Cook, as explained in [0010](0010-dependence-on-the-binary.md). Separating file creation from
   program execution avoids promising delivery or compliance that a file operation cannot establish. The trade is that
   the program and its user determine loading and use.

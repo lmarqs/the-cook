@@ -12,31 +12,31 @@ relocating unrelated files.
 
 ## Context
 
-- [Ingredients](../features/glossary.md) model native program files and configuration. Recipes declare destination
-  targets; Cook reviews and performs their file operations
+- [Ingredients](../features/glossary.md) model native program files and configuration. Recipes declare targets in
+  the kitchen; Cook reviews and performs their file operations
   ([architecture](../architecture.md#ingredients-recipes-and-cookbooks)).
 - In a worked example, `acme/api` keeps shared skills under `.agents/skills/` with a directory symlink from a native
   skills location. `acme/web` instead keeps a real skills directory containing hand-written files. Both layouts
   predate a recipe invocation.
 - A repository commits its configuration, and its version control keeps every earlier version of it. Its current
-  working directory is the destination, regardless of the recipe or executable location.
-- Sources have origins distinct from destination targets. A recipe cooked by coordinates can read a template
+  working directory is the kitchen, regardless of the recipe or executable location.
+- Sources have origins distinct from their targets in the kitchen. A recipe cooked by coordinates can read a template
   from its cookbook artifact while proposing output inside the selected kitchen.
 - Cook is installed on `PATH` as a complete jpackage package containing Java. The installed package lives outside
-  every destination.
+  every kitchen.
 
 ## Decision
 
-1. Native output lives at the destination paths declared by the recipes for the configured programs to consume.
+1. Native output lives at the paths in the kitchen that the recipes declare for the configured programs to consume.
    Shared content can use locations such as `.agents/`. Unrelated real directories, files and existing links remain in
    place.
-2. Declared writes and deletions stay inside the destination, as [0012](0012-write-boundary.md) decides. An existing
+2. Declared writes and deletions stay inside the kitchen, as [0012](0012-write-boundary.md) decides. An existing
    directory inside it is accepted as a target even when Cook did not create it.
-3. Cook writes nothing in the destination beyond declared native output and `cook.lock`: no local state directory,
+3. Cook writes nothing in the kitchen beyond declared native output and `cook.lock`: no local state directory,
    record or cache.
 4. Recipe ownership lives in the committed `cook.lock` at the repository root ([0007](0007-ownership.md)). Cooking
    evaluates supplied recipes against current content and works without the lock.
-5. The engine's installation and pin follow [0017](0017-engine-version.md).
+5. Cook's installation and pin follow [0017](0017-cook-version.md).
 6. Cookbook repositories and source origins follow [0013](0013-organization-content.md).
 7. Configuring native program files does not make Cook the owner of those programs' state or workspaces. Recipes do
    not implicitly relocate that state.
@@ -46,13 +46,13 @@ relocating unrelated files.
 - **1.** Native paths let programs consume their configuration directly. Declared scope preserves unrelated content
   without forcing every repository into one skills layout.
 - **2.** A symlinked skills directory, as in the `acme/api` example, makes an apparently local path able to reach
-  outside the destination; [0012](0012-write-boundary.md) gives the reasons for the boundary. Accepting existing
+  outside the kitchen; [0012](0012-write-boundary.md) gives the reasons for the boundary. Accepting existing
   directories lets both example layouts receive declared changes as they are.
 - **3, 4.** The repository's version control already keeps the history of every file Cook writes, so a local record
   of Cook's own would repeat it in one clone. Leaving no local state means nothing to ignore and nothing to lose.
   Ownership is shared review material, so it lives in one committed file that every clone reads and pull requests
   show.
-- **5, 6.** A committed engine pin and cookbook sources answer different questions with different lifetimes; the
+- **5, 6.** A committed Cook pin and cookbook sources answer different questions with different lifetimes; the
   linked ADRs give their reasons.
 - **7.** Existing state and workspace conventions belong to their programs and users, so the layout leaves their files
   where they are.
@@ -74,20 +74,20 @@ ownership needs only the single committed `cook.lock`, and a directory invites s
 
 At its best, many repositories share one verified copy of each ingredient or recipe source. It loses as a universal
 layout requirement because recipes can use local cookbook sources inside the repository, and a source cache would be
-confused with the sources a reviewer reads in the repository. The installed engine package does not impose that cache
+confused with the sources a reviewer reads in the repository. The installed Cook package does not impose that cache
 model on cookbook content.
 
 ### Replace native skills directories with whole-directory links
 
 At its best, a single link exposes all shared skills. It loses as a default because an existing real directory may
-hold unrelated files. An explicitly declared symlink operation still uses the ordinary batch review and destination
+hold unrelated files. An explicitly declared symlink operation still uses the ordinary batch review and kitchen
 boundary.
 
 ## Consequences
 
 Costs:
 
-- Shared native configuration, a committed engine pin and local engine packages have different lifetimes; a missing
+- Shared native configuration, a committed Cook pin and local Cook packages have different lifetimes; a missing
   package requires obtaining the pinned package before cooking recipes.
 - Earlier content comes only from the repository's version control.
 

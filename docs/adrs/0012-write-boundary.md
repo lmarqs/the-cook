@@ -2,7 +2,7 @@
 description: Records why Cook writes only the reviewed targets of a batch, and normalizes or cleans up nothing else.
 audience: Whoever adds an operation that writes files
 ---
-# 0012. Cook confines declared batch operations to reviewed destination targets
+# 0012. Cook confines declared batch operations to reviewed targets in the kitchen
 
 Repositories contain configuration, prose, and state that people and other tools depend on. Unrequested normalization or
 cleanup can break their work, while refusing every change to existing content prevents useful setup updates. People need
@@ -28,7 +28,7 @@ and content outside their scope remains intact.
 1. Declared writes and deletions stay within the selected kitchen, regardless of the recipe
    or executable location. Targets resolved through symlinks remain within that boundary. None targets the
    repository's `.git/` directory.
-2. Recipes come from paths inside the destination repository or by coordinates
+2. Recipes come from paths inside the kitchen or by coordinates
    ([0013](0013-organization-content.md)). Relative references to recipes and templates resolve from the referencing
    recipe's location. A local operand or reference that resolves outside the repository is refused.
 3. A batch affects its declared file paths, structured key paths, or marked text sections, including directory and
@@ -48,12 +48,12 @@ and content outside their scope remains intact.
 
 ## Reasons
 
-- **1.** The selected kitchen makes the destination explicit even for recipes cooked by coordinates. Resolving
+- **1.** The selected kitchen makes the write location explicit even for recipes cooked by coordinates. Resolving
   symlink targets within it prevents a declared path from redirecting a batch write elsewhere. A write under `.git/`
   would change the history, the index or a hook Git runs next, none of which the reviewed diff shows, as Context
   notes. The trade is that a recipe cannot set a clone's own Git state, such as an exclude entry or a hook; it states
   the command for the person to run.
-- **2.** Source origins have a different role from the destination: they locate inputs without moving outputs or
+- **2.** Source origins have a different role from the kitchen: they locate inputs without moving outputs or
   changing relative resolution. Keeping local sources inside the
   repository means every local input is one a reviewer can see in the same repository; the trade is that a shared
   recipe elsewhere on disk must be moved in or published in a cookbook and cooked by coordinates.
@@ -71,7 +71,7 @@ and content outside their scope remains intact.
 - **7.** File review and recovery cannot govern remote delivery or arbitrary executable code. Keeping those effects
   outside the batch avoids a second writer to the team's issue tracker or code-review platform and a misleading
   sandbox promise. The trade is that users must trust recipes even when their declared output is confined to the
-  destination.
+  kitchen.
 
 ## Rejected alternatives
 
@@ -101,7 +101,7 @@ Costs:
 
 Must be maintained:
 
-- Declared target scope, destination containment including symlinks and `.git/`, and preservation of unrelated
+- Declared target scope, kitchen containment including symlinks and `.git/`, and preservation of unrelated
   content.
 - Whole-batch diff and approval, rollback on a write failure, and deletion only through a recipe's new version or a
   discard, both read from `cook.lock`.
@@ -109,7 +109,7 @@ Must be maintained:
 ## Confirmation
 
 - For a key update alongside unrelated keys and text, a whole-file replacement, and a target resolving outside the
-  destination through a symlink, does the declared scope determine the diff and is the escaping target refused?
+  kitchen through a symlink, does the declared scope determine the diff and is the escaping target refused?
 - Does an existing manually edited target go through the ordinary batch diff and approval flow, whether or not
   `cook.lock` records its owner, while cooking another recipe leaves unrelated prior output in place?
 - Are a recipe operand and a template reference that resolve outside the repository both refused?

@@ -19,23 +19,23 @@ content follows the [generated-content standard](generated-content-standards.md)
 
 ## Where files live
 
-The selected kitchen is the destination, regardless of recipe and executable locations. Declared writes and
-deletions stay within the destination, including paths resolved through symlinks. Why: a reviewer must know the boundary
+The kitchen is the boundary, regardless of recipe and executable locations. Declared writes and
+deletions stay within the kitchen, including paths resolved through symlinks. Why: a reviewer must know the boundary
 of the batch they approve.
 
 | Content | Location | Purpose |
 | --- | --- | --- |
-| Native configuration and guidance | Paths declared by recipes within the destination, where the program reads them | Settings, ignore entries, instruction files, skills, and other requested output |
-| Recipe and template sources | Paths inside the destination repository, or coordinates from a cookbook release | Trusted input; relative references resolve from the referencing recipe's location |
+| Native configuration and guidance | Paths declared by recipes within the kitchen, where the program reads them | Settings, ignore entries, instruction files, skills, and other requested output |
+| Recipe and template sources | Paths inside the kitchen, or coordinates from a cookbook release | Trusted input; relative references resolve from the referencing recipe's location |
 | Ownership lock | Committed `cook.lock` at the repository root | Each cooked recipe's short name, source, sha256, arguments, and owned sections, keys, files, and links |
-| Engine release | The team's tool manager, such as `mise.toml`, when it pins one | Selects the `cook` release every machine installs; see [install](../features/install.md) |
+| Cook release | The team's tool manager, such as `mise.toml`, when it pins one | Selects the `cook` release every machine installs; see [install](../features/install.md) |
 
-Committed ownership lives in `cook.lock`; Cook keeps no other state in the destination. A recipe may use shared
+Committed ownership lives in `cook.lock`; Cook keeps no other state in the kitchen. A recipe may use shared
 guidance under `.agents/` where that suits the native program.
 
 Relative template references resolve from the referencing recipe's location; a local reference outside
 the repository is refused.
-[Destination and source paths](../features/cook.md#destination-and-source-paths) works through an example.
+[Kitchen and source paths](../features/cook.md#kitchen-and-source-paths) works through an example.
 
 ## Inputs
 
@@ -69,7 +69,7 @@ gaps where relevant. See the [CLI error guidance](cli-standards.md#errors).
 
 Quote values according to the native format. For example, YAML strings containing `: ` or ` #` need quoting so their
 content is not interpreted as a mapping or comment. Document how a recipe interprets paths or globs rather than
-assuming every program shares one convention. Distinguish destination paths from source paths as described above.
+assuming every program shares one convention. Distinguish kitchen paths from source paths as described above.
 
 Permission settings, hook entries, and skill discovery belong to the program that reads them. Preserve unrelated keys
 and avoid unnecessary changes to comments, key order, or blank lines. Review the exact native rules and their scope:

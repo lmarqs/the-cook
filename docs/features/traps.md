@@ -94,7 +94,7 @@ for terms.
 
 - **Symptom.** A recipe causes an external effect before its diff is approved, or the effect remains after rollback.
 - **Why.** Recipes are trusted executable Groovy code. Evaluation can do more than declare file operations.
-- **Cook's responsibility.** Diff review, destination boundaries and rollback govern declared batch
+- **Cook's responsibility.** Diff review, the kitchen boundary and rollback govern declared batch
   operations. Executing commands is not a batch action; arbitrary recipe effects are outside those guarantees.
 - **What you do.** Read and trust sources before evaluation, including dependencies; a source's address or a reviewed output
   diff alone does not establish that code is safe to execute. Approving the resulting diff is a separate decision. See
@@ -116,9 +116,9 @@ for terms.
 
 - **Symptom.** Reviewed bytes match a checksum but contain unwanted executable behavior.
 - **Why.** A checksum establishes matching content, not whether its author or effects are acceptable.
-- **Cook's responsibility.** Each release publishes a sha256 for every engine package. This does not authenticate or
+- **Cook's responsibility.** Each release publishes a sha256 for every Cook package. This does not authenticate or
   sandbox cookbook recipes.
-- **What you do.** Review source origins and recipe changes separately from engine package integrity. Users manage the
+- **What you do.** Review source origins and recipe changes separately from Cook package integrity. Users manage the
   recipe versions they supply. See [cookbooks](../architecture.md#ingredients-recipes-and-cookbooks).
 
 ### Executable code can read inherited secrets
@@ -222,7 +222,7 @@ commands in its task runner. These are project choices, and the programs that co
 - **Why.** Programs may search parent directories for configuration, dependencies or tracker data, while separate
   directories still share machine services.
 - **Cook's responsibility.** Write the declared file setup. Invoked inside a separate working copy, Cook treats that
-  working copy as the destination: declared writes stay within it.
+  working copy as the kitchen: declared writes stay within it.
 - **What you do.** Prepare dependencies in the intended working copy and configure unique service names or external
   locks where needed. Document dependency preparation and relevant tool behavior with the repository's working-copy
   convention, for example a `.worktrees/` location in contributor instructions with a matching ignore entry and
@@ -230,26 +230,26 @@ commands in its task runner. These are project choices, and the programs that co
   version control and external tools; before removing a working copy, preserve work and local data through those
   tools, for example by committing or stashing changes.
 
-### An agent's sandbox makes the destination read-only
+### An agent's sandbox makes the kitchen read-only
 
 - **Symptom.** Cooking from inside a coding agent's session fails with
   `cook: <kitchen>/.agents/.cook-<number>.tmp: Read-only file system`, or `mise use` cannot install Cook.
 - **Why.** An agent's sandbox decides what its commands may write. Codex's workspace sandbox keeps `.agents/` and
   `.codex/` read-only inside the workspace, and the directories mise installs into sit outside it, so recipes that
   write the agent layout, such as `agents#seed` and `agents#connect`, cannot write there.
-- **Cook's responsibility.** Write the whole batch or nothing: a refused write leaves the destination as it was.
+- **Cook's responsibility.** Write the whole batch or nothing: a refused write leaves the kitchen as it was.
 - **What you do.** Install Cook and cook recipes that write an agent's own configuration from a terminal, or from a
   session the agent runs outside its sandbox. Recipes that write elsewhere, such as `git#worktrees`, cook from inside
   it.
 
-### Running from a subdirectory changes the destination
+### Running from a subdirectory changes the kitchen
 
 - **Symptom.** A recipe targets files under a subdirectory when root configuration was intended.
 - **Why.** Without `-C`, the current working directory is the kitchen.
 - **Cook's responsibility.** Contain declared writes and deletions within that directory, including symlink resolution.
 - **What you do.** Invoke from the intended kitchen or select it with `-C`, and inspect target paths. Check how programs discover
   root or nested settings, for example in a monorepo. See
-  [destination and source origins](../architecture.md#destination-and-source-origins).
+  [kitchen and source origins](../architecture.md#kitchen-and-source-origins).
 
 ### Moving a recipe changes its relative source references
 
@@ -260,7 +260,7 @@ commands in its task runner. These are project choices, and the programs that co
   one outside the repository.
 - **What you do.** Review origins and referenced sources when relocating recipes. Moving a path recipe also renames
   it; discard the old name after cooking the new one ([renaming a recipe](discard.md#renaming-a-recipe)). The
-  executable's location does not choose the destination. See [source paths](cook.md#destination-and-source-paths).
+  executable's location does not choose the kitchen. See [source paths](cook.md#kitchen-and-source-paths).
 
 ## Ordered operations and recovery
 
@@ -315,12 +315,12 @@ These entries cover recipe release discovery and [installing Cook](install.md).
   directory's current files. See [release discovery](update.md#where-releases-come-from) and
   [unknown recipes](update.md#unknown-recipes).
 
-### Developers and CI run different engine releases
+### Developers and CI run different Cook releases
 
 - **Symptom.** The same recipe cooks differently on two machines, or a command one machine knows another refuses.
-- **Why.** Each machine runs the `cook` its installer put on `PATH`, and `cook.lock` records recipe versions, not the
-  engine's.
-- **Cook's responsibility.** Run whichever release is installed; Cook does not check the engine version.
+- **Why.** Each machine runs the `cook` its installer put on `PATH`, and `cook.lock` records recipe versions, not
+  Cook's.
+- **Cook's responsibility.** Run whichever release is installed; Cook does not check its own version.
 - **What you do.** Pin the release in the team's tool manager, such as `mise.toml`, and review a pin change like any
   dependency change. See [pinning a release for a team](install.md#pinning-a-release-for-a-team).
 

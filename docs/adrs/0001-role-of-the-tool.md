@@ -26,13 +26,13 @@ reviewed configuration changes while keeping their preferred programs and contro
 1. Cook evaluates trusted Groovy recipes into an ordered batch of file operations, presents the combined diff,
    obtains whole-batch approval and performs the declared writes.
 2. Ingredients model a program's native files and configuration. Cookbook repositories hold and ship ingredients and
-   recipes, with builds that can be separate from the engine build. Cook's role remains file operations across
+   recipes, with builds that can be separate from the Cook build. Cook's role remains file operations across
    programs.
 3. Cook is neither a coding agent nor a fixed software development lifecycle. Model reasoning and provider
    credentials stay with the agents users choose. External command execution is not a batch action
    ([0019](0019-action-kinds.md)).
-4. Approval, destination boundaries and rollback govern declared batch operations, not arbitrary recipe code or its
-   side effects. The destination boundary is decided in [0012](0012-write-boundary.md) and recovery in
+4. Approval, the kitchen boundary and rollback govern declared batch operations, not arbitrary recipe code or its
+   side effects. The kitchen boundary is decided in [0012](0012-write-boundary.md) and recovery in
    [0007](0007-ownership.md).
 
 ## Reasons
@@ -41,10 +41,10 @@ reviewed configuration changes while keeping their preferred programs and contro
   makes the requested result reviewable against current content.
   The trade: Cook does not determine whether the resulting setup is the best workflow for the team.
 - **2.** Program configuration changes on each program's schedule. Cookbook-maintained models let authors update that
-  knowledge separately from the engine's review and writing logic. The trade: cookbook authors maintain compatibility
+  knowledge separately from Cook's review and writing logic. The trade: cookbook authors maintain compatibility
   with the programs they describe.
 - **3.** Reimplementing a model loop duplicates a coding agent's work and takes on credential, provider and cost choices
-  that belong to its users. Making configuration the engine's responsibility keeps the configured programs replaceable.
+  that belong to its users. Making configuration Cook's responsibility keeps the configured programs replaceable.
   The trade: Cook does not enforce a development process or judge the work those programs perform.
 - **4.** Executable recipes cannot be treated as data-only declarations. Batch review exposes declared file changes,
   but does not make arbitrary recipe execution safe. The trade: users must trust recipe code before evaluating it,
@@ -60,7 +60,7 @@ require imposing those stages, supervising agents or recording their verificatio
 ### A coding agent with its own model loop
 
 At its best, one program chooses the setup and implements it end to end. It loses because it duplicates the agents
-users already choose and brings their model credentials, cost and changing APIs into the configuration engine.
+users already choose and brings their model credentials, cost and changing APIs into Cook.
 
 ## Consequences
 
@@ -71,13 +71,13 @@ Costs:
 
 Must be maintained:
 
-- Ordered operations, approval and recovery in the engine.
+- Ordered operations, approval and recovery in Cook.
 - Configuration that stays native to the program that consumes it.
 
 ## Confirmation
 
-- Does the [architecture](../architecture.md#scope-and-responsibilities) assign the engine only recipe evaluation,
+- Does the [architecture](../architecture.md#scope-and-responsibilities) assign Cook only recipe evaluation,
   review and writes (FR-1), with batches of file operations (FR-3)?
 - Do the approval and recovery claims in the documentation apply only to declared operations (FR-4)?
-- Does a proposed engine change run a model, hold provider credentials or impose stages on a team's work? Such a
+- Does a proposed Cook change run a model, hold provider credentials or impose stages on a team's work? Such a
   change falls outside the role this decision gives Cook.

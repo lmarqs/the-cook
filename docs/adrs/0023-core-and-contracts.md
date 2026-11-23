@@ -11,10 +11,10 @@ of the mechanisms that read, present and write their inputs and results.
 
 ## Context
 
-- The [architecture](../architecture.md#evaluation-review-and-writes) defines the engine's work: evaluate trusted
+- The [architecture](../architecture.md#evaluation-review-and-writes) defines Cook's work: evaluate trusted
   Groovy recipes, combine ordered file operations, show the final diff, obtain approval and perform
   writes (FR-1, FR-7 through FR-13).
-- The selected kitchen is the destination. Resources resolve from a local recipe's directory or from its
+- Cook writes in the selected kitchen. Resources resolve from a local recipe's directory or from its
   cookbook artifact. A local recipe or reference
   outside the repository is refused (FR-21, FR-22).
 - Cooking evaluates supplied recipes against current content and does not need `cook.lock` (FR-25). The committed
@@ -32,14 +32,14 @@ of the mechanisms that read, present and write their inputs and results.
    implement the external mechanisms those rules need; wiring (the entry point) supplies those connections.
    Dependencies point from connections and wiring toward the core.
 2. Those boundaries follow the agreed file-operation responsibilities: current content, ordered changes, actual diff
-   review, whole-batch approval, destination containment, recovery and recorded ownership. The core defines no
+   review, whole-batch approval, kitchen containment, recovery and recorded ownership. The core defines no
    contracts for version control or for running agents, and adds no external command execution to a batch. This
    decision does not enumerate or finalize method signatures, model APIs or a complete port inventory.
 3. The core is independent of any interface and writes and records only the changes it receives as accepted
-   ([0007](0007-ownership.md)). The destination is the selected kitchen ([0012](0012-write-boundary.md)), not a
+   ([0007](0007-ownership.md)). The kitchen is the selected one ([0012](0012-write-boundary.md)), not a
    root discovered by walking upward to a configuration directory or by consulting version control.
-4. What Cook writes in the destination follows [0014](0014-directory-layout.md).
-5. Distribution follows [0017](0017-engine-version.md) and [0021](0021-release-trust.md).
+4. What Cook writes in the kitchen follows [0014](0014-directory-layout.md).
+5. Distribution follows [0017](0017-cook-version.md) and [0021](0021-release-trust.md).
 
 ## Reasons
 
@@ -52,9 +52,9 @@ of the mechanisms that read, present and write their inputs and results.
   from the core.
 - **3.** FR-11 keeps acceptance outside the core, so another interface can choose individual changes without altering
   operation rules, and `cook.lock` describes only what was written. Upward root discovery could
-  redirect writes away from the selected kitchen. The trade is that callers choose the destination by their
+  redirect writes away from the selected kitchen. The trade is that callers choose the kitchen by their
   working directory or `-C`, even when the executable or recipe lives elsewhere.
-- **4, 5.** The destination layout and distribution are fixed independently of the internal boundary shape; the linked ADRs
+- **4, 5.** The kitchen layout and distribution are fixed independently of the internal boundary shape; the linked ADRs
   give their reasons.
 
 ## Rejected alternatives
@@ -68,7 +68,7 @@ without wrapping every value or helper in an interface.
 ### Fixed version control and agent contracts
 
 At its best, version control and agent interfaces give a uniform surface for integrating with the programs a team
-runs. It loses because those contracts miss this engine's scope and would make configuration changes depend on
+runs. It loses because those contracts miss Cook's scope and would make configuration changes depend on
 programs they do not need. Cooking requires neither a version control program nor `cook.lock`.
 
 ## Consequences
@@ -76,13 +76,13 @@ programs they do not need. Cooking requires neither a version control program no
 Costs:
 
 - Connections and their wiring add indirection; maintainers must keep their behavior consistent with the operation
-  contract, especially destination resolution and write-failure recovery.
+  contract, especially kitchen resolution and write-failure recovery.
 - Trusted recipe side effects remain outside the declared-operation boundary; dependency separation is no sandbox.
 
 Must be maintained:
 
 - Dependency direction and the distinction between recipe choices, file-operation rules and external mechanisms.
-- Independent destination and source resolution.
+- Independent kitchen and source resolution.
 
 ## Confirmation
 

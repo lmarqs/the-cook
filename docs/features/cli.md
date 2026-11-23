@@ -25,7 +25,7 @@ cook --version
 `cook` is the command Homebrew, mise or the release package puts on `PATH` ([install](install.md)).
 Without a command word, `cook` cooks the recipes it is given. Running `cook` with no arguments, `cook help` or
 `cook --help` shows the usage. `--help` takes no other arguments. `cook --version` prints `cook <version>`, the
-version the build wrote into the engine, and takes no other arguments either.
+version the build wrote into Cook, and takes no other arguments either.
 The usage ends with where recipes come from, the official cookbook's coordinates at that version, and the
 first recipes to try: `cook io.github.lmarqs.cookbook:hello:<version>#world` for a person, and
 `cook help io.github.lmarqs.cookbook:hello:<version>#agent` for a coding agent, which prints how an agent finds,
@@ -61,12 +61,12 @@ cook discard io.github.lmarqs.cookbook:agents#connect recipe
 
 ## Recipe operands
 
-A recipe operand is a path inside the destination repository or a recipe's coordinates,
+A recipe operand is a path inside the kitchen or a recipe's coordinates,
 `group:artifact:version#recipe`. A word is a recipe operand when it contains `/` or `:` or ends with `.groovy`, so an
 ordinary relative path such as `recipe.groovy` is one; a recipe file with none of these marks is given as `./notes`.
 Cook refuses an operand outside the repository, and a URL with a message that points to `cook.toml`: a recipe shared
 beyond one repository is published in a cookbook and cooked by its coordinates. Coordinates resolve from the
-repositories that the destination's `cook.toml` lists, or from the GitHub releases of `lmarqs/the-cook` without one;
+repositories that the kitchen's `cook.toml` lists, or from the GitHub releases of `lmarqs/the-cook` without one;
 [the cookbook guide](../../cookbook/README.md#units) gives the entries. A recipe compiles against its artifact's
 models; a recipe path, against the upper-case `.groovy` files in its directory.
 
@@ -286,7 +286,7 @@ warning, not an error; see [unknown recipes](update.md#unknown-recipes).
 
 ## Kitchen
 
-The kitchen is the directory Cook cooks in, and it is the destination. Without an option it is the invocation's
+The kitchen is the directory Cook cooks in. Without an option it is the invocation's
 current working directory.
 
 | Option | Used with | Position | Effect |

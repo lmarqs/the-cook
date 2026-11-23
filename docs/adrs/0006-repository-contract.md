@@ -1,12 +1,12 @@
 ---
-description: Records why each repository keeps its own trusted recipes and choices while the engine is shared through releases.
-audience: Whoever decides what a repository keeps and what the engine provides
+description: Records why each repository keeps its own trusted recipes and choices while Cook is shared through releases.
+audience: Whoever decides what a repository keeps and what Cook provides
 ---
-# 0006. Repositories hold trusted recipes separately from the shared engine
+# 0006. Repositories hold trusted recipes separately from Cook, shared through its releases
 
-When a practice spreads by copying its engine code into each repository, every copy becomes a fork: a fix made in one
+When a practice spreads by copying its generator code into each repository, every copy becomes a fork: a fix made in one
 never reaches the others. Each repository also has facts and configuration choices only it knows, which must live with
-it. Confusing those choices with engine implementation makes both harder to maintain. A fix to the shared engine reaches
+it. Confusing those choices with Cook's implementation makes both harder to maintain. A fix to Cook reaches
 repositories through one release, while each repository controls its own configuration choices and can reuse practices
 maintained elsewhere.
 
@@ -15,49 +15,49 @@ maintained elsewhere.
 - Worked example: acme copies its configuration generator from `acme/api` into `acme/web` and `acme/infra`. A local
   generator change in `acme/web` makes a later bug fix in `acme/api` difficult to transfer to either copy.
 - Repository-specific choices include program settings, instruction text, and build or check commands to put in
-  native configuration. Sharing the generator does not make those choices the engine's responsibility.
+  native configuration. Sharing the generator does not make those choices Cook's responsibility.
 - The agreed [architecture](../architecture.md#ingredients-recipes-and-cookbooks) distinguishes trusted executable
   Groovy [recipes](../features/glossary.md), ingredients as program data models, cookbook distribution, and the
-  shared file-operation engine.
-- Cook retains its JVM stack ([0003](0003-implementation-language.md)) and packages Java with the engine
+  shared Cook program, which performs the file operations.
+- Cook retains its JVM stack ([0003](0003-implementation-language.md)) and bundles Java in its package
   ([0004](0004-runtime-dependencies.md)); Groovy recipes run on that bundled runtime.
 - The repository-facing contract is costly to change once recipes depend on it.
 
 ## Decision
 
-1. The engine's evaluation, batch review, recovery, and writing responsibilities stay in the shared engine release.
-   A repository describes its own configuration without vendoring or maintaining a copy of that engine.
+1. Cook's evaluation, batch review, recovery, and writing responsibilities stay in the shared Cook release.
+   A repository describes its own configuration without vendoring or maintaining a copy of Cook.
 2. Repositories may hold trusted executable Groovy recipes and their source/template files. Recipes describe
    requested file operations; they are not restricted to declarative YAML.
 3. Cookbooks hold and ship ingredients and recipes through their own repositories, with builds that can be separate
    from Cook's build ([0013](0013-organization-content.md)). Ingredients model programs' native files and
    configuration.
-4. People install the engine on `PATH`, and a team pins its release in its tool manager
-   ([0017](0017-engine-version.md)). Engine pinning is separate from selecting the recipe version to use.
-5. Recipes are trusted code: approval, destination boundaries, and rollback govern their declared batch operations
+4. People install Cook on `PATH`, and a team pins its release in its tool manager
+   ([0017](0017-cook-version.md)). Cook pinning is separate from selecting the recipe version to use.
+5. Recipes are trusted code: approval, the kitchen boundary, and rollback govern their declared batch operations
    only ([0026](0026-cookbook-trust.md)), and external commands are not batch actions ([0019](0019-action-kinds.md)).
 
 ## Reasons
 
-- **1.** Sharing the engine avoids the generator forks in Context. A reviewed engine-pin change can bring the same
-  engine fix to each repository. The trade is that engine source is not necessarily present in the destination.
+- **1.** Sharing Cook avoids the generator forks in Context. A reviewed Cook-pin change can bring the same
+  Cook fix to each repository. The trade is that Cook source is not necessarily present in the kitchen.
 - **2.** Executable recipes express repository choices and reusable configuration practices without copying Cook's
-  review and writing machinery, and they run on the runtime the engine package already bundles. The trade is that
+  review and writing machinery, and they run on the runtime the Cook package already bundles. The trade is that
   source review alone does not establish the resulting diff or rule out side effects; authors and users must trust
   the code they evaluate.
-- **3.** Program knowledge changes independently of engine mechanics. Separate cookbook maintenance keeps those
-  release responsibilities apart. The trade is that engine and cookbook compatibility still needs attention.
-- **4.** A version and checksum make the selected engine package reviewable, so one release reaches each repository
+- **3.** Program knowledge changes independently of Cook mechanics. Separate cookbook maintenance keeps those
+  release responsibilities apart. The trade is that Cook and cookbook compatibility still needs attention.
+- **4.** A version and checksum make the selected Cook package reviewable, so one release reaches each repository
   through a reviewed pin change. The trade is separate cookbook and recipe updates.
 - **5.** A declared file operation can be previewed and recovered by Cook. Arbitrary Groovy code can act outside
-  those operations, so treating review of the batch as a sandbox would promise protection the engine does not give.
+  those operations, so treating review of the batch as a sandbox would promise protection Cook does not give.
 
 ## Rejected alternatives
 
-### Vendored or hand-copied engine per repository
+### Vendored or hand-copied Cook per repository
 
-At its best, the engine is available offline and can be tailored locally. It loses because locally edited copies
-fork the shared mechanics and each engine fix becomes a separate integration in every repository.
+At its best, Cook is available offline and can be tailored locally. It loses because locally edited copies
+fork the shared mechanics and each Cook fix becomes a separate integration in every repository.
 
 ### Data-only repository configuration
 
@@ -65,28 +65,28 @@ At its best, a small declarative format is easy to inspect without executing it.
 contract because the agreed design uses trusted executable recipes. Native configuration may still be data; that
 property does not apply to every source that produces it.
 
-### One release for the engine and all program knowledge
+### One release for Cook and all program knowledge
 
 At its best, one package supplies everything together. It loses because program-model and recipe changes then
-require engine releases even when the review and writing mechanics are unchanged.
+require Cook releases even when the review and writing mechanics are unchanged.
 
 ## Consequences
 
 Costs:
 
-- Users trust recipe code as well as the engine package; the batch diff covers only declared file changes.
-- Cookbooks and recipe sources have maintenance and compatibility concerns separate from the engine pin.
+- Users trust recipe code as well as the Cook package; the batch diff covers only declared file changes.
+- Cookbooks and recipe sources have maintenance and compatibility concerns separate from the Cook pin.
 
 Must be maintained:
 
-- The separation between shared engine mechanics, recipe choices, and cookbook program models.
+- The separation between shared Cook mechanics, recipe choices, and cookbook program models.
 - The distinction between the bundled runtime and independently selected recipe content.
 
 ## Confirmation
 
 - Review accepts a repository-local Groovy recipe without requiring it to be converted to YAML or forbidding its
   source files in the repository.
-- Review traces evaluation, combined diff, approval, recovery, and declared writes to engine responsibilities,
+- Review traces evaluation, combined diff, approval, recovery, and declared writes to Cook responsibilities,
   while leaving program-specific configuration choices to cookbook content and recipes.
-- Distribution descriptions use complete JVM packages with bundled Java and explicit engine pins, without
+- Distribution descriptions use complete JVM packages with bundled Java and explicit Cook pins, without
   claiming that recipe code is sandboxed.

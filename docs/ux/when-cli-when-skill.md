@@ -1,30 +1,30 @@
 ---
-description: Sets whether a new capability belongs in the engine, a program model, a recipe or guidance.
+description: Sets whether a new capability belongs in Cook, a program model, a recipe or guidance.
 audience: Whoever proposes a new capability
 ---
 # Where new behavior goes
 
-Contributors need to decide whether a capability belongs in the engine, a program model, a reusable setup recipe or
+Contributors need to decide whether a capability belongs in Cook, a program model, a reusable setup recipe or
 guidance. A broad deterministic-versus-judgment rule can put external workflows into Cook merely because they are
-repeatable, or turn program-specific configuration into engine policy. Capabilities follow Cook's agreed
+repeatable, or turn program-specific configuration into Cook policy. Capabilities follow Cook's agreed
 responsibilities, with reusable program knowledge and setup in cookbooks, judgment in guidance, and external work
 performed by the people and programs responsible for it.
 
 ## Overview
 
-This page places a new capability in one of the destinations below: the engine and CLI, an ingredient, a recipe, a
+This page places a new capability in one of the places below: Cook, an ingredient, a recipe, a
 cookbook, native repository files, a skill or prose, or an external tool. The [glossary](../features/glossary.md)
-defines its engine terms, and the [architecture](../architecture.md#scope-and-responsibilities) the responsibilities
-each destination carries.
+defines its terms, and the [architecture](../architecture.md#scope-and-responsibilities) the responsibilities
+each place carries.
 
 A capability may have several parts. Place each by responsibility and effect, rather than assuming every deterministic
 part belongs in the binary.
 
-## Destinations
+## Places
 
-| Destination | Responsibility | Maintainer |
+| Place | Responsibility | Maintainer |
 | --- | --- | --- |
-| Cook engine and CLI | Evaluation, ordered composition, diff presentation, approval, destination boundaries, recovery, writes and ownership in `cook.lock` | Cook contributors |
+| Cook | Evaluation, ordered composition, diff presentation, approval, the kitchen boundary, recovery, writes and ownership in `cook.lock` | Cook contributors |
 | Ingredient | Model a program's native files and configuration, including settings, ignore files or skills | Authors of the cookbook that holds it |
 | Recipe | Describe reusable requested file operations using program models and trusted Groovy code | Cookbook or repository authors |
 | Cookbook repository | Hold and ship ingredients and recipes; build them separately where appropriate | Cookbook authors |
@@ -46,11 +46,11 @@ The distinction is between a program's configuration concepts and the choices a 
 ## Criteria
 
 Ask these questions in order for each part of a capability and stop at the first yes, because repetition alone does
-not establish an engine responsibility:
+not establish a responsibility of Cook:
 
 | Question | Placement |
 | --- | --- |
-| 1. Does it change Cook's evaluation, review or execution of declared file operations? | Engine capability within the architecture |
+| 1. Does it change Cook's evaluation, review or execution of declared file operations? | Cook capability within the architecture |
 | 2. Must the capability itself execute a command, launch a session, publish work or contact a service? | External tools and people |
 | 3. Does it model the format of a program's native files or configuration? | Ingredient in a cookbook |
 | 4. Does it select reusable file additions, updates or deletions for a setup, including a native setting, CI file, task-runner command or hook that a program later executes? | Recipe; review the program's interpretation and consequences of the written setting |
@@ -63,10 +63,10 @@ credentials, permissions and failure rules. See [native hooks](configuration-sta
 Whatever the placement, decide whether the choice is shared or personal and which existing content should remain, and
 choose declared targets and maintenance sources accordingly.
 
-## Engine commands and recipe arguments
+## Cook commands and recipe arguments
 
-The engine's commands are the [command set](cli-standards.md#command-set), which the
-[CLI reference](../features/cli.md#commands) describes. A new engine command or flag requires its own decision when it
+Cook's commands are the [command set](cli-standards.md#command-set), which the
+[CLI reference](../features/cli.md#commands) describes. A new Cook command or flag requires its own decision when it
 changes that scope. Do not add a command for each program or organization, or invent a setting that bypasses the
 agreed review and recovery guarantees, because program and organization choices belong in cookbooks. Per-recipe
 choices use recipe arguments following that recipe
@@ -105,9 +105,9 @@ evidence should fit the task.
 
 ## Worked examples
 
-| Request | Destination | Reason and review boundary |
+| Request | Place | Reason and review boundary |
 | --- | --- | --- |
-| Combine two recipes that set the same key | Engine ordered composition | Later values replace earlier ones; preview the final combined result |
+| Combine two recipes that set the same key | Cook ordered composition | Later values replace earlier ones; preview the final combined result |
 | Model Git ignore entries or Codex settings and skills | Ingredient in a cookbook | Knowledge follows the native program's files and formats |
 | Set shared agent settings | Recipe using program models | Review native permission meaning and preserve unrelated keys |
 | Restrict force pushes or task chaining | Native program controls and team guidance | Cook may configure supported controls; the consuming program enforces them |
@@ -124,8 +124,8 @@ evidence should fit the task.
 | Explain permissions, branches or working-copy locations in `AGENTS.md`, with matching ignore rules in `.gitignore` | Native instruction prose or recipe-declared marked section | Readable conventions survive stopping Cook; describe the native settings and their limitations; use HTML comments for Markdown boundaries |
 | Share organization skills | Team-selected installer, recipe or reviewed copies | Choose one maintenance process; native discovery determines loading |
 | Record a lesson or open an issue | Agent or person with appropriate tools | Knowledge and tracker activity need judgment and their own review |
-| Pin or upgrade the Cook engine | The team's tool manager, such as `mise.toml`, or the person's installer | Engine and cookbook versions are separate choices; see [install](../features/install.md) |
-| Set up several repositories | Separate CLI invocations from each destination | Each has its own actual diff, approval and `cook.lock`; external tools select repositories and deliver changes |
+| Pin or upgrade Cook | The team's tool manager, such as `mise.toml`, or the person's installer | Cook and cookbook versions are separate choices; see [install](../features/install.md) |
+| Set up several repositories | Separate CLI invocations from each kitchen | Each has its own actual diff, approval and `cook.lock`; external tools select repositories and deliver changes |
 | Remove a recipe's output | Discard | Removes what the recipe owns; earlier content comes from the repository's history |
 | Fail CI when committed files no longer follow from `cook.lock` | Check | It writes nothing and reads its inputs from the lock; the team's CI runs it ([check](../features/cli.md#check)) |
 | Recreate output a clone does not commit | Replicate | Cooks again from the recorded sources and arguments, through the same diff and approval ([replicate](../features/replicate.md)) |
@@ -133,14 +133,14 @@ evidence should fit the task.
 
 ## Paths and distribution
 
-Each invocation works on one destination, its selected kitchen, so setup across repositories means one
-invocation per repository ([destination and source origins](../architecture.md#destination-and-source-origins)). The engine
+Each invocation works on one kitchen, so setup across repositories means one
+invocation per repository ([kitchen and source origins](../architecture.md#kitchen-and-source-origins)). The Cook
 release is the one installed on `PATH`, pinned for a team by its tool manager, and moves separately from cookbook and
 recipe versions ([install](../features/install.md)).
 
 People or external automation choose the repositories and invoke Cook from each intended directory; keep that selection
 explicit, because an unrelated clone on a machine is not an instruction to configure it. Use the recipes and arguments
-that fit each repository, review a representative change before repeating it elsewhere, and review each destination's
+that fit each repository, review a representative change before repeating it elsewhere, and review each kitchen's
 actual diff, for example:
 
 ```sh
@@ -148,15 +148,15 @@ cd /work/repo-a && cook ./recipe.groovy
 cd /work/repo-b && cook ./recipe.groovy
 ```
 
-Approval covers a whole batch in one destination, and discard acts on that destination only. Rollback on write failure
-covers the batch in that destination and provides no transaction across repositories. Checking repositories, tracking
+Approval covers a whole batch in one kitchen, and discard acts on that kitchen only. Rollback on write failure
+covers the batch in that kitchen and provides no transaction across repositories. Checking repositories, tracking
 rollout results, running agents, committing, pushing and opening pull requests belong to the maintainer's workflow and
 external tools.
 
 ## Anti-patterns
 
-- Putting a repeated external workflow in the engine solely because it is deterministic: repetition does not change
-  the engine's file-operation responsibilities.
+- Putting a repeated external workflow in Cook solely because it is deterministic: repetition does not change
+  Cook's file-operation responsibilities.
 - Treating an ingredient as a controller of program activity: it models native configuration, while the consuming
   program controls later activity.
 - Treating a recipe as a workspace, verification or delivery pipeline: those activities belong to external tools and
@@ -171,7 +171,7 @@ external tools.
   actions have distinct consequences outside the declared batch.
 - Omitting a recipe to delete its previous output: its output is removed only by cooking a new version of that
   recipe that no longer declares it, or by discarding the recipe ([discard](../features/discard.md)).
-- Refreshing recipes or skills automatically when the engine pin moves: engine and cookbook sources are separate
+- Refreshing recipes or skills automatically when the Cook pin moves: Cook and cookbook sources are separate
   version choices.
 - Committing credentials in native configuration, skill examples or helper scripts: shared files expose them to
   everyone with repository access; use the program's credential mechanism and review sources and diffs for

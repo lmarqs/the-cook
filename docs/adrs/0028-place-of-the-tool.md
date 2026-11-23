@@ -14,7 +14,7 @@ guarantees. Nobody has to change how they work to use the tool, and each guarant
 - People can start their programs directly or through their own wrappers, independently of Cook.
 - Worked example: one acme developer uses VS Code and an agent plugin, another uses IntelliJ and a loop runner,
   and a third uses no coding agent. All contribute to `acme/api` through the team's review and CI conventions.
-- The agreed [architecture](../architecture.md#scope-and-responsibilities) defines a file-operation engine that
+- The agreed [architecture](../architecture.md#scope-and-responsibilities) defines Cook as a file-operation tool that
   configures native program files.
 - [Recipes](../features/glossary.md) are trusted executable Groovy code. Their declared batch operations are only part
   of what that code can do with the user's privileges.
@@ -25,7 +25,7 @@ guarantees. Nobody has to change how they work to use the tool, and each guarant
    has to work through it, and it neither detects nor prevents work done another way.
 2. People choose their editors, agents, plugins, loop runners, and task lists. Cook can configure their native
    files through declared recipe operations, without requiring teammates to use those programs or making their
-   execution an engine responsibility.
+   execution a Cook responsibility.
 3. Cook's guarantees cover its declared batch operations ([0011](0011-safety-invariants.md)); they do not constrain
    people or programs started independently.
 4. Rules a team needs for every contribution belong in its review, branch protection, and CI conventions.
@@ -39,7 +39,7 @@ guarantees. Nobody has to change how they work to use the tool, and each guarant
 - **2.** The developers in Context differ in their program choices. Native configuration lets each use the setup
   they need without placing all their sessions under Cook. The trade is that configuring a program does not guarantee
   its behavior or make sessions identical across machines.
-- **3.** The engine can present and recover the file operations it handles. It cannot make the same promise about
+- **3.** Cook can present and recover the file operations it handles. It cannot make the same promise about
   programs people start themselves. The trade is that every guarantee must identify its scope;
   [0011](0011-safety-invariants.md) gives the reasons for that scope.
 - **4.** Review and CI conventions apply regardless of which editor or agent produced a contribution. Cook applies
@@ -56,7 +56,7 @@ independently, so enforcement remains incomplete and restrictions fall on people
 ### Make Cook supervise every configured program
 
 At its best, one controller could standardize sessions and report their outcomes. It loses because native-file
-configuration does not grant that control, and supervising programs is outside this engine's file-operation
+configuration does not grant that control, and supervising programs is outside Cook's file-operation
 responsibilities ([0019](0019-action-kinds.md)).
 
 ## Consequences

@@ -13,8 +13,8 @@ content, reviews the combined diff, and approves the batch while content outside
 ## Overview
 
 Cooking evaluates trusted Groovy [recipes](glossary.md) into an ordered batch of file operations. Ingredients model programs' native
-files and configuration; cookbooks supply ingredients and recipes separately from the engine. The CLI accepts recipe
-paths inside the destination repository or coordinates.
+files and configuration; cookbooks supply ingredients and recipes separately from Cook. The CLI accepts recipe
+paths inside the kitchen or coordinates.
 
 ```sh
 cook ./recipe.groovy
@@ -120,13 +120,13 @@ choosing individual changes is a separate interface decision.
 Recipes are trusted executable code. Diff, approval, output boundaries, and rollback govern declared batch
 operations; they are not a sandbox or protection against arbitrary side effects during recipe evaluation.
 
-## Destination and source paths
+## Kitchen and source paths
 
-The selected kitchen is the destination, regardless of the executable location. Declared writes and
+The kitchen is the boundary, regardless of the executable location. Declared writes and
 deletions stay within it, including paths resolved through symlinks. A symlink cannot route a declared target outside
 that boundary.
 
-Recipes come from paths inside the destination repository or coordinates; a URL operand is refused. Relative
+Recipes come from paths inside the kitchen or coordinates; a URL operand is refused. Relative
 recipe/template source references resolve from the referencing recipe's location inside the repository. A local operand
 or reference that resolves outside the repository is refused. For example, when invoked from `/work/project`:
 

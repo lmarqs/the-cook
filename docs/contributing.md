@@ -5,7 +5,7 @@ audience: Whoever proposes a new responsibility for Cook
 # Contributing
 
 A proposal for Cook is judged against its purpose: turn reusable recipes into visible, approved changes to native
-program files, while keeping program-specific setup separate from the engine. A contributor who knows which part of
+program files, while keeping program-specific setup separate from Cook. A contributor who knows which part of
 the problem Cook solves can tell whether a new responsibility serves it. [Philosophy](philosophy.md) states the
 problem, who has it and what they get; the tenets below rule proposals in or out, and the [ADRs](adrs/README.md)
 record the reasoning behind the decisions they shape. The [architecture](architecture.md) states the full design, and
@@ -21,7 +21,7 @@ outlive the reason it was made.
 **Tenet.** State the problem and desired outcome before the mechanism. Keep the reasons visible so a contributor can
 judge whether a decision still serves its goal. See the [ADR structure](adrs/README.md#the-problem-comes-first).
 
-### Keep the engine focused on file operations
+### Keep Cook focused on file operations
 
 **Problem.** A core that owns a team's development lifecycle must change whenever that way of working changes.
 
@@ -33,16 +33,16 @@ runners and CI systems it configures run and control their own workflows. See th
 
 **Problem.** Approval of a diff can be mistaken for a guarantee about everything executable recipe code might do.
 
-**Tenet.** Recipes are trusted Groovy code. Approval, destination boundaries and rollback govern declared batch
+**Tenet.** Recipes are trusted Groovy code. Approval, the kitchen boundary and rollback govern declared batch
 operations; they do not sandbox recipe evaluation or guarantee that arbitrary recipe code has no side effects. Choose
 recipe sources accordingly. See the [cookbook trust](adrs/0026-cookbook-trust.md) ADR.
 
 ### Keep program models in cookbooks
 
-**Problem.** Program-specific setup tied to the engine makes the engine follow each program's configuration changes.
+**Problem.** Program-specific setup tied to Cook makes Cook follow each program's configuration changes.
 
 **Tenet.** Ingredients model native program files and configuration, and cookbooks distribute ingredients and recipes
-separately from the engine. See the [organization content](adrs/0013-organization-content.md) ADR.
+separately from Cook. See the [organization content](adrs/0013-organization-content.md) ADR.
 
 ### Review the actual change
 

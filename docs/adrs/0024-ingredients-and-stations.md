@@ -24,26 +24,26 @@ review the combined effect of requested setup changes before they are written.
 ## Decision
 
 1. Ingredients are program data models, distinct in responsibility from recipes' setup choices. Cookbooks hold and
-   ship ingredients and recipes; the engine evaluates recipes and reviews and writes the ordered batch.
+   ship ingredients and recipes; Cook evaluates recipes and reviews and writes the ordered batch.
 2. Reusable setup follows the agreed operation contract. Every invocation evaluates the supplied recipes against
    current content; nothing marks setup as already cooked. Later operations can replace earlier values in
    one combined diff. Existing or edited content uses the same whole-batch approval flow; recorded ownership never
    blocks a change. Omitting a recipe leaves its earlier output in place.
-3. Engine version and checksum pinning is separate from cookbook builds and recipe-version selection
+3. Cook version and checksum pinning is separate from cookbook builds and recipe-version selection
    ([0032](0032-recipe-updates.md)). `cook.lock` records which recipe version produced the current ownership.
 
 ## Reasons
 
 - **1.** The acme example uses the same program format with different choices. Separating responsibilities lets a
-  model be reused without embedding one team's instructions as engine policy. The trade is that cookbook authors must
+  model be reused without embedding one team's instructions as Cook policy. The trade is that cookbook authors must
   make the distinction clear.
 - **2.** FR-7 through FR-9 and FR-25 make requested changes and their order authoritative. A first-value-wins,
   add-only or already-cooked rule would silently replace that contract. The trade is that cooking shared setup can
   propose replacing a local value; the reviewer sees the final diff before approving the batch.
-- **3.** An engine pin chooses an executable package, while a supplied recipe chooses the requested setup. Treating
+- **3.** A Cook pin chooses an executable package, while a supplied recipe chooses the requested setup. Treating
   recorded inputs as an instruction to upgrade would conflate replay with a request for newer content
   ([0032](0032-recipe-updates.md)); replicate replays recorded inputs ([0007](0007-ownership.md), FR-14, FR-25).
-  The trade is that recipe updates need a separate request, independently of engine upgrades.
+  The trade is that recipe updates need a separate request, independently of Cook upgrades.
 
 ## Rejected alternatives
 
@@ -58,14 +58,14 @@ and review of the final diff already decide. The distinction of responsibilities
 
 At its best, keeping every existing value protects local customization from replacement. It loses because it also
 prevents an explicit later recipe from changing an earlier value, contrary to ordered composition. Review of the
-requested diff replaces a first-value-wins engine rule.
+requested diff replaces a first-value-wins Cook rule.
 
 ## Consequences
 
 Costs:
 
 - Updating reusable setup requires a request under [0032](0032-recipe-updates.md) and review of changes to current
-  content, separately from engine pin changes.
+  content, separately from Cook pin changes.
 
 Must be maintained:
 

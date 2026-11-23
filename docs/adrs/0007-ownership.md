@@ -60,7 +60,7 @@ rebuilt or removed without disturbing anything else.
 8. Cook keeps no history of its own. `cook.lock` is its only record; on a write failure, Cook rolls back the batch's
    completed writes in place and reports the failure. Earlier content lives in the repository's version control.
 
-The trust limits of these guarantees follow [0011](0011-safety-invariants.md), and the destination boundary follows
+The trust limits of these guarantees follow [0011](0011-safety-invariants.md), and the kitchen boundary follows
 [0012](0012-write-boundary.md).
 
 ## Reasons

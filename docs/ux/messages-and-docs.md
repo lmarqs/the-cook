@@ -12,7 +12,7 @@ the intended design and current execution instructions in the places where reade
 ## Overview
 
 These rules cover CLI messages, recipe-declared text in native files and repository documentation. The
-[glossary](../features/glossary.md) defines engine vocabulary.
+[glossary](../features/glossary.md) defines Cook's vocabulary.
 
 ## Voice
 
@@ -38,7 +38,7 @@ The same rules apply to guidance read by coding agents, because ambiguity can be
   ([terminal presentation](cli-standards.md#color-emoji-and-terminal-control)).
 - Put supporting detail on indented lines. Identify the operation and affected file or source, because readers need
   to distinguish a recipe input failure from a target write failure.
-- Name destination files relative to the selected kitchen, with `:line:column` when known. Identify source files
+- Name kitchen files relative to the kitchen, with `:line:column` when known. Identify source files
   by their original location or coordinates, because that is the source to edit.
 - Distinguish warnings from failures in words; the exit status tells a script the outcome
   ([errors](cli-standards.md#errors)).
@@ -62,9 +62,9 @@ cook: unknown option --batch-approve after ./recipe.groovy
 ```
 
 ```text
-cook: target ../shared/settings.toml is outside the destination
+cook: target ../shared/settings.toml is outside the kitchen
   declared writes must stay inside the selected kitchen, including symlink resolution
-  edit ./recipe.groovy to target a path inside the destination
+  edit ./recipe.groovy to target a path inside the kitchen
 ```
 
 ```text
@@ -191,7 +191,7 @@ A directory README is the artifact's front page. The shape is defined in [cookbo
 A recipe's `@help` describes it by what it provides, consumes and connects to, because a reader composes recipes from
 `cook help` without their source. It holds these sections in order, and omits a section that does not apply:
 
-1. **Lead:** what the destination gets, in one or two sentences.
+1. **Lead:** what the kitchen gets, in one or two sentences.
 2. **API:** the invocations, one per situation; the stable paths, scripts, commands and naming rules the recipe
    publishes.
 3. **Consumes:** the tools that run at run time, with the versions written for; what it reads in the draft and what each
@@ -220,21 +220,21 @@ What to do after cooking belongs in `@yield`, which `help` prints as "After cook
   commands, diffs and output as examples of the intended interaction. Do not present invented output as a real run.
 - Use relative links for repository pages, tables when they aid lookup, and language-tagged fenced blocks for commands
   and output. Link where useful in either direction.
-- Use Cook or `the-cook` for the engine and `cook` for the command, as installed on `PATH`
-  ([entry points](cli-standards.md#entry-points)). Use one term per engine concept.
+- Use Cook or `the-cook` for the program and `cook` for the command, as installed on `PATH`
+  ([entry points](cli-standards.md#entry-points)). Use one term per concept.
 - Use generic organizations such as `acme` in made-up examples. Recipe operands must still be exact supported paths or
   coordinates, such as `acme:setup:1.0.0#project`; do not invent a cookbook-name lookup scheme.
 - Explain program-specific files and settings when they clarify native configuration. Attribute those choices to
-  cookbook ingredients and recipes rather than promising engine contracts for every program. Name the program rather
+  cookbook ingredients and recipes rather than promising Cook contracts for every program. Name the program rather
   than inventing a generic role in its place.
 - Keep commands aligned with the [CLI reference](../features/cli.md). Show batch options before operands and recipe
   arguments after their recipe. Document any real prerequisites in current-usage examples.
 - Review affected links and index descriptions when changing a page. Retain useful paths; correct contradictory text in
   place.
 
-### Names for engine concepts
+### Names for Cook's concepts
 
-The [glossary](../features/glossary.md) is the single list of engine terms; use its term for each concept, because
+The [glossary](../features/glossary.md) is the single list of Cook's terms; use its term for each concept, because
 two names for one concept read as two concepts. A recipe is evaluated; a batch is reviewed, approved and written.
 
 Words to avoid:

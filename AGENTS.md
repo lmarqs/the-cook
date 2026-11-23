@@ -53,7 +53,7 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
 
 ## Where things go
 
-- New code: in its existing module: `core/` the engine, `infra/` the kitchen's `cook.toml` and cookbook fetching,
+- New code: in its existing module: `core/` cooking, `infra/` the kitchen's `cook.toml` and cookbook fetching,
   `cli/` the command line, `cookbook/src/<artifact>/` recipes, `gradle/build-conventions/` shared build setup. The
   design is [docs/architecture.md](docs/architecture.md).
 - Tests: `<module>/src/test/groovy/thecook/`, one `<Subject>Test.groovy` per subject, as
@@ -87,7 +87,7 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
 
 ## Deep dive (read on demand)
 
-- How the engine cooks a recipe: [core/README.md](core/README.md); how cookbooks are fetched:
+- How Cook cooks a recipe: [core/README.md](core/README.md); how cookbooks are fetched:
   [infra/README.md](infra/README.md).
 - Known traps by feature: [docs/features/traps.md](docs/features/traps.md).
 - Agent permissions, roles and launch commands: [.agents/README.md](.agents/README.md) and the `agents-layout` skill.

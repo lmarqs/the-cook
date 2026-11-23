@@ -11,7 +11,7 @@ for both interactive and noninteractive use.
 
 ## Overview
 
-These pages describe the interaction of the file-operation engine: commands, output, configuration, generated content
+These pages describe the interaction of Cook: commands, output, configuration, generated content
 and documentation. Cook evaluates trusted Groovy recipes, presents their combined terminal diff, obtains whole-batch
 approval, records ownership in `cook.lock` and performs declared writes. Programs read their native
 files directly. Recipe evaluation is trusted code, not sandboxed by the review flow.
@@ -22,12 +22,12 @@ files directly. Recipe evaluation is trusted code, not sandboxed by the review f
 | --- | --- |
 | [principles.md](principles.md) | Review, approval, recovery and trusted-recipe boundaries |
 | [cli-standards.md](cli-standards.md) | Command grammar, output, errors, approval and noninteractive use |
-| [when-cli-when-skill.md](when-cli-when-skill.md) | Engine, cookbook, guidance and external-tool responsibilities |
+| [when-cli-when-skill.md](when-cli-when-skill.md) | Cook, cookbook, guidance and external-tool responsibilities |
 | [skills-standards.md](skills-standards.md) | Skill sources, native discovery, command guidance and review |
 | [configuration-standards.md](configuration-standards.md) | File locations, recipe inputs, defaults, validation, native values, permission rules, hooks and secrets |
 | [generated-content-standards.md](generated-content-standards.md) | Native files, sections and markers, guidance and memory files, stable output, review and discard |
-| [messages-and-docs.md](messages-and-docs.md) | Message wording, engine vocabulary and documentation authority |
-| [compatibility-standards.md](compatibility-standards.md) | Compatibility effects, native coexistence, recovery and engine pinning |
+| [messages-and-docs.md](messages-and-docs.md) | Message wording, Cook's vocabulary and documentation authority |
+| [compatibility-standards.md](compatibility-standards.md) | Compatibility effects, native coexistence, recovery and Cook pinning |
 
 ## Authority
 
@@ -51,9 +51,9 @@ Background:
 | --- | --- | --- |
 | Developer | CLI, recipe arguments and native files | See the actual combined diff and approve the whole batch before target writes |
 | Automation or CI | CLI without an interactive terminal | Use explicit `--batch-approve` for preapproval; noninteractive execution alone does not authorize writes |
-| Reviewer | Recipe, configuration and engine-pin changes | Inspect requested contributions and explicit version changes |
+| Reviewer | Recipe, configuration and Cook pin changes | Inspect requested contributions and explicit version changes |
 | Teammate who does not use Cook | Native program files | Consume those files directly without invoking Cook |
-| Cookbook author | Ingredients and trusted Groovy recipes | Maintain program models and setup separately from engine releases |
+| Cookbook author | Ingredients and trusted Groovy recipes | Maintain program models and setup separately from Cook releases |
 | User removing setup | Discard | Review the removal of what a recipe owns, preserving content it does not own |
 
 ## Normative language

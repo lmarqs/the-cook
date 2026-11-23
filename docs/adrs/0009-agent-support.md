@@ -24,7 +24,7 @@ agents while seeing what each agent will actually receive.
 ## Decision
 
 1. Each agent's native files and configuration have their own ingredient, as for any program
-   ([0022](0022-tool-integration.md)), maintained and distributed by cookbooks independently of the engine.
+   ([0022](0022-tool-integration.md)), maintained and distributed by cookbooks independently of Cook.
 2. Recipes can reuse choices across program models, but their declared native output is the subject of review.
    Agent-specific settings remain expressible through the relevant native model.
 3. Agent configuration follows the ordered composition of [0007](0007-ownership.md) and the preservation rules of
@@ -35,7 +35,7 @@ agents while seeing what each agent will actually receive.
 ## Reasons
 
 - **1.** Program formats change independently. Keeping their knowledge in cookbook models lets authors update agent
-  support without turning each agent's settings into engine responsibilities. Cookbook authors must maintain that
+  support without turning each agent's settings into Cook responsibilities. Cookbook authors must maintain that
   program knowledge.
 - **2.** Shared choices reduce the duplicate editing in the example, but translation can lose meaning. Reviewing
   native output exposes what each program receives without promising an equivalence the file changes cannot prove.
@@ -56,7 +56,7 @@ requires the repeated edits illustrated in Context. Native-specific choices rema
 ### Require one agent-neutral policy and launch contract
 
 At its best, one declaration, written once for every agent, promises the same behavior everywhere. It loses because
-it requires translation and supervision contracts beyond the file-operation engine, and hides differences when a
+it requires translation and supervision contracts beyond Cook's file operations, and hides differences when a
 program lacks an equivalent setting.
 
 ## Consequences
@@ -69,7 +69,7 @@ Costs:
 
 Must be maintained:
 
-- Program-specific configuration knowledge in cookbooks and reviewable native-file operations in the engine.
+- Program-specific configuration knowledge in cookbooks and reviewable native-file operations in Cook.
 
 ## Confirmation
 

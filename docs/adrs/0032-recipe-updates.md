@@ -14,7 +14,7 @@ review its effect before accepting it. Their accepted setup remains identifiable
 - A [recipe](../features/glossary.md) cooked by coordinates has an exact version; cookbook distribution and accepted
   coordinates follow [0029](0029-cookbook-distribution.md). The lock records its source and normalized supplied
   arguments, and replicate repeats those inputs ([0007](0007-ownership.md)).
-- Engine upgrades change the engine pin separately from recipe inputs ([0017](0017-engine-version.md)).
+- Cook upgrades change the Cook pin separately from recipe inputs ([0017](0017-cook-version.md)).
 - npm's semver 7.7.2 defines caret ranges: `^1.2.3` admits releases below `2.0.0`, `^0.2.3` below `0.3.0`, and
   `^0.0.3` below `0.0.4` ([caret ranges](https://github.com/npm/node-semver/blob/v7.7.2/README.md#caret-ranges-123-025-004)).
 - Maven 3.9.11's repository metadata model lists available artifact versions in `versioning/versions`
@@ -46,8 +46,8 @@ review its effect before accepting it. Their accepted setup remains identifiable
 
 ## Reasons
 
-- **1.** The lock identifies accepted inputs, and the engine pin identifies a different dependency. Requiring a
-  request prevents ordinary cooking, replay or an engine upgrade from silently choosing newer recipe code.
+- **1.** The lock identifies accepted inputs, and the Cook pin identifies a different dependency. Requiring a
+  request prevents ordinary cooking, replay or a Cook upgrade from silently choosing newer recipe code.
   Reusing cooking's review lets maintainers accept the resulting changes, including the new recorded version,
   together. The trade is that requesting an update still requires trusting its sources before evaluation.
 - **2.** A bounded default lets maintainers request routine updates without also requesting the next compatibility
@@ -102,7 +102,7 @@ Must be maintained:
 - Release discovery for published Maven metadata and Maven local metadata.
 - Selection boundaries, including the same nonzero `0.minor` below `1.0.0`, and explicit approval of exact lock
   changes.
-- The separation between engine upgrades, replay of recorded inputs and requested recipe updates.
+- The separation between Cook upgrades, replay of recorded inputs and requested recipe updates.
 
 ## Confirmation
 
@@ -112,6 +112,6 @@ Must be maintained:
   With recorded `0.0.3` and listed `0.0.4` and `0.1.0`, does the default move nothing, and does `--major` propose
   `0.1.0`?
 - Do a dry run and declined approval leave the recorded version and output unchanged, and do ordinary replicate
-  and an engine upgrade retain the recorded recipe version?
+  and a Cook upgrade retain the recorded recipe version?
 - Does Maven local discover locally published releases, while a source directory with no release listing reports
   no known newer release?

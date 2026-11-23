@@ -1,17 +1,17 @@
 ---
-description: Sets what counts as breaking, how releases coexist with native programs and how the engine is pinned.
+description: Sets what counts as breaking, how releases coexist with native programs and how Cook is pinned.
 audience: Whoever ships a change users may need to adapt to
 ---
 # Compatibility standards
 
 Repositories upgrade at different times. Changes to command grammar or native configuration can break scripts and
-programs, while broad replacements can erase settings maintained by teammates or other tools. Pinning an engine release
+programs, while broad replacements can erase settings maintained by teammates or other tools. Pinning a Cook release
 alone does not control cookbook sources or the effects of executable recipes. Users can review compatibility changes
-deliberately, preserve unrelated content, and distinguish engine versions, cookbook sources and native program behavior.
+deliberately, preserve unrelated content, and distinguish Cook versions, cookbook sources and native program behavior.
 
 ## Overview
 
-This standard covers the engine's file operations and their coexistence with configured programs.
+This standard covers Cook's file operations and their coexistence with configured programs.
 
 ## Versioning
 
@@ -19,13 +19,13 @@ Keep these version choices distinct, because changing one does not automatically
 
 | Artifact | Version responsibility | What to review |
 | --- | --- | --- |
-| Cook engine and CLI | Each machine runs the release its installer put on `PATH`; a team pins one in its tool manager, such as `mise.toml` | Command grammar, operation behavior and the pin change |
+| Cook | Each machine runs the release its installer put on `PATH`; a team pins one in its tool manager, such as `mise.toml` | Command grammar, operation behavior and the pin change |
 | Ingredients and [cookbooks](../features/glossary.md) | Cookbook authors maintain program models and recipes in their repositories and builds | Source changes and the native program versions and formats they cover |
 | Supplied recipes | Users supply the recipe version they intend to cook | The exact source and its consumed recipe/template dependencies |
 | `cook.lock` | Cook records the source and sha256 that produced each recipe's current ownership | The `cook.lock` change |
 | Native files and sections | The consuming program defines its format and semantics | Actual file changes, key paths, section boundaries and program defaults |
 
-Upgrading the engine leaves recipe versions and project files as they are; see
+Upgrading Cook leaves recipe versions and project files as they are; see
 [upgrading](../features/install.md#upgrading).
 
 ## What counts as breaking
@@ -51,11 +51,11 @@ The [command set](cli-standards.md#command-set) lists the commands this table pr
 
 ## Output across releases and sources
 
-Changing an engine version, cookbook source, recipe argument or consuming program can affect the requested setup.
+Changing the Cook version, cookbook source, recipe argument or consuming program can affect the requested setup.
 Review the actual batch diff against current content. Trusted executable recipes do not carry a universal guarantee
 of identical output across machines or releases, or of network-free evaluation.
 
-An engine upgrade leaves native files and skill content as they are until users invoke the supplied sources. Later
+A Cook upgrade leaves native files and skill content as they are until users invoke the supplied sources. Later
 recipes can intentionally replace earlier values;
 [ordered composition](../architecture.md#ordered-composition-and-declared-targets) shows how, and what cooking a new
 recipe version removes.
@@ -64,7 +64,7 @@ recipe version removes.
 
 Ingredients model programs' native files and configuration. Cookbook authors should document the program versions,
 formats and limitations their models cover, because successful file writing does not prove that a program reads the
-result as intended. Engine builds and cookbook builds can be separate.
+result as intended. Cook builds and cookbook builds can be separate.
 
 Review native permissions, hook semantics, discovery paths, links and trust settings using the consuming program's
 rules. Local, user and managed settings can affect project settings. The consuming program enforces its permissions
@@ -98,12 +98,12 @@ region; ownership never blocks a change.
 | Hand-written settings or instruction text | Propose declared changes against current content; preserve unrelated keys or text outside declared sections |
 | Other tools' ignore entries and marked sections | Preserve entries outside the declared targets; review overlapping native semantics and contradictory instructions |
 | Skills, memory, command folders and installer lock files | Change only supplied declarations; maintain each through one process, because competing updates can overwrite each other |
-| Real directories, per-entry links or whole-directory symlinks | Review the existing shape and declared scope; resolved batch targets must remain within the destination |
+| Real directories, per-entry links or whole-directory symlinks | Review the existing shape and declared scope; resolved batch targets must remain within the kitchen |
 | Native agent skill discovery | The agent decides what it loads and follows ([skills guidance](skills-standards.md#discovery-and-session-guidance)) |
-| Local, user or managed program settings | Do not implicitly import them; choose shared versus personal content explicitly, with batch writes confined to the destination |
+| Local, user or managed program settings | Do not implicitly import them; choose shared versus personal content explicitly, with batch writes confined to the kitchen |
 | Task-runner, build and CI files | Recipes may target native configuration; the repository's task runner or contributor instructions describe its preparation, build and check commands, and those programs execute their own tasks independently |
 | Trackers, loop runners and working-copy tools | Recipes may configure their native files; those tools select and assign tasks, track dependencies, update and synchronize issue state, launch sessions, signal completion and clean working copies |
-| Tracker databases and state files | They remain the tracker's data; cooking recipes does not implicitly migrate, clear or synchronize them, and a recipe that targets them declares that change in the reviewed diff, within the destination |
+| Tracker databases and state files | They remain the tracker's data; cooking recipes does not implicitly migrate, clear or synchronize them, and a recipe that targets them declares that change in the reviewed diff, within the kitchen |
 | Version-control configuration, ignore rules and hook files | Recipes may declare them and the version-control program interprets and runs them; people and external tools create branches, manage worktrees, create or remove working copies, detect landed work, enforce delivery guards and preserve uncommitted work |
 | Pushes, pull requests, notifications and MCP services | External tools and people perform these activities |
 | Another program's data in `cook.lock` | Move it elsewhere first, because Cook writes ownership to `cook.lock` |
@@ -118,8 +118,8 @@ recipe code. Trust sources before evaluating them; the resulting diff is not a s
 
 ## Paths and recovery
 
-Destination and source resolution follow
-[destination and source origins](../architecture.md#destination-and-source-origins). A relative reference resolves
+Kitchen and source resolution follow
+[kitchen and source origins](../architecture.md#kitchen-and-source-origins). A relative reference resolves
 from the referencing recipe's origin, because a rebased reference would resolve a different source.
 
 A failed write rolls back the batch's completed writes. Ownership lives in the committed `cook.lock`, so cooking and

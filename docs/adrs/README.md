@@ -76,7 +76,7 @@ An ADR whose Reasons section does not cover every point is incomplete, whatever 
 ## When to write one
 
 Write an ADR for a decision that is hard to reverse or that constrains how other parts are built: the implementation
-language, the contract between the tool and its destination, the boundaries on declared writes, where ownership
+language, the contract between the tool and its kitchen, the boundaries on declared writes, where ownership
 is kept, how releases are trusted.
 
 Do not write an ADR for a feature, a command, a flag, a file field, a task or a plan. Those belong in the
@@ -103,12 +103,12 @@ One ADR holds one decision. If its points serve two decisions, it is two ADRs.
   commands, flags, published artifacts and their names, file formats, and the paths of files Cook reads or writes.
   Internals are how the repository builds those interfaces: class names, build scripts, source paths. An internal
   appears only as a link that gives a fact its source, never as part of the decision.
-- Prefer generic mechanism names: the batch, the lock, the destination, an ingredient,
+- Prefer generic mechanism names: the batch, the lock, the kitchen, an ingredient,
   a recipe. Use concrete command, flag, setting, environment-variable, exit-code or file references when necessary
   to explain a decision, its boundary or its evidence, such as `--batch-approve` or `cook.lock` at the repository root.
   Keep detailed usage in the [features](../features/) pages and terminology in the
   [glossary](../features/glossary.md); a concrete reference is not a reason to add an undecided contract.
-- Link the [glossary](../features/glossary.md) at the first use of an engine term in each ADR.
+- Link the [glossary](../features/glossary.md) at the first use of a Cook term in each ADR.
 - A third-party product whose behavior a decision depends on is named with the version that behavior was checked
   against. Prior art and rejected tools are named without a version, because nothing depends on their behavior.
   Build tooling (the JDK, jpackage, Groovy, Gradle) is named without a version, because the build files pin
@@ -171,21 +171,21 @@ Must be maintained:
 | [0002](0002-division-of-work.md) | How are recipe choices separated from batch execution? | Cook separates recipe choices from batch execution |
 | [0003](0003-implementation-language.md) | In what language, and as what artifact? | Cook retains its JVM stack |
 | [0004](0004-runtime-dependencies.md) | How is the runtime supplied? | Cook packages its Java runtime |
-| [0006](0006-repository-contract.md) | What does a repository hold? | Repositories hold trusted recipes separately from the shared engine |
+| [0006](0006-repository-contract.md) | What does a repository hold? | Repositories hold trusted recipes separately from Cook, shared through its releases |
 | [0007](0007-ownership.md) | What defines the scope of a file change? | Declared targets define changes reviewed against current content |
 | [0008](0008-native-configuration.md) | How does Cook edit shared native files? | Declared native-file targets preserve unrelated content |
 | [0009](0009-agent-support.md) | How are several agents configured? | Ingredients model each agent's native configuration |
 | [0010](0010-dependence-on-the-binary.md) | What depends on the binary being installed? | Native configuration remains usable without Cook |
 | [0011](0011-safety-invariants.md) | What do Cook's guarantees cover? | Cook's guarantees cover declared batch operations |
-| [0012](0012-write-boundary.md) | What may Cook write? | Cook confines declared batch operations to reviewed destination targets |
-| [0013](0013-organization-content.md) | Where do shared organization choices belong? | Cookbooks carry organization choices separately from the engine |
+| [0012](0012-write-boundary.md) | What may Cook write? | Cook confines declared batch operations to reviewed targets in the kitchen |
+| [0013](0013-organization-content.md) | Where do shared organization choices belong? | Cookbooks carry organization choices separately from Cook |
 | [0014](0014-directory-layout.md) | Where does each kind of file live? | Native output and recipe ownership are the only files Cook writes |
 | [0016](0016-permission-adoption.md) | How are existing permission changes reviewed? | Existing permission changes receive explicit native-file review |
-| [0017](0017-engine-version.md) | Which release runs in a repository? | Cook installs on PATH, and a team pins its release with the tool manager it already uses |
+| [0017](0017-cook-version.md) | Which release runs in a repository? | Cook installs on PATH, and a team pins its release with the tool manager it already uses |
 | [0018](0018-conventions.md) | How do conventions remain readable without Cook? | Native instruction text states conventions independently of Cook |
 | [0019](0019-action-kinds.md) | What does a batch contain? | Batches contain declared file operations |
 | [0020](0020-standing-context.md) | How does Cook configure reusable guidance? | Guidance is native program content |
-| [0021](0021-release-trust.md) | What does release verification prove? | Reviewed engine pins verify package integrity without proving publisher identity |
+| [0021](0021-release-trust.md) | What does release verification prove? | Reviewed Cook pins verify package integrity without proving publisher identity |
 | [0022](0022-tool-integration.md) | How is program configuration knowledge supplied? | Ingredients model programs' native configuration |
 | [0023](0023-core-and-contracts.md) | How are operation rules separated from external mechanisms? | The core separates operation rules from external mechanisms |
 | [0024](0024-ingredients-and-stations.md) | What separates program knowledge from reusable setup choices? | Program models remain distinct from reusable setup choices |

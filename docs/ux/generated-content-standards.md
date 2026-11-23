@@ -16,7 +16,7 @@ and recovery do not sandbox arbitrary effects of recipe code.
 ## Kinds of generated content
 
 A recipe declares its targets. Ingredients model programs' native files and configuration; cookbooks supply ingredients
-and recipes independently of the engine.
+and recipes independently of Cook.
 
 | Target | Address | Review scope |
 | --- | --- | --- |
@@ -149,7 +149,7 @@ examples use UTF-8, LF line endings, and a final newline.
 
 Follow declared operation order rather than sorting operations to eliminate overlap. Output depends on current
 content, supplied sources, and arguments; trusted executable recipes do not imply identical bytes on every machine
-or a network-free evaluation. Engine version pinning does not pin or manage recipe versions.
+or a network-free evaluation. Pinning the Cook version does not pin or manage recipe versions.
 
 ## Review
 
@@ -168,10 +168,10 @@ Noninteractive execution without `--batch-approve` does not authorize writes. Se
 Review source trust as well as the resulting native settings. Arbitrary effects of recipe evaluation are outside the
 batch diff and recovery guarantee. Commit and delivery decisions belong to the repository's own workflow.
 
-## Destination
+## Kitchen
 
-The selected kitchen is the destination, and declared writes and deletions stay within it
-([destination and source origins](../architecture.md#destination-and-source-origins)). See
+Declared writes and deletions stay within the kitchen
+([kitchen and source origins](../architecture.md#kitchen-and-source-origins)). See
 [configuration locations](configuration-standards.md#where-files-live).
 
 ## Discard

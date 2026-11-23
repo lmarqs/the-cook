@@ -1,10 +1,10 @@
 # Core implementation
 
-This guide describes the engine on `main`. The [architecture](../docs/architecture.md) states the intended design,
+This guide describes the core on `main`. The [architecture](../docs/architecture.md) states the intended design,
 and [issue #15](https://github.com/lmarqs/the-cook/issues/15) tracks the parts that do not run yet.
 
-The core is one engine, `thecook.cookbook`, that cooks recipes named by coordinates or by a `.groovy` path in the
-kitchen. The engine and the author's annotations, in `thecook.cookbook.api.ingredient` and `thecook.cookbook.api.recipe`, are
+The core is one package, `thecook.cookbook`, that cooks recipes named by coordinates or by a `.groovy` path in the
+kitchen. The core and the author's annotations, in `thecook.cookbook.api.ingredient` and `thecook.cookbook.api.recipe`, are
 Groovy.
 
 The core reaches no network and runs no external command. It declares `CookbookRepository`, and the caller hands
