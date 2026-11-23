@@ -63,7 +63,7 @@ synthetic sessions. If approval is refused, report the runner phase as blocked r
 | --- | --- |
 | Empty team and clone | Tracker alone, native bootstrap and graph, then Viewer; cook creates no database |
 | Existing team and clone | Restore history first; preserve hooks, excludes, instructions, YAML and seed |
-| Repeated cooking | Byte-identical configuration, instructions and engine lock; `cook check` exits 0 |
+| Repeated cooking | Byte-identical configuration, instructions and `cook.lock`; `cook check` exits 0 |
 | Team onboarding | Clean source index, local publication, second code clone bootstrap; identical graph |
 | Clone privacy | Disabled sync before writes; push/pull skip, remote add fails, remote refs stay unchanged |
 | Native overrides | Environment and config.local.yaml override policy; inspect and restore effective status |

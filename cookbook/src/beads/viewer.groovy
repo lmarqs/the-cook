@@ -33,7 +33,7 @@ or installed. Runtime store selection uses native BEADS_DIR and explicit --db, s
 | Root `.gitignore` | `viewer` section with argument line and `/.beads/issues.jsonl` | Always | owned |
 | Each `--instructions` file | `viewer` section with argument line and runtime guidance | `--instructions` | owned |
 
-The engine alone maintains `cook.lock`. The native exporter creates the compatibility snapshot at runtime.
+Cook alone maintains `cook.lock`. The native exporter creates the compatibility snapshot at runtime.
 Never touches: tracker settings or sections, native metadata, tasks, runtime exports, team seeds, tool pins,
 hooks, `.git/info/exclude`, environment files, agent/runner settings or unrelated ignores and instructions.
 

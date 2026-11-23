@@ -2,7 +2,7 @@ plugins {
   id 'thecook.lint'
 }
 
-// The engine knows no cookbook: no code or build file under core/ may name the cookbook's directory or cook.cookbook,
+// Core knows no cookbook: no code or build file under core/ may name the cookbook's directory or cook.cookbook,
 // the property that passes its path to the cookbook's tests. Coordinates such as io.github.lmarqs.cookbook:agents are
 // data, and its documentation may name the cookbook.
 tasks.register('coreBoundaryCheck') {

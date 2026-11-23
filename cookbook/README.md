@@ -1,6 +1,6 @@
 # Cookbook
 
-This directory shows the shape of recipes and ingredients. The engine runs the `agents`, `beads`, `git`, `docs`,
+This directory shows the shape of recipes and ingredients. Cook runs the `agents`, `beads`, `git`, `docs`,
 `ralph` and `hello` artifacts.
 
 ## What runs today
@@ -47,9 +47,9 @@ records the address and a sha256 of the artifact's sources.
 A loose recipe compiles against the models in its own directory, the upper-case `.groovy` files beside it, as a
 recipe in an artifact compiles against that artifact's models.
 
-A committed `cook.toml` at the destination lists the repositories to resolve from, in order, as `repositories`: each
+A committed `cook.toml` in the kitchen lists the repositories to resolve from, in order, as `repositories`: each
 `github:<owner>/<repo>`, an `https://` URL or a path, one starting with `~/` relative to the user's home and any other
-to the destination. `github:<owner>/<repo>` names the releases of that GitHub repository, a URL or path names a
+to the kitchen. `github:<owner>/<repo>` names the releases of that GitHub repository, a URL or path names a
 Maven-layout repository, and a path can also name a cookbook's source directory, the one holding `cookbook.toml`.
 Without a `cook.toml`, or with one that lists no `repositories`, Cook resolves from `github:lmarqs/the-cook`.
 [ADR 0029](../docs/adrs/0029-cookbook-distribution.md) records the reasons.
@@ -71,7 +71,7 @@ repositories = [
 ]
 ```
 
-The engine does not find recipes. People find them in a cookbook's repository, on an artifact host or through a
+Cook does not find recipes. People find them in a cookbook's repository, on an artifact host or through a
 teammate's link; `cook --help` names this cookbook's coordinates at the running release. Given the coordinates:
 
 ```sh
@@ -116,7 +116,7 @@ Viewer's help gives the explicit export and `--db` sequence for the main checkou
 store. A successful export is required before presenting current recommendations: Viewer can exit 0 with stale,
 provisional output after an automatic refresh fails. Its JSONL export is a compatibility snapshot, not task history.
 
-The recipes have separate entries in the engine's `cook.lock` and separate owned sections. Remove either independently:
+The recipes have separate entries in `cook.lock` and separate owned sections. Remove either independently:
 
 ```sh
 cook discard io.github.lmarqs.cookbook:beads#viewer
@@ -134,7 +134,7 @@ A model's package is its cookbook's group plus its directory name: `cookbook/src
 `io.github.lmarqs.cookbook.ralph.RalphTui` in the artifact `io.github.lmarqs.cookbook:ralph`. A recipe imports every type it injects, so
 its imports are its visible dependency list and `@ingredient(RalphTui)` resolves through them.
 
-Recipe names are noun phrases naming the state the destination gets, without repeating the directory's topic:
+Recipe names are noun phrases naming the state the kitchen gets, without repeating the directory's topic:
 `git/worktrees.groovy` and `agents/connect.groovy`. A recipe that configures one of
 several programs in its directory names the program first: `ralph/ralph-tui.groovy`.
 
@@ -147,23 +147,23 @@ keeps its own, with `team` the default, and `--instructions`, repeatable, names 
 the rules it sets up for people and agents, such as `AGENTS.md` and `README.md`. A param avoids a word the configured program uses for something else, as
 ralph-tui 0.12 has a `setup` command, and a word this repository uses for something else, as `hook` names harness and
 Git hooks. A param that names another recipe's or the team's file takes its path from the repository root and is
-declared with `path`, so the engine refuses it when absolute or holding a `..` segment
+declared with `path`, so Cook refuses it when absolute or holding a `..` segment
 ([0030](../docs/adrs/0030-recipe-connections.md)).
 
-The engine imports its own annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and `java.nio.file` into every
-unit, as the Groovy shell imports `java.util`. A unit imports nothing from the engine and nothing for JSON, YAML,
+Cook imports its own annotations, `groovy.json`, `groovy.yaml`, `groovy.toml` and `java.nio.file` into every
+unit, as the Groovy shell imports `java.util`. A unit imports nothing from Cook and nothing for JSON, YAML,
 TOML or paths. The annotations come first, so `File` and `Files` name them; write `java.io.File` and
 `java.nio.file.Files` in full.
 
 ## The author's API
 
-An author's code reaches the engine only through annotations. It imports nothing from the engine.
+An author's code reaches Cook only through annotations. It imports nothing from Cook.
 
 ### In an ingredient
 
 | Annotation | On | Declares |
 | --- | --- | --- |
-| `@Ingredient` | class | A model or content. The engine adds `directory`, the instance's base inside the destination with `.` at its root; `resource(name)` and `resources(dir)`, which read one file or every file packaged in the jar, or in the directory of a model beside a loose recipe; `current(path)`, which reads a destination file; and `currentEntries(dir)`, which lists a destination directory's entries by name and kind. |
+| `@Ingredient` | class | A model or content. Cook adds `directory`, the instance's base inside the kitchen with `.` at its root; `resource(name)` and `resources(dir)`, which read one file or every file packaged in the jar, or in the directory of a model beside a loose recipe; `current(path)`, which reads a destination file; and `currentEntries(dir)`, which lists a destination directory's entries by name and kind. |
 | `@Section(path, id, comment)` | member returning `List<String>` | The marked section `id` of a shared text file. `comment` names the comment syntax when the extension does not. |
 | `@Sections(path, id, comment, missing)` | member returning `Map<String, List<String>>` | The marked section `id` in one file per entry: the key is the file's path under `path`, and the value its lines. With `missing = 'fail'`, a file the draft lacks is refused rather than created holding only the section. |
 | `@Key(path, segments)` | member | One key path in a JSON, TOML or YAML document, owned whole. A segment can select a list entry. |
@@ -177,7 +177,7 @@ An author's code reaches the engine only through annotations. It imports nothing
 Rules:
 
 - A member that returns `null` declares nothing. A pristine instance declares nothing: only what the recipe asked for
-  is written. The engine evaluates a pristine instance of every ingredient it loads and rejects the ingredient, naming
+  is written. Cook evaluates a pristine instance of every ingredient it loads and rejects the ingredient, naming
   the member, when anything is declared.
 - A declaration member may throw to reject the request, after the guard that keeps a pristine instance declaring
   nothing.
@@ -190,16 +190,16 @@ Rules:
   `[matches: regex]` the string entry the expression matches. An absent entry is inserted at `place`: `start`, `end`
   by default, `before:<value>` or `after:<value>`, compared the same way. An absent list is created. A path that
   continues past a selector requires the entry to exist. Lock and docs write the entry as `steps[id=cache]`.
-- The engine owns every format: markers in the right comment syntax, key merge that preserves unrelated keys, order
-  and comments, link and mode handling, the destination boundary.
-- An ingredient reads destination content only through `current(path)`, which returns the file as the recipes before
+- Cook owns every format: markers in the right comment syntax, key merge that preserves unrelated keys, order
+  and comments, link and mode handling, the kitchen boundary.
+- An ingredient reads kitchen content only through `current(path)`, which returns the file as the recipes before
   this one in the invocation left it, or `null` when absent, and `currentEntries(dir)`, which lists a directory's
-  entries the same way. It never reads the disk, the lock or the engine's state.
+  entries the same way. It never reads the disk, the lock or Cook's state.
 - Two declarations of one target in one recipe are an error. Across recipes, the last one wins and owns the target.
 - A model exposes facts for other models through plain methods, such as the files it leaves behind. The recipe wires
   them. Ingredients never call each other's outputs.
 - A model that knows how to run something returns a command, `[run: [step...], dir: String, env: Map]`, where a step
-  is an argument list or shell text and `dir` is relative to the destination. The consumer, such as `mise`, renders
+  is an argument list or shell text and `dir` is relative to the kitchen. The consumer, such as `mise`, renders
   and quotes it; models never quote.
 - A model that several programs read through their own files, such as `agents`, owns that shared layout and drives
   each program through one interface, such as `Harness`. Each program's model only translates.
@@ -211,7 +211,7 @@ Rules:
 | `@help('''...''')` | first import | The recipe's description, in Markdown. Required. |
 | `@confirm('''...''')` | first import | A consequence the diff cannot show, displayed above the diff when asking for approval. Optional. |
 | `@yield('''...''')` | first import | What to do next, printed after the writes succeed. Optional. |
-| `@ingredient(Type, at)` | field | An injected instance, at the destination root or at the directory `at`. |
+| `@ingredient(Type, at)` | field | An injected instance, at the kitchen root or at the directory `at`. |
 | `@resource('path')` | field | The text of a file: beside a loose recipe, inside the repository, or in the recipe's artifact. The field is a `String`. |
 | `@recipe(arguments)` | field | The recipe's own name, as its section markers and `cook.lock` carry it: its coordinates without the version, such as `io.github.lmarqs.cookbook:git#worktrees`, or its place in the kitchen, such as `recipes/setup`. With `arguments = true`, the name followed by each param the recipe was given, in declaration order, as bound, such as `io.github.lmarqs.cookbook:git#worktrees --instructions=AGENTS.md`: the argument line its owned sections open with. The field is a `String`. |
 | `@param(value = names, doc = '...', default = ..., choices = ..., many = ..., sorted = ..., path = ...)` | field | An input bound from `--name=value` or `--name value`. Required without a default; `default = []` makes it optional with no value. `many` accepts repeats and binds them without duplicates, in the order given; `sorted` sorts them, for a param whose order means nothing. `path` takes each value as a path from the repository root: it is refused when blank, absolute or holding a `..` segment, and reaches the recipe without empty or `.` segments. The field is a `String`, a yes-or-no `boolean`, an `int` or `long`, or with `many` a `String[]` or `List<String>`; an input file is passed as its path. `doc` is required: it is the param's line in `help`. |
@@ -230,7 +230,7 @@ jar cannot be opened with a pager. Everything the reader needs ships in the arti
 its models and the annotations on its recipes. `cook help <address>...` prints help for each address in order and
 cooks nothing. An artifact address prints its front page; a recipe address or path prints that recipe's help.
 
-The engine reads a recipe's help from its parsed source, without running the recipe or resolving its imports, so help
+Cook reads a recipe's help from its parsed source, without running the recipe or resolving its imports, so help
 works for a recipe whose models are not available.
 
 | Unit | `help` prints, in order | The author writes |
@@ -240,7 +240,7 @@ works for a recipe whose models are not available.
 
 A fact that lives in code is rendered from the code and written nowhere else. State a model keeps for itself is
 `private`, so the rendered API is the one the author means. Every public method or property and every annotated
-member has a doc comment. The engine refuses to load a recipe without `@help` and a unit with an undocumented param,
+member has a doc comment. Cook refuses to load a recipe without `@help` and a unit with an undocumented param,
 public member or annotated member, naming it.
 
 A directory README is the artifact's front page: one paragraph on the topic, holding nothing that code holds.
@@ -249,7 +249,7 @@ A directory README is the artifact's front page: one paragraph on the topic, hol
 
 A recipe file opens with its texts, annotations on its first import, in this order: `@help`, `@confirm`, `@yield`.
 Each holds Markdown in a `'''` string. An annotation value is a constant, so the texts do not change with the
-arguments; what the recipe actually wrote is in the diff and in the engine's report.
+arguments; what the recipe actually wrote is in the diff and in Cook's report.
 
 `@help` describes the recipe by what it provides, consumes and connects to, so a reader composes recipes without its
 source. It holds these sections in order, each after a `## <Section>` heading except the Lead. A section that does not
@@ -257,7 +257,7 @@ apply is omitted: a recipe that installs no script has no Run-time effects.
 
 | Section | Content |
 | --- | --- |
-| Lead | One or two sentences: what the destination gets |
+| Lead | One or two sentences: what the kitchen gets |
 | API | The invocations, one per situation, each under a comment naming it; the params are not repeated. Then the stable paths, scripts, commands and naming rules the recipe publishes for people and other recipes to rely on |
 | Consumes | The tools that run at run time, with the versions the recipe is written for; what it reads in the draft and what each read triggers; the paths of other artifacts it names; what the person does by hand first |
 | Produces | A table of `Target`, `Part`, `When` and `Kind`. `When` is the argument value or draft condition that triggers the row, or `Always`. `Kind` is `owned`, rewritten on every cook and removed by discard; `seed`, written when absent and never owned; or `link`, an owned symbolic link. Then how the written setup behaves, closing with `Never touches:` and the files in its topic it leaves to others |
@@ -295,7 +295,7 @@ A model's class doc comment holds these sections in order.
 | On | Says |
 | --- | --- |
 | The class | The lead and model sections above |
-| A public method or property | What it means for the destination, what its arguments accept and what is rejected |
+| A public method or property | What it means for the kitchen, what its arguments accept and what is rejected |
 | An annotated member | The part written and when, as one row of the rendered writes: `` `engines.node`, a caret range on the major, when a version is set. `` |
 
 Rendered help for an artifact and a recipe, as `cook help` prints them:
@@ -767,7 +767,7 @@ store without `BEADS_DIR`. No bootstrap, initialization or synchronization comma
 | Each `--instructions` file | `tracker` section with argument line and guidance for the selected mode | `--instructions` | owned |
 
 The root rules exclude native database, export, credential and lock files, including `.beads.gate.lock`.
-Native `.beads/.gitignore` is redundant bootstrap output. The engine alone records ownership in `cook.lock`.
+Native `.beads/.gitignore` is redundant bootstrap output. Cook alone records ownership in `cook.lock`.
 Never touches: task data, native metadata, native remotes, hooks, `core.hooksPath`, `.git/info/exclude`, tool pins,
 team-owned seeds, agent integrations, or unrelated ignore rules, YAML keys and instruction text.
 
@@ -907,7 +907,7 @@ or installed. Runtime store selection uses native BEADS_DIR and explicit --db, s
 | Root `.gitignore` | `viewer` section with argument line and `/.beads/issues.jsonl` | Always | owned |
 | Each `--instructions` file | `viewer` section with argument line and runtime guidance | `--instructions` | owned |
 
-The engine alone maintains `cook.lock`. The native exporter creates the compatibility snapshot at runtime.
+Cook alone maintains `cook.lock`. The native exporter creates the compatibility snapshot at runtime.
 Never touches: tracker settings or sections, native metadata, tasks, runtime exports, team seeds, tool pins,
 hooks, `.git/info/exclude`, environment files, agent/runner settings or unrelated ignores and instructions.
 

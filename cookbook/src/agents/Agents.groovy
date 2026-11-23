@@ -370,7 +370,7 @@ interface Harness {
   /** The harness name used to select the agent program, such as `claude` or `codex`. */
   String getName()
 
-  /** The harness instance's directory relative to the destination, with `.` at its root. */
+  /** The harness instance's directory relative to the kitchen, with `.` at its root. */
   String getDirectory()
 
   /**

@@ -54,7 +54,7 @@ store without `BEADS_DIR`. No bootstrap, initialization or synchronization comma
 `--instructions` | owned |
 
 The root rules exclude native database, export, credential and lock files, including `.beads.gate.lock`.
-Native `.beads/.gitignore` is redundant bootstrap output. The engine alone records ownership in `cook.lock`.
+Native `.beads/.gitignore` is redundant bootstrap output. Cook alone records ownership in `cook.lock`.
 Never touches: task data, native metadata, native remotes, hooks, `core.hooksPath`, `.git/info/exclude`, tool pins,
 team-owned seeds, agent integrations, or unrelated ignore rules, YAML keys and instruction text.
 

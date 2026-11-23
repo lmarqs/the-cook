@@ -55,7 +55,7 @@ class Claude implements Harness {
   private List sessionStart = []
   private Map<List<String>, List> worktreeHooks = [:]
 
-  /** Destination-root ignore patterns for the local settings file Claude Code writes. */
+  /** Kitchen-root ignore patterns for the local settings file Claude Code writes. */
   final List<String> localFiles = ['/.claude/settings.local.json']
 
   /**

@@ -4,7 +4,7 @@ def packagePath = project.group.toString().replace('.', '/')
 def v = project.version.toString()
 def releaseAssetsDir = layout.buildDirectory.dir('release-assets')
 
-// A sha256 file reads `<hex digest>  <file name>`, as the engine package's does, so `sha256sum -c` checks the jar.
+// A sha256 file reads `<hex digest>  <file name>`, as each Cook package's does, so `sha256sum -c` checks the jar.
 def sha256Hex = { File file ->
   def digest = java.security.MessageDigest.getInstance('SHA-256')
   file.eachByte(1 << 16) { byte[] buffer, int length -> digest.update(buffer, 0, length) }

@@ -61,7 +61,7 @@ tasks.named('test') {
 tasks.named('jar') { enabled = false }
 
 // Each directory under src/ is one artifact: a jar of its files under its package path, <group>/<artifact>/, which the
-// engine compiles when one of its recipes is cooked.
+// Cook compiles when one of its recipes is cooked.
 def packagePath = project.group.toString().replace('.', '/')
 def artifacts = file('src')
     .listFiles()

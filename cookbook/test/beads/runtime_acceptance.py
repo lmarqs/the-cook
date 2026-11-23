@@ -441,7 +441,7 @@ skipPermissions = false
             self.check(f"{repo.name}: Viewer discard retains native export",
                        (repo / ".beads/issues.jsonl").read_bytes() == export)
             self.run(repo, [self.cook, "discard", "--batch-approve", NAME + "tracker"])
-            self.check(f"{repo.name}: engine removes last ownership record", not (repo / "cook.lock").exists())
+            self.check(f"{repo.name}: Cook removes last ownership record", not (repo / "cook.lock").exists())
             self.check(f"{repo.name}: all owned sections removed", "cook:begin" not in (repo / "AGENTS.md").read_text()
                        and "cook:begin" not in (repo / ".gitignore").read_text())
             self.check(f"{repo.name}: unrelated instructions preserved",
