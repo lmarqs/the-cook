@@ -33,7 +33,7 @@ issue, never on the page, and a description of current behavior in a README stay
 | [Decisions](adrs/README.md) | Reversing it changes more than one feature or module, or is hard to reverse, and it came from a real trade-off | States the decision, every reason behind it and each alternative at its best; the [guide](adrs/README.md) gives the bar and the template |
 | [Features](features/README.md) | It states what a command or operation does for its user: cooking, check, discard, replicate, update, install | Lets a reader predict what a command proposes, records and refuses without reading the code |
 | [Standards](ux/README.md) | It constrains every artifact of one sort that a person writes: a command, a message, a configuration file, generated content, a skill, a page | Carries each rule with its reason, so it applies to a case its words leave open |
-| [Pitfalls](features/pitfalls.md) | It is a trap: a setup that looks right and is not, or a guarantee a reader assumes Cook gives and it does not | Gives the symptom, why it happens, what Cook is responsible for and what the reader reviews |
+| [Traps](features/traps.md) | It is a [trap](features/glossary.md) of Cook: a setup that looks right and is not, or a guarantee a reader assumes Cook gives and it does not | Gives the symptom, why it happens, what Cook is responsible for and what the reader reviews |
 | [Glossary](features/glossary.md) | It is the meaning of one of Cook's terms | Gives each concept one name, which every page uses |
 
 Every page opens with front matter that describes it, as
@@ -50,7 +50,7 @@ file that a recipe owns is an example:
 - What cooking does with a section, and what it keeps around it, is a [feature](features/cook.md#sections-and-markers).
 - How a marker line reads in every file format is a [standard](ux/generated-content-standards.md#sections-and-markers).
 - That the next run replaces a hand edit inside a section is a
-  [pitfall](features/pitfalls.md#a-manual-edit-is-changed-by-the-next-run).
+  [trap](features/traps.md#a-manual-edit-is-changed-by-the-next-run).
 - What "owner" and "marker" mean is the [glossary](features/glossary.md)'s.
 
 Each page links the others rather than restating them.

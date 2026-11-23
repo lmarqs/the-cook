@@ -2,7 +2,7 @@
 description: Warns of setups that look right and are not, and of guarantees a reader assumes Cook gives that it does not.
 audience: Whoever relies on a setup Cook wrote, or reviews one
 ---
-# Pitfalls, gaps and traps
+# Traps
 
 Recipe evaluation, native permission settings, source paths and discard can behave differently from a reader's
 expectations. A correct-looking setting or successful file write does not establish that a program loaded the setting,

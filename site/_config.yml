@@ -13,6 +13,7 @@ google_analytics: G-4D40875MH6
 
 plugins:
   - jekyll-sitemap
+  - jekyll-redirect-from
 
 layouts_dir: site/_layouts
 includes_dir: site/_includes
@@ -89,6 +90,12 @@ defaults:
       path: infra/README.md
     values:
       description: Describes how infra connects the core engine to the places cookbook releases come from, such as Maven repositories and local paths.
+  # A page's own front matter takes only description, audience and keywords, so a moved page's old URL is kept here.
+  - scope:
+      path: docs/features/traps.md
+    values:
+      redirect_from:
+        - /docs/features/pitfalls.html
   - scope:
       path: cookbook/src/*/skills
     values:

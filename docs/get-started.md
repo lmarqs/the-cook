@@ -137,4 +137,4 @@ you wrote it.
 - [The agents cookbook](../cookbook/src/agents/README.md) lists what else `#connect` sets up, such as session hooks and
   worktrees.
 - [Discard](features/discard.md) takes a recipe's output back out.
-- [Pitfalls](features/pitfalls.md) lists the setups that look right and are not.
+- [Traps](features/traps.md) lists the setups that look right and are not.

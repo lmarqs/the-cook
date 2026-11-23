@@ -99,7 +99,7 @@ recipes:
           id: "io.github.lmarqs.cookbook:beads#viewer/viewer"
   - name: "io.github.lmarqs.cookbook:docs#layout"
     source: "io.github.lmarqs.cookbook:docs:0.0.0#layout"
-    sha256: "7a8b6b904373344c866254ed18937ae0e8272299c75fa7dd026a9e66318a79c6"
+    sha256: "f3a87192f70b6caf282ed91e042eec45cc49541c2358569aac4d9b926edf0745"
     arguments:
       "skills-root": [".agents/skills"]
     owns:
