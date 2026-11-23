@@ -24,8 +24,8 @@
       path: docs/features/update.md
     - title: Install
       path: docs/features/install.md
-    - title: Pitfalls
-      path: docs/features/pitfalls.md
+    - title: Traps
+      path: docs/features/traps.md
     - title: Glossary
       path: docs/features/glossary.md
 - section: Understand

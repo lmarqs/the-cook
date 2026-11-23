@@ -7,7 +7,7 @@ into the site:
 
 | Path | Holds |
 | --- | --- |
-| `_config.yml` | The Jekyll configuration: titles, the `jekyll-sitemap` plugin, the excluded source and build files, `google_analytics`, the Google Analytics measurement ID that `head.html` loads on every page, `release`, which `prepare` sets, and `defaults`, the descriptions of pages outside `docs/` and the pages kept out of search |
+| `_config.yml` | The Jekyll configuration: titles, the `jekyll-sitemap` and `jekyll-redirect-from` plugins, the excluded source and build files, `google_analytics`, the Google Analytics measurement ID that `head.html` loads on every page, `release`, which `prepare` sets, and `defaults`, the descriptions of pages outside `docs/`, the pages kept out of search and the old URLs of moved pages |
 | `_layouts/` | `default`, every Markdown page with the docs sidebar, and `home`, the landing page |
 | `_includes/` | The head, top bar, sidebar and footer the layouts share; the head carries the title, description, canonical link, Open Graph and Twitter tags, and the JSON-LD of the page |
 | `_includes/icons/` | Inline SVG icons, `{% include icons/<name>.svg %}`, drawn in the colour of the text around them |

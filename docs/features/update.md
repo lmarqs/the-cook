@@ -196,7 +196,7 @@ as in ordinary cooking.
 
 A cookbook source directory serves current files at any version and cannot list releases. If any repository cannot
 list releases for an artifact it serves, its recipes are unknown to update, even if another repository has a listing
-for that artifact. See the [source-directory trap](pitfalls.md#a-cookbook-source-directory-makes-its-recipes-unknown-to-update).
+for that artifact. See the [source-directory trap](traps.md#a-cookbook-source-directory-makes-its-recipes-unknown-to-update).
 
 Without names, update warns on stderr, naming each skipped recipe and repository, and continues with the known
 recipes. With names, an explicitly named unknown recipe refuses the whole request before writing anything and

@@ -9,7 +9,7 @@ audience: Whoever is new to Cook or about to use or change one of its commands
 Each page here says what one command or operation does for the person running it, so they can predict what it
 proposes, records and refuses without reading the code. New to Cook? Start with [Get started](../get-started.md), then [Write a recipe](../write-a-recipe.md). The
 [map of the docs](../README.md) says which kind of page owns which fact; this directory also holds two pages of other
-kinds, the [glossary](glossary.md) and the [pitfalls](pitfalls.md). Read the [CLI reference](cli.md) first, then the
+kinds, the [glossary](glossary.md) and the [traps](traps.md). Read the [CLI reference](cli.md) first, then the
 page of the operation at hand.
 
 ## Pages
@@ -23,4 +23,4 @@ page of the operation at hand.
 | [Replicate](replicate.md) | Cooking named recipes again from `cook.lock`, including in a fresh clone |
 | [Update](update.md) | Choosing newer compatible releases, major updates, release discovery and approval |
 | [Install](install.md) | Homebrew, mise and the release package, pinning a release for a team, upgrades and the source repository launcher |
-| [Pitfalls, gaps and traps](pitfalls.md) | Symptoms, causes, Cook's responsibility and what to review |
+| [Traps](traps.md) | Symptoms, causes, Cook's responsibility and what to review |

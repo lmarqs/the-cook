@@ -59,7 +59,7 @@
           files: [
             {
               path: ".agents/skills/docs-layout/SKILL.md",
-              lines: ["# docs-layout", "A decision goes in docs/adrs/.", "A trap goes in docs/features/pitfalls.md."]
+              lines: ["# docs-layout", "A decision goes in docs/adrs/.", "A trap goes in docs/features/traps.md."]
             }
           ]
         }

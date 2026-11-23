@@ -60,7 +60,7 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
   `core/src/test/groovy/thecook/CoordinatesTest.groovy`; recipe tests in `cookbook/test/<artifact>/`, never in core.
 - Settings: build options are Gradle `-P` properties, as `releaseVersion`; the release workflow needs no secret
   beyond its `GITHUB_TOKEN`.
-- Decisions, feature behavior, standards and pitfalls: where [docs/README.md](docs/README.md) says, by the
+- Decisions, feature behavior, standards and traps: where [docs/README.md](docs/README.md) says, by the
   `docs-layout` skill.
 - A procedure an agent repeats: a skill in `.agents/skills/`.
 - A trap a correction reveals in one area: `.agents/memory/<area>.md`, listed under Deep dive.
@@ -89,7 +89,7 @@ Commands agents may run are set in `.agents/permission/policy.yaml`. A refusal i
 
 - How the engine cooks a recipe: [core/README.md](core/README.md); how cookbooks are fetched:
   [infra/README.md](infra/README.md).
-- Known traps by feature: [docs/features/pitfalls.md](docs/features/pitfalls.md).
+- Known traps by feature: [docs/features/traps.md](docs/features/traps.md).
 - Agent permissions, roles and launch commands: [.agents/README.md](.agents/README.md) and the `agents-layout` skill.
 <!-- cook:begin io.github.lmarqs.cookbook:ralph#ralph-tui/ralph-tui -->
 <!-- io.github.lmarqs.cookbook:ralph#ralph-tui --harness=claude --harness=codex --worktree-setup=.worktrees/setup --worktree-teardown=.worktrees/teardown --tracker=beads --tracker=json --instructions=AGENTS.md -->

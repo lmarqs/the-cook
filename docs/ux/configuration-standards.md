@@ -74,7 +74,7 @@ assuming every program shares one convention. Distinguish destination paths from
 Permission settings, hook entries, and skill discovery belong to the program that reads them. Preserve unrelated keys
 and avoid unnecessary changes to comments, key order, or blank lines. Review the exact native rules and their scope:
 programs can differ in matching, precedence, project trust, and local overrides. See
-[permission pitfalls](../features/pitfalls.md#permissions) and
+[permission traps](../features/traps.md#permissions) and
 [instruction files](generated-content-standards.md#instruction-files-and-conventions).
 
 ### Permission rules
